@@ -34,6 +34,7 @@ public static class DependencyInjection
         
         services
             .AddCassandra(configuration)
+            .AddTransient<Mapper>(sp => (sp.GetRequiredService<IMapper>() as Mapper)!)
             .AddHostedService<DatabaseInitializationService>()
             .AddIdentity<ChatifyUser, CassandraIdentityRole>(opts =>
             {

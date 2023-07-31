@@ -1,23 +1,26 @@
 CREATE TABLE IF NOT EXISTS friends
 (
-    friend_one_id timeuuid,
-    friend_two_id timeuuid,
+    friend_one_id uuid,
+    friend_two_id uuid,
     created_at    timestamp,
     PRIMARY KEY ( (friend_one_id), created_at )
 ) WITH CLUSTERING ORDER BY (created_at DESC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
 CREATE TABLE IF NOT EXISTS chat_groups
 (
-    id            timeuuid,
-    creator_id    timeuuid,
-    admin_ids     set<timeuuid>,
-    created_at    timestamp,
+    id          uuid,
+    creator_id  uuid,
+    name        text,
+    about       text,
+    picture_url text,
+    admin_ids   set<uuid>,
+    created_at  timestamp,
     PRIMARY KEY ( (id), created_at )
 ) WITH CLUSTERING ORDER BY (created_at DESC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
 CREATE TABLE IF NOT EXISTS chat_group_members_count
 (
-    id            timeuuid,
+    id            uuid,
     members_count counter,
     PRIMARY KEY ( id )
 ) WITH CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
@@ -25,8 +28,8 @@ CREATE TABLE IF NOT EXISTS chat_group_members_count
 CREATE TABLE IF NOT EXISTS chat_messages
 (
     id              timeuuid,
-    chat_group_id   timeuuid,
-    user_id         timeuuid,
+    chat_group_id   uuid,
+    user_id         uuid,
     content         text,
     attachments     set<text>,
     metadata        map<text, text>,
@@ -63,8 +66,8 @@ CREATE TABLE IF NOT EXISTS chat_message_replies
 CREATE TABLE IF NOT EXISTS friend_invitations
 (
     id         timeuuid,
-    inviter_id timeuuid,
-    invitee_id timeuuid,
+    inviter_id uuid,
+    invitee_id uuid,
     metadata   map<text, text>,
     status     tinyint,
     created_at timestamp,
@@ -89,9 +92,9 @@ CREATE TABLE IF NOT EXISTS message_reactions
 
 CREATE TABLE IF NOT EXISTS chat_group_members
 (
-    id            timeuuid,
-    user_id       timeuuid,
-    chat_group_id timeuuid,
+    id            uuid,
+    user_id       uuid,
+    chat_group_id uuid,
     created_at    timestamp,
     metadata      map<text, text>,
     type          tinyint,

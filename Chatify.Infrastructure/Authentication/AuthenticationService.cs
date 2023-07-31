@@ -53,7 +53,9 @@ public sealed class AuthenticationService : IAuthenticationService
             UserName = request.Username,
             DeviceIps = new System.Collections.Generic.HashSet<IPAddress>
             {
-                IPAddress.Parse(_context.IpAddress)
+                IPAddress.TryParse(_context.IpAddress, out var address)
+                    ? IPAddress.IsLoopback(address) ? IPAddress.Loopback : address
+                    : IPAddress.None
             }
         };
 

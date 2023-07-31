@@ -10,7 +10,7 @@ public class ChatMessageReplyMapping : Cassandra.Mapping.Mappings
     public ChatMessageReplyMapping()
     {
         For<ChatMessageReply>()
-            .TableName(nameof(ChatMessageReply).Underscore())
+            .TableName(nameof(ChatMessageReply).Underscore().Pluralize())
             .PartitionKey(cm => cm.ReplyToId)
             .ClusteringKey(
                 new Tuple<string, SortOrder>(nameof(ChatMessage.CreatedAt), SortOrder.Descending),

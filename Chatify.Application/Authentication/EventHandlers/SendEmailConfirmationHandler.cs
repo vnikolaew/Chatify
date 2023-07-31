@@ -1,5 +1,6 @@
 ﻿using Chatify.Application.Authentication.Contracts;
 using Chatify.Domain.Events;
+using Chatify.Domain.Events.Users;
 using Chatify.Shared.Abstractions.Events;
 using Microsoft.Extensions.Logging;
 

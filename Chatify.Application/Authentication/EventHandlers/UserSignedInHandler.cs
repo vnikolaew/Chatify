@@ -1,6 +1,7 @@
 ﻿using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events;
+using Chatify.Domain.Events.Users;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using Microsoft.Extensions.Logging;

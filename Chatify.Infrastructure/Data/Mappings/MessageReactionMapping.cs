@@ -10,7 +10,7 @@ public class MessageReactionMapping :Cassandra.Mapping.Mappings
     public MessageReactionMapping()
     {
         For<MessageReaction>()
-            .TableName(nameof(MessageReaction).Underscore())
+            .TableName(nameof(MessageReaction).Underscore().Pluralize())
             .PartitionKey(mr => mr.MessageId)
             .ClusteringKey(
                 new Tuple<string, SortOrder>(nameof(MessageReaction.CreatedAt), SortOrder.Descending),

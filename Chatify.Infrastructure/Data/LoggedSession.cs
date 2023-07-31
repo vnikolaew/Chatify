@@ -102,7 +102,7 @@ public class LoggedSession : ISession
         LogStatement(statement);
         return _inner.ExecuteAsync(statement, executionProfileName);
     }
-    
+
     private void LogStatement(IStatement statement)
     {
         if (statement is SimpleStatement ss)
@@ -132,7 +132,8 @@ public class LoggedSession : ISession
     public Task<PreparedStatement> PrepareAsync(string cqlQuery, string keyspace)
         => _inner.PrepareAsync(cqlQuery, keyspace);
 
-    public Task<PreparedStatement> PrepareAsync(string cqlQuery, string keyspace, IDictionary<string, byte[]> customPayload)
+    public Task<PreparedStatement> PrepareAsync(string cqlQuery, string keyspace,
+        IDictionary<string, byte[]> customPayload)
         => _inner.PrepareAsync(cqlQuery, keyspace, customPayload);
 
     public IDriverMetrics GetMetrics()
@@ -160,7 +161,7 @@ public class LoggedSession : ISession
         => _inner.WaitForSchemaAgreement(forHost);
 
     public int BinaryProtocolVersion => _inner.BinaryProtocolVersion;
-    
+
     public ICluster Cluster => _inner.Cluster;
 
     public bool IsDisposed => _inner.IsDisposed;

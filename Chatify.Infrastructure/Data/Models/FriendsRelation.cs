@@ -1,12 +1,14 @@
-﻿using Cassandra;
+﻿using Chatify.Application.Common.Mappings;
 
 namespace Chatify.Infrastructure.Data.Models;
 
-public class FriendsRelation
+public class FriendsRelation : IMapFrom<Domain.Entities.FriendsRelation>
 {
-    public TimeUuid FriendOneId { get; set; }
+    public Guid Id { get; set; }
     
-    public TimeUuid FriendTwoId { get; set; }
+    public Guid FriendOneId { get; set; }
+    
+    public Guid FriendTwoId { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
 }

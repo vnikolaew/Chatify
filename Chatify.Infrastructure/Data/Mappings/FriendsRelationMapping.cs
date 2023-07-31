@@ -8,10 +8,12 @@ namespace Chatify.Infrastructure.Data.Mappings;
 
 public class FriendsRelationMapping : Cassandra.Mapping.Mappings
 {
+    private const string TableName = "friends";
+
     public FriendsRelationMapping()
     {
         For<FriendsRelation>()
-            .TableName(nameof(FriendsRelation).Underscore())
+            .TableName(TableName)
             .KeyspaceName(Constants.KeyspaceName)
             .PartitionKey(fr => fr.FriendOneId)
             .ClusteringKey(fr => fr.CreatedAt, SortOrder.Descending)

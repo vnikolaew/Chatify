@@ -1,6 +1,6 @@
 ﻿using Chatify.Domain.Common;
 
-namespace Chatify.Domain.Events;
+namespace Chatify.Domain.Events.Users;
 
 public class UserSignedUpEvent : IDomainEvent
 {

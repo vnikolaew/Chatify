@@ -7,7 +7,6 @@ using LanguageExt;
 using LanguageExt.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace Chatify.Infrastructure.Authentication;
@@ -17,19 +16,17 @@ public sealed class EmailConfirmationService : IEmailConfirmationService
     private readonly IEmailSender _emailSender;
     private readonly UserManager<ChatifyUser> _userManager;
     private readonly IHttpContextAccessor _contextAccessor;
-    private readonly LinkGenerator _linkGenerator;
 
     private HttpContext HttpContext => _contextAccessor.HttpContext!;
 
     public EmailConfirmationService(
         IEmailSender emailSender,
         UserManager<ChatifyUser> userManager,
-        IHttpContextAccessor contextAccessor, LinkGenerator linkGenerator)
+        IHttpContextAccessor contextAccessor)
     {
         _emailSender = emailSender;
         _userManager = userManager;
         _contextAccessor = contextAccessor;
-        _linkGenerator = linkGenerator;
     }
 
     public async Task<bool> SendConfirmationEmailForUserAsync(
