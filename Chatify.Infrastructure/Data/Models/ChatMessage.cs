@@ -1,4 +1,5 @@
-﻿using Chatify.Application.Common.Mappings;
+﻿using Cassandra.Mapping.Attributes;
+using Chatify.Application.Common.Mappings;
 using Metadata = System.Collections.Generic.IDictionary<string, string>;
 using ReactionCounts = System.Collections.Generic.IDictionary<int, long>;
 
@@ -6,6 +7,7 @@ namespace Chatify.Infrastructure.Data.Models;
 
 public class ChatMessage : IMapFrom<Domain.Entities.ChatMessage>
 {
+    [SecondaryIndex]
     public Guid Id { get; set; }
     
     public Guid ChatGroupId { get; set; }
@@ -24,7 +26,7 @@ public class ChatMessage : IMapFrom<Domain.Entities.ChatMessage>
     
     public DateTimeOffset CreatedAt { get; set; }
     
-    public DateTimeOffset UpdatedAt { get; set; }
-    
-    public bool Updated { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
+
+    public bool Updated => UpdatedAt.HasValue;
 }

@@ -11,6 +11,7 @@ public class ChatMessageReaction
     public ChatMessage Message { get; set; }
     
     public Guid ChatGroupId { get; set; }
+    
     public ChatGroup ChatGroup { get; set; }
     
     public Guid UserId { get; set; }

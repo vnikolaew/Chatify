@@ -11,11 +11,14 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
 {
     protected readonly IMapper Mapper;
     protected readonly Mapper DbMapper;
+    
+    protected readonly string IdColumn;
 
-    protected BaseCassandraRepository(IMapper mapper, Mapper dbMapper)
+    protected BaseCassandraRepository(IMapper mapper, Mapper dbMapper, string? idColumn = default!)
     {
         Mapper = mapper;
         DbMapper = dbMapper;
+        IdColumn = idColumn ?? "id";
     }
 
     public async Task<TEntity> SaveAsync(
@@ -34,18 +37,18 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
     public async Task<TEntity?> UpdateAsync(TId id, Action<TEntity> updateAction,
         CancellationToken cancellationToken = default)
     {
-        var dataEntity = await DbMapper.FirstOrDefaultAsync<TDataEntity>("WHERE id = ?", id);
+        var dataEntity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {IdColumn} = ?", id);
         if (dataEntity is null) return default;
 
         var entity = Mapper.Map<TEntity>(dataEntity);
         updateAction(entity);
         Mapper.Map(entity, dataEntity);
-        
+
         await DbMapper.UpdateAsync(dataEntity,
             new CqlQueryOptions()
                 .SetConsistencyLevel(ConsistencyLevel.Quorum)
                 .SetRetryPolicy(new DefaultRetryPolicy()));
-        
+
         return entity;
     }
 
@@ -53,7 +56,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
     {
         try
         {
-            await DbMapper.DeleteAsync<TDataEntity>("WHERE id = ?", id);
+            await DbMapper.DeleteAsync<TDataEntity>($"WHERE {IdColumn} = ?", id);
             return true;
         }
         catch (Exception)
@@ -64,7 +67,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
 
     public async Task<TEntity?> GetAsync(TId id, CancellationToken cancellationToken = default)
     {
-        var entity = await DbMapper.FirstOrDefaultAsync<TDataEntity>("WHERE id = ?", id);
+        var entity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {IdColumn} = ?", id);
         return entity is null ? default : Mapper.Map<TEntity>(entity);
     }
 }

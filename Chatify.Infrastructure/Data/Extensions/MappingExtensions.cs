@@ -8,13 +8,18 @@ public static class MappingExtensions
 {
     public static Map<T> UnderscoreColumn<T, TProp>(
         this Map<T> map,
-        Expression<Func<T, TProp>> expression)
+        Expression<Func<T, TProp>> expression,
+        Action<ColumnMap>? configure = default)
     {
         var underscoreColumnName = (expression.Body as MemberExpression)?.Member.Name ??
                                    throw new ArgumentException("Expression must be a member expression.",
                                        nameof(expression));
 
-        return map.Column(expression, m => m.WithName(underscoreColumnName.Underscore().ToLower()));
+        return map.Column(expression, m =>
+        {
+            m.WithName(underscoreColumnName.Underscore().ToLower());
+            configure?.Invoke(m);
+        });
     }
 
     public static Map<T> SetColumn<T, TProp, TValue>(

@@ -12,43 +12,45 @@ using LanguageExt.Common;
 
 namespace Chatify.Application.Messages.Reactions.Commands;
 
-using ReactToChatMessageResult = Either<Error, Guid>;
+using ReactToChatMessageReplyResult = Either<Error, Guid>;
 
-public record ReactToChatMessage(
+public record ReactToChatMessageReply(
     [Required] Guid MessageId,
     [Required] Guid GroupId,
     [Required] sbyte ReactionType
-) : ICommand<ReactToChatMessageResult>;
+) : ICommand<ReactToChatMessageReplyResult>;
 
-internal sealed class ReactToChatMessageHandler
-    : ICommandHandler<ReactToChatMessage, ReactToChatMessageResult>
+internal sealed class ReactToChatMessageReplyHandler
+    : ICommandHandler<ReactToChatMessageReply, ReactToChatMessageReplyResult>
 {
     private readonly IChatGroupMemberRepository _members;
     private readonly IIdentityContext _identityContext;
-    private readonly IDomainRepository<ChatMessage, Guid> _messages;
+    private readonly IDomainRepository<ChatMessageReply, Guid> _messageReplies;
     private readonly IDomainRepository<ChatMessageReaction, Guid> _messageReactions;
     private readonly IEventDispatcher _eventDispatcher;
     private readonly IClock _clock;
     private readonly IGuidGenerator _guidGenerator;
 
-    public ReactToChatMessageHandler(
+    public ReactToChatMessageReplyHandler(
         IChatGroupMemberRepository members,
         IIdentityContext identityContext,
-        IDomainRepository<ChatMessage, Guid> messages, IEventDispatcher eventDispatcher, IClock clock,
-        IGuidGenerator guidGenerator,
-        IDomainRepository<ChatMessageReaction, Guid> messageReactions)
+        IDomainRepository<ChatMessageReply, Guid> messageReplies,
+        IDomainRepository<ChatMessageReaction, Guid> messageReactions,
+        IEventDispatcher eventDispatcher,
+        IClock clock,
+        IGuidGenerator guidGenerator)
     {
         _members = members;
         _identityContext = identityContext;
-        _messages = messages;
+        _messageReplies = messageReplies;
+        _messageReactions = messageReactions;
         _eventDispatcher = eventDispatcher;
         _clock = clock;
         _guidGenerator = guidGenerator;
-        _messageReactions = messageReactions;
     }
 
-    public async Task<ReactToChatMessageResult> HandleAsync(
-        ReactToChatMessage command,
+    public async Task<ReactToChatMessageReplyResult> HandleAsync(
+        ReactToChatMessageReply command,
         CancellationToken cancellationToken = default)
     {
         var userIsGroupMember = await _members.Exists(
@@ -56,33 +58,34 @@ internal sealed class ReactToChatMessageHandler
             _identityContext.Id, cancellationToken);
         if (!userIsGroupMember) return Error.New("");
 
-        var message = await _messages.GetAsync(command.MessageId, cancellationToken);
-        if (message is null) return Error.New("");
-
+        var replyMessage = await _messageReplies.GetAsync(command.MessageId, cancellationToken);
+        if (replyMessage is null) return Error.New("");
+        
         var messageReactionId = _guidGenerator.New();
         var messageReaction = new ChatMessageReaction
         {
             Id = messageReactionId,
             CreatedAt = _clock.Now,
             ReactionType = command.ReactionType,
-            Message = message,
+            Message = replyMessage,
             UserId = _identityContext.Id,
             ChatGroupId = command.GroupId
         };
         
         await _messageReactions.SaveAsync(messageReaction, cancellationToken);
-        await _messages.UpdateAsync(message.Id, message =>
+        await _messageReplies.UpdateAsync(replyMessage.Id, message =>
         {
             message.UpdatedAt = _clock.Now;
-            if (!message.ReactionCounts.TryGetValue(command.ReactionType, out var count))
+            if (!message.ReactionCounts.ContainsKey(command.ReactionType))
             {
                 message.ReactionCounts[command.ReactionType] = 0;
             }
             else message.ReactionCounts[command.ReactionType]++;
         }, cancellationToken);
+        
         await _eventDispatcher.PublishAsync(new ChatMessageReactedToEvent
         {
-            MessageId = message.Id,
+            MessageId = replyMessage.Id,
             GroupId = messageReaction.ChatGroupId,
             UserId = messageReaction.UserId,
             ReactionType = messageReaction.ReactionType,

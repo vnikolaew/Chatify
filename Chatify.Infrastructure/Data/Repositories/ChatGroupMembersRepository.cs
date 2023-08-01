@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Chatify.Domain.Entities;
+using Humanizer;
 using StackExchange.Redis;
 
 using ChatGroupMember = Chatify.Domain.Entities.ChatGroupMember;
@@ -15,7 +16,7 @@ public sealed class ChatGroupMembersRepository :
 
     public ChatGroupMembersRepository(
         IMapper mapper, Mapper dbMapper, IDatabase cache)
-        : base(mapper, dbMapper)
+        : base(mapper, dbMapper, nameof(ChatGroupMember.ChatGroupId).Underscore())
         => _cache = cache;
 
     public new async Task<ChatGroupMember> SaveAsync(

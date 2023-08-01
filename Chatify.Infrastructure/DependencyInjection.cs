@@ -5,6 +5,7 @@ using AutoMapper.Internal;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Common;
+using Chatify.Domain.Entities;
 using Chatify.Infrastructure.Authentication;
 using Chatify.Infrastructure.Authentication.External.Facebook;
 using Chatify.Infrastructure.Authentication.External.Google;
@@ -110,7 +111,10 @@ public static class DependencyInjection
             services.AddScoped(baseType, repositoryType);
         }
 
-        return services;
+        return services
+            .AddScoped<IChatMessageReplyRepository, ChatMessageReplyRepository>()
+            .AddScoped<IChatGroupMemberRepository, ChatGroupMembersRepository>()
+            .AddScoped<IFriendInvitationRepository, FriendInvitationRepository>();
     }
 
     public static IServiceCollection AddAuthenticationServices(

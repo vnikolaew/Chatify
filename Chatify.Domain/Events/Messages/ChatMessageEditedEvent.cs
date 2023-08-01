@@ -2,15 +2,16 @@
 
 namespace Chatify.Domain.Events.Messages;
 
-public class ChatMessageSentEvent : IDomainEvent
+public class ChatMessageEditedEvent : IDomainEvent
 {
+    
     public Guid MessageId { get; set; }
     
     public Guid UserId { get; set; }
     
     public Guid GroupId { get; set; }
 
+    public string NewContent { get; set; } = default!;
+    
     public DateTime Timestamp { get; set; }
-
-    public string Content { get; set; } = default!;
 }

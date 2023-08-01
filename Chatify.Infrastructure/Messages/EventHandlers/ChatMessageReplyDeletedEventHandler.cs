@@ -5,18 +5,15 @@ using Chatify.Shared.Abstractions.Events;
 
 namespace Chatify.Infrastructure.Messages.EventHandlers;
 
-internal sealed class ChatMessageRepliedToEventHandler : IEventHandler<ChatMessageRepliedToEvent>
+internal sealed class ChatMessageReplyDeletedEventHandler : IEventHandler<ChatMessageReplyDeletedEvent>
 {
     private readonly ICounterService<ChatMessageReplyCount, Guid> _replyCounts;
 
-    public ChatMessageRepliedToEventHandler(
-        ICounterService<ChatMessageReplyCount, Guid> replyCounts)
+    public ChatMessageReplyDeletedEventHandler(ICounterService<ChatMessageReplyCount, Guid> replyCounts)
         => _replyCounts = replyCounts;
 
-    public Task HandleAsync(
-        ChatMessageRepliedToEvent @event,
-        CancellationToken cancellationToken = default)
-        => _replyCounts.Increment(
+    public Task HandleAsync(ChatMessageReplyDeletedEvent @event, CancellationToken cancellationToken = default)
+        => _replyCounts.Decrement(
             @event.ReplyToId,
             cancellationToken: cancellationToken);
 }

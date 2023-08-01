@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS chat_messages
     PRIMARY KEY ( (chat_group_id), created_at, id)
 ) WITH CLUSTERING ORDER BY (created_at DESC, id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
+CREATE INDEX chat_messages_by_id ON chat_messages (id);
+
 CREATE TABLE IF NOT EXISTS chat_messages_reply_count
 (
     id          uuid,
@@ -64,6 +66,8 @@ CREATE TABLE IF NOT EXISTS chat_message_replies
     PRIMARY KEY ( (reply_to), created_at, id)
 ) WITH CLUSTERING ORDER BY (created_at DESC, id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
+CREATE INDEX chat_message_replies_by_id ON chat_message_replies (id);
+
 CREATE TABLE IF NOT EXISTS friend_invitations
 (
     id         uuid,
@@ -76,6 +80,8 @@ CREATE TABLE IF NOT EXISTS friend_invitations
     updated    boolean,
     PRIMARY KEY ( (inviter_id), created_at)
 ) WITH CLUSTERING ORDER BY (created_at DESC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
+
+CREATE INDEX friend_invitations_by_id ON friend_invitations (id);
 
 CREATE TABLE IF NOT EXISTS message_reactions
 (
@@ -91,6 +97,8 @@ CREATE TABLE IF NOT EXISTS message_reactions
     PRIMARY KEY ((message_id), created_at, id)
 ) WITH CLUSTERING ORDER BY (created_at DESC, id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
+CREATE INDEX message_reactions_by_id ON message_reactions (id);
+
 CREATE TABLE IF NOT EXISTS chat_group_members
 (
     id            uuid,
@@ -101,3 +109,5 @@ CREATE TABLE IF NOT EXISTS chat_group_members
     type          tinyint,
     PRIMARY KEY ( (chat_group_id), created_at, user_id )
 ) WITH CLUSTERING ORDER BY (created_at DESC, user_id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
+
+CREATE INDEX chat_group_members_by_user_id  ON chat_group_members (user_id);
