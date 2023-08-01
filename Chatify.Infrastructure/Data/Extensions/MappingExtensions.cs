@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using Cassandra;
 using Cassandra.Mapping;
 using Humanizer;
 

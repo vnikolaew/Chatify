@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Authentication.Contracts;
-using Chatify.Domain.Events;
 using Chatify.Domain.Events.Users;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Events;

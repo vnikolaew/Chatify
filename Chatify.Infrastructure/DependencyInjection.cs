@@ -21,6 +21,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Extensions.Http;
+using StackExchange.Redis;
+using AuthenticationService = Chatify.Infrastructure.Authentication.AuthenticationService;
+using IAuthenticationService = Chatify.Application.Authentication.Contracts.IAuthenticationService;
 
 namespace Chatify.Infrastructure;
 
@@ -33,6 +36,7 @@ public static class DependencyInjection
             .AddData(configuration)
             .AddRepositories()
             .AddServices()
+            .AddCaching(configuration)
             .AddContexts()
             .AddSingleton<IClock, UtcClock>()
             .AddHttpContextAccessor();
@@ -40,10 +44,41 @@ public static class DependencyInjection
     public static IServiceCollection AddServices(this IServiceCollection services)
         => services
             .AddAuthenticationServices()
-            .AddEvents(new []{ Assembly.GetExecutingAssembly() })
+            .AddEvents(new[] { Assembly.GetExecutingAssembly() })
             .AddTransient<IEmailSender, NullEmailSender>()
             .AddTransient<IFileUploadService, LocalFileSystemUploadService>()
-            .AddTransient<IGuidGenerator, TimeUuidGenerator>();
+            .AddTransient<IGuidGenerator, TimeUuidGenerator>()
+            .AddCounters();
+
+    public static IServiceCollection AddCaching(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var endpoint = configuration.GetValue<string>("Redis:Endpoint")!;
+        var connectionMultiplexer = ConnectionMultiplexer
+            .Connect(endpoint);
+
+        return services
+            .AddSingleton<IConnectionMultiplexer>(connectionMultiplexer)
+            .AddSingleton<IDatabase>(sp =>
+                sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase());
+    }
+
+    public static IServiceCollection AddCounters(this IServiceCollection services)
+    {
+        var counterTypes = Assembly.GetExecutingAssembly()
+            .DefinedTypes
+            .Where(t => t is { IsAbstract: false, IsInterface: false, IsGenericType: false } && t.GetInterfaces()
+                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICounterService<,>)))
+            .ToList();
+
+        foreach (var counterType in counterTypes)
+        {
+            services.AddScoped(counterType.GetInterfaces().First(), counterType);
+        }
+
+        return services;
+    }
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
@@ -71,7 +106,7 @@ public static class DependencyInjection
             var baseType = repositoryType
                 .GetTypeInheritance()
                 .First(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(BaseCassandraRepository<,,>));
-            
+
             services.AddScoped(baseType, repositoryType);
         }
 
@@ -85,21 +120,21 @@ public static class DependencyInjection
         {
             client.BaseAddress = new Uri("https://www.googleapis.com/oauth2/v2/userinfo?alt=json");
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-        }).AddPolicyHandler(GetRetryPolicy());
+        }).AddPolicyHandler(RetryPolicy);
 
         services.AddHttpClient<IFacebookOAuthClient, FacebookOAuthClient>(client =>
         {
             client.BaseAddress = new Uri("https://graph.facebook.com");
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-        }).AddPolicyHandler(GetRetryPolicy());
+        }).AddPolicyHandler(RetryPolicy);
 
         return services
             .AddScoped<IAuthenticationService, AuthenticationService>()
             .AddScoped<IEmailConfirmationService, EmailConfirmationService>();
     }
 
-    private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
-        => HttpPolicyExtensions
+    private static readonly IAsyncPolicy<HttpResponseMessage> RetryPolicy
+        = HttpPolicyExtensions
             .HandleTransientHttpError()
             .OrResult(msg => msg.StatusCode == HttpStatusCode.NotFound)
             .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));

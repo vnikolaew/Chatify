@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Cassandra;
 using Chatify.Application.Common.Mappings;
 
 namespace Chatify.Infrastructure.Data.Models;

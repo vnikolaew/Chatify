@@ -1,17 +1,16 @@
-﻿using Cassandra;
-using Metadata = System.Collections.Generic.IDictionary<string, string>;
+﻿using Metadata = System.Collections.Generic.IDictionary<string, string>;
 
 namespace Chatify.Infrastructure.Data.Models;
 
-public class MessageReaction
+public class ChatMessageReaction
 {
-    public TimeUuid Id { get; set; }
+    public Guid Id { get; set; }
     
-    public TimeUuid MessageId { get; set; }
+    public Guid MessageId { get; set; }
     
-    public TimeUuid ChatGroupId { get; set; }
+    public Guid ChatGroupId { get; set; }
     
-    public TimeUuid UserId { get; set; }
+    public Guid UserId { get; set; }
     
     public sbyte ReactionType { get; set; }
     

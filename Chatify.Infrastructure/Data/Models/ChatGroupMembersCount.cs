@@ -1,6 +1,4 @@
-﻿using Cassandra;
-
-namespace Chatify.Infrastructure.Data.Models;
+﻿namespace Chatify.Infrastructure.Data.Models;
 
 public class ChatGroupMembersCount
 {

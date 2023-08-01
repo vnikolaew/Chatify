@@ -21,17 +21,20 @@ internal sealed class DeclineFriendInvitationHandler :
     private readonly IDomainRepository<FriendInvitation, Guid> _friendInvites;
     private readonly IEventDispatcher _eventDispatcher;
     private readonly IDomainRepository<FriendsRelation, Guid> _friends;
+    private readonly IClock _clock;
 
     public DeclineFriendInvitationHandler(
         IIdentityContext identityContext,
         IDomainRepository<FriendInvitation, Guid> friendInvites,
         IEventDispatcher eventDispatcher,
-        IDomainRepository<FriendsRelation, Guid> friends)
+        IDomainRepository<FriendsRelation, Guid> friends,
+        IClock clock)
     {
         _identityContext = identityContext;
         _friendInvites = friendInvites;
         _eventDispatcher = eventDispatcher;
         _friends = friends;
+        _clock = clock;
     }
 
     public async Task<DeclineFriendInvitationResult> HandleAsync(
@@ -52,7 +55,11 @@ internal sealed class DeclineFriendInvitationHandler :
         // Update friend invite:
         await _friendInvites.UpdateAsync(
             friendInvite.Id,
-            invite => invite.Status = (sbyte)FriendInvitationStatus.Declined,
+            invite =>
+            {
+                invite.Status = (sbyte)FriendInvitationStatus.Declined;
+                invite.UpdatedAt = _clock.Now;
+            },
             cancellationToken);
 
         return Unit.Default;

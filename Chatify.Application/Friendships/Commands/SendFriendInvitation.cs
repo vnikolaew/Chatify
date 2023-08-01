@@ -17,14 +17,14 @@ public record SendFriendInvitation([Required] Guid InviteeId) : ICommand<SendFri
 
 internal sealed class SendFriendInvitationHandler : ICommandHandler<SendFriendInvitation, SendFriendInvitationResult>
 {
-    private readonly IDomainRepository<FriendInvitation, Guid> _friendInvites;
+    private readonly IFriendInvitationRepository _friendInvites;
     private readonly IDomainRepository<User, Guid> _users;
     private readonly IIdentityContext _identityContext;
     private readonly IClock _clock;
     private readonly IEventDispatcher _eventDispatcher;
 
     public SendFriendInvitationHandler(
-        IDomainRepository<FriendInvitation, Guid> friendInvites,
+        IFriendInvitationRepository friendInvites,
         IIdentityContext identityContext,
         IDomainRepository<User, Guid> users,
         IClock clock, IEventDispatcher eventDispatcher)
@@ -43,6 +43,13 @@ internal sealed class SendFriendInvitationHandler : ICommandHandler<SendFriendIn
         var invitee = await _users.GetAsync(command.InviteeId, cancellationToken);
         if (invitee is null) return Error.New("Invitee not found.");
 
+        var existingInvites = await _friendInvites
+            .AllForUserAsync(_identityContext.Id, cancellationToken);
+        if (existingInvites.Any(i => i.InviteeId == command.InviteeId))
+        {
+            return Error.New($"An invite to user with Id '{command.InviteeId}' was already sent.");
+        }
+
         var friendInvite = new FriendInvitation
         {
             InviteeId = command.InviteeId,
@@ -51,7 +58,7 @@ internal sealed class SendFriendInvitationHandler : ICommandHandler<SendFriendIn
             CreatedAt = _clock.Now,
             InviterId = _identityContext.Id,
         };
-        
+
         var invite = await _friendInvites.SaveAsync(friendInvite, cancellationToken);
         await _eventDispatcher.PublishAsync(new FriendInvitationSentEvent
         {

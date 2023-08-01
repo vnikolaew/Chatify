@@ -1,10 +1,8 @@
-﻿using Cassandra;
-
-namespace Chatify.Infrastructure.Data.Models;
+﻿namespace Chatify.Infrastructure.Data.Models;
 
 public class ChatMessageReplyCount
 {
-    public TimeUuid Id { get; set; }
+    public Guid Id { get; set; }
     
     public long ReplyCount { get; set; }
 }

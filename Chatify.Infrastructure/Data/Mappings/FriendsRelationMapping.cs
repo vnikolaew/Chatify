@@ -1,8 +1,6 @@
 ﻿using Cassandra.Mapping;
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
-using Humanizer;
-using LanguageExt.TypeClasses;
 
 namespace Chatify.Infrastructure.Data.Mappings;
 

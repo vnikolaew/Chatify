@@ -1,16 +1,18 @@
 ﻿using System.Linq.Expressions;
-using Cassandra;
 using Cassandra.Mapping;
 using Chatify.Application.Common.Contracts;
+using Humanizer;
 
 namespace Chatify.Infrastructure.Data.Counters;
 
-public class BaseCounterService<TEntity, TId> : ICounterService<TEntity, TId>
+public abstract class BaseCounterService<TEntity, TId> : ICounterService<TEntity, TId>
 {
     protected readonly Expression<Func<TEntity, long>> PropertyGetter;
     protected readonly IMapper Mapper;
 
-    public BaseCounterService(Expression<Func<TEntity, long>> propertyGetter, IMapper mapper)
+    protected BaseCounterService(
+        Expression<Func<TEntity, long>> propertyGetter,
+        IMapper mapper)
     {
         PropertyGetter = propertyGetter;
         Mapper = mapper;
@@ -21,14 +23,13 @@ public class BaseCounterService<TEntity, TId> : ICounterService<TEntity, TId>
         var entity = await Mapper.FirstOrDefaultAsync<TEntity>("WHERE id = ?", id);
         if (entity is null) return default;
 
-        var newCount = PropertyGetter.Compile()(entity);
-        ++newCount;
-            
-        await Mapper.UpdateAsync(
-            entity,
-            new CqlQueryOptions()
-                .SetConsistencyLevel(ConsistencyLevel.Quorum)
-                .SetRetryPolicy(new DefaultRetryPolicy()));
+        var propName = (PropertyGetter.Body as MemberExpression)!
+            .Member.Name.Underscore();
+
+        await Mapper.UpdateAsync<TEntity>($"SET {propName} = {propName} + ?", by);
+        
+        var prop = PropertyGetter.Compile()(entity);
+        prop += by;
         
         return entity;
     }
@@ -37,15 +38,14 @@ public class BaseCounterService<TEntity, TId> : ICounterService<TEntity, TId>
     {
         var entity = await Mapper.FirstOrDefaultAsync<TEntity>("WHERE id = ?", id);
         if (entity is null) return default;
+
+        var propName = (PropertyGetter.Body as MemberExpression)!
+            .Member.Name.Underscore();
+
+        await Mapper.UpdateAsync<TEntity>($"SET {propName} = {propName} - ?", by);
         
-        var newCount = PropertyGetter.Compile()(entity);
-        --newCount;
-            
-        await Mapper.UpdateAsync(
-            entity,
-            new CqlQueryOptions()
-                .SetConsistencyLevel(ConsistencyLevel.Quorum)
-                .SetRetryPolicy(new DefaultRetryPolicy()));
+        var prop = PropertyGetter.Compile()(entity);
+        prop -= by;
         
         return entity;
     }

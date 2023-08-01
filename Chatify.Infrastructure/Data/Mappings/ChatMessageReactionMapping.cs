@@ -5,16 +5,16 @@ using Humanizer;
 
 namespace Chatify.Infrastructure.Data.Mappings;
 
-public class MessageReactionMapping :Cassandra.Mapping.Mappings
+public class ChatMessageReactionMapping :Cassandra.Mapping.Mappings
 {
-    public MessageReactionMapping()
+    public ChatMessageReactionMapping()
     {
-        For<MessageReaction>()
-            .TableName(nameof(MessageReaction).Underscore().Pluralize())
+        For<ChatMessageReaction>()
+            .TableName(nameof(ChatMessageReaction).Underscore().Pluralize())
             .PartitionKey(mr => mr.MessageId)
             .ClusteringKey(
-                new Tuple<string, SortOrder>(nameof(MessageReaction.CreatedAt), SortOrder.Descending),
-                new Tuple<string, SortOrder>(nameof(MessageReaction.Id), SortOrder.Ascending)
+                new Tuple<string, SortOrder>(nameof(ChatMessageReaction.CreatedAt), SortOrder.Descending),
+                new Tuple<string, SortOrder>(nameof(ChatMessageReaction.Id), SortOrder.Ascending)
             )
             .UnderscoreColumn(mr => mr.Id)
             .UnderscoreColumn(mr => mr.MessageId)

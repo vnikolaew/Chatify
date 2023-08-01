@@ -20,27 +20,29 @@ public record AddChatGroupMember(
     sbyte MembershipType
 ) : ICommand<AddChatGroupMemberResult>;
 
-internal sealed class AddChatGroupMemberHandler : ICommandHandler<AddChatGroupMember, AddChatGroupMemberResult>
+internal sealed class AddChatGroupMemberHandler
+    : ICommandHandler<AddChatGroupMember, AddChatGroupMemberResult>
 {
     private readonly IIdentityContext _identityContext;
     private readonly IEventDispatcher _eventDispatcher;
     private readonly IDomainRepository<ChatGroupMember, Guid> _members;
     private readonly IDomainRepository<ChatGroup, Guid> _groups;
+    private readonly IDomainRepository<User, Guid> _users;
     private readonly IClock _clock;
-
 
     public AddChatGroupMemberHandler(
         IIdentityContext identityContext,
         IDomainRepository<ChatGroupMember, Guid> members,
         IDomainRepository<ChatGroup, Guid> groups,
         IEventDispatcher eventDispatcher,
-        IClock clock)
+        IClock clock, IDomainRepository<User, Guid> users)
     {
         _identityContext = identityContext;
         _members = members;
         _groups = groups;
         _eventDispatcher = eventDispatcher;
         _clock = clock;
+        _users = users;
     }
 
     public async Task<AddChatGroupMemberResult> HandleAsync(
@@ -55,11 +57,17 @@ internal sealed class AddChatGroupMemberHandler : ICommandHandler<AddChatGroupMe
             return Error.New("Current user does not have permissions to add new members.");
         }
 
+        var memberUser = await _users.GetAsync(command.NewMemberId, cancellationToken);
+        if (memberUser is null)
+        {
+            return Error.New("New member does not exist as a user.");
+        }
+            
         var member = new ChatGroupMember
         {
             Id = Guid.NewGuid(),
-            UserId = command.NewMemberId,
-            ChatGroupId = group.Id,
+            User = memberUser,
+            ChatGroup = group,
             MembershipType = command.MembershipType
         };
 

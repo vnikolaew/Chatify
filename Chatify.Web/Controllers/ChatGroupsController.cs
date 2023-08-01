@@ -4,7 +4,6 @@ using Chatify.Web.Extensions;
 using LanguageExt;
 using LanguageExt.Common;
 using Microsoft.AspNetCore.Mvc;
-
 using Guid = System.Guid;
 using CreateChatGroupResult = LanguageExt.Either<System.Guid, LanguageExt.Common.Error>;
 using AddChatGroupMemberResult = LanguageExt.Either<LanguageExt.Common.Error, System.Guid>;
@@ -17,7 +16,9 @@ public record CreateChatGroupRequest(
     IFormFile? File)
 {
     public CreateChatGroup ToCommand()
-        => new(About, Name, File is not null ? new InputFile { Data = File.OpenReadStream(), FileName = File.FileName } : default);
+        => new(About, Name, File is not null
+            ? new InputFile { Data = File.OpenReadStream(), FileName = File.FileName }
+            : default);
 }
 
 public class ChatGroupsController : ApiController

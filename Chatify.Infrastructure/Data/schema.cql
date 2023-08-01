@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS friends
 (
+    id            uuid,
     friend_one_id uuid,
     friend_two_id uuid,
     created_at    timestamp,
@@ -27,7 +28,7 @@ CREATE TABLE IF NOT EXISTS chat_group_members_count
 
 CREATE TABLE IF NOT EXISTS chat_messages
 (
-    id              timeuuid,
+    id              uuid,
     chat_group_id   uuid,
     user_id         uuid,
     content         text,
@@ -42,17 +43,17 @@ CREATE TABLE IF NOT EXISTS chat_messages
 
 CREATE TABLE IF NOT EXISTS chat_messages_reply_count
 (
-    id          timeuuid,
+    id          uuid,
     reply_count counter,
-    PRIMARY KEY ( id)
+    PRIMARY KEY (id)
 ) WITH CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
 CREATE TABLE IF NOT EXISTS chat_message_replies
 (
-    id              timeuuid,
-    chat_group_id   timeuuid,
-    reply_to        timeuuid,
-    user_id         timeuuid,
+    id              uuid,
+    chat_group_id   uuid,
+    reply_to        uuid,
+    user_id         uuid,
     content         text,
     attachments     set<text>,
     metadata        map<text, text>,
@@ -65,7 +66,7 @@ CREATE TABLE IF NOT EXISTS chat_message_replies
 
 CREATE TABLE IF NOT EXISTS friend_invitations
 (
-    id         timeuuid,
+    id         uuid,
     inviter_id uuid,
     invitee_id uuid,
     metadata   map<text, text>,
@@ -79,9 +80,9 @@ CREATE TABLE IF NOT EXISTS friend_invitations
 CREATE TABLE IF NOT EXISTS message_reactions
 (
     id            timeuuid,
-    message_id    timeuuid,
-    group_chat_id timeuuid,
-    user_id       timeuuid,
+    message_id    uuid,
+    group_chat_id uuid,
+    user_id       uuid,
     reaction_type tinyint,
     metadata      map<text, text>,
     created_at    timestamp,

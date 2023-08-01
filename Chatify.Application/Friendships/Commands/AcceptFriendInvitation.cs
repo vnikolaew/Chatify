@@ -37,7 +37,8 @@ internal sealed class AcceptFriendInvitationHandler :
         _eventDispatcher = eventDispatcher;
     }
 
-    public async Task<AcceptFriendInvitationResult> HandleAsync(AcceptFriendInvitation command,
+    public async Task<AcceptFriendInvitationResult> HandleAsync(
+        AcceptFriendInvitation command,
         CancellationToken cancellationToken = default)
     {
         // Check if friend invite exists and is in a 'Pending' state:
@@ -61,7 +62,11 @@ internal sealed class AcceptFriendInvitationHandler :
         // Update friend invite:
         await _friendInvites.UpdateAsync(
             friendInvite.Id,
-            invite => invite.Status = (sbyte)FriendInvitationStatus.Accepted,
+            invite =>
+            {
+                invite.Status = (sbyte)FriendInvitationStatus.Accepted;
+                invite.UpdatedAt = _clock.Now;
+            },
             cancellationToken);
         
         await _eventDispatcher.PublishAsync(new FriendInvitationAcceptedEvent
