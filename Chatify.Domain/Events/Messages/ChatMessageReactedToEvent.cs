@@ -5,6 +5,8 @@ namespace Chatify.Domain.Events.Messages;
 public class ChatMessageReactedToEvent : IDomainEvent
 {
     public Guid MessageId { get; set; }
+    
+    public Guid MessageReactionId { get; set; }
 
     public Guid UserId { get; set; }
     

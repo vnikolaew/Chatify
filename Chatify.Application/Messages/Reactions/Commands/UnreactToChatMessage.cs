@@ -56,12 +56,13 @@ internal sealed class UnreactToChatMessageHandler : ICommandHandler<UnreactToCha
         await _messages.UpdateAsync(message.Id, message =>
         {
             message.UpdatedAt = _clock.Now;
-            message.ReactionCounts[messageReaction.ReactionType]--;
+            message.DecrementReactionCount(messageReaction.ReactionType);
         }, cancellationToken);
 
         await _eventDispatcher.PublishAsync(new ChatMessageUnreactedToEvent
         {
             MessageId = message.Id,
+            MessageReactionId = messageReaction.Id,
             GroupId = message.ChatGroupId,
             UserId = messageReaction.UserId,
             ReactionType = messageReaction.ReactionType,

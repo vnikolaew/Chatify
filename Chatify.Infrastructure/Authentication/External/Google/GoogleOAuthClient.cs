@@ -6,6 +6,7 @@ namespace Chatify.Infrastructure.Authentication.External.Google;
 public class GoogleOAuthClient : IGoogleOAuthClient
 {
     private readonly HttpClient _httpClient;
+    public const string Endpoint = "https://www.googleapis.com/oauth2/v2/userinfo?alt=json";
 
     public GoogleOAuthClient(HttpClient httpClient)
         => _httpClient = httpClient;

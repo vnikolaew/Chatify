@@ -1,25 +1,14 @@
 ﻿using Chatify.Application.ChatGroups.Commands;
-using Chatify.Application.Common.Models;
+using Chatify.Web.Common;
 using Chatify.Web.Extensions;
 using LanguageExt;
 using LanguageExt.Common;
 using Microsoft.AspNetCore.Mvc;
 using Guid = System.Guid;
-using CreateChatGroupResult = LanguageExt.Either<System.Guid, LanguageExt.Common.Error>;
 using AddChatGroupMemberResult = LanguageExt.Either<LanguageExt.Common.Error, System.Guid>;
+using static Chatify.Web.Features.ChatGroups.Models.Models;
 
-namespace Chatify.Web.Controllers;
-
-public record CreateChatGroupRequest(
-    string? About,
-    string Name,
-    IFormFile? File)
-{
-    public CreateChatGroup ToCommand()
-        => new(About, Name, File is not null
-            ? new InputFile { Data = File.OpenReadStream(), FileName = File.FileName }
-            : default);
-}
+namespace Chatify.Web.Features.ChatGroups;
 
 public class ChatGroupsController : ApiController
 {

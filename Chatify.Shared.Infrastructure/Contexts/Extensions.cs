@@ -10,6 +10,7 @@ public static class Extensions
     public static IServiceCollection AddContexts(this IServiceCollection services)
         => services
             .AddSingleton<ContextAccessor>()
+            .AddHttpContextAccessor()
             .AddScoped<IIdentityContext, IdentityContext>(sp =>
                 new IdentityContext(sp.GetRequiredService<IHttpContextAccessor>().HttpContext?.User))
             .AddTransient(sp => sp.GetRequiredService<ContextAccessor>().Context);

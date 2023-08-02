@@ -27,7 +27,7 @@ internal sealed class AddChatGroupMemberHandler
     private readonly IEventDispatcher _eventDispatcher;
     private readonly IDomainRepository<ChatGroupMember, Guid> _members;
     private readonly IDomainRepository<ChatGroup, Guid> _groups;
-    private readonly IDomainRepository<User, Guid> _users;
+    private readonly IDomainRepository<Domain.Entities.User, Guid> _users;
     private readonly IClock _clock;
 
     public AddChatGroupMemberHandler(
@@ -35,7 +35,7 @@ internal sealed class AddChatGroupMemberHandler
         IDomainRepository<ChatGroupMember, Guid> members,
         IDomainRepository<ChatGroup, Guid> groups,
         IEventDispatcher eventDispatcher,
-        IClock clock, IDomainRepository<User, Guid> users)
+        IClock clock, IDomainRepository<Domain.Entities.User, Guid> users)
     {
         _identityContext = identityContext;
         _members = members;
@@ -75,6 +75,8 @@ internal sealed class AddChatGroupMemberHandler
         await _eventDispatcher.PublishAsync(new ChatGroupMemberAddedEvent
         {
             GroupId = group.Id,
+            AddedById = _identityContext.Id,
+            AddedByUsername = _identityContext.Username,
             MemberId = member.Id,
             MembershipType = command.MembershipType,
             Timestamp = _clock.Now

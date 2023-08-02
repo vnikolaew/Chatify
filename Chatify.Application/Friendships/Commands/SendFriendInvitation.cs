@@ -18,7 +18,7 @@ public record SendFriendInvitation([Required] Guid InviteeId) : ICommand<SendFri
 internal sealed class SendFriendInvitationHandler : ICommandHandler<SendFriendInvitation, SendFriendInvitationResult>
 {
     private readonly IFriendInvitationRepository _friendInvites;
-    private readonly IDomainRepository<User, Guid> _users;
+    private readonly IDomainRepository<Domain.Entities.User, Guid> _users;
     private readonly IIdentityContext _identityContext;
     private readonly IClock _clock;
     private readonly IEventDispatcher _eventDispatcher;
@@ -26,7 +26,7 @@ internal sealed class SendFriendInvitationHandler : ICommandHandler<SendFriendIn
     public SendFriendInvitationHandler(
         IFriendInvitationRepository friendInvites,
         IIdentityContext identityContext,
-        IDomainRepository<User, Guid> users,
+        IDomainRepository<Domain.Entities.User, Guid> users,
         IClock clock, IEventDispatcher eventDispatcher)
     {
         _friendInvites = friendInvites;

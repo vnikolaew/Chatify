@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
+using Chatify.Domain.Events.Friendships;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
@@ -62,6 +63,14 @@ internal sealed class DeclineFriendInvitationHandler :
             },
             cancellationToken);
 
+        await _eventDispatcher.PublishAsync(new FriendInvitationDeclinedEvent
+        {
+            InviterId = friendInvite.InviterId,
+            InviteeId = friendInvite.InviteeId,
+            Timestamp = _clock.Now,
+            InviteId = friendInvite.Id
+        }, cancellationToken);
+        
         return Unit.Default;
     }
 }

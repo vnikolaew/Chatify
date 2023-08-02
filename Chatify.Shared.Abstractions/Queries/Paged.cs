@@ -35,3 +35,20 @@ public class Paged<T> : PagedBase
     public Paged<TResult> Map<TResult>(Func<T, TResult> map)
         => Paged<TResult>.From(this, Items.Select(map).ToList());
 }
+
+public sealed class CursorPaged<T> : List<T>
+{
+    public string PagingCursor { get; set; }
+    
+    public int PageSize { get; set; }
+    
+    public IReadOnlyCollection<T> Items
+        => AsReadOnly();
+
+    public CursorPaged(IEnumerable<T> items, string pagingCursor)
+    {
+        AddRange(items);
+        PagingCursor = pagingCursor;
+    }
+}
+

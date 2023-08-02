@@ -15,6 +15,10 @@
     <ItemGroup>
       <ProjectReference Include="..\Chatify.Application\Chatify.Application.csproj" />
       <ProjectReference Include="..\Chatify.Infrastructure\Chatify.Infrastructure.csproj" />
+
+
+
+
     </ItemGroup>
 
 

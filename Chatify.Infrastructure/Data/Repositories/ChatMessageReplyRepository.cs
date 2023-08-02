@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Chatify.Domain.Entities;
+using Chatify.Shared.Abstractions.Queries;
 using Humanizer;
 using Mapper = Cassandra.Mapping.Mapper;
 
@@ -26,5 +27,20 @@ public sealed class ChatMessageReplyRepository
         {
             return false;
         }
+    }
+
+    public async Task<CursorPaged<ChatMessageReply>> GetPaginatedByMessageAsync(
+        Guid messageId,
+        int pageSize,
+        string pagingCursor,
+        CancellationToken cancellationToken)
+    {
+        var messagesPage = await DbMapper.FetchPageAsync<Models.ChatMessageReply>(
+            pageSize, CassandraPagingHelper.ToPagingState(pagingCursor), "WHERE reply_to_id = ?",
+            new object[] { messageId });
+
+        return new CursorPaged<ChatMessageReply>(
+            Mapper.Map<List<ChatMessageReply>>(messagesPage.ToList()),
+            CassandraPagingHelper.ToPagingCursor(messagesPage.PagingState));
     }
 }

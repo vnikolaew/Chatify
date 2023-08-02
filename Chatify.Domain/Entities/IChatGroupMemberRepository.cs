@@ -9,6 +9,10 @@ public interface IChatGroupMemberRepository : IDomainRepository<ChatGroupMember,
         Guid userId,
         CancellationToken cancellationToken = default);
     
+    Task<List<Guid>> GroupsIdsByUser(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+    
     Task<bool> Exists(
         Guid groupId,
         Guid userId,

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Chatify.Domain.Entities;
+using Chatify.Infrastructure.Data.Models;
 using Humanizer;
 using StackExchange.Redis;
 
@@ -68,6 +69,18 @@ public sealed class ChatGroupMembersRepository :
             userId);
 
         return member;
+    }
+
+    public async Task<List<Guid>> GroupsIdsByUser(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var memberships = await DbMapper
+            .FetchAsync<ChatGroupMemberByUser>("WHERE user_id = ?", userId);
+        
+        return memberships?
+            .Select(m => m.ChatGroupId)
+            .ToList() ?? new List<Guid>();
     }
 
     public async Task<bool> Exists(

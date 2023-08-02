@@ -1,10 +1,11 @@
 ﻿using Chatify.Application.Friendships.Commands;
+using Chatify.Web.Common;
 using Chatify.Web.Extensions;
 using LanguageExt;
 using LanguageExt.Common;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Chatify.Web.Controllers;
+namespace Chatify.Web.Features.Friendships;
 
 using SendFriendInvitationResult = Either<Error, Guid>;
 using DeclineFriendInvitationResult = Either<Error, Unit>;

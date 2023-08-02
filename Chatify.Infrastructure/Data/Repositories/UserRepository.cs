@@ -6,7 +6,7 @@ using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
-public sealed class UserRepository : BaseCassandraRepository<User, ChatifyUser, Guid>
+public sealed class UserRepository : BaseCassandraRepository<Domain.Entities.User, ChatifyUser, Guid>
 {
     public UserRepository(IMapper mapper, Mapper dbMapper)
         : base(mapper, dbMapper)

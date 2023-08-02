@@ -50,6 +50,7 @@ internal sealed class UnreactToChatMessageReplyHandler
         if (replyMessage is null) return Error.New("");
             
         var messageReaction = await _messageReactions.GetAsync(command.MessageReactionId, cancellationToken);
+        
         if (messageReaction is null) return Error.New("");
         if(messageReaction.UserId != _identityContext.Id) return Error.New("");
 
@@ -57,12 +58,13 @@ internal sealed class UnreactToChatMessageReplyHandler
         await _messageReplies.UpdateAsync(replyMessage.Id, message =>
         {
             message.UpdatedAt = _clock.Now;
-            message.ReactionCounts[messageReaction.ReactionType]--;
+            message.DecrementReactionCount(messageReaction.ReactionType);
         }, cancellationToken);
 
         await _eventDispatcher.PublishAsync(new ChatMessageUnreactedToEvent
         {
             MessageId = replyMessage.Id,
+            MessageReactionId = messageReaction.Id,
             GroupId = replyMessage.ChatGroupId,
             UserId = messageReaction.UserId,
             ReactionType = messageReaction.ReactionType,

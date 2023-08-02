@@ -4,6 +4,7 @@ using System.Reflection;
 using AutoMapper.Internal;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.Common.Contracts;
+using Chatify.Application.Messages.Contracts;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Infrastructure.Authentication;
@@ -14,10 +15,16 @@ using Chatify.Infrastructure.Data;
 using Chatify.Infrastructure.Data.Repositories;
 using Chatify.Infrastructure.FileStorage;
 using Chatify.Infrastructure.Mailing;
+using Chatify.Infrastructure.Messages;
+using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Shared.Abstractions.Time;
 using Chatify.Shared.Infrastructure.Contexts;
 using Chatify.Shared.Infrastructure.Events;
 using Chatify.Shared.Infrastructure.Time;
+using LanguageExt.UnitsOfMeasure;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
@@ -38,18 +45,46 @@ public static class DependencyInjection
             .AddRepositories()
             .AddServices()
             .AddCaching(configuration)
-            .AddContexts()
-            .AddSingleton<IClock, UtcClock>()
-            .AddHttpContextAccessor();
+            .AddContexts();
 
     public static IServiceCollection AddServices(this IServiceCollection services)
         => services
             .AddAuthenticationServices()
             .AddEvents(new[] { Assembly.GetExecutingAssembly() })
             .AddTransient<IEmailSender, NullEmailSender>()
+            .AddSingleton<IClock, UtcClock>()
             .AddTransient<IFileUploadService, LocalFileSystemUploadService>()
             .AddTransient<IGuidGenerator, TimeUuidGenerator>()
+            .AddNotifications()
             .AddCounters();
+
+    public static IServiceCollection AddNotifications(this IServiceCollection services)
+    {
+        services
+            .AddSignalR(opts => { opts.KeepAliveInterval = 30.Seconds(); })
+            .AddHubOptions<ChatifyHub>(opts =>
+            {
+                opts.EnableDetailedErrors = false;
+                opts.MaximumParallelInvocationsPerClient = 10;
+            }).AddJsonProtocol();
+
+        return services.AddScoped<INotificationService, SignalRNotificationService>();
+    }
+
+    public static IEndpointRouteBuilder MapNotifications(
+        this IEndpointRouteBuilder routeBuilder)
+    {
+        routeBuilder
+            .MapHub<ChatifyHub>(ChatifyHub.Endpoint, opts =>
+            {
+                opts.Transports = HttpTransportType.LongPolling
+                                  | HttpTransportType.WebSockets
+                                  | HttpTransportType.ServerSentEvents;
+            })
+            .RequireAuthorization();
+
+        return routeBuilder;
+    }
 
     public static IServiceCollection AddCaching(
         this IServiceCollection services,
@@ -122,13 +157,13 @@ public static class DependencyInjection
     {
         services.AddHttpClient<IGoogleOAuthClient, GoogleOAuthClient>(client =>
         {
-            client.BaseAddress = new Uri("https://www.googleapis.com/oauth2/v2/userinfo?alt=json");
+            client.BaseAddress = new Uri(GoogleOAuthClient.Endpoint);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
         }).AddPolicyHandler(RetryPolicy);
 
         services.AddHttpClient<IFacebookOAuthClient, FacebookOAuthClient>(client =>
         {
-            client.BaseAddress = new Uri("https://graph.facebook.com");
+            client.BaseAddress = new Uri(FacebookOAuthClient.Endpoint);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
         }).AddPolicyHandler(RetryPolicy);
 

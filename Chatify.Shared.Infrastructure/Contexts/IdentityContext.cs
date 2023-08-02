@@ -7,6 +7,7 @@ public class IdentityContext : IIdentityContext
 {
     public bool IsAuthenticated { get; }
     public Guid Id { get; }
+    public string Username { get; set; }
     public string Role { get; }
     public Dictionary<string, IEnumerable<string>> Claims { get; }
 
@@ -33,6 +34,8 @@ public class IdentityContext : IIdentityContext
                  out var id)
             ? id
             : Guid.Empty;
+        
+        Username = IsAuthenticated ? principal.FindFirstValue(ClaimTypes.Name)! : default!;
         Role = principal?.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Role)?.Value;
         Claims = principal?.Claims?.GroupBy(x => x.Type)?
             .ToDictionary(x => x.Key, x => x.Select(c => c.Value.ToString()));

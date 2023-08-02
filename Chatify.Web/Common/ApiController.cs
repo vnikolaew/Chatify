@@ -4,7 +4,7 @@ using Chatify.Shared.Abstractions.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Chatify.Web.Controllers;
+namespace Chatify.Web.Common;
 
 [ApiController]
 [Authorize]
@@ -26,7 +26,7 @@ public abstract class ApiController : ControllerBase
         where TCommand : class, ICommand<TResult>
         => Dispatcher.SendAsync<TCommand, TResult>(command, cancellationToken);
 
-    protected Task QueryAsync<TQuery, TResult>(TQuery query, CancellationToken cancellationToken = default)
+    protected Task<TResult> QueryAsync<TQuery, TResult>(TQuery query, CancellationToken cancellationToken = default)
         where TQuery : class, IQuery<TResult>
         => Dispatcher.QueryAsync(query, cancellationToken);
 }

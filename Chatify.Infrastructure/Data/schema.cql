@@ -110,4 +110,13 @@ CREATE TABLE IF NOT EXISTS chat_group_members
     PRIMARY KEY ( (chat_group_id), created_at, user_id )
 ) WITH CLUSTERING ORDER BY (created_at DESC, user_id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
+CREATE TABLE IF NOT EXISTS chat_group_members_by_user_id
+(
+    id            uuid,
+    created_at    timestamp,
+    user_id       uuid,
+    chat_group_id uuid,
+    PRIMARY KEY ( (user_id), created_at, chat_group_id)
+) WITH CLUSTERING ORDER BY (created_at DESC, chat_group_id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
+
 CREATE INDEX chat_group_members_by_user_id  ON chat_group_members (user_id);

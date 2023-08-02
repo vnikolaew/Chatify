@@ -26,7 +26,7 @@ internal sealed class ReactToChatMessageReplyHandler
     private readonly IChatGroupMemberRepository _members;
     private readonly IIdentityContext _identityContext;
     private readonly IDomainRepository<ChatMessageReply, Guid> _messageReplies;
-    private readonly IDomainRepository<ChatMessageReaction, Guid> _messageReactions;
+    private readonly IChatMessageReactionRepository _messageReactions;
     private readonly IEventDispatcher _eventDispatcher;
     private readonly IClock _clock;
     private readonly IGuidGenerator _guidGenerator;
@@ -35,7 +35,7 @@ internal sealed class ReactToChatMessageReplyHandler
         IChatGroupMemberRepository members,
         IIdentityContext identityContext,
         IDomainRepository<ChatMessageReply, Guid> messageReplies,
-        IDomainRepository<ChatMessageReaction, Guid> messageReactions,
+        IChatMessageReactionRepository messageReactions,
         IEventDispatcher eventDispatcher,
         IClock clock,
         IGuidGenerator guidGenerator)
@@ -60,7 +60,29 @@ internal sealed class ReactToChatMessageReplyHandler
 
         var replyMessage = await _messageReplies.GetAsync(command.MessageId, cancellationToken);
         if (replyMessage is null) return Error.New("");
-        
+
+        var existingReaction = await _messageReactions
+            .ByMessageAndUser(
+                command.MessageId,
+                _identityContext.Id,
+                cancellationToken);
+        if (existingReaction is not null)
+        {
+            var oldReactionType = existingReaction.ReactionType;
+            await _messageReactions.UpdateAsync(existingReaction.Id, reaction =>
+            {
+                reaction.ReactionType = command.ReactionType;
+                reaction.UpdatedAt = _clock.Now;
+            }, cancellationToken);
+            
+            await _messageReplies.UpdateAsync(replyMessage.Id, message =>
+            {
+                message.UpdatedAt = _clock.Now;
+                message.ChangeReaction(oldReactionType, command.ReactionType);
+            }, cancellationToken);
+            return existingReaction.Id;
+        }
+
         var messageReactionId = _guidGenerator.New();
         var messageReaction = new ChatMessageReaction
         {
@@ -71,21 +93,18 @@ internal sealed class ReactToChatMessageReplyHandler
             UserId = _identityContext.Id,
             ChatGroupId = command.GroupId
         };
-        
+
         await _messageReactions.SaveAsync(messageReaction, cancellationToken);
         await _messageReplies.UpdateAsync(replyMessage.Id, message =>
         {
             message.UpdatedAt = _clock.Now;
-            if (!message.ReactionCounts.ContainsKey(command.ReactionType))
-            {
-                message.ReactionCounts[command.ReactionType] = 0;
-            }
-            else message.ReactionCounts[command.ReactionType]++;
+            message.IncrementReactionCount(command.ReactionType);
         }, cancellationToken);
-        
+
         await _eventDispatcher.PublishAsync(new ChatMessageReactedToEvent
         {
             MessageId = replyMessage.Id,
+            MessageReactionId = messageReaction.Id,
             GroupId = messageReaction.ChatGroupId,
             UserId = messageReaction.UserId,
             ReactionType = messageReaction.ReactionType,

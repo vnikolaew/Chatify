@@ -3,6 +3,7 @@ using System.Security.Claims;
 using AspNetCore.Identity.Cassandra.Models;
 using Chatify.Application.Authentication.Commands;
 using Chatify.Application.Authentication.Contracts;
+using Chatify.Domain.Common;
 using Chatify.Infrastructure.Authentication.External.Facebook;
 using Chatify.Infrastructure.Authentication.External.Google;
 using Chatify.Infrastructure.Data.Models;
@@ -19,6 +20,7 @@ public sealed class AuthenticationService : IAuthenticationService
 {
     private readonly SignInManager<ChatifyUser> _signInManager;
     private readonly UserManager<ChatifyUser> _userManager;
+    private readonly IDomainRepository<Domain.Entities.User, Guid> _users;
     private readonly IContext _context;
 
     private readonly IGoogleOAuthClient _googleOAuthClient;
@@ -31,13 +33,15 @@ public sealed class AuthenticationService : IAuthenticationService
         SignInManager<ChatifyUser> signInManager,
         IGoogleOAuthClient googleOAuthClient,
         IFacebookOAuthClient facebookOAuthClient,
-        IContext context)
+        IContext context,
+        IDomainRepository<Domain.Entities.User, Guid> users)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _googleOAuthClient = googleOAuthClient;
         _facebookOAuthClient = facebookOAuthClient;
         _context = context;
+        _users = users;
     }
 
     public async Task<Either<Error, UserSignedUpResult>> RegularSignUpAsync(
@@ -104,6 +108,15 @@ public sealed class AuthenticationService : IAuthenticationService
             request.Password,
             isPersistent: true,
             lockoutOnFailure: false);
+
+        var ipAddress = IPAddress.Parse(_context.IpAddress);
+        if (!user.DeviceIps.Contains(ipAddress))
+        {
+            await _users.UpdateAsync(user.Id, user =>
+            {
+                user.DeviceIps.Add(ipAddress);
+            }, cancellationToken);
+        }
 
         return result.Succeeded
             ? new UserSignedInResult

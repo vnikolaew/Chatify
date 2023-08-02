@@ -25,7 +25,9 @@ var app = builder.Build();
         .UseEndpoints(endpoints =>
         {
             endpoints.MapControllers();
-            endpoints.MapFallback(() => TypedResults.NotFound());
+            endpoints
+                .MapNotifications()
+                .MapFallback(() => TypedResults.NotFound());
         });
 
     app.Run();

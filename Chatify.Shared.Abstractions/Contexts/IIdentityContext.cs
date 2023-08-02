@@ -6,6 +6,8 @@ public interface IIdentityContext
     
     public Guid Id { get; }
     
+    public string Username { get; }
+    
     string Role { get; }
     
     Dictionary<string, IEnumerable<string>> Claims { get; }

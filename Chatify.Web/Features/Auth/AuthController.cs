@@ -1,4 +1,5 @@
 ﻿using Chatify.Application.Authentication.Commands;
+using Chatify.Web.Common;
 using Chatify.Web.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,7 @@ using GoogleSignUpResult = LanguageExt.Validation<LanguageExt.Common.Error, Lang
 using FacebookSignUpResult = LanguageExt.Validation<LanguageExt.Common.Error, LanguageExt.Unit>;
 using ConfirmEmailResult = LanguageExt.Either<LanguageExt.Common.Error, LanguageExt.Unit>;
 
-namespace Chatify.Web.Controllers;
+namespace Chatify.Web.Features.Auth;
 
 [AllowAnonymous]
 public class AuthController : ApiController

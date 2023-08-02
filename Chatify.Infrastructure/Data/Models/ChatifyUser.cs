@@ -4,12 +4,11 @@ using AutoMapper;
 using Cassandra.Mapping;
 using Cassandra.Mapping.Attributes;
 using Chatify.Application.Common.Mappings;
-using Chatify.Domain.Entities;
 using Metadata = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Chatify.Infrastructure.Data.Models;
 
-public class ChatifyUser : CassandraIdentityUser, IMapFrom<User>
+public class ChatifyUser : CassandraIdentityUser, IMapFrom<Domain.Entities.User>
 {
     public ChatifyUser() : base(Guid.NewGuid())
     {
@@ -85,7 +84,7 @@ public class ChatifyUser : CassandraIdentityUser, IMapFrom<User>
 
     public void Mapping(Profile profile)
         => profile
-            .CreateMap<ChatifyUser, User>()
+            .CreateMap<ChatifyUser, Domain.Entities.User>()
             .ForMember(u => u.Roles,
                 cfg =>
                     cfg.MapFrom(u => u.Roles.ToList()))

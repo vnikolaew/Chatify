@@ -7,6 +7,7 @@ namespace Chatify.Infrastructure.Authentication.External.Facebook;
 public class FacebookOAuthClient : IFacebookOAuthClient
 {
     private readonly HttpClient _httpClient;
+    public const string Endpoint = "https://graph.facebook.com";
 
     private static readonly string[] Fields =
         { "id", "name", "email", "picture", "hometown", "first_name", "last_name", "gender" };

@@ -8,6 +8,10 @@ public class ChatGroupMemberAddedEvent : IDomainEvent
     
     public Guid MemberId { get; set; }
     
+    public Guid AddedById { get; set; }
+
+    public string AddedByUsername { get; set; } = default!;
+    
     public DateTime Timestamp { get; set; }
     
     public sbyte MembershipType { get; set; }

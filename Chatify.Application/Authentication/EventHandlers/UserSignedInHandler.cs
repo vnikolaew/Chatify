@@ -10,13 +10,13 @@ namespace Chatify.Application.Authentication.EventHandlers;
 internal sealed class UserSignedInHandler : IEventHandler<UserSignedInEvent>
 {
     private readonly ILogger<UserSignedInHandler> _logger;
-    private readonly IDomainRepository<User, Guid> _users;
+    private readonly IDomainRepository<Domain.Entities.User, Guid> _users;
     private readonly IClock _clock;
 
     public UserSignedInHandler(
         ILogger<UserSignedInHandler> logger,
         IClock clock,
-        IDomainRepository<User, Guid> userRepo)
+        IDomainRepository<Domain.Entities.User, Guid> userRepo)
     {
         _logger = logger;
         _clock = clock;

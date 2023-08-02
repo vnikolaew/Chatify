@@ -9,6 +9,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Chatify.Shared.Abstractions\Chatify.Shared.Abstractions.csproj" />
+
+
+
+
     </ItemGroup>
 
 

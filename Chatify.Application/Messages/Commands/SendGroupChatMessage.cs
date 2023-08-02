@@ -19,7 +19,7 @@ public record SendGroupChatMessage(
     [Required] Guid GroupId,
     [Required, MinLength(1), MaxLength(500)]
     string Content,
-    [Required] IEnumerable<InputFile>? Attachments
+    [Required] IEnumerable<InputFile>? Attachments = default
 ) : ICommand<SendGroupChatMessageResult>;
 
 internal sealed class SendGroupChatMessageHandler

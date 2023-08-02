@@ -4,7 +4,6 @@ namespace Chatify.Domain.Events.Messages;
 
 public class ChatMessageEditedEvent : IDomainEvent
 {
-    
     public Guid MessageId { get; set; }
     
     public Guid UserId { get; set; }
