@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
             .AddControllers(opts => opts.Filters.Add<GlobalExceptionFilter>())
             .AddJsonOptions(opts => opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
             .ConfigureApiBehaviorOptions(opts => opts.SuppressModelStateInvalidFilter = true);
+        services.AddControllersWithViews();
         
         return services;
     }

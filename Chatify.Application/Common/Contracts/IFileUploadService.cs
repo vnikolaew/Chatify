@@ -1,4 +1,5 @@
-﻿using LanguageExt;
+﻿using Chatify.Application.Common.Models;
+using LanguageExt;
 using LanguageExt.Common;
 
 namespace Chatify.Application.Common.Contracts;
@@ -6,19 +7,26 @@ namespace Chatify.Application.Common.Contracts;
 public interface IFileUploadService
 {
     Task<Either<FileUploadResult, Error>> UploadAsync(
-        FileUploadRequest fileUploadRequest,
+        SingleFileUploadRequest singleFileUploadRequest,
+        CancellationToken cancellationToken = default);
+    
+    Task<List<Either<FileUploadResult, Error>>> UploadManyAsync(
+        MultipleFileUploadRequest multipleFileUploadRequest,
         CancellationToken cancellationToken = default);
 }
 
-public class FileUploadRequest
+public class SingleFileUploadRequest
 {
-    public Stream Data { get; set; } = default!;
+    public InputFile File { get; set; } = default!;
     
     public Guid? UserId { get; set; }
-    
-    public string FileName { get; set; } = default!;
+}
 
-    public long SizeInBytes => Data.Length;
+public class MultipleFileUploadRequest
+{
+    public IEnumerable<InputFile> Files { get; set; }
+    
+    public Guid? UserId { get; set; }
 }
 
 public class FileUploadResult

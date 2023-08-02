@@ -14,14 +14,14 @@ namespace Chatify.Infrastructure.ChatGroups.EventHandlers;
 internal sealed class ChatGroupMemberRemovedEventHandler
     : IEventHandler<ChatGroupMemberRemovedEvent>
 {
-    private readonly IDomainRepository<ChatGroup, Guid> _groups;
+    private readonly IDomainRepository<Domain.Entities.ChatGroup, Guid> _groups;
     private readonly ILogger<ChatGroupMemberRemovedEventHandler> _logger;
     private readonly ICounterService<ChatGroupMembersCount, Guid> _membersCounts;
     private readonly IHubContext<ChatifyHub, IChatifyHubClient> _chatifyHubContext;
     private readonly IIdentityContext _identityContext;
 
     public ChatGroupMemberRemovedEventHandler(
-        IDomainRepository<ChatGroup, Guid> groups,
+        IDomainRepository<Domain.Entities.ChatGroup, Guid> groups,
         ILogger<ChatGroupMemberRemovedEventHandler> logger,
         ICounterService<ChatGroupMembersCount, Guid> membersCounts,
         IHubContext<ChatifyHub, IChatifyHubClient> chatifyHubContext,

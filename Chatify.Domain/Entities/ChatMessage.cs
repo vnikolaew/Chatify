@@ -20,7 +20,10 @@ public class ChatMessage
     private readonly HashSet<string> _attachments = new();
 
     public IReadOnlyCollection<string> Attachments
-        => _attachments.ToList().AsReadOnly();
+    {
+        get => _attachments.ToList().AsReadOnly();
+        init => _attachments = value.ToHashSet();
+    }
 
     public ReactionCounts ReactionCounts { get; set; } = new Dictionary<int, long>();
 

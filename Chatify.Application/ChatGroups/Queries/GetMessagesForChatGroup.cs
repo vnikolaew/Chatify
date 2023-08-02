@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Domain.Entities;
-using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
 using LanguageExt;

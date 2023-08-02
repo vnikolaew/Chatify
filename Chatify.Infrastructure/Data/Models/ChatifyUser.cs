@@ -4,6 +4,7 @@ using AutoMapper;
 using Cassandra.Mapping;
 using Cassandra.Mapping.Attributes;
 using Chatify.Application.Common.Mappings;
+using Chatify.Domain.Entities;
 using Metadata = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Chatify.Infrastructure.Data.Models;
@@ -88,5 +89,9 @@ public class ChatifyUser : CassandraIdentityUser, IMapFrom<Domain.Entities.User>
             .ForMember(u => u.Roles,
                 cfg =>
                     cfg.MapFrom(u => u.Roles.ToList()))
-            .ReverseMap();
+            .ForMember(u => u.Status,
+                cfg => cfg.MapFrom(u => (UserStatus)u.Status))
+            .ReverseMap()
+            .ForMember(u => u.Status,
+                cfg => cfg.MapFrom(u => u.Status));
 }

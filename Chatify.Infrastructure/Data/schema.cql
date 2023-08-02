@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS chat_messages
     PRIMARY KEY ( (chat_group_id), created_at, id)
 ) WITH CLUSTERING ORDER BY (created_at DESC, id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
-CREATE INDEX chat_messages_by_id ON chat_messages (id);
+CREATE INDEX IF NOT EXISTS chat_messages_by_id ON chat_messages (id);
 
 CREATE TABLE IF NOT EXISTS chat_messages_reply_count
 (
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS chat_message_replies
     PRIMARY KEY ( (reply_to), created_at, id)
 ) WITH CLUSTERING ORDER BY (created_at DESC, id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
-CREATE INDEX chat_message_replies_by_id ON chat_message_replies (id);
+CREATE INDEX IF NOT EXISTS chat_message_replies_by_id ON chat_message_replies (id);
 
 CREATE TABLE IF NOT EXISTS friend_invitations
 (
@@ -81,11 +81,12 @@ CREATE TABLE IF NOT EXISTS friend_invitations
     PRIMARY KEY ( (inviter_id), created_at)
 ) WITH CLUSTERING ORDER BY (created_at DESC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
-CREATE INDEX friend_invitations_by_id ON friend_invitations (id);
+CREATE INDEX IF NOT EXISTS friend_invitations_by_id ON friend_invitations (id);
+CREATE INDEX IF NOT EXISTS friend_invitations_by_invitee_id ON friend_invitations (invitee_id);
 
 CREATE TABLE IF NOT EXISTS message_reactions
 (
-    id            timeuuid,
+    id            uuid,
     message_id    uuid,
     group_chat_id uuid,
     user_id       uuid,
@@ -97,7 +98,7 @@ CREATE TABLE IF NOT EXISTS message_reactions
     PRIMARY KEY ((message_id), created_at, id)
 ) WITH CLUSTERING ORDER BY (created_at DESC, id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
-CREATE INDEX message_reactions_by_id ON message_reactions (id);
+CREATE INDEX IF NOT EXISTS message_reactions_by_id ON message_reactions (id);
 
 CREATE TABLE IF NOT EXISTS chat_group_members
 (
@@ -118,5 +119,3 @@ CREATE TABLE IF NOT EXISTS chat_group_members_by_user_id
     chat_group_id uuid,
     PRIMARY KEY ( (user_id), created_at, chat_group_id)
 ) WITH CLUSTERING ORDER BY (created_at DESC, chat_group_id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
-
-CREATE INDEX chat_group_members_by_user_id  ON chat_group_members (user_id);

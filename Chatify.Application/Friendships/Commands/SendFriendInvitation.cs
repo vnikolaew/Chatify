@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Friendships;
@@ -20,6 +21,7 @@ internal sealed class SendFriendInvitationHandler : ICommandHandler<SendFriendIn
     private readonly IFriendInvitationRepository _friendInvites;
     private readonly IDomainRepository<Domain.Entities.User, Guid> _users;
     private readonly IIdentityContext _identityContext;
+    private readonly IGuidGenerator _guidGenerator;
     private readonly IClock _clock;
     private readonly IEventDispatcher _eventDispatcher;
 
@@ -27,13 +29,15 @@ internal sealed class SendFriendInvitationHandler : ICommandHandler<SendFriendIn
         IFriendInvitationRepository friendInvites,
         IIdentityContext identityContext,
         IDomainRepository<Domain.Entities.User, Guid> users,
-        IClock clock, IEventDispatcher eventDispatcher)
+        IClock clock, IEventDispatcher eventDispatcher,
+        IGuidGenerator guidGenerator)
     {
         _friendInvites = friendInvites;
         _identityContext = identityContext;
         _users = users;
         _clock = clock;
         _eventDispatcher = eventDispatcher;
+        _guidGenerator = guidGenerator;
     }
 
     public async Task<SendFriendInvitationResult> HandleAsync(
@@ -44,16 +48,17 @@ internal sealed class SendFriendInvitationHandler : ICommandHandler<SendFriendIn
         if (invitee is null) return Error.New("Invitee not found.");
 
         var existingInvites = await _friendInvites
-            .AllForUserAsync(_identityContext.Id, cancellationToken);
+            .AllSentByUserAsync(_identityContext.Id, cancellationToken);
         if (existingInvites.Any(i => i.InviteeId == command.InviteeId))
         {
             return Error.New($"An invite to user with Id '{command.InviteeId}' was already sent.");
         }
 
+        var friendInviteId = _guidGenerator.New();
         var friendInvite = new FriendInvitation
         {
             InviteeId = command.InviteeId,
-            Id = Guid.NewGuid(),
+            Id = friendInviteId,
             Status = (sbyte)FriendInvitationStatus.Pending,
             CreatedAt = _clock.Now,
             InviterId = _identityContext.Id,
@@ -62,6 +67,7 @@ internal sealed class SendFriendInvitationHandler : ICommandHandler<SendFriendIn
         var invite = await _friendInvites.SaveAsync(friendInvite, cancellationToken);
         await _eventDispatcher.PublishAsync(new FriendInvitationSentEvent
         {
+            Id = friendInviteId,
             InviterId = friendInvite.InviterId,
             InviteeId = friendInvite.InviteeId,
             Timestamp = _clock.Now,

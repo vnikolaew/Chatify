@@ -49,17 +49,16 @@ internal sealed class CreateChatGroupHandler : ICommandHandler<CreateChatGroup, 
         string groupPictureUrl = default!;
         if (command.InputFile is not null)
         {
-            var fileUploadRequest = new FileUploadRequest
+            var fileUploadRequest = new SingleFileUploadRequest
             {
-                Data = command.InputFile.Data,
-                FileName = command.InputFile.FileName,
+                File = command.InputFile,
                 UserId = _identityContext.Id
             };
+            
             var result = await _fileUploadService.UploadAsync(fileUploadRequest, cancellationToken);
             if (result.IsRight) return result.RightToArray()[0];
             
-            var uploadResult = result.LeftToArray()[0];
-            groupPictureUrl = uploadResult.FileUrl;
+            groupPictureUrl = result.Match(_ => null!, r => r.FileUrl);
         }
 
         var groupId = _guidGenerator.New();

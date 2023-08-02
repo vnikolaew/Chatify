@@ -12,11 +12,23 @@ public sealed class FriendInvitationRepository :
     {
     }
 
-    public async Task<List<FriendInvitation>> AllForUserAsync(
+    public async Task<List<FriendInvitation>> AllSentByUserAsync(
         Guid userId, CancellationToken cancellationToken = default)
     {
         var invites = await DbMapper
             .FetchAsync<FriendInvitation>("WHERE inviter_id = ?", userId);
-        return invites?.ToList() ?? new List<FriendInvitation>();
+        
+        return invites?.Where(i => i.Status == (sbyte)FriendInvitationStatus.Pending).ToList() ??
+               new List<FriendInvitation>();
+    }
+
+    public async Task<List<FriendInvitation>> AllSentToUserAsync(Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var invites = await DbMapper
+            .FetchAsync<FriendInvitation>("WHERE invitee_id = ?", userId);
+        
+        return invites?.Where(i => i.Status == (sbyte)FriendInvitationStatus.Pending).ToList() ??
+               new List<FriendInvitation>();
     }
 }

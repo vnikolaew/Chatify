@@ -4,6 +4,8 @@ namespace Chatify.Domain.Events.Friendships;
 
 public class FriendInvitationSentEvent : IDomainEvent
 {
+    public Guid Id { get; set; }
+    
     public Guid InviterId { get; set; }
     
     public Guid InviteeId { get; set; }

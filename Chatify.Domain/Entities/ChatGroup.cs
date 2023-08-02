@@ -16,5 +16,7 @@ public class ChatGroup
 
     public ISet<User> Admins { get; set; } = new HashSet<User>();
     
+    public DateTimeOffset? UpdatedAt { get; set; }
+    
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
 }

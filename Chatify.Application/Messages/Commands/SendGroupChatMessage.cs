@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Threading.RateLimiting;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Domain.Common;
@@ -26,9 +27,10 @@ internal sealed class SendGroupChatMessageHandler
     : ICommandHandler<SendGroupChatMessage, SendGroupChatMessageResult>
 {
     private readonly IDomainRepository<ChatGroup, Guid> _groups;
+    private readonly IFileUploadService _fileUploadService;
     private readonly IChatGroupMemberRepository _members;
     private readonly IIdentityContext _identityContext;
-    private readonly IDomainRepository<ChatMessage, Guid> _messages;
+    private readonly IChatMessageRepository _messages;
     private readonly IEventDispatcher _eventDispatcher;
     private readonly IClock _clock;
     private readonly IGuidGenerator _guidGenerator;
@@ -38,9 +40,10 @@ internal sealed class SendGroupChatMessageHandler
         IIdentityContext identityContext,
         IClock clock,
         IChatGroupMemberRepository members,
-        IDomainRepository<ChatMessage, Guid> messages,
+        IChatMessageRepository messages,
         IGuidGenerator guidGenerator,
-        IEventDispatcher eventDispatcher)
+        IEventDispatcher eventDispatcher,
+        IFileUploadService fileUploadService)
     {
         _groups = groups;
         _identityContext = identityContext;
@@ -49,6 +52,7 @@ internal sealed class SendGroupChatMessageHandler
         _messages = messages;
         _guidGenerator = guidGenerator;
         _eventDispatcher = eventDispatcher;
+        _fileUploadService = fileUploadService;
     }
 
     public async Task<SendGroupChatMessageResult> HandleAsync(
@@ -57,26 +61,43 @@ internal sealed class SendGroupChatMessageHandler
     {
         var chatGroup = await _groups.GetAsync(command.GroupId, cancellationToken);
         if (chatGroup is null) return Error.New($"Chat Group with Id '{command.GroupId}' was not found.");
-        
+
         var userIsGroupMember = await _members.Exists(
             command.GroupId,
             _identityContext.Id,
             cancellationToken);
-        
+
         if (!userIsGroupMember) return Error.New("Current user is not a member of this Chat Group.");
 
         // TODO: Handle any file uploads:
+        var uploadedFilesUrls = new List<string>();
+        if (command.Attachments?.Any() ?? false)
+        {
+            var filesUploadResults = await _fileUploadService.UploadManyAsync(new MultipleFileUploadRequest
+            {
+                Files = command.Attachments,
+                UserId = _identityContext.Id
+            }, cancellationToken);
+            
+            uploadedFilesUrls = filesUploadResults
+                .Where(r => r.IsRight)
+                .Select(r => r.Match(_ => null!, r => r))
+                .Select(r => r.FileUrl)
+                .ToList();
+        }
+
         var messageId = _guidGenerator.New();
-        
+
         var message = new ChatMessage
         {
             UserId = _identityContext.Id,
             ChatGroup = chatGroup,
             Id = messageId,
             CreatedAt = _clock.Now,
+            Attachments = uploadedFilesUrls,
             Content = command.Content,
         };
-        
+
         await _messages.SaveAsync(message, cancellationToken);
         await _eventDispatcher.PublishAsync(new ChatMessageSentEvent
         {
@@ -86,7 +107,7 @@ internal sealed class SendGroupChatMessageHandler
             Timestamp = _clock.Now,
             MessageId = message.Id
         }, cancellationToken);
-        
+
         return message.Id;
     }
 }

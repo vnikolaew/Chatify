@@ -9,6 +9,7 @@ public class LocalFileSystemUploadService : IFileUploadService
 {
     private readonly string _fileStorageBaseFolder;
     private const long MaxFileUploadSizeLimit = 50 * 1024 * 1024;
+
     private static readonly System.Collections.Generic.HashSet<string> AllowedFileTypes = new()
     {
         "jpg", "png", "webp", "jpeg"
@@ -18,33 +19,52 @@ public class LocalFileSystemUploadService : IFileUploadService
         => _fileStorageBaseFolder = Path.Combine(environment.ContentRootPath, "Files");
 
     public async Task<Either<FileUploadResult, Error>> UploadAsync(
-        FileUploadRequest fileUploadRequest,
+        SingleFileUploadRequest singleFileUploadRequest,
         CancellationToken cancellationToken = default)
     {
-        if (fileUploadRequest.SizeInBytes >= MaxFileUploadSizeLimit) return Error.New("File exceeds size limit of 50 MB.");
-        
-        var fileExtension = Path.GetExtension(fileUploadRequest.FileName)[1..];
-        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileUploadRequest.FileName);
-        
+        var file = singleFileUploadRequest.File;
+
+        if (file.SizeInBytes >= MaxFileUploadSizeLimit) return Error.New("File exceeds size limit of 50 MB.");
+
+        var fileExtension = Path.GetExtension(file.FileName)[1..];
+        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.FileName);
+
         if (!AllowedFileTypes.Contains(fileExtension))
         {
             return Error.New($"Files with extension {fileExtension} are not allowed.");
         }
 
         var newFileId = Guid.NewGuid();
-        var newFileName = fileUploadRequest.UserId.HasValue
-            ? $"{fileUploadRequest.UserId}_{newFileId}_{fileNameWithoutExtension}.{fileExtension}"
+        var newFileName = singleFileUploadRequest.UserId.HasValue
+            ? $"{singleFileUploadRequest.UserId}_{newFileId}_{fileNameWithoutExtension}.{fileExtension}"
             : $"{newFileId}_{fileNameWithoutExtension}.{fileExtension}";
 
         if (!Directory.Exists(_fileStorageBaseFolder)) Directory.CreateDirectory(_fileStorageBaseFolder);
-        
-        await using var fileStream = File.Open(Path.Combine(_fileStorageBaseFolder, newFileName), FileMode.CreateNew, FileAccess.Write);
-        await fileUploadRequest.Data.CopyToAsync(fileStream, cancellationToken);
-        
+
+        await using var fileStream = File.Open(Path.Combine(_fileStorageBaseFolder, newFileName), FileMode.CreateNew,
+            FileAccess.Write);
+        await file.Data.CopyToAsync(fileStream, cancellationToken);
+
         return new FileUploadResult
         {
             FileId = newFileId,
             FileUrl = $"/Files/{newFileName}"
         };
+    }
+
+    public async Task<List<Either<FileUploadResult, Error>>> UploadManyAsync(
+        MultipleFileUploadRequest multipleFileUploadRequest,
+        CancellationToken cancellationToken = default)
+    {
+        var uploadTasks = multipleFileUploadRequest
+            .Files
+            .Select(f => UploadAsync(new SingleFileUploadRequest
+            {
+                File = f,
+                UserId = multipleFileUploadRequest.UserId
+            }, cancellationToken)).ToList();
+
+        var uploadResults = await Task.WhenAll(uploadTasks);
+        return uploadResults.ToList();
     }
 }

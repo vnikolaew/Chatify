@@ -40,7 +40,7 @@ internal sealed class UserChangedStatusEventHandler
                 new UserStatusChanged(
                     @event.UserId,
                     _identityContext.Username,
-                    @event.NewStatus,
+                    (sbyte) @event.NewStatus,
                     @event.Timestamp));
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Friendships;
@@ -22,19 +23,22 @@ internal sealed class AcceptFriendInvitationHandler :
     private readonly IDomainRepository<FriendInvitation, Guid> _friendInvites;
     private readonly IClock _clock;
     private readonly IEventDispatcher _eventDispatcher;
+    private readonly IGuidGenerator _guidGenerator;
     private readonly IDomainRepository<FriendsRelation, Guid> _friends;
 
     public AcceptFriendInvitationHandler(
         IIdentityContext identityContext,
         IDomainRepository<FriendInvitation, Guid> friendInvites,
         IDomainRepository<FriendsRelation, Guid> friends,
-        IClock clock, IEventDispatcher eventDispatcher)
+        IClock clock, IEventDispatcher eventDispatcher,
+        IGuidGenerator guidGenerator)
     {
         _identityContext = identityContext;
         _friendInvites = friendInvites;
         _friends = friends;
         _clock = clock;
         _eventDispatcher = eventDispatcher;
+        _guidGenerator = guidGenerator;
     }
 
     public async Task<AcceptFriendInvitationResult> HandleAsync(
@@ -48,9 +52,10 @@ internal sealed class AcceptFriendInvitationHandler :
             return Error.New("Friend invitation does not exist or is not in a pending state.");
         }
 
+        var friendsRelationId = _guidGenerator.New();
         var friendsRelation = new FriendsRelation
         {
-            Id = Guid.NewGuid(),
+            Id = friendsRelationId,
             FriendOneId = _identityContext.Id,
             FriendTwoId = friendInvite.InviteeId,
             CreatedAt = _clock.Now
@@ -71,6 +76,7 @@ internal sealed class AcceptFriendInvitationHandler :
         
         await _eventDispatcher.PublishAsync(new FriendInvitationAcceptedEvent
         {
+            FriendsRelationId = friendsRelationId,
             InviterId = friendInvite.InviterId,
             InviteeId = friendInvite.InviteeId,
             InviteId = friendInvite.Id,

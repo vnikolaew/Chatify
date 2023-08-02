@@ -1,9 +1,11 @@
-﻿using Chatify.Infrastructure.Messages.Hubs.Models.Server;
+﻿using Chatify.Infrastructure.Messages.Hubs.Models.Client;
+using Chatify.Infrastructure.Messages.Hubs.Models.Server;
 
 namespace Chatify.Infrastructure.Messages.Hubs;
 
-internal interface IChatifyHubClient
+public interface IChatifyHubClient
 {
+    Task ReceiveMessage(string username, string message);
     Task ReceiveGroupChatMessage(ReceiveGroupChatMessage receiveGroupChatMessage);
 
     Task ChatGroupMemberStartedTyping(ChatGroupMemberStartedTyping chatGroupMemberStartedTyping);
@@ -17,6 +19,8 @@ internal interface IChatifyHubClient
     Task ChatGroupMemberRemoved(ChatGroupMemberRemoved chatGroupMemberRemoved);
 
     Task ChatGroupMemberLeft(ChatGroupMemberLeft chatGroupMemberLeft);
+
+    Task ChatGroupNewAdminAdded(ChatGroupNewAdminAdded chatGroupMemberLeft);
 
     Task ChatGroupMessageRemoved(ChatGroupMessageRemoved chatGroupMessageRemoved);
 

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Domain.Common;
+using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Users;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
@@ -13,7 +14,7 @@ namespace Chatify.Application.User.Commands;
 using ChangeUserStatusResult = Either<Error, Unit>;
 
 public record ChangeUserStatus(
-    [Required] sbyte NewStatus
+    [Required] UserStatus NewStatus
 ) : ICommand<ChangeUserStatusResult>;
 
 internal sealed class ChangeUserStatusHandler

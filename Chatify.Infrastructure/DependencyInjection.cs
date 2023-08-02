@@ -80,8 +80,7 @@ public static class DependencyInjection
                 opts.Transports = HttpTransportType.LongPolling
                                   | HttpTransportType.WebSockets
                                   | HttpTransportType.ServerSentEvents;
-            })
-            .RequireAuthorization();
+            });
 
         return routeBuilder;
     }
@@ -127,7 +126,11 @@ public static class DependencyInjection
 
         foreach (var repositoryType in repositoryTypes)
         {
-            services.AddScoped(repositoryType.ImplementedInterfaces.First(), repositoryType);
+            // Register type using all implemented interfaces:
+            foreach (var implementedInterface in repositoryType.ImplementedInterfaces)
+            {
+                services.AddScoped(implementedInterface, repositoryType);
+            }
         }
 
         var cassandraRepositoryTypes = Assembly
@@ -149,7 +152,8 @@ public static class DependencyInjection
         return services
             .AddScoped<IChatMessageReplyRepository, ChatMessageReplyRepository>()
             .AddScoped<IChatGroupMemberRepository, ChatGroupMembersRepository>()
-            .AddScoped<IFriendInvitationRepository, FriendInvitationRepository>();
+            .AddScoped<IFriendInvitationRepository, FriendInvitationRepository>()
+            .AddScoped<IFriendshipsRepository, FriendshipsRepository>();
     }
 
     public static IServiceCollection AddAuthenticationServices(

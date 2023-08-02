@@ -48,6 +48,9 @@ public static class Models
     {
         public EditGroupChatMessage ToCommand()
             => new(GroupId, MessageId, NewContent);
+        
+        public EditChatMessageReply ToReplyCommand()
+            => new(GroupId, MessageId, NewContent);
     }
 
     public sealed record DeleteGroupChatMessageRequest(
@@ -57,6 +60,9 @@ public static class Models
     {
         public DeleteGroupChatMessage ToCommand()
             => new(GroupId, MessageId);
+        
+        public DeleteChatMessageReply ToReplyCommand()
+            => new(MessageId, GroupId);
     }
 
     public sealed record GetMessagesByChatGroupRequest(

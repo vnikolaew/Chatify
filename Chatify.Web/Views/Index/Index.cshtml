@@ -1,0 +1,81 @@
+﻿@model string
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>Chatify</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+</head>
+<body>
+<div>
+    <label for="username-input"> Type your name: </label>
+    <input id="username-input" name="username-input" type="text"/>
+    
+    <label for="message-input"> Type your message: </label>
+    <input id="message-input" name="message-input" type="text"/>
+    <button id="send" type="button"> Send </button>
+    <span id="clear" style="color: red; font-size: 2rem"> X</span>
+    <div id="messages" style="margin-top: 1rem">
+
+    </div>
+
+</div>
+</body>
+<script>
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/chat")
+    .configureLogging(signalR.LogLevel.Information)
+    .build();
+
+document.getElementById('clear').addEventListener('click', () => {
+    document.getElementById('messages').innerHTML = ""
+})
+
+document.getElementById('send').addEventListener("click", sendMessage);
+async function sendMessage() {
+    const text = document.getElementById('message-input').value;
+    const username = document.getElementById('username-input').value;
+    await connection.send('SendMessage', username, text);
+    }
+    
+connection.on("ReceiveMessage", (username, message) => {
+    const div = document.createElement('div');
+    div.style.display = "flex";
+    div.style.alignItems = "center";
+    div.style.gap = "1rem";
+    
+    const span = document.createElement('span');
+    span.style.fontWeight = "bold"
+    span.innerText = `${username}:`;
+    
+    const span2 = document.createElement('span');
+    span2.innerText = message;
+    
+    div.appendChild(span);
+    div.appendChild(span2);
+    document.getElementById('messages').appendChild(div)
+})
+
+async function start() {
+    try {
+        await connection.start();
+        console.log("SignalR Connected.");
+    } catch (err) {
+        console.log(err);
+        setTimeout(start, 5000);
+    }
+};
+
+connection.onclose(async () => {
+    await start();
+});
+
+// Start the connection.
+start();
+</script>
+</html>

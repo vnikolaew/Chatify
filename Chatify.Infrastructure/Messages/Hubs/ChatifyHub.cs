@@ -13,8 +13,8 @@ namespace Chatify.Infrastructure.Messages.Hubs;
 
 using SendGroupChatMessageResult = Either<Error, Guid>;
 
-[Authorize]
-internal sealed class ChatifyHub : Hub<IChatifyHubClient>
+// [Authorize]
+public sealed class ChatifyHub : Hub<IChatifyHubClient>
 {
     private readonly IChatGroupMemberRepository _members;
     private readonly IIdentityContext _identityContext;
@@ -27,6 +27,11 @@ internal sealed class ChatifyHub : Hub<IChatifyHubClient>
         .Value, out var userId)
         ? userId
         : Guid.Empty;
+
+    public async Task SendMessage(string username, string message)
+    {
+        await Clients.All.ReceiveMessage(username, message);
+    }
 
     private string Username => Context.User!
         .Claims

@@ -11,7 +11,7 @@ public class User
 
     public string Email { get; set; }
 
-    public sbyte Status { get; set; }
+    public UserStatus Status { get; set; }
 
     public List<string> Roles { get; set; } = new();
 
@@ -26,4 +26,11 @@ public class User
     public HashSet<IPAddress> DeviceIps { get; init; } = new();
 
     public Metadata Metadata { get; init; } = new Dictionary<string, string>();
+}
+
+public enum UserStatus : sbyte
+{
+    Online,
+    Away,
+    Offline
 }
