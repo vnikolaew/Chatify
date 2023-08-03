@@ -12,9 +12,13 @@ public abstract class UserAuthResult
     public string AuthenticationProvider { get; set; }
 }
 
-public sealed class UserSignedUpResult : UserAuthResult { }
+public sealed class UserSignedUpResult : UserAuthResult
+{
+}
 
-public sealed class UserSignedInResult : UserAuthResult { }
+public sealed class UserSignedInResult : UserAuthResult
+{
+}
 
 public interface IAuthenticationService
 {
@@ -36,5 +40,8 @@ public interface IAuthenticationService
 
     Task<string?> GenerateEmailConfirmationTokenAsync(
         Guid userId,
+        CancellationToken cancellationToken = default);
+
+    Task<Either<Error, Unit>> ChangePasswordAsync(Guid userId, string oldPassword, string newPassword,
         CancellationToken cancellationToken = default);
 }

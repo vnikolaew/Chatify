@@ -1,5 +1,5 @@
-﻿using Chatify.Domain.Entities;
-using Chatify.Domain.Events.Users;
+﻿using Chatify.Domain.Events.Users;
+using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Server;
 using Chatify.Shared.Abstractions.Contexts;
@@ -29,13 +29,11 @@ internal sealed class UserChangedStatusEventHandler
         UserChangedStatusEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var friendsRelations = await _friends.AllForUser(@event.UserId);
-        var userIds = friendsRelations
-            .Select(f => f.FriendTwoId.ToString());
+        var friendIds = await _friends.AllFriendIdsForUser(@event.UserId, cancellationToken);
 
         await _hubContext
             .Clients
-            .Users(userIds)
+            .Users(friendIds.Select(_ => _.ToString()))
             .UserStatusChanged(
                 new UserStatusChanged(
                     @event.UserId,

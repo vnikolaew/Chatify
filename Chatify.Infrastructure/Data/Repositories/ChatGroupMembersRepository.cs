@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Chatify.Domain.Repositories;
+using Chatify.Domain.Entities;
 using Chatify.Infrastructure.Data.Models;
 using Humanizer;
 using StackExchange.Redis;
