@@ -1,3 +1,32 @@
+CREATE TABLE IF NOT EXISTS users
+(
+    id                    uuid,
+    created_at            timestamp,
+    username              text,
+    banner_pictures       set<text>,
+    device_ips            set<inet>,
+    display_name          text,
+    email                 text,
+    emailconfirmationtime timestamp,
+    last_login            timestamp,
+    lockout               lockoutinfo,
+    logins                list<frozen<logininfo>>,
+    metadata              map<text, text>,
+    normalizedemail       text,
+    normalizedusername    text,
+    passwordhash          text,
+    phone                 phoneinfo,
+    phone_numbers         set<text>,
+    profile_picture_url   text,
+    roles                 list<text>,
+    securitystamp         text,
+    status                tinyint,
+    tokens                list<frozen<tokeninfo>>,
+    twofactorenabled      boolean,
+    updated_at            timestamp,
+    PRIMARY KEY (id, created_at, username)
+) WITH CLUSTERING ORDER BY (created_at desc, username asc);
+
 CREATE TABLE IF NOT EXISTS friends
 (
     id            uuid,
@@ -118,4 +147,5 @@ CREATE TABLE IF NOT EXISTS chat_group_members_by_user_id
     user_id       uuid,
     chat_group_id uuid,
     PRIMARY KEY ( (user_id), created_at, chat_group_id)
-) WITH CLUSTERING ORDER BY (created_at DESC, chat_group_id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
+) WITH CLUSTERING ORDER BY (created_at DESC, chat_group_id ASC)
+   AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
