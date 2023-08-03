@@ -112,10 +112,7 @@ public sealed class AuthenticationService : IAuthenticationService
         var ipAddress = IPAddress.Parse(_context.IpAddress);
         if (!user.DeviceIps.Contains(ipAddress))
         {
-            await _users.UpdateAsync(user.Id, user =>
-            {
-                user.DeviceIps.Add(ipAddress);
-            }, cancellationToken);
+            await _users.UpdateAsync(user.Id, user => { user.DeviceIps.Add(ipAddress); }, cancellationToken);
         }
 
         return result.Succeeded
@@ -162,7 +159,7 @@ public sealed class AuthenticationService : IAuthenticationService
                 IPAddress.Parse(_context.IpAddress)
             },
             EmailConfirmationTime = userInfo.VerifiedEmail ? DateTimeOffset.Now : default,
-            ProfilePictures = new System.Collections.Generic.HashSet<string> { userInfo.Picture }
+            ProfilePictureUrl = userInfo.Picture
         };
         chatifyUser.AddToken(new TokenInfo(Google, AuthenticationTokenName, request.AccessToken));
 
@@ -214,7 +211,7 @@ public sealed class AuthenticationService : IAuthenticationService
                 IPAddress.Parse(_context.IpAddress)
             },
             EmailConfirmationTime = userInfo.Email is not null ? DateTimeOffset.Now : default,
-            ProfilePictures = new System.Collections.Generic.HashSet<string> { userInfo.Picture.Data.Url }
+            ProfilePictureUrl = userInfo.Picture.Data.Url
         };
         chatifyUser.AddToken(new TokenInfo(Facebook, AuthenticationTokenName, request.AccessToken));
 
@@ -252,5 +249,24 @@ public sealed class AuthenticationService : IAuthenticationService
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         return token;
+    }
+
+    public async Task<Either<Error, Unit>> ChangePasswordAsync(
+        Guid userId,
+        string currentPassword,
+        string newPassword,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null) return default;
+
+        var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        return result.Succeeded
+            ? Unit.Default
+            : Error.Many(
+                new Seq<Error>(
+                    result.Errors.Select(e => Error.New(e.Description))
+                )
+            );
     }
 }

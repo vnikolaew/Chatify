@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
-using Chatify.Domain.Entities;
+using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Data.Models;
 using Humanizer;
 using StackExchange.Redis;
-
 using ChatGroupMember = Chatify.Domain.Entities.ChatGroupMember;
 using Mapper = Cassandra.Mapping.Mapper;
 
@@ -20,18 +19,29 @@ public sealed class ChatGroupMembersRepository :
         : base(mapper, dbMapper, nameof(ChatGroupMember.ChatGroupId).Underscore())
         => _cache = cache;
 
+    private static RedisKey GetGroupMembersCacheKey(Guid groupId)
+        => new($"groups:{groupId.ToString()}:members");
+
     public new async Task<ChatGroupMember> SaveAsync(
         ChatGroupMember entity,
         CancellationToken cancellationToken = default)
     {
-        var groupKey = new RedisKey(entity.ChatGroupId.ToString());
+        var groupKey = GetGroupMembersCacheKey(entity.ChatGroupId);
         var userKey = new RedisValue(entity.UserId.ToString());
 
         // Add new user to both database and cache set:
         var dbSaveTask = base.SaveAsync(entity, cancellationToken);
+        var groupMemberByUserIdSaveTask = DbMapper
+            .InsertAsync(new ChatGroupMemberByUser
+            {
+                UserId = entity.UserId,
+                CreatedAt = entity.CreatedAt,
+                ChatGroupId = entity.ChatGroupId,
+                Id = entity.Id
+            });
         var cacheSaveTask = _cache.SetAddAsync(groupKey, userKey);
-        
-        var saveTasks = new Task[] { dbSaveTask, cacheSaveTask };
+
+        var saveTasks = new[] { dbSaveTask, cacheSaveTask, groupMemberByUserIdSaveTask };
 
         await Task.WhenAll(saveTasks).ConfigureAwait(false);
         return dbSaveTask.Result;
@@ -44,13 +54,31 @@ public sealed class ChatGroupMembersRepository :
         var member = await GetAsync(id, cancellationToken);
         if (member is null) return false;
 
-        var groupKey = new RedisKey(member.ChatGroupId.ToString());
+        var groupKey = GetGroupMembersCacheKey(member.ChatGroupId);
         var userKey = new RedisValue(member.UserId.ToString());
 
         // Delete member from both the database and the cache:
+        var groupMemberByUserIdDeleteTask =
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await DbMapper
+                        .DeleteAsync<ChatGroupMemberByUser>(
+                            " WHERE user_id = ? AND chat_group_id = ?",
+                            member.UserId, member.ChatGroupId);
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }, cancellationToken);
+
         var deleteTasks = new[]
         {
             base.DeleteAsync(member.Id, cancellationToken),
+            groupMemberByUserIdDeleteTask,
             _cache.SetRemoveAsync(groupKey, userKey)
         };
 
@@ -64,23 +92,32 @@ public sealed class ChatGroupMembersRepository :
         CancellationToken cancellationToken = default)
     {
         var member = await DbMapper.FirstOrDefaultAsync<ChatGroupMember>(
-            "WHERE chat_group_id = ? AND user_id = ? ALLOW FILTERING",
+            "WHERE chat_group_id = ? AND user_id = ? ALLOW FILTERING;",
             groupId,
             userId);
 
         return member;
     }
 
+    public async Task<List<ChatGroupMember>?> ByGroup(
+        Guid groupId, CancellationToken cancellationToken = default)
+    {
+        var members = await DbMapper
+            .FetchAsync<Models.ChatGroupMember>(" WHERE chat_group_id = ?", groupId);
+
+        return members is not null
+            ? Mapper.Map<List<ChatGroupMember>>(members)
+            : default;
+    }
+
     public async Task<List<Guid>> GroupsIdsByUser(
         Guid userId,
         CancellationToken cancellationToken = default)
     {
-        var memberships = await DbMapper
-            .FetchAsync<ChatGroupMemberByUser>("WHERE user_id = ?", userId);
-        
-        return memberships?
-            .Select(m => m.ChatGroupId)
-            .ToList() ?? new List<Guid>();
+        var groupsIds = await DbMapper
+            .FetchAsync<Guid>("SELECT chat_group_id FROM chat_group_members WHERE user_id = ?", userId);
+
+        return groupsIds.ToList();
     }
 
     public async Task<bool> Exists(
@@ -88,7 +125,7 @@ public sealed class ChatGroupMembersRepository :
         Guid userId,
         CancellationToken cancellationToken = default)
     {
-        var groupKey = new RedisKey($"groups:{groupId}");
+        var groupKey = GetGroupMembersCacheKey(groupId);
         var userKey = new RedisValue(userId.ToString());
 
         return await _cache.SetContainsAsync(groupKey, userKey);

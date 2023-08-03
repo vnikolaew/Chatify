@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Chatify.Domain.Entities;
-using Humanizer;
 using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
