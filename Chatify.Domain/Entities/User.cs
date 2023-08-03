@@ -7,15 +7,15 @@ public class User
 {
     public Guid Id { get; set; }
 
-    public string Username { get; set; }
+    public string Username { get; set; } = default!;
 
-    public string Email { get; set; }
+    public string Email { get; set; } = default!;
 
     public UserStatus Status { get; set; }
 
     public List<string> Roles { get; set; } = new();
 
-    public HashSet<string> ProfilePictures { get; set; } = new();
+    public string ProfilePictureUrl { get; set; } = default!;
 
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
 
@@ -26,6 +26,8 @@ public class User
     public HashSet<IPAddress> DeviceIps { get; init; } = new();
 
     public Metadata Metadata { get; init; } = new Dictionary<string, string>();
+    
+    public string DisplayName { get; set; }
 }
 
 public enum UserStatus : sbyte

@@ -1,11 +1,11 @@
 ﻿using System.Security.Claims;
 using Chatify.Domain.Entities;
+using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Messages.Hubs.Models.Client;
 using Chatify.Infrastructure.Messages.Hubs.Models.Server;
 using Chatify.Shared.Abstractions.Contexts;
 using LanguageExt;
 using LanguageExt.Common;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 

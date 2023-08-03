@@ -27,13 +27,7 @@ public class ChatifyUser : CassandraIdentityUser, IMapFrom<Domain.Entities.User>
         init => _phoneNumbers = value.ToList();
     }
 
-    private readonly IList<string> _profilePictures = new List<string>();
-
-    public HashSet<string> ProfilePictures
-    {
-        get => _profilePictures.ToHashSet();
-        init => _profilePictures = value.ToList();
-    }
+    public string ProfilePictureUrl { get; set; }
 
     private readonly IList<string> _bannerPictures = new List<string>();
 
