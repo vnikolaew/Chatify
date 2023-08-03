@@ -9,7 +9,6 @@ public static class Extensions
     private const string AppSectionName = "app";
     private const string CorrelationIdKey = "correlation-id";
 
-
     public static AppOptions GetAppOptions(this IConfiguration configuration)
         => configuration.GetOptions<AppOptions>(AppSectionName);
     

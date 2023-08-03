@@ -23,7 +23,7 @@ public class UserMapping : Cassandra.Mapping.Mappings
             .UnderscoreColumn(u => u.Metadata)
             .UnderscoreColumn(u => u.Status)
             .UnderscoreColumn(u => u.PhoneNumbers)
-            .UnderscoreColumn(u => u.ProfilePictures)
+            .UnderscoreColumn(u => u.ProfilePictureUrl)
             .UnderscoreColumn(u => u.BannerPictures)
             .UnderscoreColumn(u => u.CreatedAt)
             .UnderscoreColumn(u => u.UpdatedAt)

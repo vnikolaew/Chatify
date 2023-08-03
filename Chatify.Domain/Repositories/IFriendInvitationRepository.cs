@@ -1,6 +1,7 @@
 ﻿using Chatify.Domain.Common;
+using Chatify.Domain.Entities;
 
-namespace Chatify.Domain.Entities;
+namespace Chatify.Domain.Repositories;
 
 public interface IFriendInvitationRepository : IDomainRepository<FriendInvitation, Guid>
 {

@@ -1,7 +1,8 @@
 ﻿using Chatify.Domain.Common;
+using Chatify.Domain.Entities;
 using Chatify.Shared.Abstractions.Queries;
 
-namespace Chatify.Domain.Entities;
+namespace Chatify.Domain.Repositories;
 
 public interface IChatMessageRepository : IDomainRepository<ChatMessage, Guid>
 {

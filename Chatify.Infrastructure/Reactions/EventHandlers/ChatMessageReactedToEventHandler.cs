@@ -1,7 +1,6 @@
 ﻿using Chatify.Domain.Events.Messages;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Server;
-using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Microsoft.AspNetCore.SignalR;
 

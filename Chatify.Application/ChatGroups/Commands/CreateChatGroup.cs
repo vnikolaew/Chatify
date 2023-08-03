@@ -56,9 +56,9 @@ internal sealed class CreateChatGroupHandler : ICommandHandler<CreateChatGroup, 
             };
             
             var result = await _fileUploadService.UploadAsync(fileUploadRequest, cancellationToken);
-            if (result.IsRight) return result.RightToArray()[0];
-            
-            groupPictureUrl = result.Match(_ => null!, r => r.FileUrl);
+            if (result.IsLeft) return result.LeftToArray()[0];
+
+            groupPictureUrl = result.Match(r => r.FileUrl, _ => null!);
         }
 
         var groupId = _guidGenerator.New();

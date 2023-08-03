@@ -1,6 +1,7 @@
 ﻿using Chatify.Application.Messages.Contracts;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
+using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Events;
 using Microsoft.Extensions.Logging;
 

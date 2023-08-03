@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Chatify.Domain.Entities;
+using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Queries;
 using Humanizer;
 using Mapper = Cassandra.Mapping.Mapper;

@@ -33,6 +33,8 @@ public sealed class EmailConfirmationService : IEmailConfirmationService
         Guid userId,
         CancellationToken cancellationToken = default)
     {
+        const string emailConfirmationEndpoint = "auth/confirm-email";
+        
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user is null) return false;
 
@@ -43,7 +45,7 @@ public sealed class EmailConfirmationService : IEmailConfirmationService
         {
             Scheme = HttpContext.Request.Scheme,
             Host = HttpContext.Request.Host.Host,
-            Path = "auth/confirm-email",
+            Path = emailConfirmationEndpoint,
             Query = QueryString.Create("token", code).ToUriComponent(),
         };
 

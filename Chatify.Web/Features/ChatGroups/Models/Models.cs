@@ -15,4 +15,21 @@ public static class Models
                 ? new InputFile { Data = File.OpenReadStream(), FileName = File.FileName }
                 : default);
     }
+
+    public record EditChatGroupDetailsRequest(
+        Guid ChatGroupId,
+        string? Name,
+        string? About,
+        IFormFile? File
+    )
+    {
+        public EditChatGroupDetails ToCommand()
+            => new(ChatGroupId, Name, About, File is not null
+                ? new InputFile
+                {
+                    FileName = File.FileName,
+                    Data = File.OpenReadStream()
+                }
+                : default);
+    }
 }

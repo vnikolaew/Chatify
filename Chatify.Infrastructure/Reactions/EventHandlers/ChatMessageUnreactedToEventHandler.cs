@@ -1,5 +1,4 @@
-﻿using AspNetCore.Identity.Cassandra;
-using Chatify.Domain.Events.Messages;
+﻿using Chatify.Domain.Events.Messages;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Server;
 using Chatify.Shared.Abstractions.Events;

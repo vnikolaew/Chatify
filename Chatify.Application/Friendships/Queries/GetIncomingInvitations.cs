@@ -1,4 +1,5 @@
 ﻿using Chatify.Domain.Entities;
+using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
 using LanguageExt;

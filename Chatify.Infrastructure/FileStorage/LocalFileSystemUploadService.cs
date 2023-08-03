@@ -18,7 +18,7 @@ public class LocalFileSystemUploadService : IFileUploadService
     public LocalFileSystemUploadService(IWebHostEnvironment environment)
         => _fileStorageBaseFolder = Path.Combine(environment.ContentRootPath, "Files");
 
-    public async Task<Either<FileUploadResult, Error>> UploadAsync(
+    public async Task<Either<Error, FileUploadResult>> UploadAsync(
         SingleFileUploadRequest singleFileUploadRequest,
         CancellationToken cancellationToken = default)
     {
@@ -52,7 +52,7 @@ public class LocalFileSystemUploadService : IFileUploadService
         };
     }
 
-    public async Task<List<Either<FileUploadResult, Error>>> UploadManyAsync(
+    public async Task<List<Either<Error, FileUploadResult>>> UploadManyAsync(
         MultipleFileUploadRequest multipleFileUploadRequest,
         CancellationToken cancellationToken = default)
     {

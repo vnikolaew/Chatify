@@ -1,5 +1,7 @@
-﻿using LanguageExt;
+﻿using System.Net;
+using LanguageExt;
 using LanguageExt.Common;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chatify.Web.Extensions;
@@ -7,14 +9,18 @@ namespace Chatify.Web.Extensions;
 public static class ResultExtensions
 {
     public static IActionResult ToBadRequest(this Seq<Error> errors)
-        => new BadRequestObjectResult(new
+    {
+        var problemDetails = new ProblemDetails
         {
-            Errors = errors.Select(e => e.Message)
-        });
+            Type = null!,
+            Title = "Bad Request",
+            Status = (int?) HttpStatusCode.BadRequest,
+            Detail = "One or more errors occurred.",
+            Extensions = { { "errors", errors.Select(e => e.Message) } }
+        };
+        return new BadRequestObjectResult(problemDetails);
+    }
 
     public static IActionResult ToBadRequest(this Error error)
-        => new BadRequestObjectResult(new
-        {
-            Errors = new[] { error }.Select(e => e.Message)
-        });
+        => ToBadRequest(new Seq<Error>(new [] { error }));
 }

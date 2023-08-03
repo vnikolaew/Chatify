@@ -6,11 +6,11 @@ namespace Chatify.Application.Common.Contracts;
 
 public interface IFileUploadService
 {
-    Task<Either<FileUploadResult, Error>> UploadAsync(
+    Task<Either<Error, FileUploadResult>> UploadAsync(
         SingleFileUploadRequest singleFileUploadRequest,
         CancellationToken cancellationToken = default);
     
-    Task<List<Either<FileUploadResult, Error>>> UploadManyAsync(
+    Task<List<Either<Error, FileUploadResult>>> UploadManyAsync(
         MultipleFileUploadRequest multipleFileUploadRequest,
         CancellationToken cancellationToken = default);
 }

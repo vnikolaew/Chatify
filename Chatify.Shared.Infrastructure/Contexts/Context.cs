@@ -13,12 +13,15 @@ public class Context : IContext
     public string UserAgent { get; }
     public IIdentityContext Identity { get; }
 
-    public Context() : this(Guid.NewGuid(), $"{Guid.NewGuid():N}", null)
+    public Context() : this(Guid.NewGuid(), $"{Guid.NewGuid():N}", null!)
     {
     }
 
-    public Context(HttpContext context) : this(context.TryGetCorrelationId(), context.TraceIdentifier,
-        new IdentityContext(context.User), context.GetUserIpAddress(),
+    public Context(HttpContext context) : this(
+        context.TryGetCorrelationId(),
+        context.TraceIdentifier,
+        new IdentityContext(context.User),
+        context.GetUserIpAddress(),
         context.Request.Headers["user-agent"])
     {
     }

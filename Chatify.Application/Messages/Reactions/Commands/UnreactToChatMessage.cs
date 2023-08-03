@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;

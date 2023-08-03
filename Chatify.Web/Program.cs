@@ -2,6 +2,7 @@ using Chatify.Application;
 using Chatify.Infrastructure;
 using Chatify.Shared.Infrastructure.Contexts;
 using Chatify.Web.Extensions;
+using Chatify.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args).UseUrls(
     "http://0.0.0.0:5289",
@@ -9,6 +10,12 @@ var builder = WebApplication.CreateBuilder(args).UseUrls(
 );
 {
     builder.Services
+        .AddProblemDetails(opts =>
+        {
+            opts.CustomizeProblemDetails = ctx =>
+            {
+            };
+        })
         .AddWebComponents()
         .AddMappers()
         .AddInfrastructure(builder.Configuration)
@@ -19,8 +26,10 @@ var builder = WebApplication.CreateBuilder(args).UseUrls(
 var app = builder.Build();
 {
     app
-        .UseDevelopmentSwagger(app.Environment)
         .UseHttpsRedirection()
+        .UseTraceIdentifierMiddleware()
+        .UseDevelopmentSwagger(app.Environment)
+        .UseCachedStaticFiles(app.Environment, "/static")
         .UseRouting()
         .UseAuthentication()
         .UseAuthorization()
@@ -32,6 +41,6 @@ var app = builder.Build();
                 .MapNotifications()
                 .MapFallback(() => TypedResults.NotFound());
         });
-
+    
     app.Run();
 }
