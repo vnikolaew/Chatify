@@ -5,6 +5,7 @@ using AspNetCore.Identity.Cassandra.Models;
 using Cassandra;
 using Cassandra.Mapping;
 using Chatify.Infrastructure.Data.Models;
+using Chatify.Infrastructure.Data.Seeding;
 using Chatify.Infrastructure.Data.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +15,24 @@ namespace Chatify.Infrastructure.Data;
 
 public static class DependencyInjection
 {
+    public static IServiceCollection AddSeeding(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        if (configuration.GetValue<bool>("UseSeeding"))
+        {
+            services.AddHostedService<DatabaseSeedingService>();
+        }
+
+        return services
+            .Scan(s => s.FromExecutingAssembly()
+                .AddClasses(c => c.AssignableTo<ISeeder>()
+                    .Where(t => t is { IsAbstract: false, IsInterface: false }))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime())
+            .AddScoped<CompositeSeeder>();
+    }
+
     public static IServiceCollection AddData(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -31,7 +50,7 @@ public static class DependencyInjection
         {
             MappingConfiguration.Global.Define(mapping);
         }
-        
+
         services
             .AddCassandra(configuration)
             .AddTransient<Mapper>(sp => (sp.GetRequiredService<IMapper>() as Mapper)!)
@@ -39,11 +58,11 @@ public static class DependencyInjection
             .AddIdentity<ChatifyUser, CassandraIdentityRole>(opts =>
             {
                 opts.SignIn.RequireConfirmedEmail = false;
-                
+
                 opts.Password.RequiredLength = 6;
                 opts.Password.RequireNonAlphanumeric = true;
                 opts.Password.RequireDigit = true;
-                
+
                 opts.User.RequireUniqueEmail = true;
             })
             .AddCassandraErrorDescriber<CassandraErrorDescriber>()

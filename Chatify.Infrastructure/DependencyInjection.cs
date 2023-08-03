@@ -6,20 +6,23 @@ using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Messages.Contracts;
 using Chatify.Domain.Common;
-using Chatify.Domain.Entities;
+using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Authentication;
 using Chatify.Infrastructure.Authentication.External.Facebook;
 using Chatify.Infrastructure.Authentication.External.Google;
 using Chatify.Infrastructure.Common;
 using Chatify.Infrastructure.Data;
 using Chatify.Infrastructure.Data.Repositories;
+using Chatify.Infrastructure.Data.Seeding;
 using Chatify.Infrastructure.FileStorage;
 using Chatify.Infrastructure.Mailing;
 using Chatify.Infrastructure.Messages;
 using Chatify.Infrastructure.Messages.Hubs;
+using Chatify.Shared.Abstractions.Serialization;
 using Chatify.Shared.Abstractions.Time;
 using Chatify.Shared.Infrastructure.Contexts;
 using Chatify.Shared.Infrastructure.Events;
+using Chatify.Shared.Infrastructure.Serialization;
 using Chatify.Shared.Infrastructure.Time;
 using LanguageExt.UnitsOfMeasure;
 using Microsoft.AspNetCore.Builder;
@@ -42,6 +45,7 @@ public static class DependencyInjection
         IConfiguration configuration)
         => services
             .AddData(configuration)
+            .AddSeeding(configuration)
             .AddRepositories()
             .AddServices()
             .AddCaching(configuration)
@@ -55,6 +59,8 @@ public static class DependencyInjection
             .AddSingleton<IClock, UtcClock>()
             .AddTransient<IFileUploadService, LocalFileSystemUploadService>()
             .AddTransient<IGuidGenerator, TimeUuidGenerator>()
+            .AddTransient<IPasswordHasher, PasswordHasher>()
+            .AddTransient<ISerializer, SystemTextJsonSerializer>()
             .AddNotifications()
             .AddCounters();
 
