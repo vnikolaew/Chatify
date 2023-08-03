@@ -6,6 +6,7 @@ using LanguageExt.Common;
 using Microsoft.AspNetCore.Mvc;
 using Guid = System.Guid;
 using AddChatGroupMemberResult = LanguageExt.Either<LanguageExt.Common.Error, System.Guid>;
+using EditChatGroupDetailsResult = LanguageExt.Either<LanguageExt.Common.Error, LanguageExt.Unit>;
 using static Chatify.Web.Features.ChatGroups.Models.Models;
 
 namespace Chatify.Web.Features.ChatGroups;
@@ -29,12 +30,27 @@ public class ChatGroupsController : ApiController
         CancellationToken cancellationToken = default)
         => Ok(groupId);
 
+    [HttpPatch]
+    [Route("{groupId:guid}")]
+    public Task<IActionResult> Edit(
+        [FromBody] EditChatGroupDetailsRequest request,
+        [FromRoute] Guid groupId,
+        CancellationToken cancellationToken = default)
+        => SendAsync<EditChatGroupDetails, EditChatGroupDetailsResult>(
+                (request with { ChatGroupId = groupId }).ToCommand(),
+                cancellationToken)
+            .ToAsync()
+            .Match(_ => Accepted(),
+                err => err.ToBadRequest());
+
     [HttpPost]
     [Route("members")]
     public Task<IActionResult> AddMember(
         [FromBody] AddChatGroupMember addChatGroupMember,
         CancellationToken cancellationToken = default)
-        => SendAsync<AddChatGroupMember, AddChatGroupMemberResult>(addChatGroupMember, cancellationToken)
+        => SendAsync<AddChatGroupMember, AddChatGroupMemberResult>(
+                addChatGroupMember,
+                cancellationToken)
             .ToAsync()
             .Match(id => Ok(id), err => err.ToBadRequest());
 }
