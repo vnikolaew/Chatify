@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Threading.RateLimiting;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
+using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
@@ -73,21 +73,12 @@ internal sealed class SendGroupChatMessageHandler
         var uploadedFilesUrls = new List<string>();
         if (command.Attachments?.Any() ?? false)
         {
-            var filesUploadResults = await _fileUploadService.UploadManyAsync(new MultipleFileUploadRequest
-            {
-                Files = command.Attachments,
-                UserId = _identityContext.Id
-            }, cancellationToken);
-            
-            uploadedFilesUrls = filesUploadResults
-                .Where(r => r.IsRight)
-                .Select(r => r.Match(_ => null!, r => r))
-                .Select(r => r.FileUrl)
-                .ToList();
+            uploadedFilesUrls = await HandleFileUploads(
+                command.Attachments,
+                cancellationToken);
         }
 
         var messageId = _guidGenerator.New();
-
         var message = new ChatMessage
         {
             UserId = _identityContext.Id,
@@ -95,7 +86,7 @@ internal sealed class SendGroupChatMessageHandler
             Id = messageId,
             CreatedAt = _clock.Now,
             Attachments = uploadedFilesUrls,
-            Content = command.Content,
+            Content = command.Content
         };
 
         await _messages.SaveAsync(message, cancellationToken);
@@ -109,5 +100,24 @@ internal sealed class SendGroupChatMessageHandler
         }, cancellationToken);
 
         return message.Id;
+    }
+
+    private async Task<List<string>> HandleFileUploads(
+        IEnumerable<InputFile> inputFiles,
+        CancellationToken cancellationToken)
+    {
+        var filesUploadResults = await _fileUploadService.UploadManyAsync(
+            new MultipleFileUploadRequest
+            {
+                Files = inputFiles,
+                UserId = _identityContext.Id
+            }, cancellationToken);
+
+        var uploadedFilesUrls = filesUploadResults
+            .Where(r => r.IsRight)
+            .Select(r =>
+                r.Match(r => r.FileUrl, _ => null!))
+            .ToList();
+        return uploadedFilesUrls;
     }
 }
