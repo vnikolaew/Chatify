@@ -25,7 +25,6 @@ internal sealed class ChangeUserStatusHandler
     private readonly IDomainRepository<Domain.Entities.User, Guid> _users;
     private readonly IEventDispatcher _eventDispatcher;
     
-
     public ChangeUserStatusHandler(
         IIdentityContext identityContext,
         IDomainRepository<Domain.Entities.User, Guid> users,
