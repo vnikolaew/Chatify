@@ -4,6 +4,7 @@ using AspNetCore.Identity.Cassandra.Models;
 using Chatify.Application.Authentication.Commands;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Domain.Common;
+using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Authentication.External.Facebook;
 using Chatify.Infrastructure.Authentication.External.Google;
 using Chatify.Infrastructure.Data.Models;
@@ -20,7 +21,7 @@ public sealed class AuthenticationService : IAuthenticationService
 {
     private readonly SignInManager<ChatifyUser> _signInManager;
     private readonly UserManager<ChatifyUser> _userManager;
-    private readonly IDomainRepository<Domain.Entities.User, Guid> _users;
+    private readonly IUserRepository _users;
     private readonly IContext _context;
 
     private readonly IGoogleOAuthClient _googleOAuthClient;
@@ -34,7 +35,7 @@ public sealed class AuthenticationService : IAuthenticationService
         IGoogleOAuthClient googleOAuthClient,
         IFacebookOAuthClient facebookOAuthClient,
         IContext context,
-        IDomainRepository<Domain.Entities.User, Guid> users)
+        IUserRepository users)
     {
         _userManager = userManager;
         _signInManager = signInManager;

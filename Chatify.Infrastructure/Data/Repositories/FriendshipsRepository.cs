@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Chatify.Domain.Repositories;
+using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Shared.Abstractions.Serialization;
 using Humanizer;
@@ -40,7 +42,7 @@ public sealed class FriendshipsRepository
         var users = await Task.WhenAll(userOne, userTwo);
 
         // Store each user as a friend in the other user's sorted set of friends:
-        var storeTasks = new Task[]
+        var storeTasks = new[]
         {
             _cache.SortedSetAddAsync(
                 new RedisKey($"user:{entity.FriendOneId}:friends"),
@@ -52,15 +54,11 @@ public sealed class FriendshipsRepository
                 new RedisValue(entity.FriendOneId.ToString()),
                 entity.CreatedAt.Ticks,
                 SortedSetWhen.NotExists),
-            _cache.StringSetAsync(
-                new RedisKey($"user:{entity.FriendOneId}"),
-                new RedisValue(_serializer.Serialize(users[0]))),
-            _cache.StringSetAsync(
-                new RedisKey($"user:{entity.FriendTwoId}"),
-                new RedisValue(_serializer.Serialize(users[1]))),
+            _cache.SetAsync($"user:{entity.FriendOneId}", users[0]),
+            _cache.SetAsync($"user:{entity.FriendTwoId}", users[1]),
         };
 
-        await Task.WhenAll(storeTasks);
+        var results = await Task.WhenAll(storeTasks);
         return result;
     }
 
@@ -74,18 +72,23 @@ public sealed class FriendshipsRepository
         var friendsStrings = new List<string>();
         foreach (var idsChunk in friendsIds.Chunk(10))
         {
-            var redisValues = await _cache.StringGetAsync(
-                idsChunk.Select(id => new RedisKey($"user:{id.ToString()}")).ToArray()
-            );
-
-            friendsStrings.AddRange(
-                redisValues.Select(v => v.ToString())
-            );
+            var chunkStrings = await _cache.GetAsync<string>(idsChunk.Select(id => $"user:{id.ToString()}"));
+            friendsStrings.AddRange(chunkStrings!);
         }
 
-        return Mapper.Map<List<Domain.Entities.User>>(
-            friendsStrings
-                .Select(f => _serializer.Deserialize<ChatifyUser>(f.ToString())));
+        return friendsStrings.Select(f => _serializer.Deserialize<ChatifyUser>(f))
+            .AsQueryable()
+            .ProjectTo<Domain.Entities.User>(Mapper.ConfigurationProvider)
+            .ToList();
+    }
+
+    public async Task<bool> DeleteForUsers(
+        Guid friendOneId, Guid friendTwoId, CancellationToken cancellationToken = default)
+    {
+        await DbMapper.DeleteAsync<FriendsRelation>(" WHERE friend_one_id = ? AND friend_two_id = ? ALLOW FILTERING;",
+            friendOneId, friendTwoId);
+        
+        return true;
     }
 
     public async Task<List<Guid>> AllFriendIdsForUser(
@@ -94,6 +97,7 @@ public sealed class FriendshipsRepository
     {
         var friendsIds = await _cache.SortedSetRangeByScoreAsync(
             new RedisKey($"user:{userId}:friends"), order: Order.Descending);
+        
         return friendsIds.Select(id => Guid.Parse(id.ToString())).ToList();
     }
 }

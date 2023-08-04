@@ -27,6 +27,5 @@ internal sealed class GetMyFriendsHandler
     public async Task<GetMyFriendsResult> HandleAsync(
         GetMyFriends query,
         CancellationToken cancellationToken = default)
-        => await _friendships.AllForUser(
-            _identityContext.Id, cancellationToken);
+        => await _friendships.AllForUser(_identityContext.Id, cancellationToken);
 }

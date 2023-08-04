@@ -17,7 +17,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddWebComponents(this IServiceCollection services)
     {
         services
-            .AddScoped<TraceIdentifierMiddleware>()
+            // .AddScoped<TraceIdentifierMiddleware>()
             .AddControllers(opts => opts.Filters.Add<GlobalExceptionFilter>())
             .AddJsonOptions(opts => opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
             .ConfigureApiBehaviorOptions(opts => opts.SuppressModelStateInvalidFilter = true);

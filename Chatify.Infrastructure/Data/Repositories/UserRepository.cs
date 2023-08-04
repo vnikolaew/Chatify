@@ -1,7 +1,7 @@
-﻿using Cassandra.Mapping;
+﻿using AutoMapper.QueryableExtensions;
 using Chatify.Domain.Repositories;
+using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Data.Models;
-using Chatify.Shared.Abstractions.Serialization;
 using StackExchange.Redis;
 using Guid = System.Guid;
 using IMapper = AutoMapper.IMapper;
@@ -13,13 +13,11 @@ public sealed class UserRepository
     : BaseCassandraRepository<Domain.Entities.User, ChatifyUser, Guid>, IUserRepository
 {
     private readonly IDatabase _cache;
-    private readonly ISerializer _serializer;
 
-    public UserRepository(IMapper mapper, Mapper dbMapper, IDatabase cache, ISerializer serializer)
+    public UserRepository(IMapper mapper, Mapper dbMapper, IDatabase cache)
         : base(mapper, dbMapper)
     {
         _cache = cache;
-        _serializer = serializer;
     }
 
     public Task<Domain.Entities.User?> GetByUsername(string usernameQuery,
@@ -31,13 +29,10 @@ public sealed class UserRepository
     public async Task<List<Domain.Entities.User>?> AllByUserIds(
         IEnumerable<Guid> userIds, CancellationToken cancellationToken = default)
     {
-        var users = await _cache.StringGetAsync(
-            userIds.Select(id => new RedisKey($"user:{id.ToString()}")).ToArray()
-        );
-
-        return Mapper.Map<List<Domain.Entities.User>>(
-            users
-                .Select(u =>
-                    _serializer.Deserialize<ChatifyUser>(u.ToString())));
+        var cacheUsers = await _cache.GetAsync<ChatifyUser>(userIds.Select(id => $"user:{id.ToString()}"));
+        return cacheUsers
+            .AsQueryable()
+            .ProjectTo<Domain.Entities.User>(Mapper.ConfigurationProvider)
+            .ToList();
     }
 }

@@ -19,12 +19,10 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        if (configuration.GetValue<bool>("UseSeeding"))
-        {
-            services.AddHostedService<DatabaseSeedingService>();
-        }
+        if (!configuration.GetValue<bool>("UseSeeding")) return services;
 
         return services
+            .AddHostedService<DatabaseSeedingService>()
             .Scan(s => s.FromExecutingAssembly()
                 .AddClasses(c => c.AssignableTo<ISeeder>()
                     .Where(t => t is { IsAbstract: false, IsInterface: false }))
@@ -40,7 +38,7 @@ public static class DependencyInjection
         var mappingsList = Assembly
             .GetExecutingAssembly()
             .GetTypes()
-            .Where(t => !t.IsAbstract && !t.IsInterface && t.IsSubclassOf(typeof(Cassandra.Mapping.Mappings)))
+            .Where(t => t is { IsAbstract: false, IsInterface: false } && t.IsSubclassOf(typeof(Cassandra.Mapping.Mappings)))
             .Select(Activator.CreateInstance)
             .Cast<Cassandra.Mapping.Mappings>()
             .Where(m => m is not null)

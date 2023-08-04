@@ -11,6 +11,7 @@ namespace Chatify.Infrastructure.Data.Repositories;
 public sealed class ChatGroupMembersRepository :
     BaseCassandraRepository<ChatGroupMember, Models.ChatGroupMember, Guid>,
     IChatGroupMemberRepository
+    
 {
     private readonly IDatabase _cache;
 

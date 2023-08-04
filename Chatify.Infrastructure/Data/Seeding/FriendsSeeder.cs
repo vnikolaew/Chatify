@@ -38,6 +38,8 @@ internal sealed class FriendsSeeder : ISeeder
                 FriendTwoId = userTwoId,
                 CreatedAt = DateTimeOffset.Now
             };
+            
+            insertedMembers.Add((userOneId, userTwoId));
             await mapper.InsertAsync(friends, insertNulls: true);
         }
     }

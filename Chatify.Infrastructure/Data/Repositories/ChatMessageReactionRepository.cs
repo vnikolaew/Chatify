@@ -37,14 +37,17 @@ public sealed class ChatMessageReactionRepository
         var messageReaction = await GetAsync(id, cancellationToken);
         if (messageReaction is null) return false;
 
-        var success = await base.DeleteAsync(id, cancellationToken);
-        if (!success) return false;
-
         var messageReactionsKey = new RedisKey($"message-reactions:{messageReaction.MessageId}");
         var userId = new RedisValue(messageReaction.UserId.ToString());
 
-        await _cache.SetRemoveAsync(messageReactionsKey, userId);
-        return true;
+        var removeTasks = new[]
+        {
+            base.DeleteAsync(id, cancellationToken),
+            _cache.SetRemoveAsync(messageReactionsKey, userId)
+        };
+        
+        var results = await Task.WhenAll(removeTasks);
+        return results.All(_ => _);
     }
 
     public async Task<bool> Exists(
