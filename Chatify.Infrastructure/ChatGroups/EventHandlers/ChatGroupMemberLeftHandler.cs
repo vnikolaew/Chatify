@@ -25,6 +25,9 @@ internal sealed class ChatGroupMemberLeftHandler
         _chatifyHubContext = chatifyHubContext;
         _identityContext = identityContext;
     }
+    
+    // private static RedisKey GetGroupMembersCacheKey(Guid groupId)
+    //     => new($"groups:{groupId.ToString()}:members");
 
     public async Task HandleAsync(
         ChatGroupMemberLeftEvent @event,

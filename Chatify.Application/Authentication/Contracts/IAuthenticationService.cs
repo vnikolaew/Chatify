@@ -42,6 +42,9 @@ public interface IAuthenticationService
         Guid userId,
         CancellationToken cancellationToken = default);
 
-    Task<Either<Error, Unit>> ChangePasswordAsync(Guid userId, string oldPassword, string newPassword,
+    Task<Either<Error, Unit>> ChangePasswordAsync(
+        Guid userId,
+        string currentPassword,
+        string newPassword,
         CancellationToken cancellationToken = default);
 }

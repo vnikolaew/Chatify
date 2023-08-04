@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using Guid = System.Guid;
 using AddChatGroupMemberResult = LanguageExt.Either<LanguageExt.Common.Error, System.Guid>;
 using EditChatGroupDetailsResult = LanguageExt.Either<LanguageExt.Common.Error, LanguageExt.Unit>;
+using AddChatGroupAdminResult = LanguageExt.Either<LanguageExt.Common.Error, LanguageExt.Unit>;
+using RemoveChatGroupMemberResult = LanguageExt.Either<LanguageExt.Common.Error, LanguageExt.Unit>;
+using LeaveChatGroupResult = LanguageExt.Either<LanguageExt.Common.Error, LanguageExt.Unit>;
 using static Chatify.Web.Features.ChatGroups.Models.Models;
 
 namespace Chatify.Web.Features.ChatGroups;
@@ -53,4 +56,38 @@ public class ChatGroupsController : ApiController
                 cancellationToken)
             .ToAsync()
             .Match(id => Ok(id), err => err.ToBadRequest());
+
+    [HttpDelete]
+    [Route("members")]
+    public Task<IActionResult> RemoveMember(
+        [FromBody] RemoveChatGroupMember removeChatGroupMember,
+        CancellationToken cancellationToken = default)
+        => SendAsync<RemoveChatGroupMember, RemoveChatGroupMemberResult>(
+                removeChatGroupMember,
+                cancellationToken)
+            .ToAsync()
+            .Match(_ => NoContent(), err => err.ToBadRequest());
+
+    [HttpPost]
+    [Route("leave")]
+    public Task<IActionResult> LeaveChatGroup(
+        [FromBody] LeaveChatGroup leaveChatGroup,
+        CancellationToken cancellationToken = default)
+        => SendAsync<LeaveChatGroup, LeaveChatGroupResult>(
+                leaveChatGroup,
+                cancellationToken)
+            .ToAsync()
+            .Match(_ => Accepted(), err => err.ToBadRequest());
+
+
+    [HttpPost]
+    [Route("admins")]
+    public Task<IActionResult> AddAdmin(
+        [FromBody] AddChatGroupAdmin addChatGroupAdmin,
+        CancellationToken cancellationToken = default)
+        => SendAsync<AddChatGroupAdmin, AddChatGroupAdminResult>(
+                addChatGroupAdmin,
+                cancellationToken)
+            .ToAsync()
+            .Match(_ => Accepted(), err => err.ToBadRequest());
 }

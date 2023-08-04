@@ -14,11 +14,27 @@ using DeclineFriendInvitationResult = Either<Error, Unit>;
 using AcceptFriendInvitationResult = Either<Error, Guid>;
 using GetIncomingInvitationsResult = Either<Error, List<FriendInvitation>>;
 using GetSentInvitationsResult = Either<Error, List<FriendInvitation>>;
+using GetMyFriendsResult = Either<Error, List<User>>;
 
 public class FriendshipsController : ApiController
 {
+    private const string SentFriendshipsEndpoint = "sent";
+    private const string IncomingFriendshipsEndpoint = "incoming";
+
+    private const string InviteEndpoint = "invite";
+    private const string AcceptEndpoint = "accept";
+    private const string DeclineEndpoint = "decline";
+
     [HttpGet]
-    [Route("sent")]
+    public Task<IActionResult> GetMyFriends(CancellationToken cancellationToken = default)
+        => QueryAsync<GetMyFriends, GetMyFriendsResult>(
+                new GetMyFriends(),
+                cancellationToken)
+            .ToAsync()
+            .Match(friends => Ok(new { Data = friends }), err => err.ToBadRequest());
+
+    [HttpGet]
+    [Route(SentFriendshipsEndpoint)]
     public Task<IActionResult> GetSentInvitations(CancellationToken cancellationToken = default)
         => QueryAsync<GetSentInvitations, GetSentInvitationsResult>(
                 new GetSentInvitations(),
@@ -27,7 +43,7 @@ public class FriendshipsController : ApiController
             .Match(invitations => Ok(new { Data = invitations }), err => err.ToBadRequest());
 
     [HttpGet]
-    [Route("incoming")]
+    [Route(IncomingFriendshipsEndpoint)]
     public Task<IActionResult> GetIncomingInvitations(CancellationToken cancellationToken = default)
         => QueryAsync<GetIncomingInvitations, GetIncomingInvitationsResult>(
                 new GetIncomingInvitations(),
@@ -36,7 +52,7 @@ public class FriendshipsController : ApiController
             .Match(invitations => Ok(new { Data = invitations }), err => err.ToBadRequest());
 
     [HttpPost]
-    [Route("invite/{userId:guid}")]
+    [Route($"{InviteEndpoint}/{{userId:guid}}")]
     public Task<IActionResult> SendFriendInvite([FromRoute] Guid userId, CancellationToken cancellationToken = default)
         => SendAsync<SendFriendInvitation, SendFriendInvitationResult>(
                 new SendFriendInvitation(userId),
@@ -45,7 +61,7 @@ public class FriendshipsController : ApiController
             .Match(id => Accepted(id), err => err.ToBadRequest());
 
     [HttpPost]
-    [Route("accept/{inviteId:guid}")]
+    [Route($"{AcceptEndpoint}/{{inviteId:guid}}")]
     public Task<IActionResult> AcceptFriendInvite([FromRoute] Guid inviteId,
         CancellationToken cancellationToken = default)
         => SendAsync<AcceptFriendInvitation, AcceptFriendInvitationResult>(
@@ -55,7 +71,7 @@ public class FriendshipsController : ApiController
             .Match(id => Accepted(id), err => err.ToBadRequest());
 
     [HttpPost]
-    [Route("decline/{inviteId:guid}")]
+    [Route($"{DeclineEndpoint}/{{inviteId:guid}}")]
     public Task<IActionResult> DeclineFriendInvite([FromRoute] Guid inviteId,
         CancellationToken cancellationToken = default)
         => SendAsync<DeclineFriendInvitation, DeclineFriendInvitationResult>(
