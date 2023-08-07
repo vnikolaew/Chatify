@@ -1,17 +1,21 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.User.Commands;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Groups;
+using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
-using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.ChatGroups.Commands;
 
-using AddChatGroupMemberResult = Either<Error, Guid>;
+using AddChatGroupMemberResult =
+    OneOf<UserNotFound, UserIsNotGroupAdminError, ChatGroupNotFoundError, UserIsAlreadyGroupMemberError, Guid>;
+
+public record UserIsAlreadyGroupMemberError(Guid UserId, Guid ChatGroupId);
 
 public record AddChatGroupMember(
     [Required] Guid GroupId,
@@ -25,14 +29,14 @@ internal sealed class AddChatGroupMemberHandler
 {
     private readonly IIdentityContext _identityContext;
     private readonly IEventDispatcher _eventDispatcher;
-    private readonly IDomainRepository<ChatGroupMember, Guid> _members;
+    private readonly IChatGroupMemberRepository _members;
     private readonly IDomainRepository<ChatGroup, Guid> _groups;
     private readonly IDomainRepository<Domain.Entities.User, Guid> _users;
     private readonly IClock _clock;
 
     public AddChatGroupMemberHandler(
         IIdentityContext identityContext,
-        IDomainRepository<ChatGroupMember, Guid> members,
+        IChatGroupMemberRepository members,
         IDomainRepository<ChatGroup, Guid> groups,
         IEventDispatcher eventDispatcher,
         IClock clock, IDomainRepository<Domain.Entities.User, Guid> users)
@@ -51,18 +55,24 @@ internal sealed class AddChatGroupMemberHandler
     {
         var group = await _groups.GetAsync(command.GroupId, cancellationToken);
 
-        if (group is null) return Error.New("Chat group does not exist.");
-        if (!group.AdminIds.Contains(_identityContext.Id))
+        if ( group is null ) return new ChatGroupNotFoundError();
+        if ( !group.AdminIds.Contains(_identityContext.Id) )
         {
-            return Error.New("Current user does not have permissions to add new members.");
+            return new UserIsNotGroupAdminError(_identityContext.Id, group.Id);
         }
 
         var memberUser = await _users.GetAsync(command.NewMemberId, cancellationToken);
-        if (memberUser is null)
+        if ( memberUser is null )
         {
-            return Error.New("New member does not exist as a user.");
+            return new UserNotFound();
         }
-            
+
+        var isMember = await _members.Exists(group.Id, memberUser.Id, cancellationToken);
+        if ( isMember )
+        {
+            return new UserIsAlreadyGroupMemberError(memberUser.Id, group.Id);
+        }
+
         var member = new ChatGroupMember
         {
             Id = Guid.NewGuid(),
@@ -81,7 +91,7 @@ internal sealed class AddChatGroupMemberHandler
             MembershipType = command.MembershipType,
             Timestamp = _clock.Now
         }, cancellationToken);
-            
+
         return member.Id;
     }
 }

@@ -1,15 +1,18 @@
 using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common.Behaviours.Caching;
+using Chatify.Application.User.Queries;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Queries;
-using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.User.Queries;
-using SearchUsersByNameResult = Either<Error, Domain.Entities.User>;
 
+using SearchUsersByNameResult = OneOf<UserNotFound, Domain.Entities.User>;
+
+[Cached("user-by-username", 30)]
 public record SearchUsersByName(
-    [Required] string NameSearchQuery
-    ) : IQuery<SearchUsersByNameResult>;
+    [Required] [property: CacheKey] string SearchQuery
+) : IQuery<SearchUsersByNameResult>;
 
 internal sealed class SearchUsersByNameHandler
     : IQueryHandler<SearchUsersByName, SearchUsersByNameResult>
@@ -25,9 +28,8 @@ internal sealed class SearchUsersByNameHandler
         CancellationToken cancellationToken = default)
     {
         // Figure put Full-Text search here:
-        var user = await _users.GetByUsername(
-            command.NameSearchQuery, cancellationToken);
-        
+        var user = await _users.GetByUsername(command.SearchQuery, cancellationToken);
+        if ( user is null ) return new UserNotFound();
         return user;
     }
 }

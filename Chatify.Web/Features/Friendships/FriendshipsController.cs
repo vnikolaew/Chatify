@@ -1,20 +1,23 @@
 ﻿using Chatify.Application.Friendships.Commands;
 using Chatify.Application.Friendships.Queries;
+using Chatify.Application.User.Commands;
 using Chatify.Domain.Entities;
 using Chatify.Web.Common;
 using Chatify.Web.Extensions;
 using LanguageExt;
 using LanguageExt.Common;
 using Microsoft.AspNetCore.Mvc;
+using OneOf;
 
 namespace Chatify.Web.Features.Friendships;
 
-using SendFriendInvitationResult = Either<Error, Guid>;
-using DeclineFriendInvitationResult = Either<Error, Unit>;
-using AcceptFriendInvitationResult = Either<Error, Guid>;
-using GetIncomingInvitationsResult = Either<Error, List<FriendInvitation>>;
-using GetSentInvitationsResult = Either<Error, List<FriendInvitation>>;
-using GetMyFriendsResult = Either<Error, List<User>>;
+using SendFriendInvitationResult = OneOf<UserNotFound, FriendInviteNotFoundError, Guid>;
+using DeclineFriendInvitationResult = OneOf<FriendInviteNotFoundError, FriendInviteInvalidStateError, Unit>;
+using AcceptFriendInvitationResult = OneOf<FriendInviteNotFoundError, FriendInviteInvalidStateError, Guid>;
+using UnfriendUserResult = OneOf<UsersAreNotFriendsError, Unit>;
+using GetIncomingInvitationsResult = OneOf<Error, List<FriendInvitation>>;
+using GetSentInvitationsResult = OneOf<Error, List<FriendInvitation>>;
+using GetMyFriendsResult = OneOf<Error, List<User>>;
 
 public class FriendshipsController : ApiController
 {
@@ -26,57 +29,93 @@ public class FriendshipsController : ApiController
     private const string DeclineEndpoint = "decline";
 
     [HttpGet]
-    public Task<IActionResult> GetMyFriends(CancellationToken cancellationToken = default)
-        => QueryAsync<GetMyFriends, GetMyFriendsResult>(
-                new GetMyFriends(),
-                cancellationToken)
-            .ToAsync()
-            .Match(friends => Ok(new { Data = friends }), err => err.ToBadRequest());
+    public async Task<IActionResult> GetMyFriends(CancellationToken cancellationToken = default)
+    {
+        var result = await QueryAsync<GetMyFriends, GetMyFriendsResult>(
+            new GetMyFriends(),
+            cancellationToken);
+        return result.Match(
+            err => err.ToBadRequest(),
+            friends => Ok(new { Data = friends }));
+    }
 
     [HttpGet]
     [Route(SentFriendshipsEndpoint)]
-    public Task<IActionResult> GetSentInvitations(CancellationToken cancellationToken = default)
-        => QueryAsync<GetSentInvitations, GetSentInvitationsResult>(
-                new GetSentInvitations(),
-                cancellationToken)
-            .ToAsync()
-            .Match(invitations => Ok(new { Data = invitations }), err => err.ToBadRequest());
+    public async Task<IActionResult> GetSentInvitations(CancellationToken cancellationToken = default)
+    {
+        var result = await QueryAsync<GetSentInvitations, GetSentInvitationsResult>(
+            new GetSentInvitations(),
+            cancellationToken);
+
+        return result.Match(
+            err => err.ToBadRequest(),
+            invitations => Ok(new { Data = invitations }));
+    }
 
     [HttpGet]
     [Route(IncomingFriendshipsEndpoint)]
-    public Task<IActionResult> GetIncomingInvitations(CancellationToken cancellationToken = default)
-        => QueryAsync<GetIncomingInvitations, GetIncomingInvitationsResult>(
-                new GetIncomingInvitations(),
-                cancellationToken)
-            .ToAsync()
-            .Match(invitations => Ok(new { Data = invitations }), err => err.ToBadRequest());
+    public async Task<IActionResult> GetIncomingInvitations(CancellationToken cancellationToken = default)
+    {
+        var result = await QueryAsync<GetIncomingInvitations, GetIncomingInvitationsResult>(
+            new GetIncomingInvitations(),
+            cancellationToken);
+        return result.Match(
+            err => err.ToBadRequest(),
+            invitations => Ok(new { Data = invitations }));
+    }
 
     [HttpPost]
     [Route($"{InviteEndpoint}/{{userId:guid}}")]
-    public Task<IActionResult> SendFriendInvite([FromRoute] Guid userId, CancellationToken cancellationToken = default)
-        => SendAsync<SendFriendInvitation, SendFriendInvitationResult>(
-                new SendFriendInvitation(userId),
-                cancellationToken)
-            .ToAsync()
-            .Match(id => Accepted(id), err => err.ToBadRequest());
+    public async Task<IActionResult> SendFriendInvite([FromRoute] Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await SendAsync<SendFriendInvitation, SendFriendInvitationResult>(
+            new SendFriendInvitation(userId),
+            cancellationToken);
+        return result.Match<IActionResult>(
+            _ => BadRequest(),
+            _ => BadRequest(),
+            id => Accepted(id));
+    }
 
     [HttpPost]
     [Route($"{AcceptEndpoint}/{{inviteId:guid}}")]
-    public Task<IActionResult> AcceptFriendInvite([FromRoute] Guid inviteId,
+    public async Task<IActionResult> AcceptFriendInvite([FromRoute] Guid inviteId,
         CancellationToken cancellationToken = default)
-        => SendAsync<AcceptFriendInvitation, AcceptFriendInvitationResult>(
-                new AcceptFriendInvitation(inviteId),
-                cancellationToken)
-            .ToAsync()
-            .Match(id => Accepted(id), err => err.ToBadRequest());
+    {
+        var result = await SendAsync<AcceptFriendInvitation, AcceptFriendInvitationResult>(
+            new AcceptFriendInvitation(inviteId),
+            cancellationToken);
+
+        return result.Match<IActionResult>(
+            _ => BadRequest(),
+            _ => BadRequest(),
+            id => Accepted(id));
+    }
 
     [HttpPost]
     [Route($"{DeclineEndpoint}/{{inviteId:guid}}")]
-    public Task<IActionResult> DeclineFriendInvite([FromRoute] Guid inviteId,
+    public async Task<IActionResult> DeclineFriendInvite([FromRoute] Guid inviteId,
         CancellationToken cancellationToken = default)
-        => SendAsync<DeclineFriendInvitation, DeclineFriendInvitationResult>(
-                new DeclineFriendInvitation(inviteId),
-                cancellationToken)
-            .ToAsync()
-            .Match(_ => NoContent(), err => err.ToBadRequest());
+    {
+        var result = await SendAsync<DeclineFriendInvitation, DeclineFriendInvitationResult>(
+            new DeclineFriendInvitation(inviteId), cancellationToken);
+        return result.Match<IActionResult>(
+            _ => NotFound(),
+            _ => BadRequest(),
+            _ => NoContent());
+    }
+
+    [HttpDelete]
+    [Route("{friendId:guid}")]
+    public async Task<IActionResult> UnfriendFriend(
+        [FromRoute] Guid friendId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await SendAsync<UnfriendUser, UnfriendUserResult>(
+            new UnfriendUser(friendId), cancellationToken);
+        return result.Match<IActionResult>(
+            _ => BadRequest(),
+            _ => NoContent());
+    }
 }

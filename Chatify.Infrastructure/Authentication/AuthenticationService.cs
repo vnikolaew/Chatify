@@ -3,6 +3,7 @@ using System.Security.Claims;
 using AspNetCore.Identity.Cassandra.Models;
 using Chatify.Application.Authentication.Commands;
 using Chatify.Application.Authentication.Contracts;
+using Chatify.Application.User.Commands;
 using Chatify.Domain.Common;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Authentication.External.Facebook;
@@ -13,6 +14,7 @@ using Humanizer;
 using LanguageExt;
 using LanguageExt.Common;
 using Microsoft.AspNetCore.Identity;
+using OneOf;
 using static Chatify.Infrastructure.Authentication.External.Constants.AuthProviders;
 
 namespace Chatify.Infrastructure.Authentication;
@@ -241,33 +243,29 @@ public sealed class AuthenticationService : IAuthenticationService
                 .Select(e => Error.New(e.Description))));
     }
 
-    public async Task<string?> GenerateEmailConfirmationTokenAsync(
+    public async Task<OneOf<UserNotFound, string>> GenerateEmailConfirmationTokenAsync(
         Guid userId,
         CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user is null) return default;
+        if (user is null) return new UserNotFound();
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         return token;
     }
 
-    public async Task<Either<Error, Unit>> ChangePasswordAsync(
+    public async Task<OneOf<UserNotFound, PasswordChangeError, Unit>> ChangePasswordAsync(
         Guid userId,
         string currentPassword,
         string newPassword,
         CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user is null) return default;
+        if ( user is null ) return new UserNotFound();
 
         var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
         return result.Succeeded
             ? Unit.Default
-            : Error.Many(
-                new Seq<Error>(
-                    result.Errors.Select(e => Error.New(e.Description))
-                )
-            );
+            : new PasswordChangeError(result.Errors.First().Description);
     }
 }

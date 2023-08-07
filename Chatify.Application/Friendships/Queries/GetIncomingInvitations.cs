@@ -2,12 +2,12 @@
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
-using LanguageExt;
 using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.Friendships.Queries;
 
-using GetIncomingInvitationsResult = Either<Error, List<FriendInvitation>>;
+using GetIncomingInvitationsResult = OneOf<Error, List<FriendInvitation>>;
 
 public record GetIncomingInvitations : IQuery<GetIncomingInvitationsResult>;
 

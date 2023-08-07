@@ -8,11 +8,11 @@ using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.ChatGroups.Commands;
 
-using RemoveChatGroupMemberResult = Either<Error, Unit>;
+using RemoveChatGroupMemberResult = OneOf<ChatGroupNotFoundError, UserIsNotMemberError, UserIsNotGroupAdminError, Unit>;
 
 public record RemoveChatGroupMember(
     [Required] Guid GroupId,
@@ -47,26 +47,27 @@ internal sealed class RemoveChatGroupMemberHandler
         CancellationToken cancellationToken = default)
     {
         var chatGroup = await _groups.GetAsync(command.GroupId, cancellationToken);
-        if (chatGroup is null
-            || chatGroup.AdminIds.All(id => id != _identityContext.Id))
+        if ( chatGroup is null ) return new ChatGroupNotFoundError();
+
+        if ( chatGroup.AdminIds.All(id => id != _identityContext.Id) )
         {
-            return Error.New("");
+            return new UserIsNotGroupAdminError(_identityContext.Id, chatGroup.Id);
         }
 
-        var member = await _members.ByGroupAndUser(
+        var memberExists = await _members.Exists(
             command.GroupId, command.MemberId,
             cancellationToken);
-        if (member is null) return Error.New("");
+        if ( !memberExists ) return new UserIsNotMemberError(_identityContext.Id, chatGroup.Id);
 
-        await _members.DeleteAsync(member.Id, cancellationToken);
+        await _members.DeleteAsync(_identityContext.Id, cancellationToken);
         await _eventDispatcher.PublishAsync(new ChatGroupMemberRemovedEvent
         {
             GroupId = chatGroup.Id,
             Timestamp = _clock.Now,
-            MemberId = member.UserId,
+            MemberId = _identityContext.Id,
             RemovedById = _identityContext.Id,
         }, cancellationToken);
-        
+
         return Unit.Default;
     }
 }

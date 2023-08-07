@@ -1,22 +1,24 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.ChatGroups.Commands;
+using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
-using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
-using LanguageExt;
-using LanguageExt.Common;
+using Chatify.Shared.Abstractions.Queries;
+using OneOf;
 
 namespace Chatify.Application.ChatGroups.Queries;
 
-using GetChatGroupMembersListResult = Either<Error, List<ChatGroupMember>>;
+using GetChatGroupMembersListResult = OneOf<UserIsNotMemberError, ChatGroupNotFoundError, List<ChatGroupMember>>;
 
+[Cached("chat-group-members", 30)]
 public record GetChatGroupMembersList(
-    [Required] Guid ChatGroupId
-) : ICommand<GetChatGroupMembersListResult>;
+    [Required] [property: CacheKey] Guid ChatGroupId
+) : IQuery<GetChatGroupMembersListResult>;
 
 internal sealed class GetChatGroupMembersListHandler
-    : ICommandHandler<GetChatGroupMembersList, GetChatGroupMembersListResult>
+    : IQueryHandler<GetChatGroupMembersList, GetChatGroupMembersListResult>
 {
     private readonly IChatGroupMemberRepository _members;
     private readonly IDomainRepository<ChatGroup, Guid> _groups;
@@ -39,15 +41,15 @@ internal sealed class GetChatGroupMembersListHandler
         var group = await _groups.GetAsync(
             command.ChatGroupId,
             cancellationToken);
-        if (group is null) return Error.New("Chat Group does not exist.");
+        if ( group is null ) return new ChatGroupNotFoundError();
 
         var isMember = await _members.Exists(
             group.Id, _identityContext.Id, cancellationToken);
-        if (!isMember) return Error.New("Current user is not a member of the Chat Group.");
+        if ( !isMember ) return new UserIsNotMemberError(_identityContext.Id, group.Id);
 
         var members = await _members
             .ByGroup(group.Id, cancellationToken);
-        
+
         return members;
     }
 }

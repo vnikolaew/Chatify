@@ -7,12 +7,15 @@ using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
-using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.Friendships.Commands;
 
-using AcceptFriendInvitationResult = Either<Error, Guid>;
+using AcceptFriendInvitationResult = OneOf<FriendInviteNotFoundError, FriendInviteInvalidStateError, Guid>;
+
+public record FriendInviteNotFoundError(Guid InviteId = default, Guid InviteeId = default);
+
+public record FriendInviteInvalidStateError(FriendInvitationStatus Status);
 
 public record AcceptFriendInvitation([Required] Guid InviteId) : ICommand<AcceptFriendInvitationResult>;
 
@@ -47,9 +50,11 @@ internal sealed class AcceptFriendInvitationHandler :
     {
         // Check if friend invite exists and is in a 'Pending' state:
         var friendInvite = await _friendInvites.GetAsync(command.InviteId, cancellationToken: cancellationToken);
-        if (friendInvite is null || friendInvite.Status != (sbyte)FriendInvitationStatus.Pending)
+        if ( friendInvite is null ) return new FriendInviteNotFoundError(command.InviteId);
+        if (friendInvite.Status != (sbyte)FriendInvitationStatus.Pending)
         {
-            return Error.New("Friend invitation does not exist or is not in a pending state.");
+            return new FriendInviteInvalidStateError((FriendInvitationStatus)
+                friendInvite.Status);
         }
 
         var friendsRelationId = _guidGenerator.New();
@@ -82,6 +87,7 @@ internal sealed class AcceptFriendInvitationHandler :
             InviteId = friendInvite.Id,
             Timestamp = _clock.Now
         }, cancellationToken);
+        
         return friendsRelation.Id;
     }
 }

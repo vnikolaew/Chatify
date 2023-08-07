@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using AutoMapper.Internal;
 using Chatify.Application.Authentication.Contracts;
+using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Messages.Contracts;
 using Chatify.Domain.Common;
@@ -12,6 +13,7 @@ using Chatify.Infrastructure.Authentication;
 using Chatify.Infrastructure.Authentication.External.Facebook;
 using Chatify.Infrastructure.Authentication.External.Google;
 using Chatify.Infrastructure.Common;
+using Chatify.Infrastructure.Common.Caching;
 using Chatify.Infrastructure.Data;
 using Chatify.Infrastructure.Data.Repositories;
 using Chatify.Infrastructure.Data.Seeding;
@@ -102,6 +104,7 @@ public static class DependencyInjection
 
         return services
             .AddSingleton<IConnectionMultiplexer>(connectionMultiplexer)
+            .AddScoped<ICacheService, RedisCacheService>()
             .AddSingleton<IDatabase>(sp =>
                 sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase());
     }

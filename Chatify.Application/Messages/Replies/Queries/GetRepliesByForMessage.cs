@@ -1,17 +1,21 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.ChatGroups.Commands;
+using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
-using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.Messages.Replies.Queries;
 
-using GetMessagesForChatGroupResult = Either<Error, CursorPaged<ChatMessageReply>>;
+using GetMessagesForChatGroupResult = OneOf<MessageNotFoundError, UserIsNotMemberError, CursorPaged<ChatMessageReply>>;
 
+public record MessageNotFoundError(Guid MessageId);
+
+[Cached("message-replies", 10)]
 public record GetRepliesByForMessage(
-    [Required] Guid MessageId,
+    [Required] [property: CacheKey] Guid MessageId,
     [Required] int PageSize,
     [Required] string PagingCursor
 ) : IQuery<GetMessagesForChatGroupResult>;
@@ -41,12 +45,12 @@ internal sealed class GetRepliesByForMessageHandler
     {
         var message = await _messages.GetAsync(
             command.MessageId, cancellationToken);
-        if (message is null) return Error.New("Chat message does not exist.");
+        if ( message is null ) return new MessageNotFoundError(command.MessageId);
 
         var isGroupMember = await _members.Exists(
             message.ChatGroupId,
             _identityContext.Id, cancellationToken);
-        if (!isGroupMember) return Error.New("");
+        if ( !isGroupMember ) return new UserIsNotMemberError(_identityContext.Id, message.ChatGroupId);
 
         var messages = await _messageReplies.GetPaginatedByMessageAsync(
             command.MessageId, command.PageSize, command.PagingCursor, cancellationToken);

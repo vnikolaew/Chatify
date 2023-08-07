@@ -1,13 +1,15 @@
-﻿using Chatify.Domain.Repositories;
+﻿using Chatify.Application.Common.Behaviours.Caching;
+using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
-using LanguageExt;
 using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.Friendships.Queries;
 
-using GetMyFriendsResult = Either<Error, List<Domain.Entities.User>>;
+using GetMyFriendsResult = OneOf<Error, List<Domain.Entities.User>>;
 
+[CachedByUser("friends", 30)]
 public record GetMyFriends : IQuery<GetMyFriendsResult>;
 
 internal sealed class GetMyFriendsHandler

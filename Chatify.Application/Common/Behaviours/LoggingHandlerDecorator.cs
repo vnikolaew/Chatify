@@ -1,7 +1,9 @@
-﻿using Chatify.Shared.Abstractions.Commands;
+﻿using Chatify.Application.Common.Models;
+using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Guid = System.Guid;
 
 namespace Chatify.Application.Common.Behaviours;
 
@@ -59,6 +61,14 @@ public sealed class LoggingHandlerDecorator<TCommand, TResult>
         _logger.LogInformation("Incoming request: {Request} by user with Id '{@UserId}'",
             typeof(TCommand).Name, userId?.ToString() ?? "null");
 
-        return await _inner.HandleAsync(command, cancellationToken);
+        var result = await _inner.HandleAsync(command, cancellationToken);
+
+        if ( result is BaseError baseError )
+        {
+            _logger.LogInformation("Encountered an application error of type '{ErrorType'}: {ErrorMessage}",
+                typeof(TResult).Name, baseError.Message);
+        }
+
+        return result;
     }
 }

@@ -6,9 +6,13 @@ namespace Chatify.Domain.Repositories;
 
 public interface IChatMessageRepository : IDomainRepository<ChatMessage, Guid>
 {
-    Task<CursorPaged<ChatMessage>> GetPaginatedByGroupAsync(
-        Guid groupId,
-        int pageSize,
-        string pagingCursor,
-        CancellationToken cancellationToken = default);
+   Task<CursorPaged<ChatMessage>> GetPaginatedByGroupAsync(
+      Guid groupId,
+      int pageSize,
+      string pagingCursor,
+      CancellationToken cancellationToken = default);
+
+   Task<List<ChatMessage>> GetLatestForGroups(
+      IEnumerable<Guid> groupIds,
+      CancellationToken cancellationToken = default);
 }

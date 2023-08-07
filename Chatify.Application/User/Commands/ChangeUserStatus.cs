@@ -7,11 +7,10 @@ using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
-using LanguageExt.Common;
 
 namespace Chatify.Application.User.Commands;
 
-using ChangeUserStatusResult = Either<Error, Unit>;
+using ChangeUserStatusResult = OneOf.OneOf<Queries.UserNotFound, Unit>;
 
 public record ChangeUserStatus(
     [Required] UserStatus NewStatus
@@ -46,7 +45,7 @@ internal sealed class ChangeUserStatusHandler
             user.Status = command.NewStatus;
             user.UpdatedAt = _clock.Now;
         }, cancellationToken);
-        if (user is null) return Error.New("Status update was unsuccessful");
+        if ( user is null ) return new Queries.UserNotFound();
 
         await _eventDispatcher.PublishAsync(new UserChangedStatusEvent
         {

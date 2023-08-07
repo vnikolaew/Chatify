@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
+using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
@@ -9,12 +11,11 @@ using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
-using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.Messages.Replies.Commands;
 
-using ReplyToChatMessageResult = Either<Error, Guid>;
+using ReplyToChatMessageResult = OneOf<UserIsNotMemberError, MessageNotFoundError, Guid>;
 
 public record ReplyToChatMessage(
     [Required] Guid GroupId,
@@ -60,10 +61,10 @@ internal sealed class ReplyToChatMessageHandler
         var userIsGroupMember = await _members.Exists(
             command.GroupId,
             _identityContext.Id, cancellationToken);
-        if (!userIsGroupMember) return Error.New("");
+        if ( !userIsGroupMember ) return new UserIsNotMemberError(_identityContext.Id, command.GroupId);
 
         var message = await _messages.GetAsync(command.ReplyToId, cancellationToken);
-        if (message is null) return Error.New("");
+        if ( message is null ) return new MessageNotFoundError(command.ReplyToId);
 
         var messageReplyId = _guidGenerator.New();
         var messageReply = new ChatMessageReply

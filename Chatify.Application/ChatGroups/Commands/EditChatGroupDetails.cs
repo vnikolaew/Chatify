@@ -8,11 +8,11 @@ using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.ChatGroups.Commands;
 
-using EditChatGroupDetailsResult = Either<Error, Unit>;
+using EditChatGroupDetailsResult = OneOf<ChatGroupNotFoundError, UserIsNotMemberError, UserIsNotGroupAdminError, Unit>;
 
 public record EditChatGroupDetails(
     [Required] Guid ChatGroupId,
@@ -47,14 +47,15 @@ internal sealed class EditChatGroupDetailsHandler : ICommandHandler<EditChatGrou
         CancellationToken cancellationToken = default)
     {
         var group = await _groups.GetAsync(command.ChatGroupId, cancellationToken);
-        if (group is null) return Error.New("");
+        if ( group is null ) return new ChatGroupNotFoundError();
 
         var isMember = await _members.Exists(group.Id, _identityContext.Id, cancellationToken);
-        if (!isMember) return Error.New("");
-        if (!group.AdminIds.Contains(_identityContext.Id)) return Error.New("");
+        if ( !isMember ) return new UserIsNotMemberError(_identityContext.Id, group.Id);
+        if ( !group.AdminIds.Contains(_identityContext.Id) )
+            return new UserIsNotGroupAdminError(_identityContext.Id, group.Id);
 
         string? groupPictureUrl = default;
-        if (command.Picture is not null)
+        if ( command.Picture is not null )
         {
             var result = await _fileUploadService.UploadAsync(
                 new SingleFileUploadRequest

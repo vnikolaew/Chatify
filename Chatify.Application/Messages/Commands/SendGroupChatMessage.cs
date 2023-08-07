@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Domain.Common;
@@ -9,12 +10,11 @@ using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
-using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.Messages.Commands;
 
-using SendGroupChatMessageResult = Either<Error, Guid>;
+using SendGroupChatMessageResult = OneOf<ChatGroupNotFoundError, UserIsNotMemberError, Guid>;
 
 public record SendGroupChatMessage(
     [Required] Guid GroupId,
@@ -60,14 +60,14 @@ internal sealed class SendGroupChatMessageHandler
         CancellationToken cancellationToken = default)
     {
         var chatGroup = await _groups.GetAsync(command.GroupId, cancellationToken);
-        if (chatGroup is null) return Error.New($"Chat Group with Id '{command.GroupId}' was not found.");
+        if ( chatGroup is null ) return new ChatGroupNotFoundError();
 
         var userIsGroupMember = await _members.Exists(
             command.GroupId,
             _identityContext.Id,
             cancellationToken);
 
-        if (!userIsGroupMember) return Error.New("Current user is not a member of this Chat Group.");
+        if ( !userIsGroupMember ) return new UserIsNotMemberError(_identityContext.Id, command.GroupId);
 
         // TODO: Handle any file uploads:
         var uploadedFilesUrls = new List<string>();

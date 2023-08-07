@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Messages.Commands;
+using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
@@ -9,10 +11,11 @@ using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
 using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.Messages.Replies.Commands;
 
-using EditChatMessageReplyResult = Either<Error, Unit>;
+using EditChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
 
 public record EditChatMessageReply(
     [Required] Guid GroupId,
@@ -47,8 +50,9 @@ internal sealed class EditChatMessageReplyHandler
         CancellationToken cancellationToken = default)
     {
         var replyMessage = await _messageReplies.GetAsync(command.MessageId, cancellationToken);
-        if (replyMessage is null) return Error.New("");
-        if (replyMessage.UserId != _identityContext.Id) return Error.New("");
+        if ( replyMessage is null ) return new MessageNotFoundError(command.MessageId);
+        if ( replyMessage.UserId != _identityContext.Id )
+            return new UserIsNotMessageSenderError(replyMessage.Id, _identityContext.Id);
 
         await _messageReplies.UpdateAsync(replyMessage.Id, chatMessage =>
         {

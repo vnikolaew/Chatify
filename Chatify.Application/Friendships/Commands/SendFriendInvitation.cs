@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Common.Contracts;
+using Chatify.Application.User.Commands;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Friendships;
@@ -8,16 +9,16 @@ using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
-using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.Friendships.Commands;
 
-using SendFriendInvitationResult = Either<Error, Guid>;
+using SendFriendInvitationResult = OneOf<UserNotFound, FriendInviteNotFoundError, Guid>;
 
 public record SendFriendInvitation([Required] Guid InviteeId) : ICommand<SendFriendInvitationResult>;
 
-internal sealed class SendFriendInvitationHandler : ICommandHandler<SendFriendInvitation, SendFriendInvitationResult>
+internal sealed class SendFriendInvitationHandler
+    : ICommandHandler<SendFriendInvitation, SendFriendInvitationResult>
 {
     private readonly IFriendInvitationRepository _friendInvites;
     private readonly IDomainRepository<Domain.Entities.User, Guid> _users;
@@ -46,13 +47,13 @@ internal sealed class SendFriendInvitationHandler : ICommandHandler<SendFriendIn
         CancellationToken cancellationToken = default)
     {
         var invitee = await _users.GetAsync(command.InviteeId, cancellationToken);
-        if (invitee is null) return Error.New("Invitee not found.");
+        if ( invitee is null ) return new UserNotFound();
 
         var existingInvites = await _friendInvites
             .AllSentByUserAsync(_identityContext.Id, cancellationToken);
         if (existingInvites.Any(i => i.InviteeId == command.InviteeId))
         {
-            return Error.New($"An invite to user with Id '{command.InviteeId}' was already sent.");
+            return new FriendInviteNotFoundError(InviteeId: command.InviteeId);
         }
 
         var friendInviteId = _guidGenerator.New();

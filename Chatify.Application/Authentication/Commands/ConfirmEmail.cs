@@ -1,13 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Authentication.Contracts;
+using Chatify.Application.Common.Models;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.Authentication.Commands;
 
-using ConfirmEmailResult = Either<Error, Unit>;
+using ConfirmEmailResult = OneOf<EmailConfirmationError, Unit>;
+
+public record EmailConfirmationError(string Message) : BaseError(Message);
 
 public record ConfirmEmail([Required] string Token) : ICommand<ConfirmEmailResult>;
 
@@ -26,9 +29,16 @@ internal sealed class ConfirmEmailHandler : ICommandHandler<ConfirmEmail, Confir
         _identityContext = identityContext;
     }
 
-    public Task<ConfirmEmailResult> HandleAsync(
+    public async Task<ConfirmEmailResult> HandleAsync(
         ConfirmEmail command,
         CancellationToken cancellationToken = default)
-        => _emailConfirmationService
+    {
+        var result = await _emailConfirmationService
             .ConfirmEmailForUserAsync(command.Token, UserId, cancellationToken);
+        
+        return result.Match<ConfirmEmailResult>(
+            _ => new EmailConfirmationError("User not found"),
+            _ => _,
+            _ => _);
+    }
 }

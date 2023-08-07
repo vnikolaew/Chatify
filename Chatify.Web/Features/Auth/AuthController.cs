@@ -1,14 +1,14 @@
 ﻿using Chatify.Application.Authentication.Commands;
 using Chatify.Web.Common;
 using Chatify.Web.Extensions;
-using LanguageExt.SomeHelp;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RegularSignUpResult = LanguageExt.Validation<LanguageExt.Common.Error, LanguageExt.Unit>;
-using RegularSignInResult = LanguageExt.Validation<LanguageExt.Common.Error, LanguageExt.Unit>;
-using GoogleSignUpResult = LanguageExt.Validation<LanguageExt.Common.Error, LanguageExt.Unit>;
-using FacebookSignUpResult = LanguageExt.Validation<LanguageExt.Common.Error, LanguageExt.Unit>;
-using ConfirmEmailResult = LanguageExt.Either<LanguageExt.Common.Error, LanguageExt.Unit>;
+using RegularSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
+using RegularSignInResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignInError, LanguageExt.Unit>;
+using GoogleSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
+using FacebookSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
+using ConfirmEmailResult =
+    OneOf.OneOf<Chatify.Application.Authentication.Commands.EmailConfirmationError, LanguageExt.Unit>;
 
 namespace Chatify.Web.Features.Auth;
 
@@ -39,8 +39,8 @@ public class AuthController : ApiController
     {
         var result = await SendAsync<RegularSignUp, RegularSignUpResult>(signUp, cancellationToken);
         return result.Match<IActionResult>(
-            _ => NoContent(),
-            err => err.ToBadRequest());
+            err => err.ToBadRequest(),
+            NoContent);
     }
 
     [HttpPost]
@@ -51,8 +51,8 @@ public class AuthController : ApiController
     {
         var result = await SendAsync<RegularSignIn, RegularSignInResult>(signIn, cancellationToken);
         return result.Match<IActionResult>(
-            _ => NoContent(),
-            err => err.ToBadRequest());
+            err => err.ToBadRequest(),
+            NoContent);
     }
 
     [HttpPost]
@@ -63,8 +63,8 @@ public class AuthController : ApiController
     {
         var result = await SendAsync<GoogleSignUp, GoogleSignUpResult>(signUp, cancellationToken);
         return result.Match<IActionResult>(
-            _ => NoContent(),
-            err => err.ToBadRequest());
+            err => err.ToBadRequest(),
+            NoContent);
     }
 
     [HttpPost]
@@ -75,21 +75,22 @@ public class AuthController : ApiController
     {
         var result = await
             SendAsync<FacebookSignUp, FacebookSignUpResult>(signUp, cancellationToken);
-        
+
         return result.Match<IActionResult>(
-            _ => NoContent(),
-            err => err.ToBadRequest());
+            err => err.ToBadRequest(),
+            NoContent);
     }
 
     [HttpPost]
     [Route(ConfirmEmailRoute)]
     public async Task<IActionResult> ConfirmEmail(
-        [FromBody] ConfirmEmail confirmEmail,
+        [FromQuery(Name = "token")] string tokenCode,
         CancellationToken cancellationToken = default)
     {
-        var result = await SendAsync<ConfirmEmail, ConfirmEmailResult>(confirmEmail, cancellationToken);
+        var result = await SendAsync<ConfirmEmail, ConfirmEmailResult>(
+            new ConfirmEmail(tokenCode), cancellationToken);
         return result.Match<IActionResult>(
-            _ => Accepted(),
-            err => err.ToBadRequest());
+            err => err.ToBadRequest(),
+            Accepted);
     }
 }

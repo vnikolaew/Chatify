@@ -32,15 +32,20 @@ internal sealed class ChatGroupMemberSeeder : ISeeder
             var groupId = groupIds[Random.Shared.Next(0, groupIds.Length)];
 
             if(insertedMembers.Contains((userId, groupId))) continue;
+            
+            var memberId = Guid.NewGuid();
             var member = new ChatGroupMember
             {
-                Id = Guid.NewGuid(),
+                Id = memberId,
                 CreatedAt = DateTimeOffset.Now,
                 UserId = userId,
                 ChatGroupId = groupId
             };
             insertedMembers.Add((userId, groupId));
+            
             await mapper.InsertAsync(member, insertNulls: true);
+            await mapper.ExecuteAsync(
+                " UPDATE chat_group_members_count SET members_count = members_count + 1 WHERE id = ?", groupId);
         }
     }
 }

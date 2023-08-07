@@ -24,12 +24,12 @@ public class LocalFileSystemUploadService : IFileUploadService
     {
         var file = singleFileUploadRequest.File;
 
-        if (file.SizeInBytes >= MaxFileUploadSizeLimit) return Error.New("File exceeds size limit of 50 MB.");
+        if ( file.SizeInBytes >= MaxFileUploadSizeLimit ) return Error.New("File exceeds size limit of 50 MB.");
 
         var fileExtension = Path.GetExtension(file.FileName)[1..];
         var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.FileName);
 
-        if (!AllowedFileTypes.Contains(fileExtension))
+        if ( !AllowedFileTypes.Contains(fileExtension) )
         {
             return Error.New($"Files with extension {fileExtension} are not allowed.");
         }
@@ -39,7 +39,7 @@ public class LocalFileSystemUploadService : IFileUploadService
             ? $"{singleFileUploadRequest.UserId}_{newFileId}_{fileNameWithoutExtension}.{fileExtension}"
             : $"{newFileId}_{fileNameWithoutExtension}.{fileExtension}";
 
-        if (!Directory.Exists(_fileStorageBaseFolder)) Directory.CreateDirectory(_fileStorageBaseFolder);
+        if ( !Directory.Exists(_fileStorageBaseFolder) ) Directory.CreateDirectory(_fileStorageBaseFolder);
 
         await using var fileStream = File.Open(Path.Combine(_fileStorageBaseFolder, newFileName), FileMode.CreateNew,
             FileAccess.Write);
@@ -48,8 +48,19 @@ public class LocalFileSystemUploadService : IFileUploadService
         return new FileUploadResult
         {
             FileId = newFileId,
-            FileUrl = $"/Files/{newFileName}"
+            FileUrl = newFileName
         };
+    }
+
+    public async Task<Either<Error, bool>> DeleteAsync(
+        SingleFileDeleteRequest singleFileDeleteRequest,
+        CancellationToken cancellationToken = default)
+    {
+        var filePath = Path.Combine(_fileStorageBaseFolder, singleFileDeleteRequest.FileUrl);
+        if ( !File.Exists(filePath) ) return Error.New("Specified file not found.");
+
+        File.Delete(filePath);
+        return true;
     }
 
     public async Task<List<Either<Error, FileUploadResult>>> UploadManyAsync(

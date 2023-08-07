@@ -16,6 +16,8 @@ public class ChatMessageReaction
     
     public Guid UserId { get; set; }
     
+    public string Username { get; set; } = default!;
+    
     public User User { get; set; }
     
     public sbyte ReactionType { get; set; }

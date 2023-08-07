@@ -8,11 +8,11 @@ using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.ChatGroups.Commands;
 
-using LeaveChatGroupResult = Either<Error, Unit>;
+using LeaveChatGroupResult = OneOf<ChatGroupNotFoundError, UserIsNotMemberError, Unit>;
 
 public record LeaveChatGroup(
     [Required] Guid GroupId,
@@ -45,15 +45,16 @@ internal sealed class LeaveChatGroupHandler : ICommandHandler<LeaveChatGroup, Le
         CancellationToken cancellationToken = default)
     {
         var group = await _groups.GetAsync(command.GroupId, cancellationToken);
-        if (group is null) return Error.New("");
+        if ( group is null ) return new ChatGroupNotFoundError();
 
-        var member = await _members.ByGroupAndUser(
+        var memberExists = await _members.Exists(
             command.GroupId,
             _identityContext.Id, cancellationToken);
-        if (member is null) return Error.New("");
+        if ( !memberExists ) return new UserIsNotMemberError(_identityContext.Id, group.Id);
 
-        var success = await _members.DeleteAsync(member.Id, cancellationToken);
-        
+        var success = await _members.DeleteAsync(
+            _identityContext.Id, cancellationToken);
+
         // TODO: Fire an event:
         await _eventDispatcher.PublishAsync(new ChatGroupMemberLeftEvent
         {
@@ -62,7 +63,7 @@ internal sealed class LeaveChatGroupHandler : ICommandHandler<LeaveChatGroup, Le
             Timestamp = _clock.Now,
             Reason = command.Reason
         }, cancellationToken);
-        
-        return success ? Unit.Default : Error.New("");
+
+        return Unit.Default;
     }
 }

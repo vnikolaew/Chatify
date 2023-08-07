@@ -1,6 +1,8 @@
 ﻿using Chatify.Application.Authentication.Commands;
+using Chatify.Application.User.Commands;
 using LanguageExt;
 using LanguageExt.Common;
+using OneOf;
 using CancellationToken = System.Threading.CancellationToken;
 
 namespace Chatify.Application.Authentication.Contracts;
@@ -38,11 +40,11 @@ public interface IAuthenticationService
         FacebookSignUp request,
         CancellationToken cancellationToken = default);
 
-    Task<string?> GenerateEmailConfirmationTokenAsync(
+    Task<OneOf<UserNotFound, string>> GenerateEmailConfirmationTokenAsync(
         Guid userId,
         CancellationToken cancellationToken = default);
 
-    Task<Either<Error, Unit>> ChangePasswordAsync(
+    Task<OneOf<UserNotFound, PasswordChangeError, Unit>> ChangePasswordAsync(
         Guid userId,
         string currentPassword,
         string newPassword,

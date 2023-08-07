@@ -30,3 +30,13 @@ public class ChatMessage : IMapFrom<Domain.Entities.ChatMessage>
 
     public bool Updated => UpdatedAt.HasValue;
 }
+
+// Add this UDT column to ChatMessages table:
+public class ChatMessageReplyInfo
+{
+    public long Total { get; set; } = 0;
+    
+    public ISet<ReplyUserInfo> UserInfos { get; set; } = new HashSet<ReplyUserInfo>();
+}
+
+public record ReplyUserInfo(Guid UserId, string Username, string ProfilePictureUrl);

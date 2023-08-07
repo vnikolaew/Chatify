@@ -1,15 +1,17 @@
-﻿using LanguageExt;
-using LanguageExt.Common;
+﻿using Chatify.Application.Authentication.Commands;
+using Chatify.Application.User.Commands;
+using LanguageExt;
+using OneOf;
 
 namespace Chatify.Application.Authentication.Contracts;
 
 public interface IEmailConfirmationService
 {
     Task<bool> SendConfirmationEmailForUserAsync(
-        Guid userId,
+        Domain.Entities.User user,
         CancellationToken cancellationToken = default);
     
-    Task<Either<Error, Unit>> ConfirmEmailForUserAsync(
+    Task<OneOf<UserNotFound, EmailConfirmationError, Unit>> ConfirmEmailForUserAsync(
         string token, Guid userId,
         CancellationToken cancellationToken = default);
 }

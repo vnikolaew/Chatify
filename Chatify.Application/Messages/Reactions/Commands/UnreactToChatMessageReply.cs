@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
@@ -7,11 +8,14 @@ using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
-using LanguageExt.Common;
 
 namespace Chatify.Application.Messages.Reactions.Commands;
 
-using UnreactToChatMessageReplyResult = Either<Error, Unit>;
+using UnreactToChatMessageReplyResult  = OneOf.OneOf<
+    MessageNotFoundError,
+    MessageReactionNotFoundError,
+    UserHasNotReactedError,
+    Unit>;
 
 public record UnreactToChatMessageReply(
     [Required] Guid MessageReactionId,
@@ -47,12 +51,12 @@ internal sealed class UnreactToChatMessageReplyHandler
         CancellationToken cancellationToken = default)
     {
         var replyMessage = await _messageReplies.GetAsync(command.MessageId, cancellationToken);
-        if (replyMessage is null) return Error.New("");
+        if ( replyMessage is null ) return new MessageNotFoundError(command.MessageId);
             
         var messageReaction = await _messageReactions.GetAsync(command.MessageReactionId, cancellationToken);
-        
-        if (messageReaction is null) return Error.New("");
-        if(messageReaction.UserId != _identityContext.Id) return Error.New("");
+
+        if ( messageReaction is null ) return new MessageReactionNotFoundError();
+        if ( messageReaction.UserId != _identityContext.Id ) return new UserHasNotReactedError();
 
         await _messageReactions.DeleteAsync(messageReaction.Id, cancellationToken);
         await _messageReplies.UpdateAsync(replyMessage.Id, message =>

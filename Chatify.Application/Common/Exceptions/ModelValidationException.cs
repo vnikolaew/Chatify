@@ -13,11 +13,9 @@ public class ModelValidationException : Exception
     public ModelValidationException(IEnumerable<ValidationResult> failures)
         : this()
     {
-        foreach (var error in failures
-                     .Select(f => f.ErrorMessage)
-                     .Where(e => e is not null))
-        {
-            Errors.Add(error!);
-        }
+        Errors = failures
+            .Select(f => f.ErrorMessage)
+            .Where(e => e is not null)
+            .ToList()!;
     }
 }

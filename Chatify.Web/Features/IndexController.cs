@@ -7,5 +7,4 @@ public class IndexController : Controller
     [HttpGet]
     [Route("index")]
     public IActionResult Index() => View();
-
 }

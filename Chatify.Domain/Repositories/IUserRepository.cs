@@ -9,7 +9,7 @@ public interface IUserRepository : IDomainRepository<User, Guid>
         string usernameQuery,
         CancellationToken cancellationToken = default);
     
-    Task<List<User>?> AllByUserIds(
+    Task<List<User>?> GetByIds(
         IEnumerable<Guid> userIds,
         CancellationToken cancellationToken = default);
 }

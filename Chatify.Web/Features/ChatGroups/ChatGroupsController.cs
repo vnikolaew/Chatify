@@ -1,15 +1,33 @@
 ﻿using Chatify.Application.ChatGroups.Commands;
+using Chatify.Application.ChatGroups.Queries;
 using Chatify.Web.Common;
 using Chatify.Web.Extensions;
-using LanguageExt;
-using LanguageExt.Common;
 using Microsoft.AspNetCore.Mvc;
 using Guid = System.Guid;
-using AddChatGroupMemberResult = LanguageExt.Either<LanguageExt.Common.Error, System.Guid>;
-using EditChatGroupDetailsResult = LanguageExt.Either<LanguageExt.Common.Error, LanguageExt.Unit>;
-using AddChatGroupAdminResult = LanguageExt.Either<LanguageExt.Common.Error, LanguageExt.Unit>;
-using RemoveChatGroupMemberResult = LanguageExt.Either<LanguageExt.Common.Error, LanguageExt.Unit>;
-using LeaveChatGroupResult = LanguageExt.Either<LanguageExt.Common.Error, LanguageExt.Unit>;
+using CreateChatGroupResult = OneOf.OneOf<Chatify.Application.User.Commands.FileUploadError, System.Guid>;
+using AddChatGroupMemberResult =
+    OneOf.OneOf<Chatify.Application.User.Commands.UserNotFound,
+        Chatify.Application.ChatGroups.Commands.UserIsNotGroupAdminError,
+        Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
+        Chatify.Application.ChatGroups.Commands.UserIsAlreadyGroupMemberError, System.Guid>;
+using EditChatGroupDetailsResult =
+    OneOf.OneOf<Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
+        Chatify.Application.ChatGroups.Commands.UserIsNotMemberError,
+        Chatify.Application.ChatGroups.Commands.UserIsNotGroupAdminError, LanguageExt.Unit>;
+using AddChatGroupAdminResult =
+    OneOf.OneOf<Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
+        Chatify.Application.ChatGroups.Commands.UserIsNotMemberError,
+        Chatify.Application.ChatGroups.Commands.UserIsNotGroupAdminError, LanguageExt.Unit>;
+using RemoveChatGroupMemberResult =
+    OneOf.OneOf<Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
+        Chatify.Application.ChatGroups.Commands.UserIsNotMemberError,
+        Chatify.Application.ChatGroups.Commands.UserIsNotGroupAdminError, LanguageExt.Unit>;
+using LeaveChatGroupResult =
+    OneOf.OneOf<Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
+        Chatify.Application.ChatGroups.Commands.UserIsNotMemberError, LanguageExt.Unit>;
+using GetChatGroupsFeedResult =
+    OneOf.OneOf<LanguageExt.Common.Error,
+        System.Collections.Generic.List<Chatify.Application.ChatGroups.Queries.ChatGroupFeedEntry>>;
 using static Chatify.Web.Features.ChatGroups.Models.Models;
 
 namespace Chatify.Web.Features.ChatGroups;
@@ -20,11 +38,14 @@ public class ChatGroupsController : ApiController
     public async Task<IActionResult> Create(
         [FromForm] CreateChatGroupRequest request,
         CancellationToken cancellationToken = default)
-        => await SendAsync<CreateChatGroup, Either<Guid, Error>>(request.ToCommand(), cancellationToken)
-            .ToAsync()
-            .Match(err => err.ToBadRequest(),
-                groupId => CreatedAtAction(nameof(Details), "ChatGroups", new { groupId },
-                    new { groupId }));
+    {
+        var result = await SendAsync<CreateChatGroup, CreateChatGroupResult>(
+            request.ToCommand(), cancellationToken);
+        return result.Match(
+            err => err.ToBadRequest(),
+            id => CreatedAtAction(nameof(Details), "ChatGroups",
+                new { groupId = id }, new { groupId = id }));
+    }
 
     [HttpGet]
     [Route("{groupId:guid}")]
@@ -33,61 +54,104 @@ public class ChatGroupsController : ApiController
         CancellationToken cancellationToken = default)
         => Ok(groupId);
 
+    [HttpGet]
+    [Route("feed")]
+    public async Task<IActionResult> Feed(
+        [FromQuery] int limit,
+        [FromQuery] int offset,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await QueryAsync<GetChatGroupsFeed, GetChatGroupsFeedResult>(
+            new GetChatGroupsFeed(limit, offset), cancellationToken);
+        return result.Match(
+            err => err.ToBadRequest(),
+            entries => Ok(new { Data = entries }));
+    }
+
     [HttpPatch]
     [Route("{groupId:guid}")]
-    public Task<IActionResult> Edit(
-        [FromBody] EditChatGroupDetailsRequest request,
+    public async Task<IActionResult> Edit(
+        [FromForm] EditChatGroupDetailsRequest request,
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
-        => SendAsync<EditChatGroupDetails, EditChatGroupDetailsResult>(
-                (request with { ChatGroupId = groupId }).ToCommand(),
-                cancellationToken)
-            .ToAsync()
-            .Match(_ => Accepted(),
-                err => err.ToBadRequest());
+    {
+        var result = await SendAsync<EditChatGroupDetails, EditChatGroupDetailsResult>(
+            ( request with { ChatGroupId = groupId } ).ToCommand(),
+            cancellationToken);
+
+        return result.Match<IActionResult>(
+            _ => BadRequest(),
+            _ => BadRequest(),
+            _ => BadRequest(),
+            Accepted);
+    }
 
     [HttpPost]
     [Route("members")]
-    public Task<IActionResult> AddMember(
+    public async Task<IActionResult> AddMember(
         [FromBody] AddChatGroupMember addChatGroupMember,
         CancellationToken cancellationToken = default)
-        => SendAsync<AddChatGroupMember, AddChatGroupMemberResult>(
+    {
+        var result = await
+            SendAsync<AddChatGroupMember, AddChatGroupMemberResult>(
                 addChatGroupMember,
-                cancellationToken)
-            .ToAsync()
-            .Match(id => Ok(id), err => err.ToBadRequest());
+                cancellationToken);
+
+        return result.Match<IActionResult>(
+            _ => BadRequest(),
+            _ => BadRequest(),
+            _ => BadRequest(),
+            _ => BadRequest(),
+            id => Ok(id));
+    }
 
     [HttpDelete]
     [Route("members")]
-    public Task<IActionResult> RemoveMember(
+    public async Task<IActionResult> RemoveMember(
         [FromBody] RemoveChatGroupMember removeChatGroupMember,
         CancellationToken cancellationToken = default)
-        => SendAsync<RemoveChatGroupMember, RemoveChatGroupMemberResult>(
-                removeChatGroupMember,
-                cancellationToken)
-            .ToAsync()
-            .Match(_ => NoContent(), err => err.ToBadRequest());
+    {
+        var result = await SendAsync<RemoveChatGroupMember, RemoveChatGroupMemberResult>(
+            removeChatGroupMember,
+            cancellationToken);
+
+        return result.Match<IActionResult>(
+            _ => BadRequest(),
+            _ => BadRequest(),
+            _ => BadRequest(),
+            NoContent);
+    }
 
     [HttpPost]
     [Route("leave")]
-    public Task<IActionResult> LeaveChatGroup(
+    public async Task<IActionResult> LeaveChatGroup(
         [FromBody] LeaveChatGroup leaveChatGroup,
         CancellationToken cancellationToken = default)
-        => SendAsync<LeaveChatGroup, LeaveChatGroupResult>(
-                leaveChatGroup,
-                cancellationToken)
-            .ToAsync()
-            .Match(_ => Accepted(), err => err.ToBadRequest());
+    {
+        var result = await SendAsync<LeaveChatGroup, LeaveChatGroupResult>(
+            leaveChatGroup,
+            cancellationToken);
+        return result.Match<IActionResult>(
+            _ => BadRequest(),
+            _ => BadRequest(),
+            Accepted);
+    }
 
 
     [HttpPost]
     [Route("admins")]
-    public Task<IActionResult> AddAdmin(
+    public async Task<IActionResult> AddAdmin(
         [FromBody] AddChatGroupAdmin addChatGroupAdmin,
         CancellationToken cancellationToken = default)
-        => SendAsync<AddChatGroupAdmin, AddChatGroupAdminResult>(
-                addChatGroupAdmin,
-                cancellationToken)
-            .ToAsync()
-            .Match(_ => Accepted(), err => err.ToBadRequest());
+    {
+        var result = await SendAsync<AddChatGroupAdmin, AddChatGroupAdminResult>(
+            addChatGroupAdmin,
+            cancellationToken);
+
+        return result.Match<IActionResult>(
+            _ => NotFound(),
+            _ => BadRequest(),
+            _ => BadRequest(),
+            Accepted);
+    }
 }

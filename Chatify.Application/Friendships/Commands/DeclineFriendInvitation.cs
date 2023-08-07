@@ -7,11 +7,11 @@ using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.Friendships.Commands;
 
-using DeclineFriendInvitationResult = Either<Error, Unit>;
+using DeclineFriendInvitationResult = OneOf<FriendInviteNotFoundError, FriendInviteInvalidStateError, Unit>;
 
 public record DeclineFriendInvitation([Required] Guid InviteId) : ICommand<DeclineFriendInvitationResult>;
 
@@ -44,13 +44,14 @@ internal sealed class DeclineFriendInvitationHandler :
     {
         // Check if friend invite exists and is in a 'Pending' state:
         var friendInvite = await _friendInvites.GetAsync(command.InviteId, cancellationToken: cancellationToken);
-        if (friendInvite is null || friendInvite.Status != (sbyte)FriendInvitationStatus.Pending)
+        if ( friendInvite is null ) return new FriendInviteNotFoundError(command.InviteId);
+        if (friendInvite.Status != (sbyte)FriendInvitationStatus.Pending)
         {
-            return Error.New("Friend invitation does not exist or is not in a pending state.");
+            return new FriendInviteInvalidStateError(( FriendInvitationStatus )friendInvite.Status);
         }
         if (friendInvite.InviteeId != _identityContext.Id)
         {
-            return Error.New("Current user is not related to this friend invitation.");
+            return new FriendInviteInvalidStateError(( FriendInvitationStatus )friendInvite.Status);
         }
 
         // Update friend invite:

@@ -13,9 +13,7 @@ internal sealed class ChatMessageReactedToEventHandler
 
     public ChatMessageReactedToEventHandler(
         IHubContext<ChatifyHub, IChatifyHubClient> hubContext)
-    {
-        _hubContext = hubContext;
-    }
+        => _hubContext = hubContext;
 
     public async Task HandleAsync(
         ChatMessageReactedToEvent @event,

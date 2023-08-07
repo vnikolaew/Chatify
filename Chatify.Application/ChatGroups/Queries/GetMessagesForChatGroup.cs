@@ -1,14 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Globalization;
+using Chatify.Application.ChatGroups.Commands;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
-using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.ChatGroups.Queries;
 
-using GetMessagesForChatGroupResult = Either<Error, CursorPaged<ChatMessage>>;
+using GetMessagesForChatGroupResult = OneOf<UserIsNotMemberError, CursorPaged<ChatMessage>>;
 
 public record GetMessagesForChatGroup(
     [Required] Guid GroupId,
@@ -37,13 +38,18 @@ internal sealed class GetMessagesByChatGroupHandler
         GetMessagesForChatGroup command,
         CancellationToken cancellationToken = default)
     {
+        var s = DateTime.Now.ToString(CultureInfo.GetCultureInfo("en-UK"));
+            
         var isGroupMember = await _members.Exists(
             command.GroupId,
             _identityContext.Id, cancellationToken);
-        if (!isGroupMember) return Error.New("");
+        if ( !isGroupMember ) return new UserIsNotMemberError(_identityContext.Id, command.GroupId);
 
         var messages = await _messages.GetPaginatedByGroupAsync(
-            command.GroupId, command.PageSize, command.PagingCursor, cancellationToken);
+            command.GroupId,
+            command.PageSize,
+            command.PagingCursor,
+            cancellationToken);
         return messages;
     }
 }

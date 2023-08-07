@@ -13,8 +13,7 @@ internal sealed class ChatGroupSeeder : ISeeder
     private readonly Faker<ChatGroup> _groupsFaker;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public ChatGroupSeeder(
-        IServiceScopeFactory scopeFactory)
+    public ChatGroupSeeder(IServiceScopeFactory scopeFactory)
     {
         _groupsFaker = new Faker<ChatGroup>()
             .RuleFor(g => g.Id, _ => Guid.NewGuid())

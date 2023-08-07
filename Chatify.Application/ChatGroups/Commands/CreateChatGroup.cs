@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
+using Chatify.Application.User.Commands;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Groups;
@@ -9,10 +10,11 @@ using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using LanguageExt;
 using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.ChatGroups.Commands;
 
-using CreateChatGroupResult = Either<Guid, Error>;
+using CreateChatGroupResult = OneOf<FileUploadError, Guid>;
 
 public record CreateChatGroup(
     [MinLength(0), MaxLength(500)] string? About,
@@ -47,16 +49,16 @@ internal sealed class CreateChatGroupHandler : ICommandHandler<CreateChatGroup, 
         CancellationToken cancellationToken = default)
     {
         string groupPictureUrl = default!;
-        if (command.InputFile is not null)
+        if ( command.InputFile is not null )
         {
             var fileUploadRequest = new SingleFileUploadRequest
             {
                 File = command.InputFile,
                 UserId = _identityContext.Id
             };
-            
+
             var result = await _fileUploadService.UploadAsync(fileUploadRequest, cancellationToken);
-            if (result.IsLeft) return result.LeftToArray()[0];
+            if ( result.IsLeft ) return new FileUploadError(result.LeftToArray()[0].Message);
 
             groupPictureUrl = result.Match(r => r.FileUrl, _ => null!);
         }

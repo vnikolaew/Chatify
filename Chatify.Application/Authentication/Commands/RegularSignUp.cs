@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Authentication.Contracts;
+using Chatify.Application.Authentication.Models;
 using Chatify.Domain.Events.Users;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Events;
 using LanguageExt;
-using LanguageExt.Common;
-using RegularSignUpResult = LanguageExt.Validation<LanguageExt.Common.Error, LanguageExt.Unit>;
+using RegularSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
 
 namespace Chatify.Application.Authentication.Commands;
 
@@ -30,20 +30,21 @@ internal sealed class RegularSignUpHandler : ICommandHandler<RegularSignUp, Regu
     public async Task<RegularSignUpResult> HandleAsync(
         RegularSignUp command,
         CancellationToken cancellationToken = default)
-        => await _authService
-            .RegularSignUpAsync(command, cancellationToken)
-            .MapAsync(async result =>
+    {
+        var result =
+            await _authService
+                .RegularSignUpAsync(command, cancellationToken);
+
+        if ( result.IsLeft ) return new SignUpError(result.LeftToArray()[0].Message);
+        result.Do(async res =>
+        {
+            await _eventDispatcher.PublishAsync(new UserSignedUpEvent
             {
-                await _eventDispatcher.PublishAsync(new UserSignedUpEvent
-                {
-                    Timestamp = DateTime.Now,
-                    UserId = result.UserId,
-                    AuthenticationProvider = result.AuthenticationProvider
-                }, cancellationToken);
-                return result;
-            })
-            .Select<Either<Error, UserSignedUpResult>, Validation<Error, Unit>>(
-                res => res.Match(
-                    _ => RegularSignUpResult.Success(Unit.Default),
-                    err => new Seq<Error>(new[] { err })));
+                Timestamp = DateTime.Now,
+                UserId = res.UserId,
+                AuthenticationProvider = res.AuthenticationProvider
+            }, cancellationToken);
+        });
+        return Unit.Default;
+    }
 }

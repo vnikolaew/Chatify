@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
@@ -8,11 +9,13 @@ using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.Messages.Commands;
 
-using DeleteGroupChatMessageResult = Either<Error, Unit>;
+using DeleteGroupChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
+
+public record UserIsNotMessageSenderError(Guid MessageId, Guid UserId);
 
 public record DeleteGroupChatMessage(
     [Required] Guid GroupId,
@@ -47,8 +50,9 @@ internal sealed class DeleteGroupChatMessageHandler
         CancellationToken cancellationToken = default)
     {
         var message = await _messages.GetAsync(command.MessageId, cancellationToken);
-        if (message is null) return Error.New("");
-        if (message.UserId != _identityContext.Id) return Error.New("");
+        if ( message is null ) return new MessageNotFoundError(command.MessageId);
+        if ( message.UserId != _identityContext.Id )
+            return new UserIsNotMessageSenderError(message.Id, _identityContext.Id);
 
         // Now delete message and then all its replies ...
         var success = await _members.DeleteAsync(message.Id, cancellationToken);
@@ -60,6 +64,6 @@ internal sealed class DeleteGroupChatMessageHandler
             Timestamp = _clock.Now
         }, cancellationToken);
 
-        return success ? Unit.Default : Error.New("");
+        return Unit.Default;
     }
 }

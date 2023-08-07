@@ -2,13 +2,10 @@
 
 public static class WebApplicationBuilderExtensions
 {
-    public static WebApplicationBuilder UseUrls(this WebApplicationBuilder app, params string[] urls)
+    public static WebApplicationBuilder UseUrls(this WebApplicationBuilder app,
+        params string[] urls)
     {
-        app.WebHost.UseUrls(
-            "http://0.0.0.0:5289",
-            "https://0.0.0.0:7139"
-        );
-        
+        app.WebHost.UseUrls(urls);
         return app;
     }
 }

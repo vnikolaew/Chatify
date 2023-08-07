@@ -1,7 +1,9 @@
-﻿using AutoMapper;
+﻿using System.Reflection;
+using Cassandra.Mapping;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Queries;
+using IMapper = AutoMapper.IMapper;
 using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
@@ -15,7 +17,6 @@ public sealed class ChatMessageRepository :
         : base(mapper, dbMapper)
     {
     }
-
 
     public async Task<CursorPaged<ChatMessage>> GetPaginatedByGroupAsync(
         Guid groupId,
@@ -31,5 +32,24 @@ public sealed class ChatMessageRepository :
             Mapper.Map<List<ChatMessage>>(messagesPage.ToList()),
             CassandraPagingHelper.ToPagingCursor(messagesPage.PagingState)
         );
+    }
+
+    public async Task<List<ChatMessage>> GetLatestForGroups(
+        IEnumerable<Guid> groupIds,
+        CancellationToken cancellationToken = default)
+    {
+        var paramPlaceholders = string.Join(", ", groupIds.Select(_ => "?"));
+        var cql = new Cql($" WHERE chat_group_id IN ({paramPlaceholders})");
+
+        cql.GetType()
+            .GetProperty(nameof(Cql.Arguments),
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
+            .SetValue(cql, groupIds);
+
+        var messages = await DbMapper
+            .FetchAsync<Models.ChatMessage>(cql);
+        
+        return Mapper.Map<List<ChatMessage>>(
+            messages ?? new List<Models.ChatMessage>());
     }
 }

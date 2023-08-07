@@ -8,11 +8,17 @@ using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.ChatGroups.Commands;
 
-using AddChatGroupAdminResult = Either<Error, Unit>;
+using AddChatGroupAdminResult = OneOf<ChatGroupNotFoundError, UserIsNotMemberError, UserIsNotGroupAdminError, Unit>;
+
+public record ChatGroupNotFoundError;
+
+public record UserIsNotMemberError(Guid UserId, Guid ChatGroupId);
+
+public record UserIsNotGroupAdminError(Guid UserId, Guid ChatGroupId);
 
 public record AddChatGroupAdmin(
     [Required] Guid ChatGroupId,
@@ -45,16 +51,16 @@ internal sealed class AddChatGroupAdminHandler : ICommandHandler<AddChatGroupAdm
         CancellationToken cancellationToken = default)
     {
         var chatGroup = await _groups.GetAsync(command.ChatGroupId, cancellationToken);
-        if (chatGroup is null) return Error.New("");
+        if ( chatGroup is null ) return new ChatGroupNotFoundError();
 
         var isMember = await _members.Exists(chatGroup.Id, _identityContext.Id, cancellationToken);
-        if (!isMember) return Error.New("Current user is not a member of the specified Chat Group.");
+        if ( !isMember ) return new UserIsNotMemberError(_identityContext.Id, command.ChatGroupId);
 
-        if (!chatGroup.AdminIds.Contains(_identityContext.Id))
-            return Error.New("Current user is not an Admin of the specified Chat Group.");
+        if ( !chatGroup.AdminIds.Contains(_identityContext.Id) )
+            return new UserIsNotGroupAdminError(_identityContext.Id, command.ChatGroupId);
 
-        if (chatGroup.AdminIds.Contains(command.NewAdminId))
-            return Error.New("User is already an Admin of the specified Chat Group.");
+        if ( chatGroup.AdminIds.Contains(command.NewAdminId) )
+            return new UserIsNotGroupAdminError(_identityContext.Id, command.ChatGroupId);
 
         await _groups.UpdateAsync(chatGroup.Id, group =>
         {

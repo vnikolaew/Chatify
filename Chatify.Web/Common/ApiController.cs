@@ -1,12 +1,17 @@
-﻿using Chatify.Shared.Abstractions.Commands;
+﻿using System.Net.Mime;
+using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Dispatchers;
 using Chatify.Shared.Abstractions.Queries;
+using Chatify.Web.Middleware;
+using LanguageExt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chatify.Web.Common;
 
 [ApiController]
+[LoggingFilter]
+[Produces(MediaTypeNames.Application.Json)]
 [Authorize]
 [Route("api/[controller]")]
 public abstract class ApiController : ControllerBase
@@ -29,4 +34,10 @@ public abstract class ApiController : ControllerBase
     protected Task<TResult> QueryAsync<TQuery, TResult>(TQuery query, CancellationToken cancellationToken = default)
         where TQuery : class, IQuery<TResult>
         => Dispatcher.QueryAsync(query, cancellationToken);
+
+    protected IActionResult Accepted(Unit _) => Accepted();
+    
+    protected IActionResult NoContent(Unit _) => NoContent();
+    
+    protected IActionResult Ok(Unit _) => Ok();
 }

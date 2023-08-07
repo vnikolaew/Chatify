@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Authentication.Contracts;
+using Chatify.Application.Authentication.Models;
 using Chatify.Domain.Events.Users;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Events;
 using LanguageExt;
-using LanguageExt.Common;
-using RegularSignInResult = LanguageExt.Validation<LanguageExt.Common.Error, LanguageExt.Unit>;
+using RegularSignInResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignInError, LanguageExt.Unit>;
 
 namespace Chatify.Application.Authentication.Commands;
 
@@ -29,20 +29,20 @@ internal sealed class RegularSignInHandler : ICommandHandler<RegularSignIn, Regu
     public async Task<RegularSignInResult> HandleAsync(
         RegularSignIn command,
         CancellationToken cancellationToken = default)
-        => await _authService
-            .RegularSignInAsync(command, cancellationToken)
-            .MapAsync(async result =>
+    {
+        var result = await _authService
+            .RegularSignInAsync(command, cancellationToken);
+        if ( result.IsLeft ) return new SignInError(result.LeftToArray()[0].Message);
+
+        result.Do(async res =>
+        {
+            await _eventDispatcher.PublishAsync(new UserSignedInEvent
             {
-                await _eventDispatcher.PublishAsync(new UserSignedInEvent
-                {
-                    Timestamp = DateTime.Now,
-                    UserId = result.UserId,
-                    AuthenticationProvider = result.AuthenticationProvider
-                }, cancellationToken);
-                return result;
-            })
-            .Select<Either<Error, UserSignedInResult>, Validation<Error, Unit>>(
-                res => res.Match(
-                    _ => RegularSignInResult.Success(Unit.Default),
-                    err => new Seq<Error>(new[] { err })));
+                Timestamp = DateTime.Now,
+                UserId = res.UserId,
+                AuthenticationProvider = res.AuthenticationProvider
+            }, cancellationToken);
+        });
+        return Unit.Default;
+    }
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
@@ -7,11 +8,19 @@ using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.Messages.Reactions.Commands;
 
-using UnreactToChatMessageResult = Either<Error, Unit>;
+using UnreactToChatMessageResult = OneOf<
+    MessageNotFoundError,
+    MessageReactionNotFoundError,
+    UserHasNotReactedError,
+    Unit>;
+
+public record MessageReactionNotFoundError;
+
+public record UserHasNotReactedError;
 
 public record UnreactToChatMessage(
     [Required] Guid MessageReactionId,
@@ -45,11 +54,11 @@ internal sealed class UnreactToChatMessageHandler : ICommandHandler<UnreactToCha
         CancellationToken cancellationToken = default)
     {
         var message = await _messages.GetAsync(command.MessageId, cancellationToken);
-        if (message is null) return Error.New("");
-            
+        if ( message is null ) return new MessageNotFoundError(command.MessageId);
+
         var messageReaction = await _messageReactions.GetAsync(command.MessageReactionId, cancellationToken);
-        if (messageReaction is null) return Error.New("");
-        if(messageReaction.UserId != _identityContext.Id) return Error.New("");
+        if ( messageReaction is null ) return new MessageReactionNotFoundError();
+        if ( messageReaction.UserId != _identityContext.Id ) return new UserHasNotReactedError();
 
         await _messageReactions.DeleteAsync(messageReaction.Id, cancellationToken);
         await _messages.UpdateAsync(message.Id, message =>
@@ -67,7 +76,7 @@ internal sealed class UnreactToChatMessageHandler : ICommandHandler<UnreactToCha
             ReactionType = messageReaction.ReactionType,
             Timestamp = _clock.Now
         }, cancellationToken);
-        
+
         return Unit.Default;
     }
 }

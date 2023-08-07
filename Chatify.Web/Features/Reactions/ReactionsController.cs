@@ -1,61 +1,89 @@
-﻿using Chatify.Application.Messages.Reactions.Commands;
+﻿using Chatify.Application.ChatGroups.Commands;
+using Chatify.Application.Messages.Reactions.Commands;
+using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Web.Common;
-using Chatify.Web.Extensions;
 using LanguageExt;
-using LanguageExt.Common;
 using Microsoft.AspNetCore.Mvc;
+using OneOf;
 using static Chatify.Web.Features.Reactions.Models.Models;
 
 namespace Chatify.Web.Features.Reactions;
 
-using ReactToChatMessageResult = Either<Error, Guid>;
-using UnreactToChatMessageResult = Either<Error, Unit>;
-using ReactToChatMessageReplyResult = Either<Error, Guid>;
-using UnreactToChatMessageReplyResult = Either<Error, Unit>;
+using ReactToChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMemberError, Guid>;
+using UnreactToChatMessageResult = OneOf<
+    MessageNotFoundError,
+    MessageReactionNotFoundError,
+    UserHasNotReactedError,
+    Unit>;
+using ReactToChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMemberError, Guid>;
+using UnreactToChatMessageReplyResult = OneOf<
+    MessageNotFoundError,
+    MessageReactionNotFoundError,
+    UserHasNotReactedError,
+    Unit>;
 
 public class ReactionsController : ApiController
 {
     [HttpPost]
     [Route("{messageId:guid}")]
-    public Task<IActionResult> ReactToGroupChatMessage(
+    public async Task<IActionResult> ReactToGroupChatMessage(
         [FromBody] ReactToChatMessageRequest request,
         [FromRoute] Guid messageId,
         CancellationToken cancellationToken = default)
-        => SendAsync<ReactToChatMessage, ReactToChatMessageResult>(
-                (request with { MessageId = messageId }).ToCommand(), cancellationToken)
-            .ToAsync()
-            .Match(id => Accepted(new { ReactionId = id }), err => err.ToBadRequest());
+    {
+        var result = await SendAsync<ReactToChatMessage, ReactToChatMessageResult>(
+            ( request with { MessageId = messageId } ).ToCommand(), cancellationToken);
+
+        return result.Match<IActionResult>(
+            _ => BadRequest(),
+            _ => BadRequest(),
+            id => Accepted(new { ReactionId = id }));
+    }
 
     [HttpPost]
     [Route("replies/{messageId:guid}")]
-    public Task<IActionResult> ReactToGroupChatMessageReply(
+    public async Task<IActionResult> ReactToGroupChatMessageReply(
         [FromBody] ReactToChatMessageRequest request,
         [FromRoute] Guid messageId,
         CancellationToken cancellationToken = default)
-        => SendAsync<ReactToChatMessageReply, ReactToChatMessageReplyResult>(
-                (request with { MessageId = messageId }).ToReplyCommand(), cancellationToken)
-            .ToAsync()
-            .Match(id => Accepted(new { ReactionId = id }), err => err.ToBadRequest());
+    {
+        var result = await SendAsync<ReactToChatMessageReply, ReactToChatMessageReplyResult>(
+            ( request with { MessageId = messageId } ).ToReplyCommand(), cancellationToken);
+        return result.Match<IActionResult>(
+            _ => BadRequest(),
+            _ => BadRequest(),
+            id => Accepted(new { ReactionId = id }));
+    }
 
     [HttpDelete]
     [Route("{messageReactionId:guid}")]
-    public Task<IActionResult> UnreactToGroupChatMessage(
+    public async Task<IActionResult> UnreactToGroupChatMessage(
         [FromBody] UnreactToChatMessageRequest request,
         [FromRoute] Guid messageReactionId,
         CancellationToken cancellationToken = default)
-        => SendAsync<UnreactToChatMessage, UnreactToChatMessageResult>(
-                (request with { MessageReactionId = messageReactionId }).ToCommand())
-            .ToAsync()
-            .Match(_ => NoContent(), err => err.ToBadRequest());
+    {
+        var result = await SendAsync<UnreactToChatMessage, UnreactToChatMessageResult>(
+            ( request with { MessageReactionId = messageReactionId } ).ToCommand(), cancellationToken);
+        return result.Match<IActionResult>(
+            _ => NotFound(),
+            _ => NotFound(),
+            _ => BadRequest(),
+            _ => NoContent());
+    }
 
     [HttpDelete]
     [Route("replies/{messageReactionId:guid}")]
-    public Task<IActionResult> UnreactToGroupChatMessageReply(
+    public async Task<IActionResult> UnreactToGroupChatMessageReply(
         [FromBody] UnreactToChatMessageRequest request,
         [FromRoute] Guid messageReactionId,
         CancellationToken cancellationToken = default)
-        => SendAsync<UnreactToChatMessageReply, UnreactToChatMessageReplyResult>(
-                (request with { MessageReactionId = messageReactionId }).ToReplyCommand(), cancellationToken)
-            .ToAsync()
-            .Match(_ => NoContent(), err => err.ToBadRequest());
+    {
+        var result = await SendAsync<UnreactToChatMessageReply, UnreactToChatMessageReplyResult>(
+            ( request with { MessageReactionId = messageReactionId } ).ToReplyCommand(), cancellationToken);
+        return result.Match<IActionResult>(
+            _ => NotFound(),
+            _ => NotFound(),
+            _ => BadRequest(),
+            _ => NoContent());
+    }
 }

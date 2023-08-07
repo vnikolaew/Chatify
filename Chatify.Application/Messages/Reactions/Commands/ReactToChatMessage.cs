@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.Common.Contracts;
+using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
@@ -9,11 +11,11 @@ using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
-using LanguageExt.Common;
+using OneOf;
 
 namespace Chatify.Application.Messages.Reactions.Commands;
 
-using ReactToChatMessageResult = Either<Error, Guid>;
+using ReactToChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMemberError, Guid>;
 
 public record ReactToChatMessage(
     [Required] Guid MessageId,
@@ -55,17 +57,18 @@ internal sealed class ReactToChatMessageHandler
         var userIsGroupMember = await _members.Exists(
             command.GroupId,
             _identityContext.Id, cancellationToken);
-        if (!userIsGroupMember) return Error.New("");
+        if ( !userIsGroupMember ) return new UserIsNotMemberError(_identityContext.Id, command.GroupId);
 
         var message = await _messages.GetAsync(command.MessageId, cancellationToken);
-        if (message is null) return Error.New("");
+        if ( message is null ) return new MessageNotFoundError(command.MessageId);
 
         var existingReaction = await _messageReactions
             .ByMessageAndUser(
                 command.MessageId,
                 _identityContext.Id,
                 cancellationToken);
-        if (existingReaction is not null)
+        if (existingReaction is not null &&
+            existingReaction.ReactionType != command.ReactionType)
         {
             var oldReactionType = existingReaction.ReactionType;
             await _messageReactions.UpdateAsync(existingReaction.Id, reaction =>
@@ -90,6 +93,7 @@ internal sealed class ReactToChatMessageHandler
             ReactionType = command.ReactionType,
             Message = message,
             UserId = _identityContext.Id,
+            Username = _identityContext.Username,
             ChatGroupId = command.GroupId
         };
 

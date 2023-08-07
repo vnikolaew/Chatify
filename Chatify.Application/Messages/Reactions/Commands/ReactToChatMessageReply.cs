@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.Common.Contracts;
+using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
@@ -8,12 +10,10 @@ using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
-using LanguageExt;
-using LanguageExt.Common;
 
 namespace Chatify.Application.Messages.Reactions.Commands;
 
-using ReactToChatMessageReplyResult = Either<Error, Guid>;
+using ReactToChatMessageReplyResult  = OneOf. OneOf<MessageNotFoundError, UserIsNotMemberError, Guid>;
 
 public record ReactToChatMessageReply(
     [Required] Guid MessageId,
@@ -57,10 +57,10 @@ internal sealed class ReactToChatMessageReplyHandler
         var userIsGroupMember = await _members.Exists(
             command.GroupId,
             _identityContext.Id, cancellationToken);
-        if (!userIsGroupMember) return Error.New("");
+        if (!userIsGroupMember) return new UserIsNotMemberError(_identityContext.Id, command.GroupId);
 
         var replyMessage = await _messageReplies.GetAsync(command.MessageId, cancellationToken);
-        if (replyMessage is null) return Error.New("");
+        if (replyMessage is null) return new MessageNotFoundError(command.MessageId);
 
         var existingReaction = await _messageReactions
             .ByMessageAndUser(
@@ -92,6 +92,7 @@ internal sealed class ReactToChatMessageReplyHandler
             ReactionType = command.ReactionType,
             Message = replyMessage,
             UserId = _identityContext.Id,
+            Username = _identityContext.Username,
             ChatGroupId = command.GroupId
         };
 
