@@ -9,12 +9,12 @@ riderModule.iml
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 # compiled output
-/web2/dist
-/web2/tmp
+/web/dist
+/web/tmp
 /out-tsc
 
 # dependencies
-/web2/node_modules
+/web/node_modules
 
 # IDEs and editors
 /.idea
