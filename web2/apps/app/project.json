@@ -1,0 +1,104 @@
+{
+   "name": "app",
+   "$schema": "../../node_modules/nx/schemas/project-schema.json",
+   "sourceRoot": "apps/app",
+   "projectType": "application",
+   "targets": {
+      "build": {
+         "executor": "@nrwl/next:build",
+         "outputs": ["{options.outputPath}"],
+         "defaultConfiguration": "production",
+         "options": {
+            "root": "apps/app",
+            "outputPath": "dist/apps/app",
+            "postCssConfig": "apps/app/postcss.config.js"
+         },
+         "configurations": {
+            "development": {
+               "outputPath": "apps/app"
+            },
+            "production": {}
+         },
+         "dependsOn": ["build-custom-server"]
+      },
+      "serve": {
+         "executor": "@nrwl/next:server",
+         "defaultConfiguration": "development",
+         "options": {
+            "buildTarget": "app:build",
+            "dev": true
+         },
+         "configurations": {
+            "development": {
+               "buildTarget": "app:build:development",
+               "dev": true
+            },
+            "production": {
+               "buildTarget": "app:build:production",
+               "dev": false
+            }
+         }
+      },
+      "export": {
+         "executor": "@nrwl/next:export",
+         "options": {
+            "buildTarget": "app:build:production"
+         }
+      },
+      "test": {
+         "executor": "@nrwl/jest:jest",
+         "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+         "options": {
+            "jestConfig": "apps/app/jest.config.ts",
+            "passWithNoTests": true
+         },
+         "configurations": {
+            "ci": {
+               "ci": true,
+               "codeCoverage": true
+            }
+         }
+      },
+      "lint": {
+         "executor": "@nrwl/linter:eslint",
+         "outputs": ["{options.outputFile}"],
+         "options": {
+            "lintFilePatterns": ["apps/app/**/*.{ts,tsx,js,jsx}"]
+         }
+      },
+      "serve-https": {
+         "command": "cd apps/app && node server.js"
+      },
+      "build-custom-server": {
+         "executor": "@nrwl/js:tsc",
+         "defaultConfiguration": "production",
+         "options": {
+            "outputPath": "dist/apps/app",
+            "main": "apps/app/server.js",
+            "tsConfig": "apps/app/tsconfig.server.json",
+            "clean": false,
+            "assets": []
+         },
+         "configurations": {
+            "development": {},
+            "production": {}
+         }
+      },
+      "serve-custom-server": {
+         "executor": "@nrwl/js:node",
+         "defaultConfiguration": "development",
+         "options": {
+            "buildTarget": "app:build-custom-server"
+         },
+         "configurations": {
+            "development": {
+               "buildTarget": "app:build-custom-server:development"
+            },
+            "production": {
+               "buildTarget": "app:build-custom-server:production"
+            }
+         }
+      }
+   },
+   "tags": []
+}
