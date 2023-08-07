@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Chatify.Domain\Chatify.Domain.csproj" />
+      <ProjectReference Include="..\Chatify.Shared.Abstractions\Chatify.Shared.Abstractions.csproj" />
+      <ProjectReference Include="..\Chatify.Shared.Infrastructure\Chatify.Shared.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AutoMapper" Version="12.0.1" />
+      <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+      <PackageReference Include="OneOf" Version="3.0.255" />
+      <PackageReference Include="OneOf.SourceGenerator" Version="3.0.255" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="ChatGroups\EventHandlers\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ReferencePathWithRefAssemblies Update="C:\Users\Victorio\.nuget\packages\oneof\3.0.255\lib\netstandard2.0\OneOf.dll" />
+    </ItemGroup>
+</Project>
