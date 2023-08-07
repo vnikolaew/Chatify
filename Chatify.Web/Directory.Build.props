@@ -1,8 +1,0 @@
-<Project>
-    <ItemGroup>
-        <!-- Global type aliases (using directives) -->
-        <Using Include="System" />
-        <Using Include="System.Collections.Generic" />
-        <!-- Add more aliases as needed -->
-    </ItemGroup>
-</Project>
