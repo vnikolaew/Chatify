@@ -7,6 +7,7 @@ using AspNetCore.Identity.Cassandra.Models;
 using Cassandra;
 using Cassandra.Data.Linq;
 using Chatify.Infrastructure.Data.Models;
+using Humanizer;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using InvalidOperationException = System.InvalidOperationException;
@@ -90,6 +91,7 @@ public class DatabaseInitializationService : BackgroundService
     {
         try
         {
+            await DefineUdts(_session);
             await CreateIdentityTablesAsync(_cassandraOptions);
             await CreateApplicationTablesAsync(stoppingToken);
         }
@@ -97,6 +99,16 @@ public class DatabaseInitializationService : BackgroundService
         {
             _logger.LogError(e, "An exception was thrown during table creation");
         }
+    }
+
+    private static async Task DefineUdts(ISession session)
+    {
+        await session.UserDefinedTypes.DefineAsync(
+            UdtMap.For<MessageReplierInfo>()
+                .Map(ri => ri.UserId, nameof(MessageReplierInfo.UserId).Underscore())
+                .Map(ri => ri.Username, nameof(MessageReplierInfo.Username).Underscore())
+                .Map(ri => ri.ProfilePictureUrl, nameof(MessageReplierInfo.ProfilePictureUrl).Underscore())
+            );
     }
 
     private async Task CreateApplicationTablesAsync(CancellationToken stoppingToken)

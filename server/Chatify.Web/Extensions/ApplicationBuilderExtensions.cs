@@ -13,7 +13,7 @@ public static class ApplicationBuilderExtensions
         this IApplicationBuilder app,
         IWebHostEnvironment environment)
     {
-        if (environment.IsDevelopment())
+        if ( environment.IsDevelopment() )
         {
             app.UseSwagger()
                 .UseSwaggerUI();
@@ -32,8 +32,10 @@ public static class ApplicationBuilderExtensions
             FileProvider =
                 new CompositeFileProvider(
                     new PhysicalFileProvider(
-                        Path.Combine(environment.ContentRootPath, StaticFilesDirectoryName))),
+                        Path.Combine(environment.ContentRootPath, StaticFilesDirectoryName)),
+                    new PhysicalFileProvider(Path.Combine(environment.ContentRootPath, "swagger"))),
             RequestPath = path,
+        ServeUnknownFileTypes = true,
             ContentTypeProvider = new FileExtensionContentTypeProvider(),
             OnPrepareResponse = ctx =>
             {

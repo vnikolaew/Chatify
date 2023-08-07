@@ -26,8 +26,8 @@ var app = builder.Build();
     app
         .UseHttpsRedirection()
         // .UseTraceIdentifierMiddleware()
-        .UseDevelopmentSwagger(app.Environment)
         .UseCachedStaticFiles(app.Environment, "/static")
+        .UseDevelopmentSwagger(app.Environment)
         .UseRouting()
         .UseAuthentication()
         .UseAuthorization()

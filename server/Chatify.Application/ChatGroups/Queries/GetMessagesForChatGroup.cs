@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using Chatify.Application.ChatGroups.Commands;
-using Chatify.Domain.Entities;
+using Chatify.Application.ChatGroups.Queries.Models;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
@@ -9,7 +8,7 @@ using OneOf;
 
 namespace Chatify.Application.ChatGroups.Queries;
 
-using GetMessagesForChatGroupResult = OneOf<UserIsNotMemberError, CursorPaged<ChatMessage>>;
+using GetMessagesForChatGroupResult = OneOf<UserIsNotMemberError, CursorPaged<ChatGroupMessageResponseModel>>;
 
 public record GetMessagesForChatGroup(
     [Required] Guid GroupId,
@@ -38,18 +37,30 @@ internal sealed class GetMessagesByChatGroupHandler
         GetMessagesForChatGroup command,
         CancellationToken cancellationToken = default)
     {
-        var s = DateTime.Now.ToString(CultureInfo.GetCultureInfo("en-UK"));
-            
         var isGroupMember = await _members.Exists(
             command.GroupId,
             _identityContext.Id, cancellationToken);
         if ( !isGroupMember ) return new UserIsNotMemberError(_identityContext.Id, command.GroupId);
 
+        var messageReplySummaries = await _messages.GetPaginatedReplierInfosByGroupAsync(
+            command.GroupId,
+            command.PageSize,
+            command.PagingCursor, cancellationToken);
         var messages = await _messages.GetPaginatedByGroupAsync(
             command.GroupId,
             command.PageSize,
             command.PagingCursor,
             cancellationToken);
-        return messages;
+
+        return messages
+            .Zip(messageReplySummaries, (message, replySummary) => new ChatGroupMessageResponseModel(
+                message,
+                new MessageRepliersInfoResponseModel(
+                    replySummary.Total,
+                    replySummary.LastUpdatedAt,
+                    replySummary.ReplierInfos.Select(ri =>
+                        new MessageReplierInfoResponseModel(ri.UserId, ri.Username, ri.ProfilePictureUrl)).ToList()))
+            )
+            .ToCursorPaged(messages.PagingCursor);
     }
 }

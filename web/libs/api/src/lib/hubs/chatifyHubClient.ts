@@ -8,6 +8,7 @@ import {
    IChatGroupMessage,
    IChatGroupMessageEdited,
    IChatGroupMessageReactedTo,
+   IChatGroupMessageRemoved,
    IChatGroupMessageUnReactedTo,
    IChatGroupNewAdminAdded,
    IFriendInvitationAccepted,
@@ -39,6 +40,10 @@ export class ChatifyHubClient implements IChatClient {
 
    constructor(connection: HubConnection) {
       this.connection = connection;
+   }
+
+   onClose(callback: (error?: Error | undefined) => void) {
+      this.connection.onclose(callback);
    }
 
    onAddedToChatGroup(callback: (event: IAddedToChatGroup) => void): void {
@@ -132,6 +137,12 @@ export class ChatifyHubClient implements IChatClient {
    async stop(): Promise<void> {
       return this.connection.stop();
    }
+
+   onChatGroupMessageRemoved(
+      callback: (event: IChatGroupMessageRemoved) => void
+   ): void {
+      this.connection.on(HubMethods.ChatGroupMessageRemoved, callback);
+   }
 }
 
 export interface IChatClient {
@@ -159,6 +170,10 @@ export interface IChatClient {
 
    onChatGroupMessageEdited(
       callback: (event: IChatGroupMessageEdited) => void
+   ): void;
+
+   onChatGroupMessageRemoved(
+      callback: (event: IChatGroupMessageRemoved) => void
    ): void;
 
    onChatGroupMessageReactedTo(

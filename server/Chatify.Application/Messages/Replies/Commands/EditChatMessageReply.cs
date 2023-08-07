@@ -10,7 +10,6 @@ using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
-using LanguageExt.Common;
 using OneOf;
 
 namespace Chatify.Application.Messages.Replies.Commands;

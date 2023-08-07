@@ -1,0 +1,1067 @@
+openapi: 3.0.1
+info:
+  title: Chatify Server
+  version: v1
+servers:
+  - url: https://localhost:7139
+paths:
+  /api/Auth/me:
+    get:
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: Success
+  /api/Auth/signup:
+    post:
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegularSignUp'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/RegularSignUp'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/RegularSignUp'
+      responses:
+        '200':
+          description: Success
+  /api/Auth/signin:
+    post:
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegularSignIn'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/RegularSignIn'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/RegularSignIn'
+      responses:
+        '200':
+          description: Success
+  /api/Auth/signup/google:
+    post:
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleSignUp'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/GoogleSignUp'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/GoogleSignUp'
+      responses:
+        '200':
+          description: Success
+  /api/Auth/signup/facebook:
+    post:
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacebookSignUp'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/FacebookSignUp'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/FacebookSignUp'
+      responses:
+        '200':
+          description: Success
+  /api/Auth/confirm-email:
+    post:
+      tags:
+        - Auth
+      parameters:
+        - name: token
+          in: query
+          style: form
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+  /api/ChatGroups:
+    post:
+      tags:
+        - ChatGroups
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                About:
+                  type: string
+                Name:
+                  type: string
+                File:
+                  type: string
+                  format: binary
+            encoding:
+              About:
+                style: form
+              Name:
+                style: form
+              File:
+                style: form
+      responses:
+        '200':
+          description: Success
+  '/api/ChatGroups/{groupId}':
+    get:
+      tags:
+        - ChatGroups
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+    patch:
+      tags:
+        - ChatGroups
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                ChatGroupId:
+                  type: string
+                  format: uuid
+                Name:
+                  type: string
+                About:
+                  type: string
+                File:
+                  type: string
+                  format: binary
+            encoding:
+              ChatGroupId:
+                style: form
+              Name:
+                style: form
+              About:
+                style: form
+              File:
+                style: form
+      responses:
+        '200':
+          description: Success
+  /api/ChatGroups/feed:
+    get:
+      tags:
+        - ChatGroups
+      parameters:
+        - name: limit
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Success
+  /api/ChatGroups/members:
+    post:
+      tags:
+        - ChatGroups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddChatGroupMember'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/AddChatGroupMember'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/AddChatGroupMember'
+      responses:
+        '200':
+          description: Success
+    delete:
+      tags:
+        - ChatGroups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemoveChatGroupMember'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/RemoveChatGroupMember'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/RemoveChatGroupMember'
+      responses:
+        '200':
+          description: Success
+  /api/ChatGroups/leave:
+    post:
+      tags:
+        - ChatGroups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveChatGroup'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/LeaveChatGroup'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/LeaveChatGroup'
+      responses:
+        '200':
+          description: Success
+  /api/ChatGroups/admins:
+    post:
+      tags:
+        - ChatGroups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddChatGroupAdmin'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/AddChatGroupAdmin'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/AddChatGroupAdmin'
+      responses:
+        '200':
+          description: Success
+  /api/Friendships:
+    get:
+      tags:
+        - Friendships
+      responses:
+        '200':
+          description: Success
+  /api/Friendships/sent:
+    get:
+      tags:
+        - Friendships
+      responses:
+        '200':
+          description: Success
+  /api/Friendships/incoming:
+    get:
+      tags:
+        - Friendships
+      responses:
+        '200':
+          description: Success
+  '/api/Friendships/invite/{userId}':
+    post:
+      tags:
+        - Friendships
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+  '/api/Friendships/accept/{inviteId}':
+    post:
+      tags:
+        - Friendships
+      parameters:
+        - name: inviteId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+  '/api/Friendships/decline/{inviteId}':
+    post:
+      tags:
+        - Friendships
+      parameters:
+        - name: inviteId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+  '/api/Friendships/{friendId}':
+    delete:
+      tags:
+        - Friendships
+      parameters:
+        - name: friendId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+  /index:
+    get:
+      tags:
+        - Index
+      responses:
+        '200':
+          description: Success
+  '/api/Messages/{groupId}':
+    get:
+      tags:
+        - Messages
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetMessagesByChatGroupRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/GetMessagesByChatGroupRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/GetMessagesByChatGroupRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { }
+    post:
+      tags:
+        - Messages
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                ChatGroupId:
+                  type: string
+                  format: uuid
+                Content:
+                  type: string
+                Files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                Metadata:
+                  type: object
+                  additionalProperties:
+                    type: string
+            encoding:
+              ChatGroupId:
+                style: form
+              Content:
+                style: form
+              Files:
+                style: form
+              Metadata:
+                style: form
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema: { }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { }
+  '/api/Messages/replies/{messageId}':
+    get:
+      tags:
+        - Messages
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetRepliesByForMessageRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/GetRepliesByForMessageRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/GetRepliesByForMessageRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { }
+    delete:
+      tags:
+        - Messages
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteGroupChatMessageRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/DeleteGroupChatMessageRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/DeleteGroupChatMessageRequest'
+      responses:
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema: { }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { }
+    post:
+      tags:
+        - Messages
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendGroupChatMessageReplyRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/SendGroupChatMessageReplyRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/SendGroupChatMessageReplyRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema: { }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { }
+    put:
+      tags:
+        - Messages
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditGroupChatMessageRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/EditGroupChatMessageRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/EditGroupChatMessageRequest'
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { }
+  '/api/Messages/{messageId}':
+    put:
+      tags:
+        - Messages
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditGroupChatMessageRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/EditGroupChatMessageRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/EditGroupChatMessageRequest'
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { }
+    delete:
+      tags:
+        - Messages
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteGroupChatMessageRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/DeleteGroupChatMessageRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/DeleteGroupChatMessageRequest'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { }
+  /api/Profile/status:
+    put:
+      tags:
+        - Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeUserStatus'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/ChangeUserStatus'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/ChangeUserStatus'
+      responses:
+        '200':
+          description: Success
+  /api/Profile/details:
+    patch:
+      tags:
+        - Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditUserDetails'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/EditUserDetails'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/EditUserDetails'
+      responses:
+        '200':
+          description: Success
+    get:
+      tags:
+        - Profile
+      parameters:
+        - name: usernameQuery
+          in: query
+          style: form
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+  '/api/Profile/{userId}/details':
+    get:
+      tags:
+        - Profile
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+  '/api/Reactions/{messageId}':
+    post:
+      tags:
+        - Reactions
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReactToChatMessageRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/ReactToChatMessageRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/ReactToChatMessageRequest'
+      responses:
+        '200':
+          description: Success
+  '/api/Reactions/replies/{messageId}':
+    post:
+      tags:
+        - Reactions
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReactToChatMessageRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/ReactToChatMessageRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/ReactToChatMessageRequest'
+      responses:
+        '200':
+          description: Success
+  '/api/Reactions/{messageReactionId}':
+    delete:
+      tags:
+        - Reactions
+      parameters:
+        - name: messageReactionId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnreactToChatMessageRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/UnreactToChatMessageRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/UnreactToChatMessageRequest'
+      responses:
+        '200':
+          description: Success
+  '/api/Reactions/replies/{messageReactionId}':
+    delete:
+      tags:
+        - Reactions
+      parameters:
+        - name: messageReactionId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnreactToChatMessageRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/UnreactToChatMessageRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/UnreactToChatMessageRequest'
+      responses:
+        '200':
+          description: Success
+components:
+  schemas:
+    AddChatGroupAdmin:
+      type: object
+      properties:
+        chatGroupId:
+          type: string
+          format: uuid
+        newAdminId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    AddChatGroupMember:
+      type: object
+      properties:
+        groupId:
+          type: string
+          format: uuid
+        newMemberId:
+          type: string
+          format: uuid
+        membershipType:
+          type: integer
+          format: int32
+      additionalProperties: false
+    ChangeUserStatus:
+      type: object
+      properties:
+        newStatus:
+          $ref: '#/components/schemas/UserStatus'
+      additionalProperties: false
+    DeleteGroupChatMessageRequest:
+      type: object
+      properties:
+        groupId:
+          type: string
+          format: uuid
+        messageId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    EditGroupChatMessageRequest:
+      type: object
+      properties:
+        groupId:
+          type: string
+          format: uuid
+        messageId:
+          type: string
+          format: uuid
+        newContent:
+          type: string
+          nullable: true
+      additionalProperties: false
+    EditUserDetails:
+      type: object
+      properties:
+        username:
+          type: string
+          nullable: true
+        displayName:
+          type: string
+          nullable: true
+        profilePicture:
+          $ref: '#/components/schemas/InputFile'
+        phoneNumbers:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+          nullable: true
+        newPasswordInput:
+          $ref: '#/components/schemas/NewPasswordInput'
+      additionalProperties: false
+    FacebookSignUp:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          nullable: true
+      additionalProperties: false
+    GetMessagesByChatGroupRequest:
+      type: object
+      properties:
+        groupId:
+          type: string
+          format: uuid
+        pageSize:
+          type: integer
+          format: int32
+        pagingCursor:
+          type: string
+          nullable: true
+      additionalProperties: false
+    GetRepliesByForMessageRequest:
+      type: object
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        pageSize:
+          type: integer
+          format: int32
+        pagingCursor:
+          type: string
+          nullable: true
+      additionalProperties: false
+    GoogleSignUp:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          nullable: true
+      additionalProperties: false
+    InputFile:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Stream'
+        fileName:
+          type: string
+          nullable: true
+        sizeInBytes:
+          type: integer
+          format: int64
+          readOnly: true
+      additionalProperties: false
+    LeaveChatGroup:
+      type: object
+      properties:
+        groupId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          nullable: true
+      additionalProperties: false
+    NewPasswordInput:
+      type: object
+      properties:
+        oldPassword:
+          type: string
+          nullable: true
+        newPassword:
+          type: string
+          nullable: true
+      additionalProperties: false
+    ReactToChatMessageRequest:
+      type: object
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        groupId:
+          type: string
+          format: uuid
+        reactionType:
+          type: integer
+          format: int32
+      additionalProperties: false
+    RegularSignIn:
+      type: object
+      properties:
+        email:
+          type: string
+          nullable: true
+        password:
+          type: string
+          nullable: true
+      additionalProperties: false
+    RegularSignUp:
+      type: object
+      properties:
+        username:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        password:
+          type: string
+          nullable: true
+      additionalProperties: false
+    RemoveChatGroupMember:
+      type: object
+      properties:
+        groupId:
+          type: string
+          format: uuid
+        memberId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    SendGroupChatMessageReplyRequest:
+      type: object
+      properties:
+        chatGroupId:
+          type: string
+          format: uuid
+        replyToId:
+          type: string
+          format: uuid
+        content:
+          type: string
+          nullable: true
+        files:
+          type: array
+          items:
+            type: string
+            format: binary
+          nullable: true
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
+      additionalProperties: false
+    Stream:
+      type: object
+      properties:
+        canRead:
+          type: boolean
+          readOnly: true
+        canWrite:
+          type: boolean
+          readOnly: true
+        canSeek:
+          type: boolean
+          readOnly: true
+        canTimeout:
+          type: boolean
+          readOnly: true
+        length:
+          type: integer
+          format: int64
+          readOnly: true
+        position:
+          type: integer
+          format: int64
+        readTimeout:
+          type: integer
+          format: int32
+        writeTimeout:
+          type: integer
+          format: int32
+      additionalProperties: false
+    UnreactToChatMessageRequest:
+      type: object
+      properties:
+        messageReactionId:
+          type: string
+          format: uuid
+        messageId:
+          type: string
+          format: uuid
+        groupId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    UserStatus:
+      enum:
+        - Online
+        - Away
+        - Offline
+      type: string

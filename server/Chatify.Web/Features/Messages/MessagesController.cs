@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.ChatGroups.Queries;
+using Chatify.Application.ChatGroups.Queries.Models;
 using Chatify.Application.Messages.Commands;
 using Chatify.Application.Messages.Replies.Commands;
 using Chatify.Application.Messages.Replies.Queries;
@@ -20,7 +21,7 @@ using EditGroupChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMessageS
 using EditChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
 using DeleteGroupChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
 using DeleteChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
-using GetMessagesForChatGroupResult = OneOf<UserIsNotMemberError, CursorPaged<ChatMessage>>;
+using GetMessagesForChatGroupResult = OneOf<UserIsNotMemberError, CursorPaged<ChatGroupMessageResponseModel>>;
 using GetMessageRepliesForChatGroupMessageResult =
     OneOf<MessageNotFoundError, UserIsNotMemberError, CursorPaged<ChatMessageReply>>;
 

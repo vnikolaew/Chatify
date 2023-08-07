@@ -8,8 +8,6 @@ using Chatify.Domain.Events.Groups;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
-using LanguageExt;
-using LanguageExt.Common;
 using OneOf;
 
 namespace Chatify.Application.ChatGroups.Commands;

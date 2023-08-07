@@ -36,6 +36,10 @@ public static class ServiceCollectionExtensions
                     Version = "v1",
                     Title = "Chatify Server",
                 });
+                opts.SwaggerGeneratorOptions.Servers = new List<OpenApiServer>()
+                {
+                    new OpenApiServer() { Url = "https://localhost:7139"}
+                };
                 var xmlFileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 // opts.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFileName));
             });

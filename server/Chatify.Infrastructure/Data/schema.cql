@@ -149,3 +149,26 @@ CREATE TABLE IF NOT EXISTS chat_group_members_by_user_id
     PRIMARY KEY ( (user_id), created_at, chat_group_id)
 ) WITH CLUSTERING ORDER BY (created_at DESC, chat_group_id ASC)
    AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
+
+// Chat message replies summary info table:
+CREATE TYPE IF NOT EXISTS user_info (
+    id uuid,
+    username text,
+    profile_picture_url text,
+    );
+
+CREATE TABLE IF NOT EXISTS chat_message_reply_summaries
+(
+    chat_group_id uuid,
+    message_id    uuid,
+    id            uuid,
+    created_at    timestamp,
+    updated_at    timestamp,
+    total         bigint,
+    replier_ids   set<uuid>,
+    user_infos    set<user_info>,
+    PRIMARY KEY ( (chat_group_id), created_at, message_id )
+) WITH CLUSTERING ORDER BY (created_at DESC, message_id ASC)
+   AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
+
+CREATE INDEX IF NOT EXISTS chat_message_reply_summaries_by_id on chat_message_reply_summaries (message_id);

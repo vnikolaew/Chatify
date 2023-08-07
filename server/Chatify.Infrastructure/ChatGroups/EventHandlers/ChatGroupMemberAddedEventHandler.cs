@@ -5,7 +5,6 @@ using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Server;
 using Chatify.Shared.Abstractions.Events;
-using Chatify.Shared.Abstractions.Serialization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;

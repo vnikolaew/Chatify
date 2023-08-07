@@ -3,6 +3,25 @@ using ReactionCounts = System.Collections.Generic.IDictionary<int, long>;
 
 namespace Chatify.Domain.Entities;
 
+public record MessageReplierInfo(
+    Guid UserId,
+    string Username,
+    string ProfilePictureUrl
+);
+
+public class MessageRepliersInfo
+{
+    public Guid ChatGroupId { get; set; }
+    
+    public Guid MessageId { get; set; }
+
+    public DateTime? LastUpdatedAt { get; set; } = default;
+
+    public long Total { get; set; }
+    
+    public ISet<MessageReplierInfo> ReplierInfos { get; set; } = new HashSet<MessageReplierInfo>();
+}
+
 public class ChatMessage
 {
     public Guid Id { get; set; }
@@ -29,17 +48,17 @@ public class ChatMessage
 
     public void IncrementReactionCount(sbyte reactionType)
     {
-        if (!ReactionCounts.ContainsKey(reactionType))
+        if ( !ReactionCounts.ContainsKey(reactionType) )
         {
             ReactionCounts[reactionType] = 0;
         }
 
         ReactionCounts[reactionType]++;
     }
-    
+
     public void DecrementReactionCount(sbyte reactionType)
     {
-        if (ReactionCounts.ContainsKey(reactionType))
+        if ( ReactionCounts.ContainsKey(reactionType) )
         {
             ReactionCounts[reactionType]--;
         }
@@ -47,12 +66,12 @@ public class ChatMessage
 
     public void ChangeReaction(sbyte from, sbyte to)
     {
-        if (ReactionCounts.ContainsKey(from))
+        if ( ReactionCounts.ContainsKey(from) )
         {
             ReactionCounts[from]--;
         }
 
-        if (!ReactionCounts.ContainsKey(to))
+        if ( !ReactionCounts.ContainsKey(to) )
         {
             ReactionCounts[to] = 0;
         }

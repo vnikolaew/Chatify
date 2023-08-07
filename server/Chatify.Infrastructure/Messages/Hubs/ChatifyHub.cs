@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Messages.Hubs.Models.Client;
 using Chatify.Infrastructure.Messages.Hubs.Models.Server;

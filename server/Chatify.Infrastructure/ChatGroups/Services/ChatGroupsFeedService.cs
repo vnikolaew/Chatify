@@ -1,11 +1,7 @@
-﻿using System.Drawing;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
+﻿using AutoMapper;
 using Chatify.Application.ChatGroups.Contracts;
 using Chatify.Application.ChatGroups.Queries;
 using Chatify.Domain.Repositories;
-using Chatify.Infrastructure.Common.Caching.Extensions;
-using Chatify.Infrastructure.Data.Models;
 using StackExchange.Redis;
 
 namespace Chatify.Infrastructure.ChatGroups.Services;
@@ -13,7 +9,6 @@ namespace Chatify.Infrastructure.ChatGroups.Services;
 internal sealed class ChatGroupsFeedService : IChatGroupsFeedService
 {
     private readonly IDatabase _cache;
-    private readonly Mapper _mapper;
     private readonly IChatMessageRepository _messages;
     private readonly IUserRepository _users;
     private readonly IChatGroupRepository _groups;
@@ -22,13 +17,11 @@ internal sealed class ChatGroupsFeedService : IChatGroupsFeedService
         IDatabase cache,
         IChatMessageRepository messages,
         IChatGroupRepository groups,
-        Mapper mapper,
         IUserRepository users)
     {
         _cache = cache;
         _messages = messages;
         _groups = groups;
-        _mapper = mapper;
         _users = users;
     }
 
@@ -58,11 +51,12 @@ internal sealed class ChatGroupsFeedService : IChatGroupsFeedService
             .GetLatestForGroups(groupIds, cancellationToken);
 
         // Query cache for Message Sender info:
-        var messageSenderIds = messages.Select(m => m.UserId);
+        var messageSenderIds = messages.Select(m => m.Value.UserId);
         var userInfos = await _users.GetByIds(messageSenderIds, cancellationToken);
 
         // Now merge results into a single "Feed" entry:
         return messages
+            .Values
             .Select(m => new ChatGroupFeedEntry(
                 groups.FirstOrDefault(g => g.Id == m.ChatGroupId)!,
                 userInfos!.FirstOrDefault(u => u.Id == m.UserId)!,

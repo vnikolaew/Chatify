@@ -2,7 +2,9 @@
 using Cassandra.Mapping;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
+using Chatify.Infrastructure.Data.Models;
 using Chatify.Shared.Abstractions.Queries;
+using ChatMessage = Chatify.Domain.Entities.ChatMessage;
 using IMapper = AutoMapper.IMapper;
 using Mapper = Cassandra.Mapping.Mapper;
 
@@ -34,7 +36,20 @@ public sealed class ChatMessageRepository :
         );
     }
 
-    public async Task<List<ChatMessage>> GetLatestForGroups(
+    public async Task<CursorPaged<MessageRepliersInfo>> GetPaginatedReplierInfosByGroupAsync(
+        Guid groupId, int pageSize, string pagingCursor,
+        CancellationToken cancellationToken = default)
+    {
+        var messagesPage = await DbMapper.FetchPageAsync<ChatMessageRepliesSummary>(
+            pageSize, CassandraPagingHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?",
+            new object[] { groupId });
+
+        return new CursorPaged<MessageRepliersInfo>(
+            Mapper.Map<List<MessageRepliersInfo>>(messagesPage.ToList()),
+            CassandraPagingHelper.ToPagingCursor(messagesPage.PagingState));
+    }
+
+    public async Task<IDictionary<Guid, ChatMessage>> GetLatestForGroups(
         IEnumerable<Guid> groupIds,
         CancellationToken cancellationToken = default)
     {
@@ -48,8 +63,9 @@ public sealed class ChatMessageRepository :
 
         var messages = await DbMapper
             .FetchAsync<Models.ChatMessage>(cql);
-        
+
         return Mapper.Map<List<ChatMessage>>(
-            messages ?? new List<Models.ChatMessage>());
+                messages ?? new List<Models.ChatMessage>())
+            .ToDictionary(m => m.ChatGroupId);
     }
 }

@@ -3,20 +3,20 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using AutoMapper.Internal;
 using Chatify.Application.Authentication.Contracts;
+using Chatify.Application.ChatGroups.Contracts;
 using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Messages.Contracts;
 using Chatify.Domain.Common;
-using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Authentication;
 using Chatify.Infrastructure.Authentication.External.Facebook;
 using Chatify.Infrastructure.Authentication.External.Google;
+using Chatify.Infrastructure.ChatGroups.Services;
 using Chatify.Infrastructure.Common;
 using Chatify.Infrastructure.Common.Caching;
 using Chatify.Infrastructure.Data;
 using Chatify.Infrastructure.Data.Repositories;
-using Chatify.Infrastructure.Data.Seeding;
 using Chatify.Infrastructure.FileStorage;
 using Chatify.Infrastructure.Mailing;
 using Chatify.Infrastructure.Messages;
@@ -64,6 +64,7 @@ public static class DependencyInjection
             .AddTransient<IGuidGenerator, TimeUuidGenerator>()
             .AddTransient<IPasswordHasher, PasswordHasher>()
             .AddTransient<ISerializer, SystemTextJsonSerializer>()
+            .AddScoped<IChatGroupsFeedService, ChatGroupsFeedService >()
             .AddNotifications()
             .AddCounters();
 

@@ -11,8 +11,14 @@ public interface IChatMessageRepository : IDomainRepository<ChatMessage, Guid>
       int pageSize,
       string pagingCursor,
       CancellationToken cancellationToken = default);
+   
+   Task<CursorPaged<MessageRepliersInfo>> GetPaginatedReplierInfosByGroupAsync(
+      Guid groupId,
+      int pageSize,
+      string pagingCursor,
+      CancellationToken cancellationToken = default);
 
-   Task<List<ChatMessage>> GetLatestForGroups(
+   Task<IDictionary<Guid, ChatMessage>> GetLatestForGroups(
       IEnumerable<Guid> groupIds,
       CancellationToken cancellationToken = default);
 }

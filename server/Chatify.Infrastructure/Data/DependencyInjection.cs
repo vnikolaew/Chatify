@@ -49,6 +49,8 @@ public static class DependencyInjection
             MappingConfiguration.Global.Define(mapping);
         }
 
+        UdtMap.For<MessageReplierInfo>();
+
         services
             .AddCassandra(configuration)
             .AddTransient<Mapper>(sp => (sp.GetRequiredService<IMapper>() as Mapper)!)

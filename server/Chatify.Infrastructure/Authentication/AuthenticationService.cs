@@ -4,7 +4,6 @@ using AspNetCore.Identity.Cassandra.Models;
 using Chatify.Application.Authentication.Commands;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.User.Commands;
-using Chatify.Domain.Common;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Authentication.External.Facebook;
 using Chatify.Infrastructure.Authentication.External.Google;

@@ -4,7 +4,6 @@ using Chatify.Application.Common.Models;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
-using Humanizer;
 using OneOf;
 
 namespace Chatify.Application.User.Queries;
