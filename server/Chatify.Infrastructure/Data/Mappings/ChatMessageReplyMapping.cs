@@ -23,7 +23,7 @@ public class ChatMessageReplyMapping : Cassandra.Mapping.Mappings
             .UnderscoreColumn(cm => cm.UserId)
             .UnderscoreColumn(cm => cm.Content)
             .UnderscoreColumn(cm => cm.Attachments)
-            .SetColumn<ChatMessageReply, IEnumerable<string>, string>(cm => cm.Attachments)
+            .SetColumn<ChatMessageReply, IEnumerable<Media>, Media>(cm => cm.Attachments)
             .UnderscoreColumn(cm => cm.ReactionCounts)
             .UnderscoreColumn(cm => cm.CreatedAt)
             .UnderscoreColumn(cm => cm.UpdatedAt)

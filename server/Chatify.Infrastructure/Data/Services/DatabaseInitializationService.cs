@@ -7,7 +7,6 @@ using AspNetCore.Identity.Cassandra.Models;
 using Cassandra;
 using Cassandra.Data.Linq;
 using Chatify.Infrastructure.Data.Models;
-using Humanizer;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using InvalidOperationException = System.InvalidOperationException;
@@ -37,7 +36,10 @@ public class DatabaseInitializationService : BackgroundService
     }
 
     private static Regex GetUdtCollectionRegex(string keyspaceName)
-        => new($"""(?:list|set|map)<"{keyspaceName}"."(tokeninfo|logininfo|lockoutinfo|phoneinfo)">""");
+    {
+        var udts = new[] { "tokeninfo", "logininfo", "lockoutinfo", "phoneinfo", "media" };
+        return new Regex($"""(?:list|set|map)<"{keyspaceName}"."({string.Join("|", udts)})">""");
+    }
 
     private static async Task CreateTableIfNotExists<T>(
         ISession session,
@@ -95,7 +97,7 @@ public class DatabaseInitializationService : BackgroundService
             await CreateIdentityTablesAsync(_cassandraOptions);
             await CreateApplicationTablesAsync(stoppingToken);
         }
-        catch (Exception e)
+        catch ( Exception e )
         {
             _logger.LogError(e, "An exception was thrown during table creation");
         }
@@ -103,12 +105,27 @@ public class DatabaseInitializationService : BackgroundService
 
     private static async Task DefineUdts(ISession session)
     {
+        session.ChangeKeyspace(Constants.KeyspaceName);
+
+        session.Execute("""
+                        CREATE TYPE IF NOT EXISTS message_replier_info (
+                            user_id uuid,
+                            username text,
+                            profile_picture_url text,
+                        );
+                        """);
+        session.Execute("""
+                        CREATE TYPE IF NOT EXISTS media (
+                            id uuid,
+                            media_url text,
+                            file_name text,
+                            type text
+                        );
+                        """);
         await session.UserDefinedTypes.DefineAsync(
-            UdtMap.For<MessageReplierInfo>()
-                .Map(ri => ri.UserId, nameof(MessageReplierInfo.UserId).Underscore())
-                .Map(ri => ri.Username, nameof(MessageReplierInfo.Username).Underscore())
-                .Map(ri => ri.ProfilePictureUrl, nameof(MessageReplierInfo.ProfilePictureUrl).Underscore())
-            );
+            MessageReplierInfo.UdtMap,
+            Media.UdtMap
+        );
     }
 
     private async Task CreateApplicationTablesAsync(CancellationToken stoppingToken)
@@ -119,12 +136,12 @@ public class DatabaseInitializationService : BackgroundService
                  | StringSplitOptions.RemoveEmptyEntries);
 
         _logger.LogInformation("Starting creation of database tables ...");
-        foreach (var cqlClause in cqlClauses)
+        foreach ( var cqlClause in cqlClauses )
         {
             var statement = new SimpleStatement(cqlClause);
             statement.SetKeyspace(Constants.KeyspaceName);
 
-            await _session.ExecuteAsync(statement);
+            var rs = await _session.ExecuteAsync(statement);
         }
 
         _logger.LogInformation(
@@ -135,13 +152,13 @@ public class DatabaseInitializationService : BackgroundService
     private async Task CreateIdentityTablesAsync(CassandraOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
-        if (string.IsNullOrEmpty(options.KeyspaceName))
+        if ( string.IsNullOrEmpty(options.KeyspaceName) )
             throw new InvalidOperationException("Keyspace is null or empty.");
         try
         {
             _session.ChangeKeyspace(options.KeyspaceName);
         }
-        catch (InvalidQueryException)
+        catch ( InvalidQueryException )
         {
             _session.CreateKeyspaceIfNotExists(options.KeyspaceName, options.Replication, options.DurableWrites);
             _session.ChangeKeyspace(options.KeyspaceName);
@@ -164,12 +181,13 @@ public class DatabaseInitializationService : BackgroundService
 
         var usersTable = new Table<ChatifyUser>(_session);
         var rolesTable = new Table<CassandraIdentityRole>(_session);
+
         try
         {
             await CreateTableIfNotExists(_session, usersTable);
             await CreateTableIfNotExists(_session, rolesTable);
         }
-        catch (AlreadyExistsException)
+        catch ( AlreadyExistsException )
         {
         }
 

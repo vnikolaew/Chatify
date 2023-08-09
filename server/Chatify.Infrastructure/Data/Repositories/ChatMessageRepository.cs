@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Cassandra.Mapping;
+using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Data.Models;
@@ -14,10 +15,13 @@ public sealed class ChatMessageRepository :
     BaseCassandraRepository<ChatMessage, Models.ChatMessage, Guid>,
     IChatMessageRepository
 {
+    private readonly IPagingCursorHelper _pagingCursorHelper;
+
     public ChatMessageRepository(
-        IMapper mapper, Mapper dbMapper)
+        IMapper mapper, Mapper dbMapper, IPagingCursorHelper pagingCursorHelper)
         : base(mapper, dbMapper)
     {
+        _pagingCursorHelper = pagingCursorHelper;
     }
 
     public async Task<CursorPaged<ChatMessage>> GetPaginatedByGroupAsync(
@@ -27,12 +31,12 @@ public sealed class ChatMessageRepository :
         CancellationToken cancellationToken = default)
     {
         var messagesPage = await DbMapper.FetchPageAsync<Models.ChatMessage>(
-            pageSize, CassandraPagingHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?",
+            pageSize, _pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?",
             new object[] { groupId });
 
         return new CursorPaged<ChatMessage>(
             Mapper.Map<List<ChatMessage>>(messagesPage.ToList()),
-            CassandraPagingHelper.ToPagingCursor(messagesPage.PagingState)
+            _pagingCursorHelper.ToPagingCursor(messagesPage.PagingState)
         );
     }
 
@@ -40,13 +44,13 @@ public sealed class ChatMessageRepository :
         Guid groupId, int pageSize, string pagingCursor,
         CancellationToken cancellationToken = default)
     {
-        var messagesPage = await DbMapper.FetchPageAsync<ChatMessageRepliesSummary>(
-            pageSize, CassandraPagingHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?",
+        var replierInfoes = await DbMapper.FetchPageAsync<ChatMessageRepliesSummary>(
+            pageSize, _pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?",
             new object[] { groupId });
 
         return new CursorPaged<MessageRepliersInfo>(
-            Mapper.Map<List<MessageRepliersInfo>>(messagesPage.ToList()),
-            CassandraPagingHelper.ToPagingCursor(messagesPage.PagingState));
+            Mapper.Map<List<MessageRepliersInfo>>(replierInfoes.ToList()),
+            _pagingCursorHelper.ToPagingCursor(replierInfoes.PagingState));
     }
 
     public async Task<IDictionary<Guid, ChatMessage>> GetLatestForGroups(

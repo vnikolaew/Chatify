@@ -3,24 +3,17 @@ using ReactionCounts = System.Collections.Generic.IDictionary<int, long>;
 
 namespace Chatify.Domain.Entities;
 
-public record MessageReplierInfo(
-    Guid UserId,
-    string Username,
-    string ProfilePictureUrl
-);
-
-public class MessageRepliersInfo
+public record Media
 {
-    public Guid ChatGroupId { get; set; }
+    public Guid Id { get; set; }
     
-    public Guid MessageId { get; set; }
-
-    public DateTime? LastUpdatedAt { get; set; } = default;
-
-    public long Total { get; set; }
+    public string MediaUrl { get; set; } = default!;
     
-    public ISet<MessageReplierInfo> ReplierInfos { get; set; } = new HashSet<MessageReplierInfo>();
+    public string? FileName { get; init; }
+    
+    public string? Type { get; init; }
 }
+
 
 public class ChatMessage
 {
@@ -36,15 +29,20 @@ public class ChatMessage
 
     public string Content { get; set; } = default!;
 
-    private readonly HashSet<string> _attachments = new();
+    private readonly HashSet<Media> _attachments = new();
 
-    public IReadOnlyCollection<string> Attachments
+    public IReadOnlyCollection<Media> Attachments
     {
         get => _attachments.ToList().AsReadOnly();
         init => _attachments = value.ToHashSet();
     }
 
     public ReactionCounts ReactionCounts { get; set; } = new Dictionary<int, long>();
+
+    public void AddAttachment(Media media) => _attachments.Add(media);
+
+    public bool DeleteAttachment(Guid attachmentId)
+        => _attachments.RemoveWhere(m => m.Id == attachmentId) > 0;
 
     public void IncrementReactionCount(sbyte reactionType)
     {

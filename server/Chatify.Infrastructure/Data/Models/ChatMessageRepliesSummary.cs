@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Cassandra;
 using Cassandra.Mapping.Attributes;
 using Chatify.Application.Common.Mappings;
 using Chatify.Domain.Entities;
+using Humanizer;
 
 namespace Chatify.Infrastructure.Data.Models;
 
@@ -44,14 +46,19 @@ public class ChatMessageRepliesSummary : IMapFrom<MessageRepliersInfo>
             .ForMember(ri => ri.LastUpdatedAt,
                 cfg =>
                     cfg.MapFrom(rs => rs.UpdatedAt));
-
 }
 
 public class MessageReplierInfo : IMapFrom<Chatify.Domain.Entities.MessageReplierInfo>
 {
     public Guid UserId { get; set; }
 
-    public string Username { get; set; }
+    public string Username { get; set; } = default!;
 
-    public string ProfilePictureUrl { get; set; }
+    public string ProfilePictureUrl { get; set; } = default!;
+
+    public static readonly UdtMap<MessageReplierInfo> UdtMap = Cassandra.UdtMap
+        .For<MessageReplierInfo>(nameof(MessageReplierInfo).Underscore())
+        .Map(ri => ri.UserId, nameof(UserId).Underscore())
+        .Map(ri => ri.Username, nameof(Username).Underscore())
+        .Map(ri => ri.ProfilePictureUrl, nameof(ProfilePictureUrl).Underscore());
 };

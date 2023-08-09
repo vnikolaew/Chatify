@@ -23,6 +23,5 @@ public class ChatMessageRepliesSummaryMapping : Cassandra.Mapping.Mappings
             .UnderscoreColumn(s => s.UpdatedAt)
             .UnderscoreColumn(s => s.Total)
             .UnderscoreColumn(s => s.ReplierIds)
-            .UnderscoreColumn(s => s.ReplierInfos);
-
+            .UnderscoreColumn(s => s.ReplierInfos, cm => cm.WithFrozenKey());
 }

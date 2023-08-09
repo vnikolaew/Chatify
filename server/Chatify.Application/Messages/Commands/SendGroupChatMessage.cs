@@ -31,6 +31,7 @@ internal sealed class SendGroupChatMessageHandler
     private readonly IChatGroupMemberRepository _members;
     private readonly IIdentityContext _identityContext;
     private readonly IChatMessageRepository _messages;
+    private readonly IChatGroupAttachmentRepository _attachments;
     private readonly IEventDispatcher _eventDispatcher;
     private readonly IClock _clock;
     private readonly IGuidGenerator _guidGenerator;
@@ -43,7 +44,8 @@ internal sealed class SendGroupChatMessageHandler
         IChatMessageRepository messages,
         IGuidGenerator guidGenerator,
         IEventDispatcher eventDispatcher,
-        IFileUploadService fileUploadService)
+        IFileUploadService fileUploadService,
+        IChatGroupAttachmentRepository attachments)
     {
         _groups = groups;
         _identityContext = identityContext;
@@ -53,6 +55,7 @@ internal sealed class SendGroupChatMessageHandler
         _guidGenerator = guidGenerator;
         _eventDispatcher = eventDispatcher;
         _fileUploadService = fileUploadService;
+        _attachments = attachments;
     }
 
     public async Task<SendGroupChatMessageResult> HandleAsync(
@@ -69,14 +72,10 @@ internal sealed class SendGroupChatMessageHandler
 
         if ( !userIsGroupMember ) return new UserIsNotMemberError(_identityContext.Id, command.GroupId);
 
-        // TODO: Handle any file uploads:
-        var uploadedFilesUrls = new List<string>();
-        if (command.Attachments?.Any() ?? false)
-        {
-            uploadedFilesUrls = await HandleFileUploads(
-                command.Attachments,
-                cancellationToken);
-        }
+        // TODO: Handle file uploads:
+        var uploadedFilesResults = await HandleFileUploads(
+            command.Attachments,
+            cancellationToken);
 
         var messageId = _guidGenerator.New();
         var message = new ChatMessage
@@ -85,11 +84,33 @@ internal sealed class SendGroupChatMessageHandler
             ChatGroup = chatGroup,
             Id = messageId,
             CreatedAt = _clock.Now,
-            Attachments = uploadedFilesUrls,
+            Attachments = uploadedFilesResults
+                .Select(r => new Media
+                {
+                    Id = r.FileId,
+                    MediaUrl = r.FileUrl,
+                    Type = r.FileType,
+                    FileName = r.FileName
+                }).ToList(),
             Content = command.Content
         };
 
+        // Handle update of group attachments "View" table:
+        var groupAttachments = message
+            .Attachments
+            .Select(media => new ChatGroupAttachment
+            {
+                ChatGroupId = chatGroup.Id,
+                UserId = _identityContext.Id,
+                Username = _identityContext.Username,
+                CreatedAt = _clock.Now,
+                AttachmentId = media.Id,
+                MediaInfo = media,
+            });
+
+        await _attachments.SaveManyAsync(groupAttachments, cancellationToken);
         await _messages.SaveAsync(message, cancellationToken);
+
         await _eventDispatcher.PublishAsync(new ChatMessageSentEvent
         {
             UserId = message.UserId,
@@ -102,10 +123,12 @@ internal sealed class SendGroupChatMessageHandler
         return message.Id;
     }
 
-    private async Task<List<string>> HandleFileUploads(
-        IEnumerable<InputFile> inputFiles,
+    private async Task<List<FileUploadResult>> HandleFileUploads(
+        IEnumerable<InputFile>? inputFiles,
         CancellationToken cancellationToken)
     {
+        if ( !inputFiles?.Any() ?? false ) return new List<FileUploadResult>();
+
         var filesUploadResults = await _fileUploadService.UploadManyAsync(
             new MultipleFileUploadRequest
             {
@@ -113,11 +136,11 @@ internal sealed class SendGroupChatMessageHandler
                 UserId = _identityContext.Id
             }, cancellationToken);
 
-        var uploadedFilesUrls = filesUploadResults
-            .Where(r => r.IsRight)
-            .Select(r =>
-                r.Match(r => r.FileUrl, _ => null!))
+        var uploadedFileResults = filesUploadResults
+            .Where(r => r.IsT1)
+            .Select(r => r.AsT1!)
             .ToList();
-        return uploadedFilesUrls;
+
+        return uploadedFileResults;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Queries;
@@ -11,10 +12,12 @@ public sealed class ChatMessageReplyRepository
     : BaseCassandraRepository<ChatMessageReply, Models.ChatMessageReply, Guid>,
         IChatMessageReplyRepository
 {
+    private readonly IPagingCursorHelper _pagingCursorHelper;
     public ChatMessageReplyRepository(
         IMapper mapper,
-        Mapper dbMapper) : base(mapper, dbMapper, nameof(ChatMessageReply.Id).Underscore())
+        Mapper dbMapper, IPagingCursorHelper pagingCursorHelper) : base(mapper, dbMapper, nameof(ChatMessageReply.Id).Underscore())
     {
+        _pagingCursorHelper = pagingCursorHelper;
     }
 
     public async Task<bool> DeleteAllForMessage(Guid messageId, CancellationToken cancellationToken = default)
@@ -37,11 +40,11 @@ public sealed class ChatMessageReplyRepository
         CancellationToken cancellationToken)
     {
         var messagesPage = await DbMapper.FetchPageAsync<Models.ChatMessageReply>(
-            pageSize, CassandraPagingHelper.ToPagingState(pagingCursor), "WHERE reply_to_id = ?",
+            pageSize, _pagingCursorHelper.ToPagingState(pagingCursor), "WHERE reply_to_id = ?",
             new object[] { messageId });
 
         return new CursorPaged<ChatMessageReply>(
             Mapper.Map<List<ChatMessageReply>>(messagesPage.ToList()),
-            CassandraPagingHelper.ToPagingCursor(messagesPage.PagingState));
+            _pagingCursorHelper.ToPagingCursor(messagesPage.PagingState));
     }
 }

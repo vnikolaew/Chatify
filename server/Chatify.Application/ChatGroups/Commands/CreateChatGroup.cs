@@ -5,10 +5,14 @@ using Chatify.Application.User.Commands;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Groups;
+using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
+using Chatify.Shared.Abstractions.Time;
+using LanguageExt.Common;
 using OneOf;
+using Guid = System.Guid;
 
 namespace Chatify.Application.ChatGroups.Commands;
 
@@ -20,7 +24,8 @@ public record CreateChatGroup(
     string Name,
     InputFile? InputFile) : ICommand<CreateChatGroupResult>;
 
-internal sealed class CreateChatGroupHandler : ICommandHandler<CreateChatGroup, CreateChatGroupResult>
+internal sealed class CreateChatGroupHandler
+    : ICommandHandler<CreateChatGroup, CreateChatGroupResult>
 {
     private readonly IDomainRepository<ChatGroup, Guid> _groups;
     private readonly IEventDispatcher _eventDispatcher;
@@ -46,7 +51,7 @@ internal sealed class CreateChatGroupHandler : ICommandHandler<CreateChatGroup, 
         CreateChatGroup command,
         CancellationToken cancellationToken = default)
     {
-        string groupPictureUrl = default!;
+        Media? groupPicture = default;
         if ( command.InputFile is not null )
         {
             var fileUploadRequest = new SingleFileUploadRequest
@@ -56,9 +61,16 @@ internal sealed class CreateChatGroupHandler : ICommandHandler<CreateChatGroup, 
             };
 
             var result = await _fileUploadService.UploadAsync(fileUploadRequest, cancellationToken);
-            if ( result.IsLeft ) return new FileUploadError(result.LeftToArray()[0].Message);
+            if ( result.Value is Error error ) return new FileUploadError(error.Message);
 
-            groupPictureUrl = result.Match(r => r.FileUrl, _ => null!);
+            var newMedia = result.AsT1!;
+            groupPicture = new Media
+            {
+                Id = newMedia.FileId,
+                FileName = newMedia.FileName,
+                MediaUrl = newMedia.FileUrl,
+                Type = newMedia.FileType
+            };
         }
 
         var groupId = _guidGenerator.New();
@@ -67,9 +79,9 @@ internal sealed class CreateChatGroupHandler : ICommandHandler<CreateChatGroup, 
             Id = groupId,
             About = command.About ?? string.Empty,
             Name = command.Name,
-            AdminIds = new System.Collections.Generic.HashSet<Guid> { _identityContext.Id },
+            AdminIds = new HashSet<Guid> { _identityContext.Id },
             CreatorId = _identityContext.Id,
-            PictureUrl = groupPictureUrl
+            Picture = groupPicture
         };
 
         await _groups.SaveAsync(chatGroup, cancellationToken);

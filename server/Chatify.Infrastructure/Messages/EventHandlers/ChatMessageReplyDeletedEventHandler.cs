@@ -1,4 +1,5 @@
-﻿using Cassandra.Mapping;
+﻿using System.Text.RegularExpressions;
+using Cassandra.Mapping;
 using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Events.Messages;
 using Chatify.Infrastructure.Data.Models;
@@ -11,7 +12,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Chatify.Infrastructure.Messages.EventHandlers;
 
-internal sealed class ChatMessageReplyDeletedEventHandler
+internal sealed partial class ChatMessageReplyDeletedEventHandler
     : IEventHandler<ChatMessageReplyDeletedEvent>
 {
     private readonly ICounterService<ChatMessageReplyCount, Guid> _replyCounts;
@@ -40,7 +41,8 @@ internal sealed class ChatMessageReplyDeletedEventHandler
         var messageReplierIds = await _mapper.FetchAsync<Guid>(
             "SELECT user_id FROM chat_message_replies WHERE reply_to = ?;", @event.ReplyToId);
 
-        if ( messageReplierIds.Count(id => id == @event.UserId) == 1 )
+        // We need to remove replier Id since there's no more replies by him:
+        if ( messageReplierIds.Count(id => id == @event.UserId) <= 1 )
         {
             // Delete UserInfo object from HashSet
             var userInfo = await _mapper.FirstOrDefaultAsync<ChatifyUser>(
@@ -48,12 +50,18 @@ internal sealed class ChatMessageReplyDeletedEventHandler
 
             var userInfoDict = new Dictionary<string, string>
             {
-                { "user_id", userInfo.Id.ToString() }, { "username", userInfo.UserName },
-                { "profile_picture_url", userInfo.ProfilePictureUrl }
+                { "user_id", userInfo.Id.ToString() },
+                { "username", userInfo.UserName },
+                { "profile_picture_url", userInfo.ProfilePicture.MediaUrl }
             };
 
+            var userInfoDictString = GuidRegex()
+                .Replace(
+                    JsonSerializer.Serialize(userInfoDict),
+                    match => match.Groups[0].Value.Replace("\"", ""));
+
             await _mapper.UpdateAsync<ChatMessageRepliesSummary>(
-                $" SET replier_ids = replier_ids - ?, total = total - 1, user_infos = user_infos - {JsonSerializer.Serialize(userInfoDict)} WHERE message_id = ? ALLOW FILTERING;",
+                $" SET replier_ids = replier_ids - ?, total = total - 1, user_infos = user_infos - {userInfoDictString} WHERE message_id = ? ALLOW FILTERING;",
                 @event.UserId,
                 @event.MessageId);
         }
@@ -76,4 +84,7 @@ internal sealed class ChatMessageReplyDeletedEventHandler
                     _identityContext.Username,
                     @event.Timestamp));
     }
+
+    [GeneratedRegex("\"\\b[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}\\b\"")]
+    private static partial Regex GuidRegex();
 }

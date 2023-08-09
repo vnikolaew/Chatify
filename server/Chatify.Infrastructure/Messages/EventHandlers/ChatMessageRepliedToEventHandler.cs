@@ -41,7 +41,7 @@ internal sealed class ChatMessageRepliedToEventHandler
 
         // Update Message Reply Summaries "View" table:
         var replierIds = await _mapper.FirstOrDefaultAsync<HashSet<Guid>>(
-            "SELECT replies_ids WHERE message_id = ? ALLOW FILTERING;",
+            "SELECT replier_ids FROM chat_message_reply_summaries WHERE message_id = ? ALLOW FILTERING;",
             @event.MessageId);
         if ( replierIds is not null )
         {
@@ -53,7 +53,7 @@ internal sealed class ChatMessageRepliedToEventHandler
                 var userInfoDict = new Dictionary<string, string>
                 {
                     { "user_id", userInfo.Id.ToString() }, { "username", userInfo.UserName },
-                    { "profile_picture_url", userInfo.ProfilePictureUrl }
+                    { "profile_picture_url", userInfo.ProfilePicture.MediaUrl }
                 };
 
                 await _mapper.UpdateAsync<ChatMessageRepliesSummary>(
@@ -63,7 +63,7 @@ internal sealed class ChatMessageRepliedToEventHandler
                     true,
                     userInfo.Id,
                     userInfo.UserName,
-                    userInfo.ProfilePictureUrl,
+                    userInfo.ProfilePicture,
                     @event.MessageId
                 );
             }

@@ -1,4 +1,6 @@
-﻿using Chatify.Domain.Events.Messages;
+﻿using Chatify.Domain.Common;
+using Chatify.Domain.Entities;
+using Chatify.Domain.Events.Messages;
 using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Client;
@@ -14,16 +16,19 @@ internal sealed class ChatMessageSentEventHandler
 {
     private readonly IHubContext<ChatifyHub, IChatifyHubClient> _chatifyHubContext;
     private readonly IIdentityContext _identityContext;
+    private readonly IDomainRepository<MessageRepliersInfo, Guid> _replierInfos;
     private readonly IDatabase _cache;
 
     public ChatMessageSentEventHandler(
         IHubContext<ChatifyHub, IChatifyHubClient> chatifyHubContext,
         IIdentityContext identityContext,
-        IDatabase cache)
+        IDatabase cache,
+        IDomainRepository<MessageRepliersInfo, Guid> replierInfos)
     {
         _chatifyHubContext = chatifyHubContext;
         _identityContext = identityContext;
         _cache = cache;
+        _replierInfos = replierInfos;
     }
 
     private static string GetGroupMembersCacheKey(Guid groupId)
@@ -47,6 +52,16 @@ internal sealed class ChatMessageSentEventHandler
                 ), @event.Timestamp.Ticks);
         }
 
+        // Add a Message Repliers Summary entry to DB:
+        var repliersInfo = new MessageRepliersInfo
+        {
+            MessageId = @event.MessageId,
+            Total = 0,
+            ChatGroupId = @event.GroupId,
+            ReplierInfos = new HashSet<MessageReplierInfo>(),
+        };
+        await _replierInfos.SaveAsync(repliersInfo, cancellationToken);
+        
         var groupId = $"chat-groups:{@event.GroupId}";
         await _chatifyHubContext
             .Clients

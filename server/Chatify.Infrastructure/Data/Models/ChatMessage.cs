@@ -7,36 +7,26 @@ namespace Chatify.Infrastructure.Data.Models;
 
 public class ChatMessage : IMapFrom<Domain.Entities.ChatMessage>
 {
-    [SecondaryIndex]
-    public Guid Id { get; set; }
-    
+    [SecondaryIndex] public Guid Id { get; set; }
+
     public Guid ChatGroupId { get; set; }
 
     public Guid UserId { get; set; }
 
     public string Content { get; set; } = default!;
 
-    protected readonly HashSet<string> _attachments = new();
+    protected readonly HashSet<Media> _attachments = new();
 
-    public IEnumerable<string> Attachments => _attachments;
-    
+    [FrozenKey]
+    public IEnumerable<Media> Attachments => _attachments;
+
     public Metadata Metadata { get; set; } = new Dictionary<string, string>();
 
     public ReactionCounts ReactionCounts { get; set; } = new Dictionary<int, long>();
-    
+
     public DateTimeOffset CreatedAt { get; set; }
-    
+
     public DateTimeOffset? UpdatedAt { get; set; }
 
     public bool Updated => UpdatedAt.HasValue;
 }
-
-// Add this UDT column to ChatMessages table:
-public class ChatMessageReplyInfo
-{
-    public long Total { get; set; } = 0;
-    
-    public ISet<ReplyUserInfo> UserInfos { get; set; } = new HashSet<ReplyUserInfo>();
-}
-
-public record ReplyUserInfo(Guid UserId, string Username, string ProfilePictureUrl);
