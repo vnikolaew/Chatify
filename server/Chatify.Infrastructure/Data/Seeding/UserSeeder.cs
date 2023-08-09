@@ -6,6 +6,7 @@ using Chatify.Domain.Entities;
 using Chatify.Infrastructure.Data.Models;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
+using Media = Chatify.Infrastructure.Data.Models.Media;
 
 namespace Chatify.Infrastructure.Data.Seeding;
 
@@ -23,8 +24,8 @@ internal sealed class UserSeeder : ISeeder
             .RuleFor(u => u.Id, f => Guid.NewGuid())
             .RuleFor(u => u.UserName, f => f.Internet.UserName())
             .RuleFor(u => u.PasswordHash, (_, u) => hasher.Secure($"{u.UserName}123"))
-            .RuleFor(u => u.Status, f => f.PickRandom(Enum.GetValues<UserStatus>().Select(_ => (sbyte)_)))
-            .RuleFor(u => u.ProfilePictureUrl, f => f.Internet.Avatar())
+            .RuleFor(u => u.Status, f => f.PickRandom(Enum.GetValues<UserStatus>().Select(_ => ( sbyte )_)))
+            .RuleFor(u => u.ProfilePicture, f => new Media { MediaUrl = f.Internet.Avatar() })
             .RuleFor(u => u.EmailConfirmed, _ => true)
             .RuleFor(u => u.EmailConfirmationTime, _ => DateTimeOffset.Now)
             .RuleFor(u => u.DeviceIps, f => new HashSet<IPAddress> { f.Internet.IpAddress() })
@@ -35,11 +36,11 @@ internal sealed class UserSeeder : ISeeder
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         await using var scope = _scopeFactory.CreateAsyncScope();
-        
+
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
         var users = _userFaker.Generate(20);
-        
-        foreach (var user in users)
+
+        foreach ( var user in users )
         {
             await mapper.InsertAsync(user, insertNulls: true);
         }

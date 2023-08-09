@@ -15,7 +15,7 @@ public class User
 
     public List<string> Roles { get; set; } = new();
 
-    public string ProfilePictureUrl { get; set; } = default!;
+    public Media ProfilePicture { get; set; } = default!;
 
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
 

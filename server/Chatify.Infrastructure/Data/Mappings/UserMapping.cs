@@ -12,7 +12,8 @@ public class UserMapping : Cassandra.Mapping.Mappings
     public UserMapping()
         => For<ChatifyUser>()
             .TableName(UsersTableName)
-            .KeyspaceName(Constants.KeyspaceName)
+            // .KeyspaceName(Constants.KeyspaceName)
+            .PartitionKey(u => u.Id)
             .ClusteringKey(
                 new Tuple<string, SortOrder>(
                     nameof(ChatifyUser.CreatedAt).Underscore(), SortOrder.Descending),
@@ -23,12 +24,14 @@ public class UserMapping : Cassandra.Mapping.Mappings
             .UnderscoreColumn(u => u.Metadata)
             .UnderscoreColumn(u => u.Status)
             .UnderscoreColumn(u => u.PhoneNumbers)
-            .UnderscoreColumn(u => u.ProfilePictureUrl)
+            .UnderscoreColumn(u => u.ProfilePicture)
             .UnderscoreColumn(u => u.BannerPictures)
             .UnderscoreColumn(u => u.CreatedAt)
             .UnderscoreColumn(u => u.UpdatedAt)
             .UnderscoreColumn(u => u.LastLogin)
+            .Column(u => u.DeviceIps, cm => cm.Ignore())
             .Column(u => u.UserName, m => m.WithName(nameof(ChatifyUser.UserName).ToLower()))
             .UnderscoreColumn(u => u.Email)
-            .UnderscoreColumn(u => u.DeviceIps);
+            .Column(u => u.DeviceIpsBytes,
+                cm => cm.WithName(nameof(ChatifyUser.DeviceIps).Underscore()));
 }
