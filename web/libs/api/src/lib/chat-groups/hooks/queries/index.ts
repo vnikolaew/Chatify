@@ -1,2 +1,3 @@
-export * from "./useGetChatGroupDetails";
-export * from "./useGetChatGroupsFeed";
+export * from "./useGetChatGroupDetailsQuery";
+export * from "./useGetChatGroupsFeedQuery";
+export * from "./useGetChatGroupAttachmentsQuery";

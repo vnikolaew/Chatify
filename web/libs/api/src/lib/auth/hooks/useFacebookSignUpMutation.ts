@@ -5,6 +5,7 @@ import { HttpStatusCode } from "axios";
 export interface FacebookSignUpModel {
    accessToken: string;
 }
+
 const facebookSignUp = async (model: FacebookSignUpModel) => {
    const { status, data } = await authClient.post(`/signup/facebook`, model);
 

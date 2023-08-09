@@ -8,7 +8,7 @@ export interface RegularSignUpModel {
    password: string;
 }
 const regularSignUp = async (model: RegularSignUpModel) => {
-   const { status, data } = await authClient.post(`/signup`, model);
+   const { status, data, headers } = await authClient.post(`/signup`, model);
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
@@ -22,7 +22,6 @@ export const useRegularSignUpMutation = () => {
    return useMutation(regularSignUp, {
       onError: console.error,
       onSuccess: (data) => console.log("Sign up success: " + data),
-      onSettled: (res) => console.log(res),
       cacheTime: 60 * 60 * 1000,
    });
 };

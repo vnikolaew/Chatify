@@ -18,7 +18,9 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
     {
         Mapper = mapper;
         DbMapper = dbMapper;
-        IdColumn = idColumn ?? "id";
+        
+        var definition = MappingConfiguration.Global.Get<TDataEntity>();
+        IdColumn = idColumn ?? definition.PartitionKeys[0];
     }
 
     public async Task<TEntity> SaveAsync(
@@ -42,6 +44,26 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
 
         var entity = Mapper.Map<TEntity>(dataEntity);
         updateAction(entity);
+        Mapper.Map(entity, dataEntity);
+
+        await DbMapper.UpdateAsync(dataEntity,
+            new CqlQueryOptions()
+                .SetConsistencyLevel(ConsistencyLevel.Quorum)
+                .SetRetryPolicy(new DefaultRetryPolicy()));
+
+        return entity;
+    }
+
+    public async Task<TEntity?> UpdateAsync(
+        TId id,
+        Func<TEntity, Task> updateAction,
+        CancellationToken cancellationToken = default)
+    {
+        var dataEntity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {IdColumn} = ?", id);
+        if (dataEntity is null) return default;
+
+        var entity = Mapper.Map<TEntity>(dataEntity);
+        await updateAction(entity);
         Mapper.Map(entity, dataEntity);
 
         await DbMapper.UpdateAsync(dataEntity,

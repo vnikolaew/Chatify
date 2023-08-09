@@ -1,7 +1,7 @@
 //@ts-check
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { withNx } = require('@nrwl/next/plugins/with-nx');
+const { withNx } = require("@nrwl/next/plugins/with-nx");
 
 /**
  * @type {import('@nrwl/next/plugins/with-nx').WithNxOptions}
@@ -16,8 +16,8 @@ const nextConfig = {
       ignoreBuildErrors: true,
    },
    images: {
-      formats: ['image/webp'],
-      loader: 'default',
+      formats: ["image/webp"],
+      loader: "default",
       unoptimized: true,
       disableStaticImages: false,
       minimumCacheTTL: 60 * 60,
@@ -26,12 +26,12 @@ const nextConfig = {
    async headers() {
       return Promise.resolve([
          {
-            source: '/:path*',
-            headers: [{ key: 'X-Server', value: 'Chatify/Next' }],
+            source: "/:path*",
+            headers: [{ key: "X-Server", value: "Chatify/Next" }],
          },
       ]);
    },
-   experimental: { appDir: true, swcMinify: true },
+   experimental: { appDir: true },
    reactStrictMode: false,
    optimizeFonts: true,
    poweredByHeader: true,

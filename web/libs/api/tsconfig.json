@@ -4,6 +4,8 @@
       "module": "commonjs",
       "forceConsistentCasingInFileNames": true,
       "strict": true,
+      "esModuleInterop": false,
+      "allowSyntheticDefaultImports": true,
       "noImplicitOverride": true,
       "noPropertyAccessFromIndexSignature": true,
       "noImplicitReturns": true,

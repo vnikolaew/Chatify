@@ -2,6 +2,7 @@
    "extends": "./tsconfig.json",
    "compilerOptions": {
       "outDir": "../../dist/out-tsc",
+//      "plugins": [{ "name": "@swc/nx"}],
       "declaration": true,
       "types": ["node"]
    },

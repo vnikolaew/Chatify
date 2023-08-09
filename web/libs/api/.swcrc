@@ -19,6 +19,7 @@
       "strict": true,
       "noInterop": true
    },
+   "isModule": true,
    "sourceMaps": true,
    "exclude": [
       "jest.config.ts",

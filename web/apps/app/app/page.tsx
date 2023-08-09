@@ -1,45 +1,42 @@
-"use client";
-import React, { useMemo, useState } from "react";
+import React, { Fragment } from "react";
+import Link from "next/link";
+import Greeting from "../components/Greeting";
+import { cookies } from "next/headers";
+import SignOut from "../components/SignOut";
+
+const APPLICATION_COOKIE_NAME = ".AspNetCore.Identity.Application";
 
 function IndexPage() {
-   const [count, setCount] = useState(0);
-   const doubleCount = useMemo(() => count * 2, [count]);
+   const cookieStore = cookies();
+   const isUserLoggedIn = !!cookieStore.get(APPLICATION_COOKIE_NAME);
 
    return (
       <div
-         className={`text-3xl flex gap-3 flex-col shadow-md shadow-gray-300 w-fit px-4 py-2 text-gray-700 rounded-md `}
+         className={`flex text-xl gap-3 flex-col shadow-gray-300 w-fit px-4 py-2 text-gray-700 rounded-md `}
       >
-         <React.Profiler
-            id={"1"}
-            onRender={(
-               id,
-               phase,
-               actualDuration,
-               baseDuration,
-               startTime,
-               commitTime,
-               interactions
-            ) => {
-               console.log(
-                  id,
-                  phase,
-                  actualDuration,
-                  baseDuration,
-                  startTime,
-                  commitTime,
-                  interactions
-               );
-            }}
-         >
-            @Chatify
-         </React.Profiler>
-         <button
-            className={`bg-blue-500 text-white rounded-lg shadow-md`}
-            onClick={(_) => setCount((c) => c + 1)}
-         >
-            {count}
-         </button>
-         <span className={``}>Count x 2: {doubleCount}</span>
+         <h1 className={`text-3xl`}>Home Page</h1>
+         <Greeting />
+         {!isUserLoggedIn ? (
+            <Fragment>
+               <Link
+                  className={`hover:underline text-blue-500`}
+                  href={`/signup`}
+               >
+                  {" "}
+                  Sign Up
+               </Link>
+               <Link
+                  className={`hover:underline text-blue-600`}
+                  href={`/signin`}
+               >
+                  Sign In
+               </Link>
+            </Fragment>
+         ) : (
+            <div>
+               <SignOut />
+            </div>
+         )}
       </div>
    );
 }
