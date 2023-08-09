@@ -10,7 +10,7 @@ public class ChatGroup
     
     public string About { get; set; } = default!;
 
-    public string PictureUrl { get; set; } = default!;
+    public Media? Picture { get; set; } = default!;
 
     public ISet<Guid> AdminIds { get; set; } = new HashSet<Guid>();
 

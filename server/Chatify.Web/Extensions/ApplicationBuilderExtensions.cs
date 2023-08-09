@@ -35,7 +35,7 @@ public static class ApplicationBuilderExtensions
                         Path.Combine(environment.ContentRootPath, StaticFilesDirectoryName)),
                     new PhysicalFileProvider(Path.Combine(environment.ContentRootPath, "swagger"))),
             RequestPath = path,
-        ServeUnknownFileTypes = true,
+            ServeUnknownFileTypes = true,
             ContentTypeProvider = new FileExtensionContentTypeProvider(),
             OnPrepareResponse = ctx =>
             {

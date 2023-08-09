@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Security.Claims;
 using AspNetCore.Identity.Cassandra.Models;
+using Cassandra;
 using Chatify.Application.Authentication.Commands;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.User.Commands;
@@ -22,6 +23,7 @@ public sealed class AuthenticationService : IAuthenticationService
 {
     private readonly SignInManager<ChatifyUser> _signInManager;
     private readonly UserManager<ChatifyUser> _userManager;
+    private readonly ISession _session;
     private readonly IUserRepository _users;
     private readonly IContext _context;
 
@@ -36,7 +38,7 @@ public sealed class AuthenticationService : IAuthenticationService
         IGoogleOAuthClient googleOAuthClient,
         IFacebookOAuthClient facebookOAuthClient,
         IContext context,
-        IUserRepository users)
+        IUserRepository users, ISession session)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -44,14 +46,15 @@ public sealed class AuthenticationService : IAuthenticationService
         _facebookOAuthClient = facebookOAuthClient;
         _context = context;
         _users = users;
+        _session = session;
     }
 
-    public async Task<Either<Error, UserSignedUpResult>> RegularSignUpAsync(
+    public async Task<OneOf<Error, UserSignedUpResult>> RegularSignUpAsync(
         RegularSignUp request,
         CancellationToken cancellationToken = default)
     {
         var existingUser = await _userManager.FindByEmailAsync(request.Email);
-        if (existingUser is not null) return Error.New("User already exists");
+        if ( existingUser is not null ) return Error.New("User already exists");
 
         var chatifyUser = new ChatifyUser
         {
@@ -66,20 +69,22 @@ public sealed class AuthenticationService : IAuthenticationService
         };
 
         var identityResult = await _userManager.CreateAsync(chatifyUser, request.Password);
-        if (!identityResult.Succeeded)
+        if ( !identityResult.Succeeded )
         {
-            return Error.New(string.Join(".", identityResult.Errors
-                .Select(e => Error.New(e.Description))));
+            return Error.Many(new Seq<Error>(
+                identityResult.Errors.Select(e => Error.New(e.Description))
+            ));
         }
 
         identityResult = await _userManager.AddLoginAsync(
             chatifyUser,
             new UserLoginInfo(RegularLogin, chatifyUser.Id.ToString(),
                 nameof(RegularLogin)));
-        if (!identityResult.Succeeded)
+        if ( !identityResult.Succeeded )
         {
-            return Error.New(string.Join(".", identityResult.Errors
-                .Select(e => Error.New(e.Description))));
+            return Error.Many(new Seq<Error>(
+                identityResult.Errors.Select(e => Error.New(e.Description))
+            ));
         }
 
         var signInResult = await _signInManager.PasswordSignInAsync(
@@ -91,8 +96,9 @@ public sealed class AuthenticationService : IAuthenticationService
                 UserId = chatifyUser.Id,
                 AuthenticationProvider = RegularLogin
             }
-            : Error.New(string.Join(".", identityResult.Errors
-                .Select(e => Error.New(e.Description))));
+            : Error.Many(new Seq<Error>(
+                identityResult.Errors.Select(e => Error.New(e.Description))
+            ));
     }
 
     public async Task<Either<Error, UserSignedInResult>> RegularSignInAsync(
@@ -100,11 +106,11 @@ public sealed class AuthenticationService : IAuthenticationService
         CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
-        if (user is null) return Error.New("User with the provided email was not found.");
-        if (!user.EmailConfirmed) return Error.New("User has not confirmed their email yet.");
+        if ( user is null ) return Error.New("User with the provided email was not found.");
+        // if ( !user.EmailConfirmed ) return Error.New("User has not confirmed their email yet.");
 
         var success = await _userManager.CheckPasswordAsync(user, request.Password);
-        if (!success) return Error.New("Invalid credentials.");
+        if ( !success ) return Error.New("Invalid credentials.");
 
         var result = await _signInManager.PasswordSignInAsync(user,
             request.Password,
@@ -112,7 +118,7 @@ public sealed class AuthenticationService : IAuthenticationService
             lockoutOnFailure: false);
 
         var ipAddress = IPAddress.Parse(_context.IpAddress);
-        if (!user.DeviceIps.Contains(ipAddress))
+        if ( !user.DeviceIps.Contains(ipAddress) )
         {
             await _users.UpdateAsync(user.Id, user => { user.DeviceIps.Add(ipAddress); }, cancellationToken);
         }
@@ -124,6 +130,13 @@ public sealed class AuthenticationService : IAuthenticationService
                 AuthenticationProvider = RegularLogin
             }
             : Error.New($"Error during sign-in: {result}");
+    }
+
+    public async Task<Either<Error, Unit>> SignOutAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await _signInManager.SignOutAsync();
+        return Unit.Default;
     }
 
     private static ExternalLoginInfo GetGoogleExternalLoginInfoForUser(
@@ -141,10 +154,10 @@ public sealed class AuthenticationService : IAuthenticationService
         var userInfo = await _googleOAuthClient
             .GetUserInfoAsync(request.AccessToken, cancellationToken);
 
-        if (userInfo is null) return Error.New("");
+        if ( userInfo is null ) return Error.New("");
 
         var existingUser = await _userManager.FindByEmailAsync(userInfo.Email);
-        if (existingUser is not null) return Error.New("User already exists");
+        if ( existingUser is not null ) return Error.New("User already exists");
 
         var chatifyUser = new ChatifyUser
         {
@@ -156,17 +169,22 @@ public sealed class AuthenticationService : IAuthenticationService
                 { "ExternalId", userInfo.Id },
                 { "Locale", userInfo.Locale }
             },
-            DeviceIps = new System.Collections.Generic.HashSet<IPAddress>()
+            DeviceIps = new System.Collections.Generic.HashSet<IPAddress>
             {
                 IPAddress.Parse(_context.IpAddress)
             },
             EmailConfirmationTime = userInfo.VerifiedEmail ? DateTimeOffset.Now : default,
-            ProfilePictureUrl = userInfo.Picture
+            ProfilePicture = new Media
+            {
+                Type = "",
+                FileName = "",
+                MediaUrl = userInfo.Picture
+            }
         };
         chatifyUser.AddToken(new TokenInfo(Google, AuthenticationTokenName, request.AccessToken));
 
         var identityResult = await _userManager.CreateAsync(chatifyUser);
-        if (!identityResult.Succeeded)
+        if ( !identityResult.Succeeded )
         {
             return Error.New(string.Join(".", identityResult.Errors
                 .Select(e => Error.New(e.Description))));
@@ -194,11 +212,11 @@ public sealed class AuthenticationService : IAuthenticationService
         var userInfo = await _facebookOAuthClient
             .GetUserInfoAsync(request.AccessToken, cancellationToken);
 
-        if (userInfo is null) return Error.New("User was not found or the provided access token is invalid.");
-        if (userInfo.Email is null) return Error.New("Email address is invalid or not confirmed.");
+        if ( userInfo is null ) return Error.New("User was not found or the provided access token is invalid.");
+        if ( userInfo.Email is null ) return Error.New("Email address is invalid or not confirmed.");
 
         var existingUser = await _userManager.FindByEmailAsync(userInfo.Email);
-        if (existingUser is not null) return Error.New("User already exists");
+        if ( existingUser is not null ) return Error.New("User already exists");
 
         var chatifyUser = new ChatifyUser
         {
@@ -213,12 +231,15 @@ public sealed class AuthenticationService : IAuthenticationService
                 IPAddress.Parse(_context.IpAddress)
             },
             EmailConfirmationTime = userInfo.Email is not null ? DateTimeOffset.Now : default,
-            ProfilePictureUrl = userInfo.Picture.Data.Url
+            ProfilePicture = new Media
+            {
+                MediaUrl = userInfo.Picture.Data.Url
+            }
         };
         chatifyUser.AddToken(new TokenInfo(Facebook, AuthenticationTokenName, request.AccessToken));
 
         var identityResult = await _userManager.CreateAsync(chatifyUser);
-        if (!identityResult.Succeeded)
+        if ( !identityResult.Succeeded )
         {
             return Error.New(string.Join(".", identityResult.Errors
                 .Select(e => Error.New(e.Description))));
@@ -247,7 +268,7 @@ public sealed class AuthenticationService : IAuthenticationService
         CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user is null) return new UserNotFound();
+        if ( user is null ) return new UserNotFound();
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         return token;

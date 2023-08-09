@@ -27,11 +27,11 @@ public class ChatifyUser : CassandraIdentityUser, IMapFrom<Domain.Entities.User>
         init => _phoneNumbers = value.ToList();
     }
 
-    public string ProfilePictureUrl { get; set; }
+    public Media ProfilePicture { get; set; }
 
-    private readonly IList<string> _bannerPictures = new List<string>();
+    private readonly IList<Media> _bannerPictures = new List<Media>();
 
-    public HashSet<string> BannerPictures
+    public HashSet<Media> BannerPictures
     {
         get => _bannerPictures.ToHashSet();
         init => _bannerPictures = value.ToList();
@@ -44,37 +44,58 @@ public class ChatifyUser : CassandraIdentityUser, IMapFrom<Domain.Entities.User>
 
     public DateTimeOffset LastLogin { get; set; } = DateTimeOffset.Now;
 
-    public HashSet<IPAddress> DeviceIps { get; init; } = new();
+    // private readonly HashSet<byte[]> _deviceIpsBytes = new();
+
+    public HashSet<byte[]> DeviceIpsBytes
+    {
+        get => _deviceIps.Select(_ => _.GetAddressBytes()).ToHashSet();
+        set => _deviceIps = value.Select(_ => new IPAddress(_)).ToHashSet();
+    }
+
+    private HashSet<IPAddress> _deviceIps = new();
+    
+    public ISet<IPAddress> DeviceIps
+    {
+        get => _deviceIps;
+        init
+        {
+            DeviceIpsBytes = value.Select(_ => _.GetAddressBytes()).ToHashSet();
+            _deviceIps = value.ToHashSet();
+        }
+    }
 
     public Metadata Metadata { get; init; } = new();
 
     public void AddToken(TokenInfo token)
     {
         ArgumentNullException.ThrowIfNull(token);
-        if (Tokens.Any(x =>
-                x.LoginProvider == token.LoginProvider && x.Name == token.Name))
+        if ( Tokens.Any(x =>
+                x.LoginProvider == token.LoginProvider && x.Name == token.Name) )
             throw new InvalidOperationException("Token with LoginProvider: '" + token.LoginProvider + "' and Name: " +
                                                 token.Name + " already exists.");
-        (Tokens as List<TokenInfo>)?.Add(token);
+        ( Tokens as List<TokenInfo> )?.Add(token);
     }
+
+    public void AddDeviceIp(IPAddress ipAddress)
+        => _deviceIps.Add(ipAddress);
 
     public void AddRole(string role)
     {
-        if (string.IsNullOrEmpty(role))
+        if ( string.IsNullOrEmpty(role) )
             throw new ArgumentNullException(nameof(role));
-        if (Roles.Contains(role)) return;
+        if ( Roles.Contains(role) ) return;
 
-        (Roles as List<string>)?.Add(role);
+        ( Roles as List<string> )?.Add(role);
     }
 
     public void AddLogin(LoginInfo login)
     {
         ArgumentNullException.ThrowIfNull(login);
-        if (Logins.Any(l =>
-                l.LoginProvider == login.LoginProvider && l.ProviderKey == login.ProviderKey))
+        if ( Logins.Any(l =>
+                l.LoginProvider == login.LoginProvider && l.ProviderKey == login.ProviderKey) )
             throw new InvalidOperationException("Login with LoginProvider: '" + login.LoginProvider +
                                                 "' and ProviderKey: " + login.ProviderKey + " already exists.");
-        (Logins as List<LoginInfo>)?.Add(login);
+        ( Logins as List<LoginInfo> )?.Add(login);
     }
 
     public void Mapping(Profile profile)
@@ -84,7 +105,7 @@ public class ChatifyUser : CassandraIdentityUser, IMapFrom<Domain.Entities.User>
                 cfg =>
                     cfg.MapFrom(u => u.Roles.ToList()))
             .ForMember(u => u.Status,
-                cfg => cfg.MapFrom(u => (UserStatus)u.Status))
+                cfg => cfg.MapFrom(u => ( UserStatus )u.Status))
             .ReverseMap()
             .ForMember(u => u.Status,
                 cfg => cfg.MapFrom(u => u.Status));

@@ -21,8 +21,7 @@
     </ItemGroup>
 
     <Target Name="OpenAPI" AfterTargets="Build" Condition="$(Configuration)=='Debug'">
+        <Exec Command="dotnet tool restore"></Exec>
         <Exec Command="dotnet swagger tofile --output ./swagger/v1/swagger.yaml --yaml $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
     </Target>
- 
-
 </Project>

@@ -12,7 +12,7 @@ using AddChatGroupMemberResult =
         Chatify.Application.ChatGroups.Commands.UserIsAlreadyGroupMemberError, System.Guid>;
 using EditChatGroupDetailsResult =
     OneOf.OneOf<Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
-        Chatify.Application.ChatGroups.Commands.UserIsNotMemberError,
+        Chatify.Application.User.Commands.FileUploadError, Chatify.Application.ChatGroups.Commands.UserIsNotMemberError,
         Chatify.Application.ChatGroups.Commands.UserIsNotGroupAdminError, LanguageExt.Unit>;
 using AddChatGroupAdminResult =
     OneOf.OneOf<Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
@@ -28,6 +28,9 @@ using LeaveChatGroupResult =
 using GetChatGroupsFeedResult =
     OneOf.OneOf<LanguageExt.Common.Error,
         System.Collections.Generic.List<Chatify.Application.ChatGroups.Queries.ChatGroupFeedEntry>>;
+using GetChatGroupSharedAttachmentsResult =
+    OneOf.OneOf<Chatify.Application.ChatGroups.Commands.UserIsNotMemberError, Chatify.Shared.Abstractions.Queries.
+        CursorPaged<Chatify.Domain.Entities.ChatGroupAttachment>>;
 using static Chatify.Web.Features.ChatGroups.Models.Models;
 
 namespace Chatify.Web.Features.ChatGroups;
@@ -68,6 +71,20 @@ public class ChatGroupsController : ApiController
             entries => Ok(new { Data = entries }));
     }
 
+    [HttpGet]
+    [Route("{groupId:guid}/attachments")]
+    public async Task<IActionResult> Attachments(
+        [FromBody] GetChatGroupSharedAttachmentsRequest request,
+        [FromRoute] Guid groupId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await QueryAsync<GetChatGroupSharedAttachments, GetChatGroupSharedAttachmentsResult>(
+            ( request with { GroupId = groupId } ).ToCommand(), cancellationToken);
+        return result.Match<IActionResult>(
+            _ => BadRequest(),
+            attachments => Ok(new { Data = attachments }));
+    }
+
     [HttpPatch]
     [Route("{groupId:guid}")]
     public async Task<IActionResult> Edit(
@@ -81,6 +98,7 @@ public class ChatGroupsController : ApiController
 
         return result.Match<IActionResult>(
             _ => BadRequest(),
+            err => err.ToBadRequest(),
             _ => BadRequest(),
             _ => BadRequest(),
             Accepted);

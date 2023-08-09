@@ -19,7 +19,8 @@ public class ChatGroupMember : IMapFrom<Domain.Entities.ChatGroupMember>
     public sbyte MembershipType { get; set; }
 
     public void Mapping(Profile profile)
-        => profile.CreateMap<ChatGroupMember, Domain.Entities.ChatGroupMember>()
+        => profile
+            .CreateMap<ChatGroupMember, Domain.Entities.ChatGroupMember>()
             .ReverseMap()
             .ForMember(m => m.UserId,
                 cfg => cfg.MapFrom(m => m.User == null ? m.UserId : m.User.Id))

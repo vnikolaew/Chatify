@@ -3,6 +3,7 @@ using Chatify.Web.Common;
 using Chatify.Web.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SignOutResult = OneOf.OneOf<LanguageExt.Common.Error, LanguageExt.Unit>;
 using RegularSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
 using RegularSignInResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignInError, LanguageExt.Unit>;
 using GoogleSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
@@ -16,6 +17,7 @@ namespace Chatify.Web.Features.Auth;
 public class AuthController : ApiController
 {
     private const string RegularSignUpRoute = "signup";
+    private const string SignOutRoute = "signout";
     private const string RegularSignInRoute = "signin";
 
     private const string GoogleSignUpRoute = $"{RegularSignUpRoute}/google";
@@ -38,6 +40,16 @@ public class AuthController : ApiController
         CancellationToken cancellationToken = default)
     {
         var result = await SendAsync<RegularSignUp, RegularSignUpResult>(signUp, cancellationToken);
+        return result.Match<IActionResult>(
+            err => err.ToBadRequest(),
+            NoContent);
+    }
+
+    [HttpPost]
+    [Route(SignOutRoute)]
+    public async Task<IActionResult> SignOut(CancellationToken cancellationToken = default)
+    {
+        var result = await SendAsync<SignOut, SignOutResult>(new SignOut(), cancellationToken);
         return result.Match<IActionResult>(
             err => err.ToBadRequest(),
             NoContent);

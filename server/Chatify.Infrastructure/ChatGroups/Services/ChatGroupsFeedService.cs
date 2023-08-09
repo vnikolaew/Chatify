@@ -2,6 +2,7 @@
 using Chatify.Application.ChatGroups.Contracts;
 using Chatify.Application.ChatGroups.Queries;
 using Chatify.Domain.Repositories;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using StackExchange.Redis;
 
 namespace Chatify.Infrastructure.ChatGroups.Services;
@@ -27,7 +28,7 @@ internal sealed class ChatGroupsFeedService : IChatGroupsFeedService
 
     private static RedisKey GetUserFeedCacheKey(Guid userId)
         => new($"user:{userId}:feed");
-    
+
     public async Task<List<ChatGroupFeedEntry>> GetFeedEntriesForUserAsync(
         Guid userId,
         int limit,
@@ -54,14 +55,13 @@ internal sealed class ChatGroupsFeedService : IChatGroupsFeedService
         var messageSenderIds = messages.Select(m => m.Value.UserId);
         var userInfos = await _users.GetByIds(messageSenderIds, cancellationToken);
 
-        // Now merge results into a single "Feed" entry:
-        return messages
-            .Values
-            .Select(m => new ChatGroupFeedEntry(
-                groups.FirstOrDefault(g => g.Id == m.ChatGroupId)!,
-                userInfos!.FirstOrDefault(u => u.Id == m.UserId)!,
-                m))
-            .OrderByDescending(m => m.ChatMessage.CreatedAt)
-            .ToList();
+        return messages.Zip(groups, userInfos,
+            (message, group, user) =>
+                new ChatGroupFeedEntry
+                {
+                    User = user,
+                    ChatMessage = message.Value,
+                    ChatGroup = group
+                }).ToList();
     }
 }

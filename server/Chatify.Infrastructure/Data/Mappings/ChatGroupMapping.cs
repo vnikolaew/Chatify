@@ -20,6 +20,6 @@ public class ChatGroupMapping : Cassandra.Mapping.Mappings
             .UnderscoreColumn(g => g.CreatedAt)
             .UnderscoreColumn(g => g.Name)
             .UnderscoreColumn(g => g.About)
-            .UnderscoreColumn(g => g.PictureUrl);
+            .UnderscoreColumn(g => g.Picture);
     // .UnderscoreColumn(g => g.MembersCount);
 }

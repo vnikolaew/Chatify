@@ -19,22 +19,22 @@ internal sealed class ChatGroupSeeder : ISeeder
             .RuleFor(g => g.Id, _ => Guid.NewGuid())
             .RuleFor(g => g.About, f => f.Lorem.Sentences(2, " "))
             .RuleFor(g => g.Name, f => f.Company.CompanyName(0))
-            .RuleFor(g => g.PictureUrl, f => f.Internet.Avatar());
-        
+            .RuleFor(g => g.Picture, f => new Media { MediaUrl = f.Internet.Avatar() });
+
         _scopeFactory = scopeFactory;
     }
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         await using var scope = _scopeFactory.CreateAsyncScope();
-        
+
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
         var groups = _groupsFaker.Generate(20);
 
-        var userIds = (await mapper
-            .FetchAsync<Guid>("SELECT id FROM users;")).ToArray();
-        
-        foreach (var chatGroup in groups)
+        var userIds = ( await mapper
+            .FetchAsync<Guid>("SELECT id FROM users;") ).ToArray();
+
+        foreach ( var chatGroup in groups )
         {
             chatGroup.CreatorId = userIds[Random.Shared.Next(0, userIds.Length)];
             chatGroup.AdminIds.Add(chatGroup.CreatorId);
