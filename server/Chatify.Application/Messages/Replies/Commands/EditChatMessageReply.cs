@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Messages.Commands;
+using Chatify.Application.Messages.Common;
 using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
@@ -17,15 +18,17 @@ namespace Chatify.Application.Messages.Replies.Commands;
 using EditChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
 
 public record EditChatMessageReply(
-    [Required] Guid GroupId,
-    [Required] Guid MessageId,
-    [Required] string NewContent
-) : ICommand<EditChatMessageReplyResult>;
+        [Required] Guid GroupId,
+        [Required] Guid MessageId,
+        [Required] string NewContent,
+        IEnumerable<AttachmentOperation>? AttachmentOperations = default)
+    : ICommand<EditChatMessageReplyResult>;
 
 internal sealed class EditChatMessageReplyHandler
     : ICommandHandler<EditChatMessageReply, EditChatMessageReplyResult>
 {
     private readonly IChatGroupMemberRepository _members;
+    private readonly AttachmentOperationHandler _attachmentOperationHandler;
     private readonly IIdentityContext _identityContext;
     private readonly IDomainRepository<ChatMessageReply, Guid> _messageReplies;
     private readonly IEventDispatcher _eventDispatcher;
@@ -35,13 +38,16 @@ internal sealed class EditChatMessageReplyHandler
         IChatGroupMemberRepository members,
         IIdentityContext identityContext,
         IDomainRepository<ChatMessageReply, Guid> messageReplies,
-        IEventDispatcher eventDispatcher, IClock clock)
+        IEventDispatcher eventDispatcher,
+        IClock clock,
+        AttachmentOperationHandler attachmentOperationHandler)
     {
         _members = members;
         _identityContext = identityContext;
         _messageReplies = messageReplies;
         _eventDispatcher = eventDispatcher;
         _clock = clock;
+        _attachmentOperationHandler = attachmentOperationHandler;
     }
 
     public async Task<EditChatMessageReplyResult> HandleAsync(
@@ -53,12 +59,17 @@ internal sealed class EditChatMessageReplyHandler
         if ( replyMessage.UserId != _identityContext.Id )
             return new UserIsNotMessageSenderError(replyMessage.Id, _identityContext.Id);
 
-        await _messageReplies.UpdateAsync(replyMessage.Id, chatMessage =>
+        await _messageReplies.UpdateAsync(replyMessage.Id, async chatMessage =>
         {
             chatMessage.UpdatedAt = _clock.Now;
             chatMessage.Content = command.NewContent;
+            if ( command.AttachmentOperations is not null )
+            {
+                await _attachmentOperationHandler
+                    .Handle(replyMessage, command.AttachmentOperations);
+            }
         }, cancellationToken);
-        
+
         await _eventDispatcher.PublishAsync(new ChatMessageEditedEvent
         {
             MessageId = replyMessage.Id,
@@ -67,7 +78,7 @@ internal sealed class EditChatMessageReplyHandler
             Timestamp = _clock.Now,
             GroupId = replyMessage.ChatGroupId,
         }, cancellationToken);
-        
+
         return Unit.Default;
     }
 }

@@ -63,6 +63,7 @@ public static class DependencyInjection
             .AddTransient<IFileUploadService, LocalFileSystemUploadService>()
             .AddTransient<IGuidGenerator, TimeUuidGenerator>()
             .AddTransient<IPasswordHasher, PasswordHasher>()
+            .AddTransient<IPagingCursorHelper, CassandraPagingCursorHelper>()
             .AddTransient<ISerializer, SystemTextJsonSerializer>()
             .AddScoped<IChatGroupsFeedService, ChatGroupsFeedService >()
             .AddNotifications()
@@ -162,6 +163,7 @@ public static class DependencyInjection
 
         return services
             .AddScoped<IChatMessageReplyRepository, ChatMessageReplyRepository>()
+            .AddScoped<IChatGroupAttachmentRepository, ChatGroupAttachmentRepository>()
             .AddScoped<IChatGroupMemberRepository, ChatGroupMembersRepository>()
             .AddScoped<IFriendInvitationRepository, FriendInvitationRepository>()
             .AddScoped<IFriendshipsRepository, FriendshipsRepository>();

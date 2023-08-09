@@ -4,6 +4,7 @@ using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Domain.Common;
+using Chatify.Domain.Entities;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Time;
@@ -15,9 +16,11 @@ namespace Chatify.Application.User.Commands;
 using EditUserDetailsResult = OneOf<UserNotFound, FileUploadError, PasswordChangeError, Unit>;
 
 public record UserNotFound;
+
 public record FileUploadError(string? Message = default) : BaseError(Message);
+
 public record PasswordChangeError(string? Message = default) : BaseError(Message);
-    
+
 public record NewPasswordInput(
     [Password] string OldPassword,
     [Password] string NewPassword);
@@ -59,30 +62,44 @@ internal sealed class EditUserDetailsHandler
         var user = await _users.GetAsync(_identityContext.Id, cancellationToken);
         if ( user is null ) return new UserNotFound();
 
-        var newProfilePicture = user.ProfilePictureUrl;
+        var newProfilePicture = user.ProfilePicture;
         var newUsername = command.Username ?? user.Username;
         var newDisplayName = command.DisplayName ?? user.DisplayName;
 
         if ( command.ProfilePicture is not null )
         {
-            var deleteResult = await _fileUploadService.DeleteAsync(new SingleFileDeleteRequest
+            var deleteResult = await _fileUploadService.DeleteAsync(
+                new SingleFileDeleteRequest
+                {
+                    UserId = user.Id,
+                    FileUrl = user.ProfilePicture.MediaUrl
+                }, cancellationToken);
+            if ( deleteResult.IsT0 )
             {
-                UserId = user.Id,
-                FileUrl = user.ProfilePictureUrl
-            }, cancellationToken);
-            if ( deleteResult.IsLeft )
-            {
-                return new FileUploadError(deleteResult.LeftToArray()[0].Message);
+                return new FileUploadError(deleteResult.AsT0.Message);
             }
 
-            var result = await _fileUploadService.UploadAsync(
-                new SingleFileUploadRequest
-                {
-                    UserId = _identityContext.Id,
-                    File = command.ProfilePicture
-                }, cancellationToken);
+            var uploadResult = await _fileUploadService
+                .UploadAsync(
+                    new SingleFileUploadRequest
+                    {
+                        UserId = _identityContext.Id,
+                        File = command.ProfilePicture
+                    }, cancellationToken);
 
-            result.Do(res => newProfilePicture = res.FileUrl);
+            if ( uploadResult.Value is FileUploadResult res )
+            {
+                user.ProfilePicture = new Media
+                {
+                    MediaUrl = res.FileUrl,
+                    Id = res.FileId,
+                    FileName = res.FileUrl,
+                    Type = res.FileType
+                };
+
+                newProfilePicture.MediaUrl = res.FileUrl;
+                newProfilePicture.Id = res.FileId;
+            }
         }
 
         if ( command.NewPasswordInput is not null )
@@ -93,8 +110,8 @@ internal sealed class EditUserDetailsHandler
                 command.NewPasswordInput.NewPassword,
                 cancellationToken);
 
-            if(result.Value is UserNotFound userNotFound) return userNotFound;
-            if(result.Value is PasswordChangeError passwordChangeError) return passwordChangeError;
+            if ( result.Value is UserNotFound userNotFound ) return userNotFound;
+            if ( result.Value is PasswordChangeError passwordChangeError ) return passwordChangeError;
         }
 
         await _users.UpdateAsync(user.Id, user =>
@@ -102,7 +119,7 @@ internal sealed class EditUserDetailsHandler
             user.Username = newUsername;
             user.DisplayName = newDisplayName;
             user.UpdatedAt = _clock.Now;
-            user.ProfilePictureUrl = newProfilePicture;
+            user.ProfilePicture = newProfilePicture;
         }, cancellationToken);
 
         return Unit.Default;

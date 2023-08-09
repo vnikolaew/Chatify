@@ -1,7 +1,9 @@
 ﻿using System.Reflection;
 using Chatify.Application.Common.Behaviours;
 using Chatify.Application.Common.Behaviours.Caching;
+using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Application.Common.Behaviours.Validation;
+using Chatify.Application.Messages.Common;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Dispatchers;
 using Chatify.Shared.Abstractions.Queries;
@@ -23,6 +25,7 @@ public static class DependencyInjection
             .AddCommands(assemblies)
             .AddQueries(assemblies)
             .AddEvents(assemblies, EventDispatcherType.FireAndForget)
+            .AddScoped<AttachmentOperationHandler>()
             .AddSingleton<IDispatcher, InMemoryDispatcher>();
 
         services.TryDecorate(typeof(ICommandHandler<>), typeof(RequestValidationDecorator<>));
@@ -30,6 +33,7 @@ public static class DependencyInjection
         services.TryDecorate(typeof(ICommandHandler<>), typeof(LoggingHandlerDecorator<>));
         services.TryDecorate(typeof(ICommandHandler<,>), typeof(LoggingHandlerDecorator<,>));
         
+        services.TryDecorate(typeof(IQueryHandler<,>), typeof(TimedHandlerDecorator<,>));
         services.TryDecorate(typeof(IQueryHandler<,>), typeof(CachedQueryHandlerDecorator<,>));
         return services;
     }

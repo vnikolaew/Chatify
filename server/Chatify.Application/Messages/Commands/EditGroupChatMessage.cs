@@ -1,8 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common.Models;
+using Chatify.Application.Messages.Common;
 using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
+using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
@@ -12,18 +15,27 @@ using OneOf;
 
 namespace Chatify.Application.Messages.Commands;
 
-using EditGroupChatMessageResult  = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
+using EditGroupChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
+
+public abstract record AttachmentOperation;
+
+public record AddAttachmentOperation(InputFile InputFile) : AttachmentOperation;
+
+public record DeleteAttachmentOperation(Guid AttachmentId) : AttachmentOperation;
 
 public record EditGroupChatMessage(
-    [Required] Guid GroupId,
-    [Required] Guid MessageId,
-    [Required] string NewContent
-) : ICommand<EditGroupChatMessageResult>;
+        [Required] Guid GroupId,
+        [Required] Guid MessageId,
+        [Required] string NewContent,
+        IEnumerable<AttachmentOperation>? AttachmentOperations = default)
+    : ICommand<EditGroupChatMessageResult>;
 
 internal sealed class EditGroupChatMessageHandler
     : ICommandHandler<EditGroupChatMessage, EditGroupChatMessageResult>
 {
     private readonly IIdentityContext _identityContext;
+    private readonly AttachmentOperationHandler _attachmentOperationHandler;
+    private readonly IChatGroupAttachmentRepository _attachments;
     private readonly IDomainRepository<ChatMessage, Guid> _messages;
     private readonly IEventDispatcher _eventDispatcher;
     private readonly IClock _clock;
@@ -31,12 +43,16 @@ internal sealed class EditGroupChatMessageHandler
     public EditGroupChatMessageHandler(
         IIdentityContext identityContext,
         IDomainRepository<ChatMessage, Guid> messages,
-        IEventDispatcher eventDispatcher, IClock clock)
+        IEventDispatcher eventDispatcher, IClock clock,
+        AttachmentOperationHandler attachmentOperationHandler,
+        IChatGroupAttachmentRepository attachments)
     {
         _identityContext = identityContext;
         _messages = messages;
         _eventDispatcher = eventDispatcher;
         _clock = clock;
+        _attachmentOperationHandler = attachmentOperationHandler;
+        _attachments = attachments;
     }
 
     public async Task<EditGroupChatMessageResult> HandleAsync(
@@ -48,10 +64,16 @@ internal sealed class EditGroupChatMessageHandler
         if ( message.UserId != _identityContext.Id )
             return new UserIsNotMessageSenderError(message.Id, _identityContext.Id);
 
-        await _messages.UpdateAsync(message.Id, chatMessage =>
+        await _messages.UpdateAsync(message.Id, async chatMessage =>
         {
             chatMessage.UpdatedAt = _clock.Now;
             chatMessage.Content = command.NewContent;
+
+            if ( command.AttachmentOperations is not null )
+            {
+                await _attachmentOperationHandler
+                    .Handle(message, command.AttachmentOperations);
+            }
         }, cancellationToken);
 
         await _eventDispatcher.PublishAsync(new ChatMessageEditedEvent
