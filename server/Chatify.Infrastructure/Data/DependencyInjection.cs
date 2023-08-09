@@ -6,8 +6,6 @@ using AspNetCore.Identity.Cassandra.Models;
 using Cassandra;
 using Cassandra.Mapping;
 using Cassandra.Serialization;
-using Chatify.Infrastructure.Data.Mappings;
-using Chatify.Infrastructure.Data.Mappings.Serialization;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Data.Seeding;
 using Chatify.Infrastructure.Data.Services;

@@ -20,7 +20,7 @@ public class Context : IContext
     public Context(HttpContext context) : this(
         context.TryGetCorrelationId(),
         context.TraceIdentifier,
-        new IdentityContext(context.User),
+        new IdentityContext(context),
         context.GetUserIpAddress(),
         context.Request.Headers["user-agent"])
     {

@@ -1,7 +1,7 @@
-﻿using System.Net;
+﻿using System.Globalization;
+using System.Net;
 using System.Security.Claims;
 using AspNetCore.Identity.Cassandra.Models;
-using Cassandra;
 using Chatify.Application.Authentication.Commands;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.User.Commands;
@@ -16,6 +16,7 @@ using LanguageExt.Common;
 using Microsoft.AspNetCore.Identity;
 using OneOf;
 using static Chatify.Infrastructure.Authentication.External.Constants.AuthProviders;
+using Constants = Chatify.Infrastructure.Data.Constants;
 
 namespace Chatify.Infrastructure.Authentication;
 
@@ -23,7 +24,7 @@ public sealed class AuthenticationService : IAuthenticationService
 {
     private readonly SignInManager<ChatifyUser> _signInManager;
     private readonly UserManager<ChatifyUser> _userManager;
-    private readonly ISession _session;
+    private readonly IIdentityContext _identityContext;
     private readonly IUserRepository _users;
     private readonly IContext _context;
 
@@ -38,7 +39,7 @@ public sealed class AuthenticationService : IAuthenticationService
         IGoogleOAuthClient googleOAuthClient,
         IFacebookOAuthClient facebookOAuthClient,
         IContext context,
-        IUserRepository users, ISession session)
+        IUserRepository users, IIdentityContext identityContext)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -46,7 +47,7 @@ public sealed class AuthenticationService : IAuthenticationService
         _facebookOAuthClient = facebookOAuthClient;
         _context = context;
         _users = users;
-        _session = session;
+        _identityContext = identityContext;
     }
 
     public async Task<OneOf<Error, UserSignedUpResult>> RegularSignUpAsync(
@@ -65,7 +66,8 @@ public sealed class AuthenticationService : IAuthenticationService
                 IPAddress.TryParse(_context.IpAddress, out var address)
                     ? IPAddress.IsLoopback(address) ? IPAddress.Loopback : address
                     : IPAddress.None
-            }
+            },
+            ProfilePicture = Constants.DefaultUserProfilePicture,
         };
 
         var identityResult = await _userManager.CreateAsync(chatifyUser, request.Password);
@@ -80,6 +82,14 @@ public sealed class AuthenticationService : IAuthenticationService
             chatifyUser,
             new UserLoginInfo(RegularLogin, chatifyUser.Id.ToString(),
                 nameof(RegularLogin)));
+        
+        await _userManager.AddClaimAsync(chatifyUser, new Claim(nameof(ChatifyUser.DisplayName), chatifyUser.DisplayName ?? string.Empty));
+        await _userManager.AddClaimAsync(chatifyUser, new Claim("locale", _identityContext.UserLocale ?? string.Empty));
+        await _userManager.AddClaimAsync(chatifyUser, new Claim("location", _identityContext.UserLocation?.ToString() ?? string.Empty));
+        await _userManager.AddClaimAsync(chatifyUser, new Claim("picture", chatifyUser.ProfilePicture.MediaUrl));
+        
+        var s = DateTime.Now.ToString(CultureInfo.GetCultureInfo(_identityContext.UserLocale));
+
         if ( !identityResult.Succeeded )
         {
             return Error.Many(new Seq<Error>(

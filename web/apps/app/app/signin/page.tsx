@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { NextPage } from "next";
 import { RegularSignInModel, useRegularSignInMutation } from "@web/api";
 import Link from "next/link";
-import { router } from "next/client";
 import { useRouter } from "next/navigation";
 
 const SignInPage: NextPage = () => {
@@ -23,10 +22,9 @@ const SignInPage: NextPage = () => {
 
    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
       e.preventDefault();
-      console.log(signInModel);
       try {
          await signIn(signInModel);
-         router.push(`/`);
+         router.push(`/`, { forceOptimisticNavigation: false });
       } catch (e) {
          console.error(e);
       }

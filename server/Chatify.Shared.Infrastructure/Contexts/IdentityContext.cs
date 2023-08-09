@@ -1,5 +1,7 @@
-﻿using System.Security.Claims;
+﻿using System.Globalization;
+using System.Security.Claims;
 using Chatify.Shared.Abstractions.Contexts;
+using Microsoft.AspNetCore.Http;
 
 namespace Chatify.Shared.Infrastructure.Contexts;
 
@@ -9,6 +11,10 @@ public class IdentityContext : IIdentityContext
     public Guid Id { get; }
     public string Username { get; set; }
     public string Role { get; }
+
+    public string UserLocale { get; }
+
+    public GeoLocation? UserLocation { get; }
     public Dictionary<string, IEnumerable<string>> Claims { get; }
 
     private IdentityContext()
@@ -21,9 +27,19 @@ public class IdentityContext : IIdentityContext
         IsAuthenticated = id.HasValue;
     }
 
+    public IdentityContext(HttpContext context) : this(context.User)
+    {
+        UserLocale = context.Request.Headers["X-User-Locale"][0] ??
+                     CultureInfo.CurrentCulture.ThreeLetterISOLanguageName;
+        UserLocation = context.Request.Headers.TryGetValue("X-User-Location", out var location)
+                       && location.Count >= 1
+            ? GeoLocation.FromString(location[0]!)
+            : default;
+    }
+
     public IdentityContext(ClaimsPrincipal principal)
     {
-        if (principal?.Identity is null || string.IsNullOrWhiteSpace(principal?.Identity?.Name))
+        if ( principal?.Identity is null || string.IsNullOrWhiteSpace(principal?.Identity?.Name) )
         {
             return;
         }
@@ -34,7 +50,7 @@ public class IdentityContext : IIdentityContext
                  out var id)
             ? id
             : Guid.Empty;
-        
+
         Username = IsAuthenticated ? principal.FindFirstValue(ClaimTypes.Name)! : default!;
         Role = principal?.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Role)?.Value;
         Claims = principal?.Claims?.GroupBy(x => x.Type)?

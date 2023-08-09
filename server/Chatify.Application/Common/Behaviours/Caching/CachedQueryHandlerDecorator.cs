@@ -4,7 +4,6 @@ using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
 using Chatify.Shared.Infrastructure;
 using Humanizer;
-using Microsoft.Extensions.Logging;
 
 namespace Chatify.Application.Common.Behaviours.Caching;
 
@@ -15,11 +14,10 @@ internal sealed class CachedQueryHandlerDecorator<TQuery, TResult>
     private readonly IQueryHandler<TQuery, TResult> _inner;
     private readonly IIdentityContext _identityContext;
     private readonly ICacheService _cache;
-    private readonly ILogger<CachedQueryHandlerDecorator<TQuery, TResult>> _logger;
 
-    public string UserId => _identityContext.Id.ToString();
+    private string UserId => _identityContext.Id.ToString();
 
-    private static readonly IDictionary<Type, CachedAttribute> CachedQueryOptions
+    private static readonly ImmutableDictionary<Type, CachedAttribute> CachedQueryOptions
         = Assembly
             .GetExecutingAssembly()
             .GetTypes()
@@ -30,15 +28,15 @@ internal sealed class CachedQueryHandlerDecorator<TQuery, TResult>
             .ToImmutableDictionary(t => t.GetGenericArguments()[0],
                 t => t.GetCustomAttribute<CachedAttribute>()!);
 
-    private bool IsCachingEnabled => CachedQueryOptions.ContainsKey(typeof(TQuery));
+    private static bool IsCachingEnabled => CachedQueryOptions.ContainsKey(typeof(TQuery));
 
     public CachedQueryHandlerDecorator(
         IQueryHandler<TQuery, TResult> inner,
-        ILogger<CachedQueryHandlerDecorator<TQuery, TResult>> logger,
-        ICacheService cache, IIdentityContext identityContext)
+        ICacheService cache,
+        IIdentityContext identityContext
+    )
     {
         _inner = inner;
-        _logger = logger;
         _cache = cache;
         _identityContext = identityContext;
     }
@@ -62,7 +60,7 @@ internal sealed class CachedQueryHandlerDecorator<TQuery, TResult>
                 .GetValue(query)!
                 .ToString()!
         };
-        
+
         var cacheKey = $"{cacheAttribute.QueryCacheKeyPrefix}:{keyPropertyValue}";
 
         var item = await _cache.GetAsync<TResult>(cacheKey, cancellationToken);

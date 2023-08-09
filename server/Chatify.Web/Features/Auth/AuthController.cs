@@ -1,4 +1,5 @@
 ﻿using Chatify.Application.Authentication.Commands;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
 using Chatify.Web.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -35,74 +36,56 @@ public class AuthController : ApiController
 
     [HttpPost]
     [Route(RegularSignUpRoute)]
-    public async Task<IActionResult> RegularSignUp(
+    public Task<IActionResult> RegularSignUp(
         [FromBody] RegularSignUp signUp,
         CancellationToken cancellationToken = default)
-    {
-        var result = await SendAsync<RegularSignUp, RegularSignUpResult>(signUp, cancellationToken);
-        return result.Match<IActionResult>(
-            err => err.ToBadRequest(),
-            NoContent);
-    }
+        => SendAsync<RegularSignUp, RegularSignUpResult>(signUp, cancellationToken)
+            .MatchAsync(err => err.ToBadRequest(), NoContent);
 
     [HttpPost]
     [Route(SignOutRoute)]
-    public async Task<IActionResult> SignOut(CancellationToken cancellationToken = default)
-    {
-        var result = await SendAsync<SignOut, SignOutResult>(new SignOut(), cancellationToken);
-        return result.Match<IActionResult>(
-            err => err.ToBadRequest(),
-            NoContent);
-    }
+    public Task<IActionResult> SignOut(CancellationToken cancellationToken = default)
+        => SendAsync<SignOut, SignOutResult>(new SignOut(), cancellationToken)
+            .MatchAsync(err => err.ToBadRequest(), NoContent);
 
     [HttpPost]
     [Route(RegularSignInRoute)]
-    public async Task<IActionResult> RegularSignIn(
+    public Task<IActionResult> RegularSignIn(
         [FromBody] RegularSignIn signIn,
         CancellationToken cancellationToken = default)
     {
-        var result = await SendAsync<RegularSignIn, RegularSignInResult>(signIn, cancellationToken);
-        return result.Match<IActionResult>(
-            err => err.ToBadRequest(),
-            NoContent);
+        return SendAsync<RegularSignIn, RegularSignInResult>(signIn, cancellationToken)
+            .MatchAsync(err => err.ToBadRequest(), NoContent);
     }
 
     [HttpPost]
     [Route(GoogleSignUpRoute)]
-    public async Task<IActionResult> GoogleSignUp(
+    public Task<IActionResult> GoogleSignUp(
         [FromBody] GoogleSignUp signUp,
         CancellationToken cancellationToken = default)
     {
-        var result = await SendAsync<GoogleSignUp, GoogleSignUpResult>(signUp, cancellationToken);
-        return result.Match<IActionResult>(
-            err => err.ToBadRequest(),
-            NoContent);
+        return SendAsync<GoogleSignUp, GoogleSignUpResult>(signUp, cancellationToken)
+            .MatchAsync(err => err.ToBadRequest(), NoContent);
     }
 
     [HttpPost]
     [Route(FacebookSignUpRoute)]
-    public async Task<IActionResult> FacebookSignUp(
+    public Task<IActionResult> FacebookSignUp(
         [FromBody] FacebookSignUp signUp,
         CancellationToken cancellationToken = default)
     {
-        var result = await
-            SendAsync<FacebookSignUp, FacebookSignUpResult>(signUp, cancellationToken);
-
-        return result.Match<IActionResult>(
-            err => err.ToBadRequest(),
-            NoContent);
+        return SendAsync<FacebookSignUp, FacebookSignUpResult>(signUp, cancellationToken)
+            .MatchAsync(err => err.ToBadRequest(), NoContent);
     }
 
     [HttpPost]
     [Route(ConfirmEmailRoute)]
-    public async Task<IActionResult> ConfirmEmail(
+    public Task<IActionResult> ConfirmEmail(
         [FromQuery(Name = "token")] string tokenCode,
         CancellationToken cancellationToken = default)
     {
-        var result = await SendAsync<ConfirmEmail, ConfirmEmailResult>(
-            new ConfirmEmail(tokenCode), cancellationToken);
-        return result.Match<IActionResult>(
-            err => err.ToBadRequest(),
-            Accepted);
+        return SendAsync<ConfirmEmail, ConfirmEmailResult>(
+                new ConfirmEmail(tokenCode), cancellationToken)
+            .MatchAsync(err => err.ToBadRequest(), Accepted);
     }
 }

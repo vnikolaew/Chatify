@@ -5,3 +5,5 @@ export * from "./friendships";
 export * from "./reactions";
 export * from "./hubs";
 export * from "./messages";
+export * from "./common/createClient";
+export * from "./queryClient";

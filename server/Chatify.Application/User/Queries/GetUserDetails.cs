@@ -38,7 +38,7 @@ internal sealed class GetUserDetailsHandler
         GetUserDetails query,
         CancellationToken cancellationToken = default)
     {
-        bool areFriends = ( await _friendships.AllFriendIdsForUser(_identityContext.Id, cancellationToken) )
+        var areFriends = ( await _friendships.AllFriendIdsForUser(_identityContext.Id, cancellationToken) )
             .Any(fid => fid == query.UserId);
         if ( !areFriends ) return new NotFriendsError();
 

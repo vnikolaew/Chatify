@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS users
     created_at            timestamp,
     username              text,
     banner_pictures       set<media>,
-    device_ips            set<inet>,
+    device_ips            set<blob>,
     display_name          text,
     email                 text,
     emailconfirmationtime timestamp,
@@ -166,11 +166,6 @@ CREATE TABLE IF NOT EXISTS chat_group_members_by_user_id
    AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
 // Chat message replies summary info table:
-CREATE TYPE IF NOT EXISTS user_info (
-    id uuid,
-    username text,
-    profile_picture_url text,
-    );
 
 CREATE TABLE IF NOT EXISTS chat_message_reply_summaries
 (

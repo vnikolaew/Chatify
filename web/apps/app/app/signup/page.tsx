@@ -29,7 +29,6 @@ const SignUpPage: NextPage = () => {
 
    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
       e.preventDefault();
-      console.log(signUpModel);
       try {
          await signUp(signUpModel);
          router.push(`/`);
@@ -49,7 +48,7 @@ const SignUpPage: NextPage = () => {
                Username:{" "}
             </label>
             <input
-               className={`px-2 border-2 border-gray-200 focus:border-blue-500 py-1 text-md rounded-lg`}
+               className={`px-3 border-2 border-gray-200 focus:border-blue-500 py-2 text-md rounded-lg`}
                autoComplete={"off"}
                onChange={handleChange}
                value={signUpModel.username}
@@ -61,7 +60,7 @@ const SignUpPage: NextPage = () => {
                Email:{" "}
             </label>
             <input
-               className={`px-2 border-2 border-gray-200 focus:border-blue-500 py-1 text-md rounded-lg`}
+               className={`px-3 border-2 border-gray-200 focus:border-blue-500 py-2 text-md rounded-lg`}
                onChange={handleChange}
                value={signUpModel.email}
                type={"email"}
@@ -72,7 +71,7 @@ const SignUpPage: NextPage = () => {
                Password:{" "}
             </label>
             <input
-               className={`px-2 border-2 border-gray-200 focus:border-blue-500 py-1 text-md rounded-lg`}
+               className={`px-3 border-2 border-gray-200 focus:border-blue-500 py-2 text-md rounded-lg`}
                onChange={handleChange}
                value={signUpModel.password}
                type={"password"}

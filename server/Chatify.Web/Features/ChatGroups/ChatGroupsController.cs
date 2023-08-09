@@ -1,10 +1,15 @@
 ﻿using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.ChatGroups.Queries;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
 using Chatify.Web.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Guid = System.Guid;
 using CreateChatGroupResult = OneOf.OneOf<Chatify.Application.User.Commands.FileUploadError, System.Guid>;
+using GetChatGroupDetailsResult =
+    OneOf.OneOf<Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
+        Chatify.Application.ChatGroups.Commands.UserIsNotMemberError,
+        Chatify.Application.ChatGroups.Queries.ChatGroupDetailsEntry>;
 using AddChatGroupMemberResult =
     OneOf.OneOf<Chatify.Application.User.Commands.UserNotFound,
         Chatify.Application.ChatGroups.Commands.UserIsNotGroupAdminError,
@@ -52,10 +57,14 @@ public class ChatGroupsController : ApiController
 
     [HttpGet]
     [Route("{groupId:guid}")]
-    public async Task<IActionResult> Details(
+    public Task<IActionResult> Details(
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
-        => Ok(groupId);
+        => QueryAsync<GetChatGroupDetails, GetChatGroupDetailsResult>(
+                new GetChatGroupDetails(groupId),
+                cancellationToken)
+            .MatchAsync<ChatGroupNotFoundError, UserIsNotMemberError, ChatGroupDetailsEntry, IActionResult>(
+                _ => NotFound(), _ => BadRequest(), Ok);
 
     [HttpGet]
     [Route("feed")]

@@ -1,5 +1,7 @@
 import axios, { AxiosRequestConfig, HttpStatusCode } from "axios";
 
+export const USER_LOCATION_LOCAL_STORAGE_KEY = "user-geolocation";
+
 export const createClient = (
    endpoint: string = "",
    config?: AxiosRequestConfig
@@ -11,11 +13,24 @@ export const createClient = (
       headers: {
          "Content-Type": "application/json; charset=utf-8",
          "Accept": "*/*",
+         "X-User-Locale": window.navigator.language,
+         "X-User-Location": ``,
       },
       validateStatus: (status) => status < HttpStatusCode.InternalServerError,
       withCredentials: true,
       cancelToken: axios.CancelToken.source().token,
       ...config,
+   });
+
+   client.interceptors.request.use((config) => {
+      const userLocation = localStorage.getItem(
+         USER_LOCATION_LOCAL_STORAGE_KEY
+      ) as string;
+      if (!userLocation) return config;
+
+      const [latitude, longitude] = userLocation?.split(";");
+      config.headers.set("X-User-Location", `${latitude};${longitude}`);
+      return config;
    });
 
    return client;

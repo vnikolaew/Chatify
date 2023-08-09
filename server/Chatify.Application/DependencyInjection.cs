@@ -32,7 +32,7 @@ public static class DependencyInjection
         services.TryDecorate(typeof(ICommandHandler<,>), typeof(RequestValidationDecorator<,>));
         services.TryDecorate(typeof(ICommandHandler<>), typeof(LoggingHandlerDecorator<>));
         services.TryDecorate(typeof(ICommandHandler<,>), typeof(LoggingHandlerDecorator<,>));
-        
+
         services.TryDecorate(typeof(IQueryHandler<,>), typeof(TimedHandlerDecorator<,>));
         services.TryDecorate(typeof(IQueryHandler<,>), typeof(CachedQueryHandlerDecorator<,>));
         return services;

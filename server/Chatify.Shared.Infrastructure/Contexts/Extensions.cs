@@ -12,7 +12,7 @@ public static class Extensions
             .AddSingleton<ContextAccessor>()
             .AddHttpContextAccessor()
             .AddScoped<IIdentityContext, IdentityContext>(sp =>
-                new IdentityContext(sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.User))
+                new IdentityContext(sp.GetRequiredService<IHttpContextAccessor>().HttpContext!))
             .AddTransient(sp => sp.GetRequiredService<ContextAccessor>().Context);
 
     public static IApplicationBuilder UseContext(this IApplicationBuilder app)

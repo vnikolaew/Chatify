@@ -1,36 +1,30 @@
-"use client";
-
-import { Metadata } from "next";
 import "./styles.css";
 import React, { PropsWithChildren } from "react";
-import {
-   QueryCache,
-   QueryClient,
-   QueryClientProvider,
-} from "@tanstack/react-query";
+import { Metadata } from "next";
+import { Inter, Roboto } from "next/font/google";
+import Providers from "../components/Providers";
 
-// export const metadata: Metadata = {
-//    title: "Welcome to app!",
-//    description: "Chatify - converse with your fellas!",
-// } satisfies Metadata;
+export const metadata: Metadata = {
+   title: "Welcome to app!",
+   description: "Chatify - converse with your fellas!",
+} satisfies Metadata;
 
-const queryClient = new QueryClient({
-   queryCache: new QueryCache({}),
-   defaultOptions: {
-      queries: {
-         refetchOnWindowFocus: false,
-      },
-   },
+const inter = Inter({
+   weight: ["100", "200", "300", "500"],
+   subsets: ["latin"],
+});
+
+const roboto = Roboto({
+   weight: ["100", "300", "500"],
+   subsets: ["latin"],
 });
 
 function ChatifyLayout({ children }: PropsWithChildren) {
    return (
-      <html>
+      <html className={inter.className}>
          <body>
             <main className="app">
-               <QueryClientProvider client={queryClient}>
-                  {children}
-               </QueryClientProvider>
+               <Providers>{children}</Providers>
             </main>
          </body>
       </html>

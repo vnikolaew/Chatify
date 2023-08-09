@@ -1,12 +1,8 @@
 "use client";
 import React from "react";
 import { useSignOutMutation } from "@web/api";
-import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 
 const SignOut = () => {
-   const router = useRouter();
-   const client = useQueryClient();
    const {
       mutateAsync: signOut,
       data,
@@ -17,19 +13,14 @@ const SignOut = () => {
    const handleClick = async () => {
       try {
          await signOut(null!);
-         // client.clear();
-         await client.resetQueries(
-            ["me", "claims"],
-            { exact: false },
-            { cancelRefetch: true }
-         );
+         window.location.reload();
       } catch (e) {}
    };
 
    return (
       <div>
          <button
-            onClick={(_) => signOut(null!)}
+            onClick={handleClick}
             disabled={isLoading}
             className={`hover:underline text-blue-500`}
          >
