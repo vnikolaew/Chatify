@@ -11,7 +11,7 @@ public static class MappingExtensions
         Expression<Func<T, TProp>> expression,
         Action<ColumnMap>? configure = default)
     {
-        var underscoreColumnName = (expression.Body as MemberExpression)?.Member.Name ??
+        var underscoreColumnName = ( expression.Body as MemberExpression )?.Member.Name ??
                                    throw new ArgumentException("Expression must be a member expression.",
                                        nameof(expression));
 
@@ -24,20 +24,20 @@ public static class MappingExtensions
 
     public static Map<T> SetColumn<T, TProp, TValue>(
         this Map<T> map,
-        Expression<Func<T, TProp>> expression)
-    {
-        var lowerColumnName = (expression.Body as MemberExpression)?.Member?.Name?.ToLower() ??
-                              throw new ArgumentException("Expression must be a member expression.",
-                                  nameof(expression));
-        return map.Column(expression,
-            m => m.WithDbType<HashSet<TValue>>().WithName(lowerColumnName));
-    }
+        Expression<Func<T, TProp>> expression,
+        Action<ColumnMap>? configure = default)
+        => map.Column(expression,
+            m =>
+            {
+                m.WithDbType<HashSet<TValue>>();
+                configure?.Invoke(m);
+            });
 
     public static Map<T> ListColumn<T, TProp, TValue>(
         this Map<T> map,
         Expression<Func<T, TProp>> expression)
     {
-        var lowerColumnName = (expression.Body as MemberExpression)?.Member?.Name?.ToLower() ??
+        var lowerColumnName = ( expression.Body as MemberExpression )?.Member?.Name?.ToLower() ??
                               throw new ArgumentException("Expression must be a member expression.",
                                   nameof(expression));
 

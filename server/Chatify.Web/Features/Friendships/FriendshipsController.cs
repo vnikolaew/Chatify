@@ -1,4 +1,5 @@
-﻿using Chatify.Application.Friendships.Commands;
+﻿using System.Diagnostics.CodeAnalysis;
+using Chatify.Application.Friendships.Commands;
 using Chatify.Application.Friendships.Queries;
 using Chatify.Application.User.Commands;
 using Chatify.Domain.Entities;
@@ -25,6 +26,7 @@ public class FriendshipsController : ApiController
     private const string IncomingFriendshipsEndpoint = "incoming";
 
     private const string InviteEndpoint = "invite";
+    
     private const string AcceptEndpoint = "accept";
     private const string DeclineEndpoint = "decline";
 
@@ -41,7 +43,8 @@ public class FriendshipsController : ApiController
 
     [HttpGet]
     [Route(SentFriendshipsEndpoint)]
-    public async Task<IActionResult> GetSentInvitations(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetSentInvitations(
+        CancellationToken cancellationToken = default)
     {
         var result = await QueryAsync<GetSentInvitations, GetSentInvitationsResult>(
             new GetSentInvitations(),

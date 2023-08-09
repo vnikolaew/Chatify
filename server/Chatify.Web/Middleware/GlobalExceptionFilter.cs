@@ -17,7 +17,7 @@ internal sealed class GlobalExceptionFilter : IAsyncExceptionFilter
         var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<GlobalExceptionFilter>>();
         var errorLines = string.Join(Environment.NewLine,
             context.Exception.StackTrace!.Split(Environment.NewLine).Take(4));
-        logger.LogError(errorLines);
+        logger.LogError(context.Exception, "An exception was thrown:");
 
         context.HttpContext.Response.ContentType = MediaTypeNames.Application.Json;
         return HandleGenericException(context);

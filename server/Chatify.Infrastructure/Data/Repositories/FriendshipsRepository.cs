@@ -70,7 +70,7 @@ public sealed class FriendshipsRepository
 
         // Potentially chunk Ids to ease cache server processing:
         var friendsStrings = new List<string>();
-        foreach (var idsChunk in friendsIds.Chunk(10))
+        foreach ( var idsChunk in friendsIds.Chunk(10) )
         {
             var chunkStrings = await _cache.GetAsync<string>(idsChunk.Select(id => $"user:{id.ToString()}"));
             friendsStrings.AddRange(chunkStrings!);
@@ -87,7 +87,19 @@ public sealed class FriendshipsRepository
     {
         await DbMapper.DeleteAsync<FriendsRelation>(" WHERE friend_one_id = ? AND friend_two_id = ? ALLOW FILTERING;",
             friendOneId, friendTwoId);
-        
+
+        // Purge entries from cache as well:
+        var deleteTasks = new Task[]
+        {
+            _cache.SortedSetRemoveAsync(
+                new RedisKey($"user:{friendOneId}:friends"),
+                new RedisValue(friendTwoId.ToString())),
+            _cache.SortedSetRemoveAsync(
+                new RedisKey($"user:{friendTwoId}:friends"),
+                new RedisValue(friendOneId.ToString())),
+        };
+        await Task.WhenAll(deleteTasks);
+
         return true;
     }
 
@@ -97,7 +109,7 @@ public sealed class FriendshipsRepository
     {
         var friendsIds = await _cache.SortedSetRangeByScoreAsync(
             new RedisKey($"user:{userId}:friends"), order: Order.Descending);
-        
+
         return friendsIds.Select(id => Guid.Parse(id.ToString())).ToList();
     }
 }

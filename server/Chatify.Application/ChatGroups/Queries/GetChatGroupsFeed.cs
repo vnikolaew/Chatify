@@ -1,4 +1,6 @@
-﻿using Chatify.Application.ChatGroups.Contracts;
+﻿using System.Text;
+using Chatify.Application.ChatGroups.Contracts;
+using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Domain.Entities;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
@@ -9,11 +11,16 @@ namespace Chatify.Application.ChatGroups.Queries;
 
 using GetChatGroupsFeedResult = OneOf<Error, List<ChatGroupFeedEntry>>;
 
-public record ChatGroupFeedEntry(
-    ChatGroup ChatGroup,
-    Domain.Entities.User User,
-    ChatMessage ChatMessage);
+public record ChatGroupFeedEntry
+{
+    public ChatGroup ChatGroup { get; set; }
+    
+    public Domain.Entities.User User { get; set; }
+    
+    public ChatMessage ChatMessage { get; set; }
+}
 
+[Timed]
 public record GetChatGroupsFeed
     (int Limit, int Offset) : IQuery<GetChatGroupsFeedResult>;
 

@@ -9,19 +9,19 @@ using OneOf;
 
 namespace Chatify.Application.Messages.Replies.Queries;
 
-using GetMessagesForChatGroupResult = OneOf<MessageNotFoundError, UserIsNotMemberError, CursorPaged<ChatMessageReply>>;
+using GetRepliesForMessageResult = OneOf<MessageNotFoundError, UserIsNotMemberError, CursorPaged<ChatMessageReply>>;
 
 public record MessageNotFoundError(Guid MessageId);
 
 [Cached("message-replies", 10)]
-public record GetRepliesByForMessage(
+public record GetRepliesForMessage(
     [Required] [property: CacheKey] Guid MessageId,
     [Required] int PageSize,
     [Required] string PagingCursor
-) : IQuery<GetMessagesForChatGroupResult>;
+) : IQuery<GetRepliesForMessageResult>;
 
 internal sealed class GetRepliesByForMessageHandler
-    : IQueryHandler<GetRepliesByForMessage, GetMessagesForChatGroupResult>
+    : IQueryHandler<GetRepliesForMessage, GetRepliesForMessageResult>
 {
     private readonly IChatMessageReplyRepository _messageReplies;
     private readonly IChatMessageRepository _messages;
@@ -39,8 +39,8 @@ internal sealed class GetRepliesByForMessageHandler
         _messages = messages;
     }
 
-    public async Task<GetMessagesForChatGroupResult> HandleAsync(
-        GetRepliesByForMessage command,
+    public async Task<GetRepliesForMessageResult> HandleAsync(
+        GetRepliesForMessage command,
         CancellationToken cancellationToken = default)
     {
         var message = await _messages.GetAsync(

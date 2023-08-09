@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.Common.Behaviours.Caching;
+using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
@@ -13,6 +14,7 @@ namespace Chatify.Application.ChatGroups.Queries;
 using GetChatGroupMembersListResult = OneOf<UserIsNotMemberError, ChatGroupNotFoundError, List<ChatGroupMember>>;
 
 [Cached("chat-group-members", 30)]
+[Timed]
 public record GetChatGroupMembersList(
     [Required] [property: CacheKey] Guid ChatGroupId
 ) : IQuery<GetChatGroupMembersListResult>;

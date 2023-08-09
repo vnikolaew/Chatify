@@ -2,6 +2,7 @@
 using LanguageExt;
 using LanguageExt.Common;
 using Microsoft.AspNetCore.Hosting;
+using OneOf;
 
 namespace Chatify.Infrastructure.FileStorage;
 
@@ -18,7 +19,7 @@ public class LocalFileSystemUploadService : IFileUploadService
     public LocalFileSystemUploadService(IWebHostEnvironment environment)
         => _fileStorageBaseFolder = Path.Combine(environment.ContentRootPath, "Files");
 
-    public async Task<Either<Error, FileUploadResult>> UploadAsync(
+    public async Task<OneOf<Error, FileUploadResult>> UploadAsync(
         SingleFileUploadRequest singleFileUploadRequest,
         CancellationToken cancellationToken = default)
     {
@@ -48,11 +49,13 @@ public class LocalFileSystemUploadService : IFileUploadService
         return new FileUploadResult
         {
             FileId = newFileId,
-            FileUrl = newFileName
+            FileUrl = newFileName,
+            FileName = newFileName,
+            FileType = fileExtension
         };
     }
 
-    public async Task<Either<Error, bool>> DeleteAsync(
+    public async Task<OneOf<Error, Unit>> DeleteAsync(
         SingleFileDeleteRequest singleFileDeleteRequest,
         CancellationToken cancellationToken = default)
     {
@@ -60,10 +63,10 @@ public class LocalFileSystemUploadService : IFileUploadService
         if ( !File.Exists(filePath) ) return Error.New("Specified file not found.");
 
         File.Delete(filePath);
-        return true;
+        return Unit.Default;
     }
 
-    public async Task<List<Either<Error, FileUploadResult>>> UploadManyAsync(
+    public async Task<List<OneOf<Error, FileUploadResult>>> UploadManyAsync(
         MultipleFileUploadRequest multipleFileUploadRequest,
         CancellationToken cancellationToken = default)
     {

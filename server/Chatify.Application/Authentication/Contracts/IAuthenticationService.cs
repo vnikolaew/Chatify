@@ -24,13 +24,15 @@ public sealed class UserSignedInResult : UserAuthResult
 
 public interface IAuthenticationService
 {
-    Task<Either<Error, UserSignedUpResult>> RegularSignUpAsync(
+    Task<OneOf<Error, UserSignedUpResult>> RegularSignUpAsync(
         RegularSignUp request,
         CancellationToken cancellationToken = default);
 
     Task<Either<Error, UserSignedInResult>> RegularSignInAsync(
         RegularSignIn request,
         CancellationToken cancellationToken = default);
+    
+    Task<Either<Error, Unit>> SignOutAsync(CancellationToken cancellationToken = default);
 
     Task<Either<Error, UserSignedUpResult>> GoogleSignUpAsync(
         GoogleSignUp request,
