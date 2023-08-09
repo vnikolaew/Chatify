@@ -30,6 +30,13 @@ paths:
       responses:
         '200':
           description: Success
+  /api/Auth/signout:
+    post:
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: Success
   /api/Auth/signin:
     post:
       tags:
@@ -195,6 +202,32 @@ paths:
           schema:
             type: integer
             format: int32
+      responses:
+        '200':
+          description: Success
+  '/api/ChatGroups/{groupId}/attachments':
+    get:
+      tags:
+        - ChatGroups
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetChatGroupSharedAttachmentsRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/GetChatGroupSharedAttachmentsRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/GetChatGroupSharedAttachmentsRequest'
       responses:
         '200':
           description: Success
@@ -442,7 +475,7 @@ paths:
           content:
             application/json:
               schema: { }
-  '/api/Messages/replies/{messageId}':
+  '/api/Messages/{messageId}/replies':
     get:
       tags:
         - Messages
@@ -476,39 +509,6 @@ paths:
           content:
             application/json:
               schema: { }
-    delete:
-      tags:
-        - Messages
-      parameters:
-        - name: messageId
-          in: path
-          required: true
-          style: simple
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeleteGroupChatMessageRequest'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/DeleteGroupChatMessageRequest'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/DeleteGroupChatMessageRequest'
-      responses:
-        '204':
-          description: No Content
-          content:
-            application/json:
-              schema: { }
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema: { }
     post:
       tags:
         - Messages
@@ -534,6 +534,40 @@ paths:
       responses:
         '202':
           description: Accepted
+          content:
+            application/json:
+              schema: { }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { }
+  '/api/Messages/replies/{messageId}':
+    delete:
+      tags:
+        - Messages
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteGroupChatMessageRequest'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/DeleteGroupChatMessageRequest'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/DeleteGroupChatMessageRequest'
+      responses:
+        '204':
+          description: No Content
           content:
             application/json:
               schema: { }
@@ -878,6 +912,19 @@ components:
       type: object
       properties:
         accessToken:
+          type: string
+          nullable: true
+      additionalProperties: false
+    GetChatGroupSharedAttachmentsRequest:
+      type: object
+      properties:
+        groupId:
+          type: string
+          format: uuid
+        pageSize:
+          type: integer
+          format: int32
+        pagingCursor:
           type: string
           nullable: true
       additionalProperties: false

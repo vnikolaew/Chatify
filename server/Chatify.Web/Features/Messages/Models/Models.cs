@@ -81,7 +81,7 @@ public static class Models
         [Required] string PagingCursor
     )
     {
-        public GetRepliesByForMessage ToCommand()
+        public GetRepliesForMessage ToCommand()
             => new(MessageId, PageSize, PagingCursor);
     }
 }

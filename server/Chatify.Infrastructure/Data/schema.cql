@@ -1,9 +1,24 @@
+// UDTs:
+CREATE TYPE IF NOT EXISTS media (
+    id uuid,
+    media_url text,
+    file_name text,
+    type text,
+    metadata map<text, text>
+    );
+
+CREATE TYPE IF NOT EXISTS message_replier_info (
+    user_id uuid,
+    username text,
+    profile_picture_url text,
+    );
+
 CREATE TABLE IF NOT EXISTS users
 (
     id                    uuid,
     created_at            timestamp,
     username              text,
-    banner_pictures       set<text>,
+    banner_pictures       set<media>,
     device_ips            set<inet>,
     display_name          text,
     email                 text,
@@ -17,14 +32,14 @@ CREATE TABLE IF NOT EXISTS users
     passwordhash          text,
     phone                 phoneinfo,
     phone_numbers         set<text>,
-    profile_picture_url   text,
+    profile_picture       media,
     roles                 list<text>,
     securitystamp         text,
     status                tinyint,
     tokens                list<frozen<tokeninfo>>,
     twofactorenabled      boolean,
     updated_at            timestamp,
-    PRIMARY KEY (id, created_at, username)
+    PRIMARY KEY ((id), created_at, username)
 ) WITH CLUSTERING ORDER BY (created_at desc, username asc);
 
 CREATE TABLE IF NOT EXISTS friends
@@ -38,13 +53,13 @@ CREATE TABLE IF NOT EXISTS friends
 
 CREATE TABLE IF NOT EXISTS chat_groups
 (
-    id          uuid,
-    creator_id  uuid,
-    name        text,
-    about       text,
-    picture_url text,
-    admin_ids   set<uuid>,
-    created_at  timestamp,
+    id         uuid,
+    creator_id uuid,
+    name       text,
+    about      text,
+    picture    media,
+    admin_ids  set<uuid>,
+    created_at timestamp,
     PRIMARY KEY ( (id), created_at )
 ) WITH CLUSTERING ORDER BY (created_at DESC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
@@ -61,7 +76,7 @@ CREATE TABLE IF NOT EXISTS chat_messages
     chat_group_id   uuid,
     user_id         uuid,
     content         text,
-    attachments     set<text>,
+    attachments     set<frozen<media>>,
     metadata        map<text, text>,
     reaction_counts map<tinyint, bigint>,
     created_at      timestamp,
@@ -70,7 +85,7 @@ CREATE TABLE IF NOT EXISTS chat_messages
     PRIMARY KEY ( (chat_group_id), created_at, id)
 ) WITH CLUSTERING ORDER BY (created_at DESC, id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
-CREATE INDEX IF NOT EXISTS chat_messages_by_id ON chat_messages (id);
+CREATE INDEX IF NOT EXISTS chat_messages_id_idx ON chat_messages (id);
 
 CREATE TABLE IF NOT EXISTS chat_messages_reply_count
 (
@@ -86,7 +101,7 @@ CREATE TABLE IF NOT EXISTS chat_message_replies
     reply_to        uuid,
     user_id         uuid,
     content         text,
-    attachments     set<text>,
+    attachments     set<frozen<media>>,
     metadata        map<text, text>,
     reaction_counts map<tinyint, bigint>,
     created_at      timestamp,
@@ -95,7 +110,7 @@ CREATE TABLE IF NOT EXISTS chat_message_replies
     PRIMARY KEY ( (reply_to), created_at, id)
 ) WITH CLUSTERING ORDER BY (created_at DESC, id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
-CREATE INDEX IF NOT EXISTS chat_message_replies_by_id ON chat_message_replies (id);
+CREATE INDEX IF NOT EXISTS chat_message_replies_id_idx ON chat_message_replies (id);
 
 CREATE TABLE IF NOT EXISTS friend_invitations
 (
@@ -110,8 +125,8 @@ CREATE TABLE IF NOT EXISTS friend_invitations
     PRIMARY KEY ( (inviter_id), created_at)
 ) WITH CLUSTERING ORDER BY (created_at DESC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
-CREATE INDEX IF NOT EXISTS friend_invitations_by_id ON friend_invitations (id);
-CREATE INDEX IF NOT EXISTS friend_invitations_by_invitee_id ON friend_invitations (invitee_id);
+CREATE INDEX IF NOT EXISTS friend_invitations_id_idx ON friend_invitations (id);
+CREATE INDEX IF NOT EXISTS friend_invitations_invitee_id_idx ON friend_invitations (invitee_id);
 
 CREATE TABLE IF NOT EXISTS message_reactions
 (
@@ -127,7 +142,7 @@ CREATE TABLE IF NOT EXISTS message_reactions
     PRIMARY KEY ((message_id), created_at, id)
 ) WITH CLUSTERING ORDER BY (created_at DESC, id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
-CREATE INDEX IF NOT EXISTS message_reactions_by_id ON message_reactions (id);
+CREATE INDEX IF NOT EXISTS message_reactions_id_idx ON message_reactions (id);
 
 CREATE TABLE IF NOT EXISTS chat_group_members
 (
@@ -166,9 +181,29 @@ CREATE TABLE IF NOT EXISTS chat_message_reply_summaries
     updated_at    timestamp,
     total         bigint,
     replier_ids   set<uuid>,
-    user_infos    set<user_info>,
+    user_infos    set<frozen<message_replier_info>>,
     PRIMARY KEY ( (chat_group_id), created_at, message_id )
 ) WITH CLUSTERING ORDER BY (created_at DESC, message_id ASC)
    AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
-CREATE INDEX IF NOT EXISTS chat_message_reply_summaries_by_id on chat_message_reply_summaries (message_id);
+CREATE INDEX IF NOT EXISTS chat_message_reply_summaries_message_id_idx on chat_message_reply_summaries (message_id);
+
+CREATE TYPE IF NOT EXISTS attachment_info (
+    absolute_url text,
+    filename text,
+    type text,
+    metadata map<text,text>
+    );
+
+CREATE TABLE IF NOT EXISTS chat_group_attachments
+(
+    chat_group_id uuid,
+    attachment_id uuid,
+    user_id       uuid,
+    username      text,
+    media_info    media,
+    created_at    timestamp,
+    updated_at    timestamp,
+    PRIMARY KEY ( (chat_group_id), created_at, attachment_id )
+) WITH CLUSTERING ORDER BY (created_at DESC, attachment_id ASC)
+   AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };

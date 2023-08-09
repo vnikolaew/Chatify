@@ -21,7 +21,7 @@ using EditGroupChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMessageS
 using EditChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
 using DeleteGroupChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
 using DeleteChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
-using GetMessagesForChatGroupResult = OneOf<UserIsNotMemberError, CursorPaged<ChatGroupMessageResponseModel>>;
+using GetMessagesForChatGroupResult = OneOf<UserIsNotMemberError, CursorPaged<ChatGroupMessageEntry>>;
 using GetMessageRepliesForChatGroupMessageResult =
     OneOf<MessageNotFoundError, UserIsNotMemberError, CursorPaged<ChatMessageReply>>;
 
@@ -45,7 +45,7 @@ public class MessagesController : ApiController
     }
 
     [HttpGet]
-    [Route("replies/{messageId:guid}")]
+    [Route("{messageId:guid}/replies")]
     [ProducesResponseType(typeof(object), ( int )HttpStatusCode.OK)]
     [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
     public async Task<IActionResult> GetPaginatedRepliesByMessage(
@@ -53,7 +53,7 @@ public class MessagesController : ApiController
         [FromRoute] Guid messageId,
         CancellationToken cancellationToken = default)
     {
-        var result = await QueryAsync<GetRepliesByForMessage, GetMessageRepliesForChatGroupMessageResult>(
+        var result = await QueryAsync<GetRepliesForMessage, GetMessageRepliesForChatGroupMessageResult>(
             ( request with { MessageId = messageId } ).ToCommand(), cancellationToken);
 
         return result.Match<IActionResult>(
@@ -96,9 +96,8 @@ public class MessagesController : ApiController
             NoContent);
     }
 
-
     [HttpPost]
-    [Route("replies/{messageId:guid}")]
+    [Route("{messageId:guid}/replies")]
     [ProducesResponseType(typeof(object), ( int )HttpStatusCode.Accepted)]
     [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
     public async Task<IActionResult> SendGroupChatMessageReply(

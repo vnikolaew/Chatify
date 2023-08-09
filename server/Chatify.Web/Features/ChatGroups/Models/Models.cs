@@ -1,4 +1,5 @@
 ﻿using Chatify.Application.ChatGroups.Commands;
+using Chatify.Application.ChatGroups.Queries;
 using Chatify.Application.Common.Models;
 
 namespace Chatify.Web.Features.ChatGroups.Models;
@@ -14,6 +15,15 @@ public static class Models
             => new(About, Name, File is not null
                 ? new InputFile { Data = File.OpenReadStream(), FileName = File.FileName }
                 : default);
+    }
+    
+    public record GetChatGroupSharedAttachmentsRequest(
+        Guid GroupId,
+        int PageSize,
+        string PagingCursor)
+    {
+        public GetChatGroupSharedAttachments ToCommand()
+            => new(GroupId, PageSize, PagingCursor);
     }
 
     public record EditChatGroupDetailsRequest(

@@ -10,10 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
         "https://0.0.0.0:7139"
     );
     builder.Services
-        .AddProblemDetails(opts =>
-        {
-            opts.CustomizeProblemDetails = _ => { };
-        })
+        .AddCors()
+        .AddProblemDetails(opts => { opts.CustomizeProblemDetails = _ => { }; })
         .AddWebComponents()
         .AddMappers()
         .AddInfrastructure(builder.Configuration)
@@ -25,6 +23,12 @@ var app = builder.Build();
 {
     app
         .UseHttpsRedirection()
+        .UseCors(policy =>
+            policy
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .WithOrigins("http://localhost:4200")
+                .AllowCredentials())
         // .UseTraceIdentifierMiddleware()
         .UseCachedStaticFiles(app.Environment, "/static")
         .UseDevelopmentSwagger(app.Environment)
