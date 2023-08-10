@@ -1,5 +1,6 @@
 ﻿using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.JoinRequests.Commands;
+using Chatify.Application.JoinRequests.Queries;
 using Chatify.Web.Common;
 using Chatify.Web.Extensions;
 using LanguageExt;
@@ -11,6 +12,7 @@ namespace Chatify.Web.Features.JoinRequests;
 using JoinChatGroupResult = OneOf.OneOf<ChatGroupNotFoundError, UserIsAlreadyGroupMemberError, Guid>;
 using AcceptChatGroupJoinRequestResult = OneOf.OneOf<Error, Guid>;
 using DeclineChatGroupJoinRequestResult = OneOf.OneOf<Error, Unit>;
+using GetChatGroupJoinRequestsResult = OneOf.OneOf<Error, List<GroupJoinRequestEntry>>;
 
 [Route("api/chatgroups")]
 public class ChatGroupJoinRequestsController : ApiController
@@ -56,5 +58,19 @@ public class ChatGroupJoinRequestsController : ApiController
         return result.Match<IActionResult>(
             err => err.ToBadRequest(),
             Accepted);
+    }
+
+    [HttpGet]
+    [Route("{groupId:guid}")]
+    public async Task<IActionResult> GetJoinRequests(
+        [FromRoute] Guid groupId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await QueryAsync<GetChatGroupJoinRequests, GetChatGroupJoinRequestsResult>(
+            new GetChatGroupJoinRequests(groupId), cancellationToken);
+
+        return result.Match<IActionResult>(
+            err => err.ToBadRequest(),
+            requests => Ok(new { Data = requests }));
     }
 }

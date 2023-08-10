@@ -1,4 +1,5 @@
 ﻿namespace Chatify.Domain.Entities;
+using Metadata = IDictionary<string, string>;
 
 public class ChatGroup
 {
@@ -15,6 +16,8 @@ public class ChatGroup
     public ISet<Guid> AdminIds { get; set; } = new HashSet<Guid>();
 
     public ISet<User> Admins { get; set; } = new HashSet<User>();
+
+    public Metadata Metadata { get; set; } = new Dictionary<string, string>();
     
     public DateTimeOffset? UpdatedAt { get; set; }
     

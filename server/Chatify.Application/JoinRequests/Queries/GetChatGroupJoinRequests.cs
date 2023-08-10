@@ -33,11 +33,13 @@ internal sealed class GetChatGroupJoinRequestsHandler
     public GetChatGroupJoinRequestsHandler(
         IChatGroupJoinRequestRepository joinRequests,
         IIdentityContext identityContext,
-        IChatGroupRepository groups)
+        IChatGroupRepository groups,
+        IUserRepository users)
     {
         _joinRequests = joinRequests;
         _identityContext = identityContext;
         _groups = groups;
+        _users = users;
     }
 
     public async Task<GetChatGroupJoinRequestsResult> HandleAsync(

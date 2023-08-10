@@ -20,10 +20,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="ChatGroups\EventHandlers\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ReferencePathWithRefAssemblies Update="C:\Users\Victorio\.nuget\packages\oneof\3.0.255\lib\netstandard2.0\OneOf.dll" />
     </ItemGroup>
 </Project>

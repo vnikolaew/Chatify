@@ -41,7 +41,7 @@ public sealed class ChatGroupMembersRepository :
                 ChatGroupId = entity.ChatGroupId,
                 Id = entity.Id
             });
-        var cacheSaveTask = _cache.SetAddAsync(groupKey, userKey);
+        var cacheSaveTask = _cache.ExecuteAsync("BF.ADD", groupKey, userKey);
 
         // (dbSaveTask, cacheSaveTask, groupMemberByUserIdSaveTask).when
         var saveTasks = new[] { dbSaveTask, cacheSaveTask, groupMemberByUserIdSaveTask };
@@ -125,6 +125,6 @@ public sealed class ChatGroupMembersRepository :
         var groupKey = GetGroupMembersCacheKey(groupId);
         var userKey = new RedisValue(userId.ToString());
 
-        return await _cache.SetContainsAsync(groupKey, userKey);
+        return ( bool )await _cache.ExecuteAsync("BF.EXISTS", groupKey, userKey);
     }
 }
