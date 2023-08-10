@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Chatify.Shared.Abstractions.Contexts;
 using Microsoft.AspNetCore.Http;
 
@@ -7,12 +6,16 @@ namespace Chatify.Shared.Infrastructure.Contexts;
 
 public class IdentityContext : IIdentityContext
 {
+    private const string UserLocaleHeader = "X-User-Locale";
+
+    private const string UserLocationHeader = "X-User-Location";
+
     public bool IsAuthenticated { get; }
     public Guid Id { get; }
     public string Username { get; set; }
     public string Role { get; }
 
-    public string UserLocale { get; }
+    public string? UserLocale { get; }
 
     public GeoLocation? UserLocation { get; }
     public Dictionary<string, IEnumerable<string>> Claims { get; }
@@ -29,17 +32,25 @@ public class IdentityContext : IIdentityContext
 
     public IdentityContext(HttpContext context) : this(context.User)
     {
-        UserLocale = context.Request.Headers["X-User-Locale"][0] ??
-                     CultureInfo.CurrentCulture.ThreeLetterISOLanguageName;
-        UserLocation = context.Request.Headers.TryGetValue("X-User-Location", out var location)
+        UserLocale = context.Request.Headers.TryGetValue(UserLocaleHeader, out var header)
+                     && header.Count == 1
+            ? header[0]!
+            : default;
+
+        UserLocation = context
+                           .Request
+                           .Headers
+                           .TryGetValue(UserLocationHeader, out var location)
                        && location.Count >= 1
-            ? GeoLocation.FromString(location[0]!)
+                       && GeoLocation.TryParse(location[0]!, out var geoLocation)
+            ? geoLocation
             : default;
     }
 
     public IdentityContext(ClaimsPrincipal principal)
     {
-        if ( principal?.Identity is null || string.IsNullOrWhiteSpace(principal?.Identity?.Name) )
+        if ( principal?.Identity is null
+             || string.IsNullOrWhiteSpace(principal?.Identity?.Name) )
         {
             return;
         }

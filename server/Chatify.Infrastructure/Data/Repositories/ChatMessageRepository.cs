@@ -3,6 +3,7 @@ using Cassandra.Mapping;
 using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
+using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Shared.Abstractions.Queries;
 using ChatMessage = Chatify.Domain.Entities.ChatMessage;
@@ -68,8 +69,9 @@ public sealed class ChatMessageRepository :
         var messages = await DbMapper
             .FetchAsync<Models.ChatMessage>(cql);
 
-        return Mapper.Map<List<ChatMessage>>(
-                messages ?? new List<Models.ChatMessage>())
+        return messages
+            .AsQueryable()
+            .To<ChatMessage>(Mapper)
             .ToDictionary(m => m.ChatGroupId);
     }
 }

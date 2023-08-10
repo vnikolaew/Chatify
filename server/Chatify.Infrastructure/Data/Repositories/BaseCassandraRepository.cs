@@ -1,6 +1,7 @@
 ﻿using Cassandra;
 using Cassandra.Mapping;
 using Chatify.Domain.Common;
+using Chatify.Infrastructure.Common.Mappings;
 using IMapper = AutoMapper.IMapper;
 using Mapper = Cassandra.Mapping.Mapper;
 
@@ -11,14 +12,14 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
 {
     protected readonly IMapper Mapper;
     protected readonly Mapper DbMapper;
-    
+
     protected readonly string IdColumn;
 
     protected BaseCassandraRepository(IMapper mapper, Mapper dbMapper, string? idColumn = default!)
     {
         Mapper = mapper;
         DbMapper = dbMapper;
-        
+
         var definition = MappingConfiguration.Global.Get<TDataEntity>();
         IdColumn = idColumn ?? definition.PartitionKeys[0];
     }
@@ -27,7 +28,8 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         TEntity entity,
         CancellationToken cancellationToken = default)
     {
-        var dataEntity = Mapper.Map<TDataEntity>(entity);
+        var dataEntity = entity.To<TDataEntity>(Mapper);
+
         await DbMapper.InsertAsync(dataEntity,
             new CqlQueryOptions()
                 .SetConsistencyLevel(ConsistencyLevel.Quorum)
@@ -40,9 +42,9 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         CancellationToken cancellationToken = default)
     {
         var dataEntity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {IdColumn} = ?", id);
-        if (dataEntity is null) return default;
+        if ( dataEntity is null ) return default;
 
-        var entity = Mapper.Map<TEntity>(dataEntity);
+        var entity = dataEntity.To<TEntity>(Mapper);
         updateAction(entity);
         Mapper.Map(entity, dataEntity);
 
@@ -60,9 +62,9 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         CancellationToken cancellationToken = default)
     {
         var dataEntity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {IdColumn} = ?", id);
-        if (dataEntity is null) return default;
+        if ( dataEntity is null ) return default;
 
-        var entity = Mapper.Map<TEntity>(dataEntity);
+        var entity = dataEntity.To<TEntity>(Mapper);
         await updateAction(entity);
         Mapper.Map(entity, dataEntity);
 
@@ -81,15 +83,14 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
             await DbMapper.DeleteAsync<TDataEntity>($"WHERE {IdColumn} = ?", id);
             return true;
         }
-        catch (Exception)
+        catch ( Exception )
         {
             return false;
         }
     }
 
-    public async Task<TEntity?> GetAsync(TId id, CancellationToken cancellationToken = default)
-    {
-        var entity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {IdColumn} = ?", id);
-        return entity is null ? default : Mapper.Map<TEntity>(entity);
-    }
+    public Task<TEntity?> GetAsync(TId id, CancellationToken cancellationToken = default)
+        => DbMapper
+            .FirstOrDefaultAsync<TDataEntity>($"WHERE {IdColumn} = ?", id)
+            .ToAsync<TDataEntity, TEntity>(Mapper);
 }

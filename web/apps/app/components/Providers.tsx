@@ -5,7 +5,11 @@ import { queryClient } from "@web/api";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { USER_LOCATION_LOCAL_STORAGE_KEY } from "@web/api";
 
-const Providers = ({ children }: PropsWithChildren) => {
+export interface ProvidersProps extends PropsWithChildren {
+   isDevelopment: boolean;
+}
+
+const Providers = ({ children, isDevelopment }: ProvidersProps) => {
    useEffect(() => {
       window.navigator.geolocation.getCurrentPosition((position) => {
          queryClient?.setQueryData(["user-geolocation"], position.coords);
@@ -20,7 +24,9 @@ const Providers = ({ children }: PropsWithChildren) => {
    return (
       <QueryClientProvider client={queryClient}>
          {children}
-         <ReactQueryDevtools position={"bottom-left"} initialIsOpen={true} />
+         {isDevelopment && (
+            <ReactQueryDevtools position={"bottom-left"} initialIsOpen={true} />
+         )}
       </QueryClientProvider>
    );
 };

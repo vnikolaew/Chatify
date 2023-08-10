@@ -76,6 +76,14 @@ internal sealed class SendGroupChatMessageHandler
         var uploadedFilesResults = await HandleFileUploads(
             command.Attachments,
             cancellationToken);
+        var attachments = uploadedFilesResults
+            .Select(r => new Media
+            {
+                Id = r.FileId,
+                MediaUrl = r.FileUrl,
+                Type = r.FileType,
+                FileName = r.FileName
+            }).ToList();
 
         var messageId = _guidGenerator.New();
         var message = new ChatMessage
@@ -84,14 +92,7 @@ internal sealed class SendGroupChatMessageHandler
             ChatGroup = chatGroup,
             Id = messageId,
             CreatedAt = _clock.Now,
-            Attachments = uploadedFilesResults
-                .Select(r => new Media
-                {
-                    Id = r.FileId,
-                    MediaUrl = r.FileUrl,
-                    Type = r.FileType,
-                    FileName = r.FileName
-                }).ToList(),
+            Attachments = attachments,
             Content = command.Content
         };
 

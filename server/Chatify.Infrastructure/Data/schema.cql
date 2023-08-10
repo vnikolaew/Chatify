@@ -202,3 +202,15 @@ CREATE TABLE IF NOT EXISTS chat_group_attachments
     PRIMARY KEY ( (chat_group_id), created_at, attachment_id )
 ) WITH CLUSTERING ORDER BY (created_at DESC, attachment_id ASC)
    AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
+
+CREATE TABLE IF NOT EXISTS chat_group_join_requests
+(
+    id            uuid,
+    user_id       uuid,
+    chat_group_id uuid,
+    created_at    timestamp,
+    status        tinyint,
+    updated_at    timestamp,
+    PRIMARY KEY ( ( chat_group_id), created_at, user_id )
+) WITH CLUSTERING ORDER BY (created_at DESC, user_id ASC)
+   AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };

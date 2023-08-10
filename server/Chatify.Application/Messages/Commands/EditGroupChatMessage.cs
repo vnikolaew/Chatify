@@ -69,10 +69,10 @@ internal sealed class EditGroupChatMessageHandler
             chatMessage.UpdatedAt = _clock.Now;
             chatMessage.Content = command.NewContent;
 
-            if ( command.AttachmentOperations is not null )
+            if ( command.AttachmentOperations?.Any() ?? false)
             {
                 await _attachmentOperationHandler
-                    .Handle(message, command.AttachmentOperations);
+                    .HandleAsync(message, command.AttachmentOperations, cancellationToken);
             }
         }, cancellationToken);
 

@@ -96,41 +96,34 @@ public class ChatGroupsController : ApiController
 
     [HttpPatch]
     [Route("{groupId:guid}")]
-    public async Task<IActionResult> Edit(
+    public Task<IActionResult> Edit(
         [FromForm] EditChatGroupDetailsRequest request,
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
-    {
-        var result = await SendAsync<EditChatGroupDetails, EditChatGroupDetailsResult>(
-            ( request with { ChatGroupId = groupId } ).ToCommand(),
-            cancellationToken);
-
-        return result.Match<IActionResult>(
-            _ => BadRequest(),
-            err => err.ToBadRequest(),
-            _ => BadRequest(),
-            _ => BadRequest(),
-            Accepted);
-    }
+        => SendAsync<EditChatGroupDetails, EditChatGroupDetailsResult>(
+                ( request with { ChatGroupId = groupId } ).ToCommand(),
+                cancellationToken)
+            .MatchAsync(
+                _ => BadRequest(),
+                err => err.ToBadRequest(),
+                _ => BadRequest(),
+                _ => BadRequest(),
+                Accepted);
 
     [HttpPost]
     [Route("members")]
-    public async Task<IActionResult> AddMember(
+    public Task<IActionResult> AddMember(
         [FromBody] AddChatGroupMember addChatGroupMember,
         CancellationToken cancellationToken = default)
-    {
-        var result = await
-            SendAsync<AddChatGroupMember, AddChatGroupMemberResult>(
+        => SendAsync<AddChatGroupMember, AddChatGroupMemberResult>(
                 addChatGroupMember,
-                cancellationToken);
-
-        return result.Match<IActionResult>(
-            _ => BadRequest(),
-            _ => BadRequest(),
-            _ => BadRequest(),
-            _ => BadRequest(),
-            id => Ok(id));
-    }
+                cancellationToken)
+            .MatchAsync(
+                _ => BadRequest(),
+                _ => BadRequest(),
+                _ => BadRequest(),
+                _ => BadRequest(),
+                id => ( IActionResult )Ok(id));
 
     [HttpDelete]
     [Route("members")]
@@ -142,11 +135,12 @@ public class ChatGroupsController : ApiController
             removeChatGroupMember,
             cancellationToken);
 
-        return result.Match<IActionResult>(
-            _ => BadRequest(),
-            _ => BadRequest(),
-            _ => BadRequest(),
-            NoContent);
+        return result
+            .Match(
+                _ => BadRequest(),
+                _ => BadRequest(),
+                _ => BadRequest(),
+                _ => ( IActionResult )NoContent());
     }
 
     [HttpPost]
@@ -158,7 +152,7 @@ public class ChatGroupsController : ApiController
         var result = await SendAsync<LeaveChatGroup, LeaveChatGroupResult>(
             leaveChatGroup,
             cancellationToken);
-        return result.Match<IActionResult>(
+        return result.Match(
             _ => BadRequest(),
             _ => BadRequest(),
             Accepted);
@@ -174,11 +168,11 @@ public class ChatGroupsController : ApiController
         var result = await SendAsync<AddChatGroupAdmin, AddChatGroupAdminResult>(
             addChatGroupAdmin,
             cancellationToken);
-
-        return result.Match<IActionResult>(
-            _ => NotFound(),
-            _ => BadRequest(),
-            _ => BadRequest(),
-            Accepted);
+        return result
+            .Match(
+                _ => NotFound(),
+                _ => BadRequest(),
+                _ => BadRequest(),
+                _ => ( IActionResult )Accepted());
     }
 }

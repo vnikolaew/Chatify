@@ -66,7 +66,7 @@ internal sealed class EditChatMessageReplyHandler
             if ( command.AttachmentOperations is not null )
             {
                 await _attachmentOperationHandler
-                    .Handle(replyMessage, command.AttachmentOperations);
+                    .HandleAsync(replyMessage, command.AttachmentOperations);
             }
         }, cancellationToken);
 

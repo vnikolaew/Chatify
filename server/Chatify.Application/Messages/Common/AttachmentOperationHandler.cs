@@ -85,7 +85,7 @@ public class AttachmentOperationHandler
         });
     }
 
-    public async Task Handle(
+    public async Task HandleAsync(
         ChatMessage message,
         IEnumerable<AttachmentOperation> attachmentOperations,
         CancellationToken cancellationToken = default)

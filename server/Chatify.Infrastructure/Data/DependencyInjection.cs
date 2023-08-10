@@ -45,36 +45,35 @@ public static class DependencyInjection
         => services
             .Configure<CassandraOptions>(configuration.GetSection("Cassandra"))
             .AddSingleton(x => x.GetRequiredService<IOptions<CassandraOptions>>().Value)
-            .AddTransient(( Func<IServiceProvider, IMapper> )( serviceProvider =>
-                new Mapper(serviceProvider.GetRequiredService<ISession>()) )).AddSingleton<ISession>(
-                serviceProvider =>
+            .AddTransient<IMapper>(sp =>
+                new Mapper(sp.GetRequiredService<ISession>()))
+            .AddSingleton<ISession>(
+                sp =>
                 {
-                    var defs = new TypeSerializerDefinitions();
-                        // .Define(new IPAddressSerializer())
-                    
-                    var requiredService = serviceProvider.GetRequiredService<CassandraOptions>();
-                    var logger = serviceProvider.GetRequiredService<ILogger<CassandraOptions>>();
+                    var requiredService = sp.GetRequiredService<CassandraOptions>();
+                    var logger = sp.GetRequiredService<ILogger<CassandraOptions>>();
                     var options = new QueryOptions();
 
                     if ( requiredService.Query is { ConsistencyLevel: not null } &&
                          Enum.TryParse(requiredService.Query.ConsistencyLevel.ToString(), true,
                              out ConsistencyLevel result) )
                         options.SetConsistencyLevel(result);
-                    
+
                     var cluster = Cluster.Builder()
                         .AddContactPoints(requiredService.ContactPoints)
                         .WithPort(requiredService.Port)
-                        .WithTypeSerializers(defs)
-                        .WithCredentials(requiredService.Credentials.UserName, requiredService.Credentials.Password)
+                        .WithCredentials(
+                            requiredService.Credentials.UserName,
+                            requiredService.Credentials.Password)
                         .WithQueryOptions(options).Build();
 
                     ISession session = null!;
                     RetryPolicy(requiredService.RetryCount, logger)
-                        .Execute(( Func<ISession> )( () => session = cluster.Connect() ));
-                    if ( session == null )
+                        .Execute(() => session = cluster.Connect());
+                    if ( session is null )
                         throw new ApplicationException("FATAL ERROR: Cassandra session could not be created");
-                    logger.LogInformation("Cassandra session created");
 
+                    logger.LogInformation("Cassandra session created");
                     return session;
                 });
 
@@ -105,24 +104,13 @@ public static class DependencyInjection
             .ToList();
 
         foreach ( var mapping in mappingsList )
-        {
             MappingConfiguration.Global.Define(mapping);
-        }
 
         services
             .AddCassandra(configuration)
             .AddTransient<Mapper>(sp => ( sp.GetRequiredService<IMapper>() as Mapper )!)
             .AddHostedService<DatabaseInitializationService>()
-            .AddIdentity<ChatifyUser, CassandraIdentityRole>(opts =>
-            {
-                opts.SignIn.RequireConfirmedEmail = false;
-
-                opts.Password.RequiredLength = 6;
-                opts.Password.RequireNonAlphanumeric = true;
-                opts.Password.RequireDigit = true;
-
-                opts.User.RequireUniqueEmail = true;
-            })
+            .AddIdentity<ChatifyUser, CassandraIdentityRole>(ConfigureIdentityOptions)
             .AddCassandraErrorDescriber<CassandraErrorDescriber>()
             .UseCassandraStores<ISession>()
             .AddDefaultTokenProviders();
@@ -132,8 +120,18 @@ public static class DependencyInjection
             opts.Cookie.SameSite = SameSiteMode.None;
             opts.Cookie.HttpOnly = false;
         });
-        // services.TryDecorate<ISession>((session, sp) =>
-        //     new LoggedSession(session, sp.GetRequiredService<ILogger<LoggedSession>>()));
+
         return services;
+    }
+
+    private static void ConfigureIdentityOptions(IdentityOptions options)
+    {
+        options.SignIn.RequireConfirmedEmail = false;
+
+        options.Password.RequiredLength = 6;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequireDigit = true;
+
+        options.User.RequireUniqueEmail = true;
     }
 }

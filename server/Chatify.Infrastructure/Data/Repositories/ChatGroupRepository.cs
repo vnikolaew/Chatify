@@ -2,6 +2,7 @@
 using Cassandra.Mapping;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
+using Chatify.Infrastructure.Common.Mappings;
 using IMapper = AutoMapper.IMapper;
 using Mapper = Cassandra.Mapping.Mapper;
 
@@ -27,11 +28,9 @@ public sealed class ChatGroupRepository
             .GetProperty(nameof(Cql.Arguments),
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
             .SetValue(cql, groupIds);
-
-        var groups = await DbMapper
-            .FetchAsync<Models.ChatGroup>(cql);
-
-        return Mapper.Map<List<ChatGroup>>(
-            groups ?? new List<Models.ChatGroup>());
+        
+        return await DbMapper
+            .FetchAsync<Models.ChatGroup>(cql)
+            .ToAsync<IEnumerable<Models.ChatGroup>, List<ChatGroup>>(Mapper);
     }
 }

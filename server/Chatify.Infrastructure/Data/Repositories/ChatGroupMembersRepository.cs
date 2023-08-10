@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Chatify.Domain.Repositories;
+using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Models;
 using Humanizer;
 using StackExchange.Redis;
@@ -11,7 +12,7 @@ namespace Chatify.Infrastructure.Data.Repositories;
 public sealed class ChatGroupMembersRepository :
     BaseCassandraRepository<ChatGroupMember, Models.ChatGroupMember, Guid>,
     IChatGroupMemberRepository
-    
+
 {
     private readonly IDatabase _cache;
 
@@ -42,6 +43,7 @@ public sealed class ChatGroupMembersRepository :
             });
         var cacheSaveTask = _cache.SetAddAsync(groupKey, userKey);
 
+        // (dbSaveTask, cacheSaveTask, groupMemberByUserIdSaveTask).when
         var saveTasks = new[] { dbSaveTask, cacheSaveTask, groupMemberByUserIdSaveTask };
 
         await Task.WhenAll(saveTasks).ConfigureAwait(false);
@@ -53,7 +55,7 @@ public sealed class ChatGroupMembersRepository :
         CancellationToken cancellationToken = default)
     {
         var member = await GetAsync(id, cancellationToken);
-        if (member is null) return false;
+        if ( member is null ) return false;
 
         var groupKey = GetGroupMembersCacheKey(member.ChatGroupId);
         var userKey = new RedisValue(member.UserId.ToString());
@@ -70,7 +72,7 @@ public sealed class ChatGroupMembersRepository :
                             member.UserId, member.ChatGroupId);
                     return true;
                 }
-                catch (Exception)
+                catch ( Exception )
                 {
                     return false;
                 }
@@ -100,16 +102,11 @@ public sealed class ChatGroupMembersRepository :
         return member;
     }
 
-    public async Task<List<ChatGroupMember>?> ByGroup(
+    public Task<List<ChatGroupMember>?> ByGroup(
         Guid groupId, CancellationToken cancellationToken = default)
-    {
-        var members = await DbMapper
-            .FetchAsync<Models.ChatGroupMember>(" WHERE chat_group_id = ?", groupId);
-
-        return members is not null
-            ? Mapper.Map<List<ChatGroupMember>>(members)
-            : default;
-    }
+        => DbMapper
+            .FetchAsync<Models.ChatGroupMember>(" WHERE chat_group_id = ?", groupId)
+            .ToAsyncNullable<IEnumerable<Models.ChatGroupMember>, List<ChatGroupMember>>(Mapper);
 
     public async Task<List<Guid>> GroupsIdsByUser(
         Guid userId,
@@ -117,7 +114,6 @@ public sealed class ChatGroupMembersRepository :
     {
         var groupsIds = await DbMapper
             .FetchAsync<Guid>("SELECT chat_group_id FROM chat_group_members WHERE user_id = ?", userId);
-
         return groupsIds.ToList();
     }
 

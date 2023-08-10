@@ -1,6 +1,6 @@
-﻿using AutoMapper.QueryableExtensions;
-using Chatify.Domain.Repositories;
+﻿using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Caching.Extensions;
+using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Models;
 using StackExchange.Redis;
 using Guid = System.Guid;
@@ -17,15 +17,14 @@ public sealed class UserRepository
     public UserRepository(IMapper mapper, Mapper dbMapper, IDatabase cache)
         : base(mapper, dbMapper) => _cache = cache;
 
-    public async Task<Domain.Entities.User?> GetByUsername(
+    public Task<Domain.Entities.User?> GetByUsername(
         string usernameQuery,
         CancellationToken cancellationToken = default)
-    {
-        var user = await DbMapper.FirstOrDefaultAsync<ChatifyUser>(
-            "SELECT * FROM users_by_username WHERE normalizedusername = ?",
-            usernameQuery.ToUpperInvariant());
-        return user is null ? default : Mapper.Map<Domain.Entities.User>(user);
-    }
+        => DbMapper
+            .FirstOrDefaultAsync<ChatifyUser>(
+                "SELECT * FROM users_by_username WHERE normalizedusername = ?",
+                usernameQuery.ToUpperInvariant())
+            .ToAsyncNullable<ChatifyUser, Domain.Entities.User>(Mapper);
 
 
     public async Task<List<Domain.Entities.User>?> GetByIds(
@@ -33,8 +32,7 @@ public sealed class UserRepository
     {
         var cacheUsers = await _cache.GetAsync<ChatifyUser>(userIds.Select(id => $"user:{id.ToString()}"));
         return cacheUsers
-            .AsQueryable()
-            .ProjectTo<Domain.Entities.User>(Mapper.ConfigurationProvider)
+            .To<Domain.Entities.User>(Mapper)
             .ToList();
     }
 }

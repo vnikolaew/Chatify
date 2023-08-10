@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
+using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Shared.Abstractions.Queries;
 using Humanizer;
 using LanguageExt;
@@ -62,7 +64,10 @@ public class ChatGroupAttachmentRepository
             new object[] { groupId });
 
         return new CursorPaged<ChatGroupAttachment>(
-            Mapper.Map<List<ChatGroupAttachment>>(attachmentsPage.ToList()),
+            attachmentsPage
+                .AsQueryable()
+                .To<ChatGroupAttachment>(Mapper)
+                .ToList(),
             _pagingCursorHelper.ToPagingCursor(attachmentsPage.PagingState));
     }
 }

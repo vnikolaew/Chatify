@@ -19,25 +19,19 @@ internal sealed class ChatGroupMemberAddedEventHandler
     private readonly ILogger<ChatGroupMemberAddedEventHandler> _logger;
     private readonly ICounterService<ChatGroupMembersCount, Guid> _membersCounts;
     private readonly IHubContext<ChatifyHub, IChatifyHubClient> _chatifyHubContext;
-    private readonly IDatabase _cache;
 
     public ChatGroupMemberAddedEventHandler(
         ILogger<ChatGroupMemberAddedEventHandler> logger,
         IDomainRepository<ChatGroup, Guid> groups,
         ICounterService<ChatGroupMembersCount, Guid> membersCounts,
-        IHubContext<ChatifyHub, IChatifyHubClient> chatifyHubContext,
-        IDatabase cache)
+        IHubContext<ChatifyHub, IChatifyHubClient> chatifyHubContext)
     {
         _logger = logger;
         _groups = groups;
         _membersCounts = membersCounts;
         _chatifyHubContext = chatifyHubContext;
-        _cache = cache;
     }
     
-    private static RedisKey GetGroupMembersCacheKey(Guid groupId)
-        => new($"groups:{groupId.ToString()}:members");
-
     public async Task HandleAsync(
         ChatGroupMemberAddedEvent @event,
         CancellationToken cancellationToken = default)
@@ -49,10 +43,10 @@ internal sealed class ChatGroupMemberAddedEventHandler
         _logger.LogInformation("Incremented Membership count for Chat Group with Id '{Id}' to {Count} ",
             @event.GroupId, membersCount?.MembersCount);
         
-        // Add new member to cache set as well:
-        var groupKey = GetGroupMembersCacheKey(group.Id);
-        var userKey = new RedisValue(@event.MemberId.ToString());
-        await _cache.SetAddAsync(groupKey, userKey);
+        // // Add new member to cache set as well:
+        // var groupKey = GetGroupMembersCacheKey(group.Id);
+        // var userKey = new RedisValue(@event.MemberId.ToString());
+        // await _cache.SetAddAsync(groupKey, userKey);
         
         var groupId = $"chat-groups:{@event.GroupId}";
         await _chatifyHubContext

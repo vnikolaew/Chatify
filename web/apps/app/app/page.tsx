@@ -12,8 +12,6 @@ function IndexPage() {
    const isUserLoggedIn = !!cookieStore.get(APPLICATION_COOKIE_NAME);
 
    console.log(isUserLoggedIn && "User has cookie");
-
-   console.log(process.env);
    return (
       <div
          className={`flex text-xl gap-3 flex-col shadow-gray-300 w-fit px-4 py-2 text-gray-700 rounded-md `}

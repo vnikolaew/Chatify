@@ -37,4 +37,10 @@ public interface IChatifyHubClient
     Task FriendInvitationDeclined(FriendInvitationDeclined friendInvitationDeclined);
 
     Task AddedToChatGroup(AddedToChatGroup addedToChatGroup);
+    
+    Task ChatGroupJoinRequested(ChatGroupUserJoinRequested chatGroupUserJoinRequested);
+    
+    Task ChatGroupJoinRequestAccepted(ChatGroupUserJoinRequestAccepted chatGroupUserJoinRequestAccepted);
+    
+    Task ChatGroupUserJoinRequestDeclined (ChatGroupUserJoinRequestDeclined chatGroupUserJoinRequestDeclined);
 }

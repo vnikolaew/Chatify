@@ -65,7 +65,7 @@ public static class DependencyInjection
             .AddTransient<IPasswordHasher, PasswordHasher>()
             .AddTransient<IPagingCursorHelper, CassandraPagingCursorHelper>()
             .AddTransient<ISerializer, SystemTextJsonSerializer>()
-            .AddScoped<IChatGroupsFeedService, ChatGroupsFeedService >()
+            .AddScoped<IChatGroupsFeedService, ChatGroupsFeedService>()
             .AddNotifications()
             .AddCounters();
 
@@ -101,8 +101,7 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         var endpoint = configuration.GetValue<string>("Redis:Endpoint")!;
-        var connectionMultiplexer = ConnectionMultiplexer
-            .Connect(endpoint);
+        var connectionMultiplexer = ConnectionMultiplexer.Connect(endpoint);
 
         return services
             .AddSingleton<IConnectionMultiplexer>(connectionMultiplexer)
@@ -117,11 +116,13 @@ public static class DependencyInjection
             .DefinedTypes
             .Where(t => t is { IsAbstract: false, IsInterface: false, IsGenericType: false } && t.GetInterfaces()
                 .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICounterService<,>)))
+            .Select(t => ( t,
+                t.ImplementedInterfaces.First(i => i.GetGenericTypeDefinition() == typeof(ICounterService<,>)) ))
             .ToList();
 
-        foreach (var counterType in counterTypes)
+        foreach ( var (service, @interface) in counterTypes )
         {
-            services.AddScoped(counterType.GetInterfaces().First(), counterType);
+            services.AddScoped(@interface, service);
         }
 
         return services;
@@ -136,10 +137,10 @@ public static class DependencyInjection
                 i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDomainRepository<,>)))
             .ToList();
 
-        foreach (var repositoryType in repositoryTypes)
+        foreach ( var repositoryType in repositoryTypes )
         {
             // Register type using all implemented interfaces:
-            foreach (var implementedInterface in repositoryType.ImplementedInterfaces)
+            foreach ( var implementedInterface in repositoryType.ImplementedInterfaces )
             {
                 services.AddScoped(implementedInterface, repositoryType);
             }
@@ -152,21 +153,29 @@ public static class DependencyInjection
                 t.IsGenericType && t.GetGenericTypeDefinition() == typeof(BaseCassandraRepository<,,>)))
             .ToList();
 
-        foreach (var repositoryType in cassandraRepositoryTypes)
+        foreach ( var repositoryType in cassandraRepositoryTypes )
         {
             var baseType = repositoryType
                 .GetTypeInheritance()
                 .First(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(BaseCassandraRepository<,,>));
 
-            services.AddScoped(baseType, repositoryType);
-        }
+            var interfaces = repositoryType.ImplementedInterfaces;
 
-        return services
-            .AddScoped<IChatMessageReplyRepository, ChatMessageReplyRepository>()
-            .AddScoped<IChatGroupAttachmentRepository, ChatGroupAttachmentRepository>()
-            .AddScoped<IChatGroupMemberRepository, ChatGroupMembersRepository>()
-            .AddScoped<IFriendInvitationRepository, FriendInvitationRepository>()
-            .AddScoped<IFriendshipsRepository, FriendshipsRepository>();
+            services.AddScoped(baseType, repositoryType);
+            foreach ( var @interface in interfaces )
+            {
+                services.AddScoped(@interface, repositoryType);
+            }
+        }
+        
+        return services;
+        
+        // return services
+        //     .AddScoped<IChatMessageReplyRepository, ChatMessageReplyRepository>()
+        //     .AddScoped<IChatGroupAttachmentRepository, ChatGroupAttachmentRepository>()
+        //     .AddScoped<IChatGroupMemberRepository, ChatGroupMembersRepository>()
+        //     .AddScoped<IFriendInvitationRepository, FriendInvitationRepository>()
+        //     .AddScoped<IFriendshipsRepository, FriendshipsRepository>();
     }
 
     public static IServiceCollection AddAuthenticationServices(

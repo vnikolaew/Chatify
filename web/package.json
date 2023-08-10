@@ -3,7 +3,8 @@
    "version": "0.0.0",
    "license": "MIT",
    "scripts": {
-      "openapi codegen": "openapi --input ./openapi/swagger.yaml --output ./openapi -c axios --exportCore false --exportServices false"
+      "openapi codegen": "openapi --input ./openapi/swagger.yaml --output ./openapi -c axios --exportCore false --exportServices false",
+      "restore": "npm install --force"
    },
    "private": true,
    "dependencies": {

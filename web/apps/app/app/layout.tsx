@@ -19,12 +19,16 @@ const roboto = Roboto({
    subsets: ["latin"],
 });
 
+export function __IS_DEV__() {
+   return process.env.NODE_ENV === "development";
+}
+
 function ChatifyLayout({ children }: PropsWithChildren) {
    return (
       <html className={inter.className}>
          <body>
             <main className="app">
-               <Providers>{children}</Providers>
+               <Providers isDevelopment={__IS_DEV__()}>{children}</Providers>
             </main>
          </body>
       </html>

@@ -2,7 +2,6 @@
 import React, { useMemo } from "react";
 import { useGetMyClaimsQuery } from "@web/api";
 import Image from "next/image";
-import * as process from "process";
 
 export const APPLICATION_COOKIE_NAME = ".AspNetCore.Identity.Application";
 
@@ -28,6 +27,7 @@ const Greeting = ({ imagesBaseUrl }: GreetingProps) => {
       data: me,
       error,
       isLoading,
+      isFetching,
    } = useGetMyClaimsQuery({
       enabled: isUserLoggedIn(),
    });
@@ -40,8 +40,7 @@ const Greeting = ({ imagesBaseUrl }: GreetingProps) => {
       )[1] as string;
    }, [me]);
 
-   console.log(me && me.claims);
-   console.log(process.env);
+   if (isLoading && isFetching) return <h3>Loading ...</h3>;
 
    return (
       username && (
@@ -50,8 +49,11 @@ const Greeting = ({ imagesBaseUrl }: GreetingProps) => {
                Greetings, <b className={`text-xl`}>{username}</b> !
             </div>
             <Image
-               width={60}
-               height={60}
+               className={`rounded-md shadow-sm`}
+               width={80}
+               height={80}
+               crossOrigin={"use-credentials"}
+               decoding={"async"}
                src={`${imagesBaseUrl}/${me.claims.picture}`}
                alt={"profile-picture"}
             />

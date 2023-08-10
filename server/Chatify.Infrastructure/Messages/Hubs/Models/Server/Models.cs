@@ -126,3 +126,31 @@ public sealed record ChatGroupNewAdminAdded(
     DateTime Timestamp,
     Dictionary<string, string>? Metadata = default
 );
+
+public sealed record ChatGroupUserJoinRequested(
+    Guid ChatGroupId,
+    Guid UserId,
+    string Username,
+    string UserProfilePicture,
+    DateTime Timestamp,
+    Dictionary<string, string>? Metadata = default
+);
+
+public sealed record ChatGroupUserJoinRequestAccepted(
+    Guid ChatGroupId,
+    Guid UserId,
+    Guid AcceptedById,
+    string AcceptedByUsername,
+    string AcceptedByProfilePicture,
+    DateTime Timestamp,
+    Dictionary<string, string>? Metadata = default
+);
+public sealed record ChatGroupUserJoinRequestDeclined(
+    Guid ChatGroupId,
+    Guid UserId,
+    Guid DeclinedById,
+    string DeclinedByUsername,
+    string DeclinedByProfilePicture,
+    DateTime Timestamp,
+    Dictionary<string, string>? Metadata = default
+);

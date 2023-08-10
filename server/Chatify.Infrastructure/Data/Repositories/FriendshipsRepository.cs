@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Caching.Extensions;
+using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Shared.Abstractions.Serialization;
 using Humanizer;
@@ -76,9 +77,10 @@ public sealed class FriendshipsRepository
             friendsStrings.AddRange(chunkStrings!);
         }
 
-        return friendsStrings.Select(f => _serializer.Deserialize<ChatifyUser>(f))
+        return friendsStrings
+            .Select(f => _serializer.Deserialize<ChatifyUser>(f))
             .AsQueryable()
-            .ProjectTo<Domain.Entities.User>(Mapper.ConfigurationProvider)
+            .To<Domain.Entities.User>(Mapper)
             .ToList();
     }
 
@@ -98,8 +100,8 @@ public sealed class FriendshipsRepository
                 new RedisKey($"user:{friendTwoId}:friends"),
                 new RedisValue(friendOneId.ToString())),
         };
+        
         await Task.WhenAll(deleteTasks);
-
         return true;
     }
 
