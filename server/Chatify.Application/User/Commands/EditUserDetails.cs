@@ -3,6 +3,7 @@ using Chatify.Application.Authentication.Commands;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
+using Chatify.Application.User.Common;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Users;
@@ -18,7 +19,6 @@ namespace Chatify.Application.User.Commands;
 
 using EditUserDetailsResult = OneOf<UserNotFound, FileUploadError, PasswordChangeError, Unit>;
 
-public record UserNotFound;
 
 public record FileUploadError(string? Message = default) : BaseError(Message);
 

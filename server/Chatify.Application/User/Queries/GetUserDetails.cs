@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Application.Common.Models;
+using Chatify.Application.User.Common;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
@@ -10,7 +11,6 @@ namespace Chatify.Application.User.Queries;
 
 using GetUserDetailsResult = OneOf<UserNotFound, NotFriendsError, Domain.Entities.User>;
 
-public record UserNotFound;
 
 public record NotFriendsError(string? Message = default) : BaseError(Message);
 

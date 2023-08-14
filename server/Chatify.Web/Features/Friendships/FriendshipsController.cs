@@ -1,7 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Chatify.Application.Friendships.Commands;
+﻿using Chatify.Application.Friendships.Commands;
 using Chatify.Application.Friendships.Queries;
-using Chatify.Application.User.Commands;
+using Chatify.Application.User.Common;
 using Chatify.Domain.Entities;
 using Chatify.Web.Common;
 using Chatify.Web.Extensions;

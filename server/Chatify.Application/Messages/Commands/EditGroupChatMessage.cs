@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Common.Models;
 using Chatify.Application.Messages.Common;
-using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
@@ -12,6 +11,7 @@ using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
 using OneOf;
+using MessageNotFoundError = Chatify.Application.Messages.Common.MessageNotFoundError;
 
 namespace Chatify.Application.Messages.Commands;
 
@@ -34,8 +34,7 @@ internal sealed class EditGroupChatMessageHandler
     : ICommandHandler<EditGroupChatMessage, EditGroupChatMessageResult>
 {
     private readonly IIdentityContext _identityContext;
-    private readonly AttachmentOperationHandler _attachmentOperationHandler;
-    private readonly IChatGroupAttachmentRepository _attachments;
+    private readonly IAttachmentOperationHandler _attachmentOperationHandler;
     private readonly IDomainRepository<ChatMessage, Guid> _messages;
     private readonly IEventDispatcher _eventDispatcher;
     private readonly IClock _clock;
@@ -44,15 +43,13 @@ internal sealed class EditGroupChatMessageHandler
         IIdentityContext identityContext,
         IDomainRepository<ChatMessage, Guid> messages,
         IEventDispatcher eventDispatcher, IClock clock,
-        AttachmentOperationHandler attachmentOperationHandler,
-        IChatGroupAttachmentRepository attachments)
+        IAttachmentOperationHandler attachmentOperationHandler)
     {
         _identityContext = identityContext;
         _messages = messages;
         _eventDispatcher = eventDispatcher;
         _clock = clock;
         _attachmentOperationHandler = attachmentOperationHandler;
-        _attachments = attachments;
     }
 
     public async Task<EditGroupChatMessageResult> HandleAsync(

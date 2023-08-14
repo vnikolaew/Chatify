@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.User.Common;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Users;
@@ -10,7 +11,7 @@ using LanguageExt;
 
 namespace Chatify.Application.User.Commands;
 
-using ChangeUserStatusResult = OneOf.OneOf<Queries.UserNotFound, Unit>;
+using ChangeUserStatusResult = OneOf.OneOf<UserNotFound, Unit>;
 
 public record ChangeUserStatus(
     [Required] UserStatus NewStatus
@@ -45,7 +46,7 @@ internal sealed class ChangeUserStatusHandler
             user.Status = command.NewStatus;
             user.UpdatedAt = _clock.Now;
         }, cancellationToken);
-        if ( user is null ) return new Queries.UserNotFound();
+        if ( user is null ) return new UserNotFound();
 
         await _eventDispatcher.PublishAsync(new UserChangedStatusEvent
         {

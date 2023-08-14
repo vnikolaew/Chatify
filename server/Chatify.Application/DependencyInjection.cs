@@ -29,7 +29,7 @@ public static class DependencyInjection
             .AddCommands(assemblies)
             .AddQueries(assemblies)
             .AddEvents(assemblies, EventDispatcherType.FireAndForget)
-            .AddScoped<AttachmentOperationHandler>()
+            .AddScoped<IAttachmentOperationHandler, AttachmentOperationHandler>()
             .AddSingleton<IDispatcher, InMemoryDispatcher>();
 
         services.TryDecorate(typeof(ICommandHandler<>), typeof(RequestValidationDecorator<>));

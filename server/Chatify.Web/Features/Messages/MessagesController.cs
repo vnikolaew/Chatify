@@ -3,15 +3,19 @@ using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.ChatGroups.Queries;
 using Chatify.Application.ChatGroups.Queries.Models;
 using Chatify.Application.Messages.Commands;
+using Chatify.Application.Messages.Common;
 using Chatify.Application.Messages.Replies.Commands;
 using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Entities;
 using Chatify.Shared.Abstractions.Queries;
 using Chatify.Web.Common;
 using LanguageExt;
+using LanguageExt.Common;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
 using static Chatify.Web.Features.Messages.Models.Models;
+using ChatGroupNotFoundError = Chatify.Application.Messages.Common.ChatGroupNotFoundError;
+using UserIsNotMemberError = Chatify.Application.Messages.Common.UserIsNotMemberError;
 
 namespace Chatify.Web.Features.Messages;
 
@@ -22,6 +26,7 @@ using EditChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMessageS
 using DeleteGroupChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
 using DeleteChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
 using GetMessagesForChatGroupResult = OneOf<UserIsNotMemberError, CursorPaged<ChatGroupMessageEntry>>;
+using PinChatGroupMessageResult = OneOf<Error, ChatGroupNotFoundError, UserIsNotGroupAdminError, Unit>;
 using GetMessageRepliesForChatGroupMessageResult =
     OneOf<MessageNotFoundError, UserIsNotMemberError, CursorPaged<ChatMessageReply>>;
 
@@ -165,5 +170,24 @@ public class MessagesController : ApiController
             _ => NotFound(),
             _ => BadRequest(),
             _ => NoContent());
+    }
+    
+    [HttpPost]
+    [Route("/pins/{messageId:guid}")]
+    [ProducesResponseType(typeof(void), ( int )HttpStatusCode.NoContent)]
+    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
+    public async Task<IActionResult> PinGroupChatMessage(
+        [FromBody] PinChatGroupMessage request,
+        [FromRoute] Guid messageId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await SendAsync<PinChatGroupMessage, PinChatGroupMessageResult>(
+            new PinChatGroupMessage(messageId), cancellationToken);
+        return result.Match<IActionResult>(
+            _ => BadRequest(),
+            _ => NotFound(),
+            _ => BadRequest(),
+            _ => NoContent()
+            );
     }
 }

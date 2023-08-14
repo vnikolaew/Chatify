@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Chatify.Application.Messages.Replies.Queries;
+using Chatify.Application.Messages.Common;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
-using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
@@ -15,7 +14,6 @@ namespace Chatify.Application.Messages.Commands;
 
 using DeleteGroupChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
 
-public record UserIsNotMessageSenderError(Guid MessageId, Guid UserId);
 
 public record DeleteGroupChatMessage(
     [Required] Guid GroupId,
@@ -25,20 +23,17 @@ public record DeleteGroupChatMessage(
 internal sealed class DeleteGroupChatMessageHandler
     : ICommandHandler<DeleteGroupChatMessage, DeleteGroupChatMessageResult>
 {
-    private readonly IChatGroupMemberRepository _members;
     private readonly IIdentityContext _identityContext;
     private readonly IDomainRepository<ChatMessage, Guid> _messages;
     private readonly IEventDispatcher _eventDispatcher;
     private readonly IClock _clock;
 
     public DeleteGroupChatMessageHandler(
-        IChatGroupMemberRepository members,
         IIdentityContext identityContext,
         IDomainRepository<ChatMessage, Guid> messages,
         IEventDispatcher eventDispatcher,
         IClock clock)
     {
-        _members = members;
         _identityContext = identityContext;
         _messages = messages;
         _eventDispatcher = eventDispatcher;

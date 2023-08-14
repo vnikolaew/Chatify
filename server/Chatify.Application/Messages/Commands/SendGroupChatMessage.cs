@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
+using Chatify.Application.Messages.Common;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;

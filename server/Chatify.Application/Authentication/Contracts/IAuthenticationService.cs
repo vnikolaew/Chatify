@@ -1,5 +1,6 @@
 ﻿using Chatify.Application.Authentication.Commands;
 using Chatify.Application.User.Commands;
+using Chatify.Application.User.Common;
 using LanguageExt;
 using LanguageExt.Common;
 using OneOf;
@@ -43,6 +44,7 @@ public interface IAuthenticationService
         CancellationToken cancellationToken = default);
 
     Task<OneOf<UserNotFound, string>> GenerateEmailConfirmationTokenAsync(
+        
         Guid userId,
         CancellationToken cancellationToken = default);
 

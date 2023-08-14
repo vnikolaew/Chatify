@@ -21,4 +21,8 @@ public interface IChatMessageRepository : IDomainRepository<ChatMessage, Guid>
    Task<IDictionary<Guid, ChatMessage>> GetLatestForGroups(
       IEnumerable<Guid> groupIds,
       CancellationToken cancellationToken = default);
+   
+    Task<List<ChatMessage>?> GetByIds(
+        IEnumerable<Guid> messageIds,
+        CancellationToken cancellationToken = default);
 }

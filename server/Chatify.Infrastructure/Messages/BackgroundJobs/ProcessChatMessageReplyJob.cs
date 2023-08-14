@@ -1,5 +1,6 @@
 ﻿using Cassandra.Mapping;
 using Chatify.Domain.Repositories;
+using Chatify.Shared.Abstractions.Events;
 using Quartz;
 
 namespace Chatify.Infrastructure.Messages.BackgroundJobs;
@@ -21,9 +22,9 @@ internal sealed class ProcessChatMessageReplyJob
     
     public ProcessChatMessageReplyJob(
         IChatMessageReplyRepository messageReplies,
-        IMapper mapper,
+        IEventDispatcher eventDispatcher,
         IOpenGraphMetadataEnricher openGraphMetadataEnricher)
-        : base(mapper, openGraphMetadataEnricher, messageReplies)
+        : base(openGraphMetadataEnricher, messageReplies, eventDispatcher)
     {
         GetById = Messages.GetAsync;
     }

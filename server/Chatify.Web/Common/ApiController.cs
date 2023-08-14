@@ -12,6 +12,7 @@ namespace Chatify.Web.Common;
 [ApiController]
 [LoggingFilter]
 [Produces(MediaTypeNames.Application.Json)]
+[Consumes(MediaTypeNames.Application.Json)]
 [Authorize]
 [Route("api/[controller]")]
 public abstract class ApiController : ControllerBase

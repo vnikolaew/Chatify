@@ -4,6 +4,7 @@ using Chatify.Application.Authentication.Commands;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.User.Commands;
+using Chatify.Application.User.Common;
 using Chatify.Infrastructure.Data.Models;
 using LanguageExt;
 using Microsoft.AspNetCore.Http;

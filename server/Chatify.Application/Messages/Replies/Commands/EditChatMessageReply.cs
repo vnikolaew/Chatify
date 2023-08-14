@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Messages.Commands;
 using Chatify.Application.Messages.Common;
-using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
@@ -28,7 +27,7 @@ internal sealed class EditChatMessageReplyHandler
     : ICommandHandler<EditChatMessageReply, EditChatMessageReplyResult>
 {
     private readonly IChatGroupMemberRepository _members;
-    private readonly AttachmentOperationHandler _attachmentOperationHandler;
+    private readonly IAttachmentOperationHandler _attachmentOperationHandler;
     private readonly IIdentityContext _identityContext;
     private readonly IDomainRepository<ChatMessageReply, Guid> _messageReplies;
     private readonly IEventDispatcher _eventDispatcher;
@@ -40,7 +39,7 @@ internal sealed class EditChatMessageReplyHandler
         IDomainRepository<ChatMessageReply, Guid> messageReplies,
         IEventDispatcher eventDispatcher,
         IClock clock,
-        AttachmentOperationHandler attachmentOperationHandler)
+        IAttachmentOperationHandler attachmentOperationHandler)
     {
         _members = members;
         _identityContext = identityContext;

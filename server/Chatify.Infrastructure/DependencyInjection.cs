@@ -8,7 +8,6 @@ using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Messages.Contracts;
 using Chatify.Domain.Common;
-using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Authentication;
 using Chatify.Infrastructure.Authentication.External.Facebook;
 using Chatify.Infrastructure.Authentication.External.Google;

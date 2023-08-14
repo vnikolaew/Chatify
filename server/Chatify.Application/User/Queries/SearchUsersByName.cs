@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Common.Behaviours.Caching;
+using Chatify.Application.User.Common;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Queries;
 using OneOf;

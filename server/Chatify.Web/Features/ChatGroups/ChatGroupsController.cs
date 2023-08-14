@@ -1,18 +1,24 @@
 ﻿using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.ChatGroups.Queries;
+using Chatify.Application.Messages.Queries;
 using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
 using Chatify.Web.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Guid = System.Guid;
 using CreateChatGroupResult = OneOf.OneOf<Chatify.Application.User.Commands.FileUploadError, System.Guid>;
-using SearchChatGroupMembersByNameResult = OneOf.OneOf<LanguageExt.Common.Error, System.Collections.Generic.List<Chatify.Domain.Entities.User>>;
+using SearchChatGroupMembersByNameResult =
+    OneOf.OneOf<LanguageExt.Common.Error, System.Collections.Generic.List<Chatify.Domain.Entities.User>>;
+using GetChatGroupPinnedMessagesResult =
+    OneOf.OneOf<Chatify.Application.Messages.Common.ChatGroupNotFoundError,
+        Chatify.Application.Messages.Common.UserIsNotMemberError,
+        System.Collections.Generic.List<Chatify.Domain.Entities.ChatMessage>>;
 using GetChatGroupDetailsResult =
     OneOf.OneOf<Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
         Chatify.Application.ChatGroups.Commands.UserIsNotMemberError,
         Chatify.Application.ChatGroups.Queries.ChatGroupDetailsEntry>;
 using AddChatGroupMemberResult =
-    OneOf.OneOf<Chatify.Application.User.Commands.UserNotFound,
+    OneOf.OneOf<Chatify.Application.User.Common.UserNotFound,
         Chatify.Application.ChatGroups.Commands.UserIsNotGroupAdminError,
         Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
         Chatify.Application.ChatGroups.Commands.UserIsAlreadyGroupMemberError, System.Guid>;
@@ -88,9 +94,9 @@ public class ChatGroupsController : ApiController
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
     {
-        var result = await QueryAsync<SearchChatGroupMembersByName, SearchChatGroupMembersByNameResult >(
+        var result = await QueryAsync<SearchChatGroupMembersByName, SearchChatGroupMembersByNameResult>(
             new SearchChatGroupMembersByName(groupId, usernameQuery), cancellationToken);
-        
+
         return result.Match(
             err => err.ToBadRequest(),
             entries => Ok(new { Data = entries }));
@@ -108,6 +114,21 @@ public class ChatGroupsController : ApiController
         return result.Match<IActionResult>(
             _ => BadRequest(),
             attachments => Ok(new { Data = attachments }));
+    }
+
+    [HttpGet]
+    [Route("{groupId:guid}/pins")]
+    public async Task<IActionResult> PinnedMessages(
+        [FromRoute] Guid groupId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await QueryAsync<GetChatGroupPinnedMessages, GetChatGroupPinnedMessagesResult>(
+            new GetChatGroupPinnedMessages(groupId), cancellationToken);
+        
+        return result.Match<IActionResult>(
+            _ => NotFound(),
+            _ => BadRequest(),
+            messages => Ok(new { Data = messages }));
     }
 
     [HttpPatch]

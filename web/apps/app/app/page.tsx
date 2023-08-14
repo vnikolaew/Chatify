@@ -7,7 +7,7 @@ import * as process from "process";
 
 const APPLICATION_COOKIE_NAME = ".AspNetCore.Identity.Application";
 
-function IndexPage() {
+async function IndexPage() {
    const cookieStore = cookies();
    const isUserLoggedIn = !!cookieStore.get(APPLICATION_COOKIE_NAME);
 

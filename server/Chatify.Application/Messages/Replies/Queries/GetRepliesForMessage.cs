@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.Common.Behaviours.Caching;
+using Chatify.Application.Messages.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
@@ -11,7 +11,6 @@ namespace Chatify.Application.Messages.Replies.Queries;
 
 using GetRepliesForMessageResult = OneOf<MessageNotFoundError, UserIsNotMemberError, CursorPaged<ChatMessageReply>>;
 
-public record MessageNotFoundError(Guid MessageId);
 
 [Cached("message-replies", 10)]
 public record GetRepliesForMessage(

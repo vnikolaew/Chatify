@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.Common.Contracts;
-using Chatify.Application.Messages.Replies.Queries;
+using Chatify.Application.Messages.Common;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
@@ -14,6 +13,7 @@ using Chatify.Shared.Abstractions.Time;
 namespace Chatify.Application.Messages.Reactions.Commands;
 
 using ReactToChatMessageReplyResult  = OneOf. OneOf<MessageNotFoundError, UserIsNotMemberError, Guid>;
+
 
 public record ReactToChatMessageReply(
     [Required] Guid MessageId,

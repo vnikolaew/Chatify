@@ -1,75 +1,147 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { NextPage } from "next";
-import { RegularSignInModel, useRegularSignInMutation } from "@web/api";
+import { RegularSignInModel, sleep, useRegularSignInMutation } from "@web/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+   Button,
+   Card,
+   CardBody,
+   CardHeader,
+   Input,
+   Spinner,
+} from "@nextui-org/react";
+import * as yup from "yup";
+import { Formik } from "formik";
+import PasswordInput from "./PasswordInput";
+import { isLocalFile } from "@swc/core/spack";
+
+const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+const PASSWORD_REGEX =
+   /^(?=.*\d)(?=.*[A-Z])(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{3,}$/;
+
+const signInSchema = yup.object({
+   email: yup
+      .string()
+      .max(100, "Email must be less than 100 characters.")
+      .required("Email is required.")
+      .matches(EMAIL_REGEX, { message: "Invalid email." }),
+   password: yup
+      .string()
+      .min(3, "Password must have more than 3 characters.")
+      .max(50, "Password must have less than 50 characters.")
+      .required("Password is required.")
+      .matches(PASSWORD_REGEX, { message: "Invalid password." }),
+});
 
 const SignInPage: NextPage = () => {
-   const [signInModel, setSignInModel] = useState<RegularSignInModel>({
-      email: "",
-      password: "",
-   });
    const router = useRouter();
    const { data, mutateAsync: signIn, error } = useRegularSignInMutation();
 
-   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-      setSignInModel((m) => ({
-         ...m,
-         [e.target.name]: e.target.value,
-      }));
-   }
-
-   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-      e.preventDefault();
+   async function handleFormSubmit(data: RegularSignInModel) {
       try {
-         await signIn(signInModel);
-         router.push(`/`, { forceOptimisticNavigation: false });
+         // await signIn(signInModel);
+         await sleep(2000);
+         // router.push(`/`, { forceOptimisticNavigation: false });
       } catch (e) {
          console.error(e);
       }
    }
 
    return (
-      <div className={`w-1/4 mx-auto mt-12`}>
-         <form className={`flex flex-col gap-3`} onSubmit={handleSubmit}>
-            <label className={`text-lg`} htmlFor={"email"}>
-               Email:{" "}
-            </label>
-            <input
-               className={`px-2 border-2 border-gray-200 focus:border-blue-500 py-1 text-md rounded-lg`}
-               onChange={handleChange}
-               value={signInModel.email}
-               type={"email"}
-               name={"email"}
-               id={"email"}
-            />
-            <label className={`text-lg`} htmlFor={"password"}>
-               Password:{" "}
-            </label>
-            <input
-               className={`px-2 border-2 border-gray-200 focus:border-blue-500 py-1 text-md rounded-lg`}
-               onChange={handleChange}
-               value={signInModel.password}
-               type={"password"}
-               name={"password"}
-               id={"password"}
-            />
-            <div className={`w-full flex items-center justify-between`}>
-               <Link
-                  className={`hover:underline text-md self-end text-blue-500`}
-                  href={`/`}
+      <div className={`w-1/4 mx-auto mt-24`}>
+         <Card shadow={"lg"} className={`p-6`} radius={"md"}>
+            <CardHeader className={`text-2xl`}>
+               Sign in with your account
+            </CardHeader>
+            <CardBody className={`mt-4`}>
+               <Formik<RegularSignInModel>
+                  validationSchema={signInSchema}
+                  initialValues={{ email: "", password: "" }}
+                  onSubmit={handleFormSubmit}
                >
-                  &larr; Go back
-               </Link>
-               <button
-                  className={`text-white mt-4 w-1/2 py-1 text-[1.2rem] hover:opacity-80 self-end bg-blue-500 shadow-sm rounded-md`}
-                  type={`submit`}
-               >
-                  Sign In
-               </button>
-            </div>
-         </form>
+                  {({
+                     values,
+                     errors,
+                     setFieldValue,
+                     touched,
+                     handleChange,
+                     handleSubmit,
+                     isSubmitting,
+                  }) => (
+                     <form
+                        autoComplete={"off"}
+                        noValidate
+                        className={`flex flex-col gap-3`}
+                        onSubmit={handleSubmit}
+                     >
+                        <Input
+                           autoFocus
+                           isClearable
+                           value={values.email}
+                           onChange={handleChange}
+                           label={"Email"}
+                           autoComplete={"off"}
+                           errorMessage={errors?.email}
+                           validationState={
+                              touched.email && errors.email
+                                 ? "invalid"
+                                 : "valid"
+                           }
+                           placeholder={"Type in your email"}
+                           size={"lg"}
+                           className={`py-1 text-md rounded-lg`}
+                           type={"email"}
+                           name={"email"}
+                           id={"email"}
+                        />
+                        <PasswordInput
+                           size={"lg"}
+                           value={values.password}
+                           onChange={handleChange}
+                           errorMessage={errors.password}
+                           validationState={
+                              touched.password && errors.password
+                                 ? "invalid"
+                                 : "valid"
+                           }
+                           label={"Password"}
+                           placeholder={"Choose a strong one"}
+                           className={`py-1 text-md rounded-lg`}
+                           name={"password"}
+                           id={"password"}
+                        />
+                        <div className={`w-full flex flex-col justify-between`}>
+                           <Link
+                              className={`hover:underline text-md text-blue-500`}
+                              href={`/signup`}
+                           >
+                              Don't have an account yet? Sign up here.
+                           </Link>
+                           <Button
+                              variant={"solid"}
+                              isLoading={isSubmitting}
+                              spinner={
+                                 <Spinner
+                                    className={`mr-2`}
+                                    color={"default"}
+                                    size={"md"}
+                                 />
+                              }
+                              color={"primary"}
+                              size={"lg"}
+                              className={`text-white mt-12 py-3 w-1/2 text-[1.2rem] hover:opacity-80 self-end shadow-sm rounded-md`}
+                              type={`submit`}
+                           >
+                              {isSubmitting ? "Loading" : "Sign In"}
+                           </Button>
+                        </div>
+                     </form>
+                  )}
+               </Formik>
+            </CardBody>
+         </Card>
       </div>
    );
 };

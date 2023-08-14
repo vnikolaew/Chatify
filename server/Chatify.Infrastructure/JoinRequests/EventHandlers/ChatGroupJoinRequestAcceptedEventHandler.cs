@@ -12,16 +12,14 @@ internal sealed class ChatGroupJoinRequestAcceptedEventHandler
 {
     private readonly IHubContext<ChatifyHub, IChatifyHubClient> _chatifyContext;
     private readonly IUserRepository _users;
-    private readonly IChatGroupRepository _groups;
 
     public ChatGroupJoinRequestAcceptedEventHandler(
         IHubContext<ChatifyHub, IChatifyHubClient> chatifyContext,
-        IUserRepository users,
-        IChatGroupRepository groups)
+        IUserRepository users
+        )
     {
         _chatifyContext = chatifyContext;
         _users = users;
-        _groups = groups;
     }
 
     public async Task HandleAsync(

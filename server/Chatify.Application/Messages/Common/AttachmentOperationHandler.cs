@@ -7,7 +7,20 @@ using Chatify.Shared.Abstractions.Time;
 
 namespace Chatify.Application.Messages.Common;
 
-public class AttachmentOperationHandler
+public interface IAttachmentOperationHandler
+{
+    Task HandleAsync(
+        ChatMessage message,
+        IEnumerable<AttachmentOperation> attachmentOperations,
+        CancellationToken cancellationToken = default);
+
+    Task HandleDeleteAsync(
+        ChatMessage message,
+        DeleteAttachmentOperation deleteAttachmentOperation,
+        CancellationToken cancellationToken = default);
+}
+
+public class AttachmentOperationHandler : IAttachmentOperationHandler
 {
     private readonly IFileUploadService _fileUploadService;
     private readonly IChatGroupAttachmentRepository _attachments;
@@ -61,7 +74,7 @@ public class AttachmentOperationHandler
         await _attachments.SaveAsync(attachment, cancellationToken);
     }
 
-    private async Task HandleDeleteAsync(
+    public async Task HandleDeleteAsync(
         ChatMessage message,
         DeleteAttachmentOperation deleteAttachmentOperation,
         CancellationToken cancellationToken = default)

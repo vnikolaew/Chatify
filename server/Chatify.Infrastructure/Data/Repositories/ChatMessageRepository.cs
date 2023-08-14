@@ -64,7 +64,7 @@ public sealed class ChatMessageRepository :
         cql.GetType()
             .GetProperty(nameof(Cql.Arguments),
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
-            .SetValue(cql, groupIds);
+            .SetValue(cql, groupIds.ToArray());
 
         var messages = await DbMapper
             .FetchAsync<Models.ChatMessage>(cql);
@@ -72,5 +72,23 @@ public sealed class ChatMessageRepository :
         return messages
             .To<ChatMessage>(Mapper)
             .ToDictionary(m => m.ChatGroupId);
+    }
+
+    public async Task<List<ChatMessage>?> GetByIds(
+        IEnumerable<Guid> messageIds,
+        CancellationToken cancellationToken = default)
+    {
+        var paramPlaceholders = string.Join(", ", messageIds.Select(_ => "?"));
+        var cql = new Cql($" WHERE id IN ({paramPlaceholders})");
+
+        cql.GetType()
+            .GetProperty(nameof(Cql.Arguments),
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
+            .SetValue(cql, messageIds.ToArray());
+
+        var messages = await DbMapper
+            .FetchAsync<Models.ChatMessage>(cql);
+
+        return messages.To<ChatMessage>(Mapper).ToList();
     }
 }
