@@ -1,4 +1,6 @@
-﻿namespace Chatify.Shared.Infrastructure.Common.Extensions;
+﻿using System.Runtime.CompilerServices;
+
+namespace Chatify.Shared.Infrastructure.Common.Extensions;
 
 public static class TaskExtensions
 {
@@ -10,7 +12,13 @@ public static class TaskExtensions
         
         return ( one.Result, two.Result );
     }
-    
+
+    public static TaskAwaiter GetAwaiter<T1, T2>(
+        this (Task<T1> taskOne, Task<T2> taskTwo) tasks)
+    {
+        return Task.WhenAll(tasks.taskOne, tasks.taskTwo).GetAwaiter();
+    }
+
     public static async Task<(T1, T2, T3)> WhenAll<T1, T2, T3>(
         this (Task<T1> taskOne, Task<T2> taskTwo, Task<T3> taskThree) tasks)
     {

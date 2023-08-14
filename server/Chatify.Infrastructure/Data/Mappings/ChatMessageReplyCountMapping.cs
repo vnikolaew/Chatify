@@ -13,7 +13,6 @@ public class ChatMessageReplyCountMapping : Cassandra.Mapping.Mappings
             .KeyspaceName(Constants.KeyspaceName)
             .PartitionKey(rc => rc.Id)
             .UnderscoreColumn(rc => rc.Id)
-            .UnderscoreColumn(rc => rc.ReplyCount)
-            .Column(rc => rc.ReplyCount, mc => mc.AsCounter());
+            .UnderscoreColumn(rc => rc.ReplyCount, rc => rc.AsCounter());
     }
 }

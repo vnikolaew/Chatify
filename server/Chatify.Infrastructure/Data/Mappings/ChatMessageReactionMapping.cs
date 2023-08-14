@@ -16,7 +16,10 @@ public class ChatMessageReactionMapping :Cassandra.Mapping.Mappings
                 new Tuple<string, SortOrder>(nameof(ChatMessageReaction.CreatedAt), SortOrder.Descending),
                 new Tuple<string, SortOrder>(nameof(ChatMessageReaction.Id), SortOrder.Ascending)
             )
-            .UnderscoreColumn(mr => mr.Id)
+            .UnderscoreColumn(mr => mr.Id,
+                cm => cm.WithSecondaryIndex())
+            .UnderscoreColumn(mr => mr.ReactionCounts,
+                cm => cm.AsStatic())
             .UnderscoreColumn(mr => mr.MessageId)
             .UnderscoreColumn(mr => mr.ChatGroupId)
             .UnderscoreColumn(mr => mr.UserId)

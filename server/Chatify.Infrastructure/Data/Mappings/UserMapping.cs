@@ -12,13 +12,8 @@ public class UserMapping : Cassandra.Mapping.Mappings
     public UserMapping()
         => For<ChatifyUser>()
             .TableName(UsersTableName)
-            // .KeyspaceName(Constants.KeyspaceName)
+            .KeyspaceName(Constants.KeyspaceName)
             .PartitionKey(u => u.Id)
-            .ClusteringKey(
-                new Tuple<string, SortOrder>(
-                    nameof(ChatifyUser.CreatedAt).Underscore(), SortOrder.Descending),
-                new Tuple<string, SortOrder>(
-                    nameof(ChatifyUser.UserName), SortOrder.Ascending))
             .Column(u => u.Metadata, cm => cm.WithDbType<Dictionary<string, string>>())
             .UnderscoreColumn(u => u.DisplayName)
             .UnderscoreColumn(u => u.Metadata)

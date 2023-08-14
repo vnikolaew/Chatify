@@ -2,12 +2,15 @@
 using Cassandra.Mapping;
 using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Events.Messages;
+using Chatify.Infrastructure.Common.Extensions;
 using Chatify.Infrastructure.Data.Models;
+using Chatify.Infrastructure.Messages.BackgroundJobs;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Client;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Microsoft.AspNetCore.SignalR;
+using Quartz;
 
 namespace Chatify.Infrastructure.Messages.EventHandlers;
 
@@ -17,18 +20,20 @@ internal sealed class ChatMessageRepliedToEventHandler
     private readonly ICounterService<ChatMessageReplyCount, Guid> _replyCounts;
     private readonly IHubContext<ChatifyHub, IChatifyHubClient> _chatifyContext;
     private readonly IMapper _mapper;
+    private readonly ISchedulerFactory _schedulerFactory;
     private readonly IIdentityContext _identityContext;
 
     public ChatMessageRepliedToEventHandler(
         ICounterService<ChatMessageReplyCount, Guid> replyCounts,
         IHubContext<ChatifyHub, IChatifyHubClient> chatifyContext,
         IIdentityContext identityContext,
-        IMapper mapper)
+        IMapper mapper, ISchedulerFactory schedulerFactory)
     {
         _replyCounts = replyCounts;
         _chatifyContext = chatifyContext;
         _identityContext = identityContext;
         _mapper = mapper;
+        _schedulerFactory = schedulerFactory;
     }
 
     public async Task HandleAsync(
@@ -78,8 +83,11 @@ internal sealed class ChatMessageRepliedToEventHandler
             }
         }
 
+        var scheduler = await _schedulerFactory.GetScheduler(cancellationToken);
+        await scheduler.ScheduleImmediateJob<ProcessChatMessageReplyJob>(builder =>
+            builder.WithMessageId(@event.MessageId), cancellationToken);
+        
         var groupId = $"chat-groups:{@event.GroupId}";
-
         await _chatifyContext
             .Clients
             .Group(groupId)

@@ -1,3 +1,8 @@
+CREATE KEYSPACE IF NOT EXISTS chatify
+        WITH REPLICATION = { 'class': 'SimpleStrategy', 'replication_factor': 3};
+
+USE chatify;
+
 // UDTs:
 CREATE TYPE IF NOT EXISTS media (
     id uuid,
@@ -39,8 +44,8 @@ CREATE TABLE IF NOT EXISTS users
     tokens                list<frozen<tokeninfo>>,
     twofactorenabled      boolean,
     updated_at            timestamp,
-    PRIMARY KEY ((id), created_at, username)
-) WITH CLUSTERING ORDER BY (created_at desc, username asc);
+    PRIMARY KEY ((id), created_at)
+) WITH CLUSTERING ORDER BY (created_at desc);
 
 CREATE TABLE IF NOT EXISTS friends
 (
@@ -82,8 +87,8 @@ CREATE TABLE IF NOT EXISTS chat_messages
     created_at      timestamp,
     updated_at      timestamp,
     updated         boolean,
-    PRIMARY KEY ( (chat_group_id), created_at, id)
-) WITH CLUSTERING ORDER BY (created_at DESC, id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
+    PRIMARY KEY ( (chat_group_id), created_at)
+) WITH CLUSTERING ORDER BY (created_at DESC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
 CREATE INDEX IF NOT EXISTS chat_messages_id_idx ON chat_messages (id);
 
@@ -106,9 +111,10 @@ CREATE TABLE IF NOT EXISTS chat_message_replies
     reaction_counts map<tinyint, bigint>,
     created_at      timestamp,
     updated_at      timestamp,
+    replies_count   bigint static,
     updated         boolean,
-    PRIMARY KEY ( (reply_to), created_at, id)
-) WITH CLUSTERING ORDER BY (created_at DESC, id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
+    PRIMARY KEY ( (reply_to), created_at)
+) WITH CLUSTERING ORDER BY (created_at DESC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
 CREATE INDEX IF NOT EXISTS chat_message_replies_id_idx ON chat_message_replies (id);
 
@@ -130,15 +136,16 @@ CREATE INDEX IF NOT EXISTS friend_invitations_invitee_id_idx ON friend_invitatio
 
 CREATE TABLE IF NOT EXISTS message_reactions
 (
-    id            uuid,
-    message_id    uuid,
-    group_chat_id uuid,
-    user_id       uuid,
-    reaction_type tinyint,
-    metadata      map<text, text>,
-    created_at    timestamp,
-    updated_at    timestamp,
-    updated       boolean,
+    id              uuid,
+    message_id      uuid,
+    group_chat_id   uuid,
+    user_id         uuid,
+    reaction_type   tinyint,
+    metadata        map<text, text>,
+    created_at      timestamp,
+    updated_at      timestamp,
+    reaction_counts map<tinyint, bigint> static,
+    updated         boolean,
     PRIMARY KEY ((message_id), created_at, id)
 ) WITH CLUSTERING ORDER BY (created_at DESC, id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
@@ -151,22 +158,20 @@ CREATE TABLE IF NOT EXISTS chat_group_members
     chat_group_id uuid,
     created_at    timestamp,
     metadata      map<text, text>,
+    members_count bigint static,
     type          tinyint,
     PRIMARY KEY ( (chat_group_id), created_at, user_id )
 ) WITH CLUSTERING ORDER BY (created_at DESC, user_id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
-CREATE TABLE IF NOT EXISTS chat_group_members_by_user_id
-(
-    id            uuid,
-    created_at    timestamp,
-    user_id       uuid,
-    chat_group_id uuid,
-    PRIMARY KEY ( (user_id), created_at, chat_group_id)
-) WITH CLUSTERING ORDER BY (created_at DESC, chat_group_id ASC)
-   AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
+CREATE MATERIALIZED VIEW IF NOT EXISTS chat_group_members_by_user_id AS
+SELECT id, user_id, chat_group_id, created_at, metadata, type
+FROM chat_group_members
+WHERE user_id IS NOT NULL
+  AND created_at IS NOT NULL
+  AND chat_group_id IS NOT NULL
+PRIMARY KEY ( (user_id), created_at, chat_group_id );
 
 // Chat message replies summary info table:
-
 CREATE TABLE IF NOT EXISTS chat_message_reply_summaries
 (
     chat_group_id uuid,
@@ -177,8 +182,8 @@ CREATE TABLE IF NOT EXISTS chat_message_reply_summaries
     total         bigint,
     replier_ids   set<uuid>,
     user_infos    set<frozen<message_replier_info>>,
-    PRIMARY KEY ( (chat_group_id), created_at, message_id )
-) WITH CLUSTERING ORDER BY (created_at DESC, message_id ASC)
+    PRIMARY KEY ( (chat_group_id), created_at )
+) WITH CLUSTERING ORDER BY (created_at DESC)
    AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
 CREATE INDEX IF NOT EXISTS chat_message_reply_summaries_message_id_idx on chat_message_reply_summaries (message_id);
@@ -192,13 +197,14 @@ CREATE TYPE IF NOT EXISTS attachment_info (
 
 CREATE TABLE IF NOT EXISTS chat_group_attachments
 (
-    chat_group_id uuid,
-    attachment_id uuid,
-    user_id       uuid,
-    username      text,
-    media_info    media,
-    created_at    timestamp,
-    updated_at    timestamp,
+    chat_group_id     uuid,
+    attachment_id     uuid,
+    user_id           uuid,
+    username          text,
+    media_info        media,
+    created_at        timestamp,
+    attachments_count bigint static,
+    updated_at        timestamp,
     PRIMARY KEY ( (chat_group_id), created_at, attachment_id )
 ) WITH CLUSTERING ORDER BY (created_at DESC, attachment_id ASC)
    AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
@@ -211,6 +217,6 @@ CREATE TABLE IF NOT EXISTS chat_group_join_requests
     created_at    timestamp,
     status        tinyint,
     updated_at    timestamp,
-    PRIMARY KEY ( ( chat_group_id), created_at, user_id )
+    PRIMARY KEY ( (chat_group_id), created_at, user_id )
 ) WITH CLUSTERING ORDER BY (created_at DESC, user_id ASC)
    AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };

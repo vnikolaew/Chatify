@@ -17,6 +17,13 @@ internal sealed class CachedQueryHandlerDecorator<TQuery, TResult>
 
     private string UserId => _identityContext.Id.ToString();
 
+    private static readonly List<PropertyInfo> PropertyCacheKeys =
+        typeof(TQuery)
+            .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!
+            .Where(p => p.GetCustomAttribute<CacheKeyAttribute>() is not null)!
+            .OrderBy(p => p.Name)
+            .ToList();
+
     private static readonly ImmutableDictionary<Type, CachedAttribute> CachedQueryOptions
         = Assembly
             .GetExecutingAssembly()
@@ -51,17 +58,15 @@ internal sealed class CachedQueryHandlerDecorator<TQuery, TResult>
         }
 
         var cacheAttribute = CachedQueryOptions[typeof(TQuery)];
-        var keyPropertyValue = cacheAttribute switch
+        var keyPropertyValues = cacheAttribute switch
         {
-            CachedByUserAttribute => UserId,
-            _ => typeof(TQuery)
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!
-                .FirstOrDefault(p => p.GetCustomAttribute<CacheKeyAttribute>() is not null)!
-                .GetValue(query)!
-                .ToString()!
+            CachedByUserAttribute => new[] { UserId },
+            _ => PropertyCacheKeys
+                .Select(p => p.GetValue(query)!.ToString()!)
+                .ToArray()
         };
 
-        var cacheKey = $"{cacheAttribute.QueryCacheKeyPrefix}:{keyPropertyValue}";
+        var cacheKey = $"{cacheAttribute.QueryCacheKeyPrefix}:{string.Join(":", keyPropertyValues)}";
 
         var item = await _cache.GetAsync<TResult>(cacheKey, cancellationToken);
         if ( item is not null ) return item;

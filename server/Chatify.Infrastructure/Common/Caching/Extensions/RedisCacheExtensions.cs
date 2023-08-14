@@ -38,7 +38,9 @@ public static class RedisCacheExtensions
     public static async Task<IEnumerable<T?>> GetAsync<T>(this IDatabase database, IEnumerable<string> keys)
     {
         var values = await database.StringGetAsync(keys.Select(_ => new RedisKey(_)).ToArray());
-        return values.Select(v => Serializer.Deserialize<T>(v.ToString()));
+        return values
+            .Where(_ => _.HasValue)
+            .Select(v => Serializer.Deserialize<T>(v.ToString()));
     }
 
     public static Task<bool> SetAsync<T>(
@@ -53,7 +55,7 @@ public static class RedisCacheExtensions
         => ( await database.SetMembersAsync(key) )
             .Select(v => Serializer.Deserialize<T>(v.ToString()));
 
-    public static Task<bool> SetAsync<T>(this IDatabase database, KeyValuePair<string, T>[] values)
+    public static Task<bool> SetAsync<T>(this IDatabase database, IEnumerable<KeyValuePair<string, T>> values)
         => database.StringSetAsync(
             values.Select(kv => new KeyValuePair<RedisKey, RedisValue>(
                     new RedisKey(kv.Key),

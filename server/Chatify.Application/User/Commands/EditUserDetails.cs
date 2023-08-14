@@ -5,8 +5,11 @@ using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
+using Chatify.Domain.Events.Users;
+using Chatify.Domain.ValueObjects;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
+using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
 using OneOf;
@@ -38,6 +41,7 @@ internal sealed class EditUserDetailsHandler
     private readonly IDomainRepository<Domain.Entities.User, Guid> _users;
     private readonly IFileUploadService _fileUploadService;
     private readonly IIdentityContext _identityContext;
+    private readonly IEventDispatcher _eventDispatcher;
     private readonly IAuthenticationService _authenticationService;
     private readonly IClock _clock;
 
@@ -46,13 +50,15 @@ internal sealed class EditUserDetailsHandler
         IIdentityContext identityContext,
         IClock clock,
         IFileUploadService fileUploadService,
-        IAuthenticationService authenticationService)
+        IAuthenticationService authenticationService,
+        IEventDispatcher eventDispatcher)
     {
         _users = users;
         _identityContext = identityContext;
         _clock = clock;
         _fileUploadService = fileUploadService;
         _authenticationService = authenticationService;
+        _eventDispatcher = eventDispatcher;
     }
 
     public async Task<EditUserDetailsResult> HandleAsync(
@@ -116,12 +122,26 @@ internal sealed class EditUserDetailsHandler
 
         await _users.UpdateAsync(user.Id, user =>
         {
+            if ( command.PhoneNumbers?.Any() ?? false )
+            {
+                user.PhoneNumbers = command.PhoneNumbers
+                    .Select(_ => new PhoneNumber(_))
+                    .ToHashSet();
+            }
+
             user.Username = newUsername;
             user.DisplayName = newDisplayName;
             user.UpdatedAt = _clock.Now;
             user.ProfilePicture = newProfilePicture;
         }, cancellationToken);
 
+        await _eventDispatcher.PublishAsync(new UserDetailsEditedEvent
+        {
+            UserId = user.Id,
+            ProfilePicture = user.ProfilePicture,
+            PhoneNumbers = command.PhoneNumbers,
+            DisplayName = user.DisplayName
+        }, cancellationToken);
         return Unit.Default;
     }
 }

@@ -27,7 +27,8 @@ public sealed class ChatMessageReplyRepository
     {
         try
         {
-            await DbMapper.DeleteAsync<Models.ChatMessageReply>("WHERE reply_to_id = ?", messageId);
+            await DbMapper.DeleteAsync<Models.ChatMessageReply>(
+                "WHERE reply_to_id = ?;", messageId);
             return true;
         }
         catch ( Exception )
@@ -43,7 +44,7 @@ public sealed class ChatMessageReplyRepository
         CancellationToken cancellationToken)
     {
         var messagesPage = await DbMapper.FetchPageAsync<Models.ChatMessageReply>(
-            pageSize, _pagingCursorHelper.ToPagingState(pagingCursor), "WHERE reply_to_id = ?",
+            pageSize, _pagingCursorHelper.ToPagingState(pagingCursor), "WHERE reply_to_id = ?;",
             new object[] { messageId });
 
         return new CursorPaged<ChatMessageReply>(

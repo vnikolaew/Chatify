@@ -2,11 +2,13 @@ import "./styles.css";
 import React, { PropsWithChildren } from "react";
 import { Metadata } from "next";
 import { Inter, Roboto } from "next/font/google";
-import Providers from "../components/Providers";
+import Providers from "./providers";
+import Link from "next/link";
 
 export const metadata: Metadata = {
    title: "Welcome to app!",
    description: "Chatify - converse with your fellas!",
+   icons: [],
 } satisfies Metadata;
 
 const inter = Inter({
@@ -23,9 +25,12 @@ export function __IS_DEV__() {
    return process.env.NODE_ENV === "development";
 }
 
-function ChatifyLayout({ children }: PropsWithChildren) {
+async function ChatifyLayout({ children, ...rest }: PropsWithChildren) {
    return (
-      <html className={inter.className}>
+      <html
+         lang={`en`}
+         className={`${inter.className} bg-gray-950 text-white dark`}
+      >
          <body>
             <main className="app">
                <Providers isDevelopment={__IS_DEV__()}>{children}</Providers>

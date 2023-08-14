@@ -18,10 +18,14 @@ public static class ServiceCollectionExtensions
     {
         services
             // .AddScoped<TraceIdentifierMiddleware>()
+            .AddMappers()
+            .AddCors()
+            .AddProblemDetails(opts => { opts.CustomizeProblemDetails = _ => { }; })
+            .AddConfiguredSwagger()
             .AddControllers(opts => opts.Filters.Add<GlobalExceptionFilter>())
             .AddJsonOptions(opts => opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
             .ConfigureApiBehaviorOptions(opts => opts.SuppressModelStateInvalidFilter = true);
-        
+
         services.AddControllersWithViews();
         return services;
     }
@@ -38,7 +42,7 @@ public static class ServiceCollectionExtensions
                 });
                 opts.SwaggerGeneratorOptions.Servers = new List<OpenApiServer>()
                 {
-                    new OpenApiServer() { Url = "https://localhost:7139"}
+                    new() { Url = "https://localhost:7139" }
                 };
                 var xmlFileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 // opts.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFileName));

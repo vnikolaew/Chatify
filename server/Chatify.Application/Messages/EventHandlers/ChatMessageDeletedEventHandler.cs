@@ -6,7 +6,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Chatify.Application.Messages.EventHandlers;
 
-internal sealed class ChatMessageDeletedEventHandler : IEventHandler<ChatMessageDeletedEvent>
+internal sealed class ChatMessageDeletedEventHandler
+    : IEventHandler<ChatMessageDeletedEvent>
 {
     private readonly ILogger<ChatMessageDeletedEventHandler> _logger;
     private readonly IChatMessageReplyRepository _messageReplies;

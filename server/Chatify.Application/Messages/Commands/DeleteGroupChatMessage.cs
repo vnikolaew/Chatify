@@ -55,7 +55,7 @@ internal sealed class DeleteGroupChatMessageHandler
             return new UserIsNotMessageSenderError(message.Id, _identityContext.Id);
 
         // Now delete message and then all its replies ...
-        var success = await _members.DeleteAsync(message.Id, cancellationToken);
+        var success = await _messages.DeleteAsync(message.Id, cancellationToken);
         await _eventDispatcher.PublishAsync(new ChatMessageDeletedEvent
         {
             MessageId = message.Id,

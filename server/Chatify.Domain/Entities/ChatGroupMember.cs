@@ -5,6 +5,8 @@ public class ChatGroupMember
     public Guid Id { get; set; }
     
     public Guid UserId { get; set; }
+    
+    public string Username { get; set; } = default!;
 
     public User User { get; set; }
     

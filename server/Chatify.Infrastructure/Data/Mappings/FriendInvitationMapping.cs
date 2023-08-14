@@ -12,10 +12,13 @@ public class FriendInvitationMapping :  Cassandra.Mapping.Mappings
         For<FriendInvitation>()
             .TableName(nameof(FriendInvitation).Underscore().Pluralize())
             .PartitionKey(fi => fi.InviterId)
-            .ClusteringKey(fi => fi.CreatedAt, SortOrder.Descending)
-            .UnderscoreColumn(fi => fi.Id)
+            .ClusteringKey(fi => fi.CreatedAt,
+                SortOrder.Descending)
+            .UnderscoreColumn(fi => fi.Id,
+                cm => cm.WithSecondaryIndex())
             .UnderscoreColumn(fi => fi.InviterId)
-            .UnderscoreColumn(fi => fi.InviteeId)
+            .UnderscoreColumn(fi => fi.InviteeId,
+                cm => cm.WithSecondaryIndex())
             .UnderscoreColumn(fi => fi.Metadata)
             .UnderscoreColumn(fi => fi.Status)
             .UnderscoreColumn(fi => fi.CreatedAt)

@@ -21,9 +21,7 @@ public sealed class ChatMessageRepository :
     public ChatMessageRepository(
         IMapper mapper, Mapper dbMapper, IPagingCursorHelper pagingCursorHelper)
         : base(mapper, dbMapper)
-    {
-        _pagingCursorHelper = pagingCursorHelper;
-    }
+        => _pagingCursorHelper = pagingCursorHelper;
 
     public async Task<CursorPaged<ChatMessage>> GetPaginatedByGroupAsync(
         Guid groupId,
@@ -36,7 +34,7 @@ public sealed class ChatMessageRepository :
             new object[] { groupId });
 
         return new CursorPaged<ChatMessage>(
-            Mapper.Map<List<ChatMessage>>(messagesPage.ToList()),
+            messagesPage.To<ChatMessage>(Mapper).ToList(),
             _pagingCursorHelper.ToPagingCursor(messagesPage.PagingState)
         );
     }
@@ -46,11 +44,13 @@ public sealed class ChatMessageRepository :
         CancellationToken cancellationToken = default)
     {
         var replierInfoes = await DbMapper.FetchPageAsync<ChatMessageRepliesSummary>(
-            pageSize, _pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?",
+            pageSize, _pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?;",
             new object[] { groupId });
 
         return new CursorPaged<MessageRepliersInfo>(
-            Mapper.Map<List<MessageRepliersInfo>>(replierInfoes.ToList()),
+            replierInfoes
+                .To<MessageRepliersInfo>(Mapper)
+                .ToList(),
             _pagingCursorHelper.ToPagingCursor(replierInfoes.PagingState));
     }
 
@@ -70,7 +70,6 @@ public sealed class ChatMessageRepository :
             .FetchAsync<Models.ChatMessage>(cql);
 
         return messages
-            .AsQueryable()
             .To<ChatMessage>(Mapper)
             .ToDictionary(m => m.ChatGroupId);
     }

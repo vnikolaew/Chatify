@@ -1,10 +1,9 @@
 ﻿using System.Net;
 using AspNetCore.Identity.Cassandra.Models;
 using AutoMapper;
-using Cassandra.Mapping;
-using Cassandra.Mapping.Attributes;
 using Chatify.Application.Common.Mappings;
 using Chatify.Domain.Entities;
+using Chatify.Domain.ValueObjects;
 using Metadata = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Chatify.Infrastructure.Data.Models;
@@ -37,7 +36,6 @@ public class ChatifyUser : CassandraIdentityUser, IMapFrom<Domain.Entities.User>
         init => _bannerPictures = value.ToList();
     }
 
-    [ClusteringKey(0, SortOrder.Descending)]
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
 
     public DateTimeOffset? UpdatedAt { get; set; }
@@ -53,7 +51,7 @@ public class ChatifyUser : CassandraIdentityUser, IMapFrom<Domain.Entities.User>
     }
 
     private HashSet<IPAddress> _deviceIps = new();
-    
+
     public ISet<IPAddress> DeviceIps
     {
         get => _deviceIps;
@@ -75,9 +73,6 @@ public class ChatifyUser : CassandraIdentityUser, IMapFrom<Domain.Entities.User>
                                                 token.Name + " already exists.");
         ( Tokens as List<TokenInfo> )?.Add(token);
     }
-
-    public void AddDeviceIp(IPAddress ipAddress)
-        => _deviceIps.Add(ipAddress);
 
     public void AddRole(string role)
     {
@@ -101,12 +96,26 @@ public class ChatifyUser : CassandraIdentityUser, IMapFrom<Domain.Entities.User>
     public void Mapping(Profile profile)
         => profile
             .CreateMap<ChatifyUser, Domain.Entities.User>()
+            .ForMember(u => u.Email,
+                cfg => cfg.MapFrom(u => new Email(u.Email)))
             .ForMember(u => u.Roles,
                 cfg =>
                     cfg.MapFrom(u => u.Roles.ToList()))
             .ForMember(u => u.Status,
                 cfg => cfg.MapFrom(u => ( UserStatus )u.Status))
+            .ForMember(u => u.PhoneNumbers,
+                cfg => cfg.MapFrom(
+                    u => u.PhoneNumbers
+                        .Select(_ => new PhoneNumber(_))
+                        .ToHashSet()))
             .ReverseMap()
             .ForMember(u => u.Status,
-                cfg => cfg.MapFrom(u => u.Status));
+                cfg => cfg.MapFrom(u => u.Status))
+            .ForMember(u => u.PhoneNumbers,
+                cfg => cfg.MapFrom(
+                    u => u.PhoneNumbers
+                        .Select(_ => _.Value)
+                        .ToHashSet()))
+            .ForMember(u => u.Email,
+                cfg => cfg.MapFrom(u => u.Email.Value));
 }

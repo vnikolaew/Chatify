@@ -29,7 +29,8 @@ const Greeting = ({ imagesBaseUrl }: GreetingProps) => {
       isLoading,
       isFetching,
    } = useGetMyClaimsQuery({
-      enabled: isUserLoggedIn(),
+      enabled: false,
+      useErrorBoundary: (error, query) => false,
    });
 
    const username = useMemo<string | null>(() => {

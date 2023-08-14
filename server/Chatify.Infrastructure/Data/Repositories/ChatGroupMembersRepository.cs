@@ -94,12 +94,12 @@ public sealed class ChatGroupMembersRepository :
         Guid userId,
         CancellationToken cancellationToken = default)
     {
-        var member = await DbMapper.FirstOrDefaultAsync<ChatGroupMember>(
+        var member = await DbMapper.FirstOrDefaultAsync<Models.ChatGroupMember>(
             "WHERE chat_group_id = ? AND user_id = ? ALLOW FILTERING;",
             groupId,
             userId);
 
-        return member;
+        return member?.To<ChatGroupMember>(Mapper);
     }
 
     public Task<List<ChatGroupMember>?> ByGroup(
@@ -113,7 +113,7 @@ public sealed class ChatGroupMembersRepository :
         CancellationToken cancellationToken = default)
     {
         var groupsIds = await DbMapper
-            .FetchAsync<Guid>("SELECT chat_group_id FROM chat_group_members WHERE user_id = ?", userId);
+            .FetchAsync<Guid>("SELECT chat_group_id FROM chat_group_members_by_user_id WHERE user_id = ?", userId);
         return groupsIds.ToList();
     }
 

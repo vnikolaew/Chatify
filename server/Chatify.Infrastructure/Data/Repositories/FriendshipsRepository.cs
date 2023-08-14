@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Common.Mappings;
@@ -22,18 +21,35 @@ public sealed class FriendshipsRepository
     public FriendshipsRepository(
         IMapper mapper, Mapper dbMapper,
         IDatabase cache, ISerializer serializer)
-        : base(mapper, dbMapper, nameof(FriendsRelation.Id).Underscore())
+        : base(mapper, dbMapper, nameof(FriendsRelation.FriendOneId).Underscore())
     {
         _cache = cache;
         _serializer = serializer;
     }
 
+    private static RedisKey GetUserFriendsCacheKey(Guid userId)
+        => $"user:{userId}:friends";
+    
+    private static RedisKey GetUserCacheKey(Guid userId)
+        => $"user:{userId}";
+
     public new async Task<FriendsRelation> SaveAsync(
         FriendsRelation entity,
         CancellationToken cancellationToken = default)
     {
-        var result = await base.SaveAsync(entity, cancellationToken);
-
+        // Make a duplicate DB entry with friend Ids swapped (for better querying):
+        var swappedFriendRelation = new FriendsRelation
+        {
+            Id = entity.Id,
+            FriendTwoId = entity.FriendOneId,
+            FriendOneId = entity.FriendTwoId,
+            CreatedAt = entity.CreatedAt
+        };
+        
+        var saveOne = base.SaveAsync(entity, cancellationToken);
+        var saveTwo  = base.SaveAsync(swappedFriendRelation, cancellationToken);
+        await Task.WhenAll(saveOne, saveTwo);
+        
         var userOne = DbMapper
             .FirstOrDefaultAsync<ChatifyUser>("WHERE id = ?", entity.FriendOneId);
 
@@ -46,12 +62,12 @@ public sealed class FriendshipsRepository
         var storeTasks = new[]
         {
             _cache.SortedSetAddAsync(
-                new RedisKey($"user:{entity.FriendOneId}:friends"),
+                new RedisKey(GetUserFriendsCacheKey(entity.FriendOneId)),
                 new RedisValue(entity.FriendTwoId.ToString()),
                 entity.CreatedAt.Ticks,
                 SortedSetWhen.NotExists),
             _cache.SortedSetAddAsync(
-                new RedisKey($"user:{entity.FriendTwoId}:friends"),
+                new RedisKey(GetUserFriendsCacheKey(entity.FriendTwoId)),
                 new RedisValue(entity.FriendOneId.ToString()),
                 entity.CreatedAt.Ticks,
                 SortedSetWhen.NotExists),
@@ -60,14 +76,14 @@ public sealed class FriendshipsRepository
         };
 
         var results = await Task.WhenAll(storeTasks);
-        return result;
+        return saveOne.Result;
     }
 
     public async Task<List<Domain.Entities.User>> AllForUser(
         Guid userId, CancellationToken cancellationToken = default)
     {
         var friendsIds = await _cache.SortedSetRangeByScoreAsync(
-            new RedisKey($"user:{userId}:friends"), order: Order.Descending);
+            GetUserFriendsCacheKey(userId), order: Order.Descending);
 
         // Potentially chunk Ids to ease cache server processing:
         var friendsStrings = new List<string>();
@@ -85,19 +101,27 @@ public sealed class FriendshipsRepository
     }
 
     public async Task<bool> DeleteForUsers(
-        Guid friendOneId, Guid friendTwoId, CancellationToken cancellationToken = default)
+        Guid friendOneId,
+        Guid friendTwoId,
+        CancellationToken cancellationToken = default)
     {
-        await DbMapper.DeleteAsync<FriendsRelation>(" WHERE friend_one_id = ? AND friend_two_id = ? ALLOW FILTERING;",
+        var friendsRelation = await DbMapper
+            .FirstOrDefaultAsync<Models.FriendsRelation>(
+                " WHERE friend_one_id = ? AND friend_two_id = ? ALLOW FILTERING;",
+                friendOneId, friendTwoId);
+        if ( friendsRelation is null ) return false;
+            
+        await DbMapper.DeleteAsync<Models.FriendsRelation>(" WHERE friend_one_id = ? AND friend_two_id = ? ALLOW FILTERING;",
             friendOneId, friendTwoId);
 
         // Purge entries from cache as well:
         var deleteTasks = new Task[]
         {
             _cache.SortedSetRemoveAsync(
-                new RedisKey($"user:{friendOneId}:friends"),
+                GetUserFriendsCacheKey(friendOneId),
                 new RedisValue(friendTwoId.ToString())),
             _cache.SortedSetRemoveAsync(
-                new RedisKey($"user:{friendTwoId}:friends"),
+                GetUserFriendsCacheKey(friendTwoId),
                 new RedisValue(friendOneId.ToString())),
         };
         
@@ -110,7 +134,7 @@ public sealed class FriendshipsRepository
         CancellationToken cancellationToken = default)
     {
         var friendsIds = await _cache.SortedSetRangeByScoreAsync(
-            new RedisKey($"user:{userId}:friends"), order: Order.Descending);
+            GetUserFriendsCacheKey(userId), order: Order.Descending);
 
         return friendsIds.Select(id => Guid.Parse(id.ToString())).ToList();
     }

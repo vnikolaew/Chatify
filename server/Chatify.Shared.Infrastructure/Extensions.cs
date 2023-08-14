@@ -14,6 +14,9 @@ public static class Extensions
     
     public static T GetOptions<T>(this IConfiguration configuration, string sectionName) where T : new()
         => configuration.GetSection(sectionName).GetOptions<T>();
+    
+    public static T GetOptions<T>(this IConfiguration configuration) where T : new()
+        => configuration.GetSection(typeof(T).Name).GetOptions<T>();
         
     public static T GetOptions<T>(this IConfigurationSection section) where T : new()
     {

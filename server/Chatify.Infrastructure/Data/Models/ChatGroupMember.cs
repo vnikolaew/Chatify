@@ -10,6 +10,8 @@ public class ChatGroupMember : IMapFrom<Domain.Entities.ChatGroupMember>
 
     public Guid UserId { get; set; }
 
+    public string Username { get; set; } = default!;
+
     public Guid ChatGroupId { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }

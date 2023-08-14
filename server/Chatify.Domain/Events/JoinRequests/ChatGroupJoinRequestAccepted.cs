@@ -9,6 +9,8 @@ public class ChatGroupJoinRequestAccepted: IDomainEvent
     public Guid AcceptedById { get; set; }
     
     public Guid UserId { get; set; }
+
+    public string Username { get; set; } = default!;
     
     public Guid GroupId { get; set; }
     

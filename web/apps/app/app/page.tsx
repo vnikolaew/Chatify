@@ -11,10 +11,9 @@ function IndexPage() {
    const cookieStore = cookies();
    const isUserLoggedIn = !!cookieStore.get(APPLICATION_COOKIE_NAME);
 
-   console.log(isUserLoggedIn && "User has cookie");
    return (
       <div
-         className={`flex text-xl gap-3 flex-col shadow-gray-300 w-fit px-4 py-2 text-gray-700 rounded-md `}
+         className={`flex text-xl gap-3 flex-col shadow-gray-300 w-fit px-4 py-2 rounded-md `}
       >
          <h1 className={`text-3xl`}>Home Page</h1>
          <Greeting
@@ -23,6 +22,14 @@ function IndexPage() {
                -4
             )}/static`}
          />
+         <div className={`my-4`}>
+            <Link
+               className={`hover:underline text-blue-500`}
+               href={`_playgrounds`}
+            >
+               Go to playgrounds
+            </Link>
+         </div>
          {!isUserLoggedIn ? (
             <Fragment>
                <h2 className={`font-bold`}>You are currently not logged in.</h2>
@@ -43,7 +50,7 @@ function IndexPage() {
                </div>
             </Fragment>
          ) : (
-            <div className={`self-end`}>
+            <div className={`self-end mt-2`}>
                <SignOut />
             </div>
          )}

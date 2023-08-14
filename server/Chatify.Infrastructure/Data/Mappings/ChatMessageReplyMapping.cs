@@ -16,7 +16,8 @@ public class ChatMessageReplyMapping : Cassandra.Mapping.Mappings
                 new Tuple<string, SortOrder>(nameof(ChatMessage.CreatedAt), SortOrder.Descending),
                 new Tuple<string, SortOrder>(nameof(ChatMessage.Id), SortOrder.Ascending)
             )
-            .UnderscoreColumn(cm => cm.Id, cm => cm.WithSecondaryIndex())
+            .UnderscoreColumn(cm => cm.Id,
+                cm => cm.WithSecondaryIndex())
             .UnderscoreColumn(cm => cm.ReplyToId)
             .UnderscoreColumn(cm => cm.ChatGroupId)
             .UnderscoreColumn(cm => cm.Metadata)

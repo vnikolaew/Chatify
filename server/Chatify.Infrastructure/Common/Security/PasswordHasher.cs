@@ -2,7 +2,7 @@
 using Chatify.Infrastructure.Data.Models;
 using Microsoft.AspNetCore.Identity;
 
-namespace Chatify.Infrastructure.Common;
+namespace Chatify.Infrastructure.Common.Security;
 
 public class PasswordHasher : IPasswordHasher
 {

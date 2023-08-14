@@ -17,12 +17,13 @@ using AcceptChatGroupJoinRequestResult = OneOf<Error, Guid>;
 
 public record AcceptChatGroupJoinRequest(
     [Required] Guid RequestId
-    ) : ICommand<AcceptChatGroupJoinRequestResult>;
+) : ICommand<AcceptChatGroupJoinRequestResult>;
 
-internal sealed class AcceptChatGroupJoinRequestHandler 
+internal sealed class AcceptChatGroupJoinRequestHandler
     : ICommandHandler<AcceptChatGroupJoinRequest, AcceptChatGroupJoinRequestResult>
 {
     private readonly IChatGroupMemberRepository _members;
+    private readonly IUserRepository _users;
     private readonly IGuidGenerator _guidGenerator;
     private readonly IClock _clock;
     private readonly IEventDispatcher _eventDispatcher;
@@ -30,7 +31,15 @@ internal sealed class AcceptChatGroupJoinRequestHandler
     private readonly IIdentityContext _identityContext;
     private readonly IDomainRepository<ChatGroupJoinRequest, Guid> _joinRequests;
 
-    public AcceptChatGroupJoinRequestHandler(IChatGroupMemberRepository members, IIdentityContext identityContext, IDomainRepository<ChatGroupJoinRequest, Guid> joinRequests, IChatGroupRepository groups, IGuidGenerator guidGenerator, IClock clock, IEventDispatcher eventDispatcher)
+    public AcceptChatGroupJoinRequestHandler(
+        IChatGroupMemberRepository members,
+        IIdentityContext identityContext,
+        IDomainRepository<ChatGroupJoinRequest, Guid> joinRequests,
+        IChatGroupRepository groups,
+        IGuidGenerator guidGenerator,
+        IClock clock,
+        IEventDispatcher eventDispatcher,
+        IUserRepository users)
     {
         _members = members;
         _identityContext = identityContext;
@@ -39,6 +48,7 @@ internal sealed class AcceptChatGroupJoinRequestHandler
         _guidGenerator = guidGenerator;
         _clock = clock;
         _eventDispatcher = eventDispatcher;
+        _users = users;
     }
 
     public async Task<AcceptChatGroupJoinRequestResult> HandleAsync(
@@ -56,15 +66,19 @@ internal sealed class AcceptChatGroupJoinRequestHandler
             .Any(_ => _ == _identityContext.Id);
         if ( !isCurrentUserGroupAdmin ) return Error.New("");
 
+        var user = await _users.GetAsync(request.UserId, cancellationToken);
+
         var membershipId = _guidGenerator.New();
         var groupMember = new ChatGroupMember
         {
             Id = membershipId,
             ChatGroupId = group.Id,
-            UserId = request.UserId,
+            UserId = user!.Id,
+            Username = user.Username,
             CreatedAt = _clock.Now,
+            User = user
         };
-        
+
         await _members.SaveAsync(groupMember, cancellationToken);
         await _eventDispatcher.PublishAsync(new ChatGroupJoinRequestAccepted
         {
@@ -72,9 +86,10 @@ internal sealed class AcceptChatGroupJoinRequestHandler
             UserId = request.UserId,
             AcceptedById = _identityContext.Id,
             Timestamp = _clock.Now,
+            Username = user.Username,
             GroupId = group.Id
         }, cancellationToken);
-        
+
         return groupMember.Id;
     }
 }

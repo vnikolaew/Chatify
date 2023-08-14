@@ -76,6 +76,8 @@ internal sealed class AddChatGroupMemberHandler
         var member = new ChatGroupMember
         {
             Id = Guid.NewGuid(),
+            Username = memberUser.Username,
+            UserId = memberUser.Id,
             User = memberUser,
             ChatGroup = group,
             MembershipType = command.MembershipType

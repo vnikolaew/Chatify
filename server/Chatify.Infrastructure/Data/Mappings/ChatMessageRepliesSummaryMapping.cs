@@ -16,7 +16,8 @@ public class ChatMessageRepliesSummaryMapping : Cassandra.Mapping.Mappings
             )
             .TableName(nameof(ChatMessageRepliesSummary).Underscore())
             .UnderscoreColumn(s => s.ChatGroupId)
-            .UnderscoreColumn(s => s.MessageId)
+            .UnderscoreColumn(s => s.MessageId,
+                cm => cm.WithSecondaryIndex())
             .UnderscoreColumn(s => s.Id)
             .UnderscoreColumn(s => s.CreatedAt)
             .UnderscoreColumn(s => s.Updated)

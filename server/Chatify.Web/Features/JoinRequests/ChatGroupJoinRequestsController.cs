@@ -62,7 +62,7 @@ public class ChatGroupJoinRequestsController : ApiController
 
     [HttpGet]
     [Route("{groupId:guid}")]
-    public async Task<IActionResult> GetJoinRequests(
+    public async Task<IActionResult> GetForChatGroup(
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
     {

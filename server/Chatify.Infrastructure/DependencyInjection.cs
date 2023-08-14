@@ -15,11 +15,13 @@ using Chatify.Infrastructure.Authentication.External.Google;
 using Chatify.Infrastructure.ChatGroups.Services;
 using Chatify.Infrastructure.Common;
 using Chatify.Infrastructure.Common.Caching;
+using Chatify.Infrastructure.Common.Security;
 using Chatify.Infrastructure.Data;
 using Chatify.Infrastructure.Data.Repositories;
 using Chatify.Infrastructure.FileStorage;
 using Chatify.Infrastructure.Mailing;
 using Chatify.Infrastructure.Messages;
+using Chatify.Infrastructure.Messages.BackgroundJobs;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Shared.Abstractions.Serialization;
 using Chatify.Shared.Abstractions.Time;
@@ -35,6 +37,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Extensions.Http;
+using Quartz;
 using StackExchange.Redis;
 using AuthenticationService = Chatify.Infrastructure.Authentication.AuthenticationService;
 using IAuthenticationService = Chatify.Application.Authentication.Contracts.IAuthenticationService;
@@ -50,9 +53,23 @@ public static class DependencyInjection
             .AddData(configuration)
             .AddSeeding(configuration)
             .AddRepositories()
+            .AddBackgroundJobs()
             .AddServices()
             .AddCaching(configuration)
             .AddContexts();
+
+    public static IServiceCollection AddBackgroundJobs(this IServiceCollection services)
+        => services
+            .AddQuartz(opts =>
+            {
+                opts.UseMicrosoftDependencyInjectionJobFactory();
+                opts.AddJob<ProcessChatMessageJob>(config =>
+                    config.WithIdentity(new JobKey(nameof(ProcessChatMessageJob))).StoreDurably());
+                opts.AddJob<ProcessChatMessageReplyJob>(config =>
+                    config.WithIdentity(new JobKey(nameof(ProcessChatMessageReplyJob))).StoreDurably());
+            })
+            .AddQuartzHostedService(opts =>
+                opts.WaitForJobsToComplete = true);
 
     public static IServiceCollection AddServices(this IServiceCollection services)
         => services
@@ -61,7 +78,7 @@ public static class DependencyInjection
             .AddTransient<IEmailSender, NullEmailSender>()
             .AddSingleton<IClock, UtcClock>()
             .AddTransient<IFileUploadService, LocalFileSystemUploadService>()
-            .AddTransient<IGuidGenerator, TimeUuidGenerator>()
+            .AddTransient<IGuidGenerator, SnowflakeUuidGenerator>()
             .AddTransient<IPasswordHasher, PasswordHasher>()
             .AddTransient<IPagingCursorHelper, CassandraPagingCursorHelper>()
             .AddTransient<ISerializer, SystemTextJsonSerializer>()
@@ -167,9 +184,9 @@ public static class DependencyInjection
                 services.AddScoped(@interface, repositoryType);
             }
         }
-        
+
         return services;
-        
+
         // return services
         //     .AddScoped<IChatMessageReplyRepository, ChatMessageReplyRepository>()
         //     .AddScoped<IChatGroupAttachmentRepository, ChatGroupAttachmentRepository>()

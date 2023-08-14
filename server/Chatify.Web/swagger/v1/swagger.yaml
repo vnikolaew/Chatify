@@ -104,6 +104,66 @@ paths:
       responses:
         '200':
           description: Success
+  '/api/chatgroups/join/{groupId}':
+    post:
+      tags:
+        - ChatGroupJoinRequests
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+  '/api/chatgroups/accept/{requestId}':
+    post:
+      tags:
+        - ChatGroupJoinRequests
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+  '/api/chatgroups/decline/{requestId}':
+    post:
+      tags:
+        - ChatGroupJoinRequests
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+  '/api/chatgroups/{groupId}':
+    get:
+      tags:
+        - ChatGroupJoinRequests
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
   /api/ChatGroups:
     post:
       tags:
@@ -202,6 +262,26 @@ paths:
           schema:
             type: integer
             format: int32
+      responses:
+        '200':
+          description: Success
+  '/api/ChatGroups/{groupId}/members/search':
+    get:
+      tags:
+        - ChatGroups
+      parameters:
+        - name: q
+          in: query
+          style: form
+          schema:
+            type: string
+        - name: groupId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: Success

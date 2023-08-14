@@ -23,7 +23,8 @@ public class MessageReplierInfosRepository
     {
         try
         {
-            await DbMapper.DeleteAsync<ChatMessageRepliesSummary>("WHERE message_id = ?", messageId);
+            await DbMapper.DeleteAsync<ChatMessageRepliesSummary>(
+                "WHERE message_id = ?;", messageId);
             return true;
         }
         catch (Exception)

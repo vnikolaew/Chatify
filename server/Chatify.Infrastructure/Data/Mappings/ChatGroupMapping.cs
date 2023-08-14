@@ -12,7 +12,6 @@ public class ChatGroupMapping : Cassandra.Mapping.Mappings
             .TableName(nameof(ChatGroup).Underscore().Pluralize())
             .KeyspaceName(Constants.KeyspaceName)
             .PartitionKey(cg => cg.Id)
-            .ClusteringKey(cg => cg.CreatedAt, SortOrder.Descending)
             .SetColumn<ChatGroup, ISet<Guid>, Guid>(g => g.AdminIds)
             .UnderscoreColumn(g => g.Id)
             .UnderscoreColumn(g => g.CreatorId)

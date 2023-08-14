@@ -66,13 +66,14 @@ internal sealed class EditChatMessageReplyHandler
             if ( command.AttachmentOperations is not null )
             {
                 await _attachmentOperationHandler
-                    .HandleAsync(replyMessage, command.AttachmentOperations);
+                    .HandleAsync(replyMessage, command.AttachmentOperations, cancellationToken);
             }
         }, cancellationToken);
 
-        await _eventDispatcher.PublishAsync(new ChatMessageEditedEvent
+        await _eventDispatcher.PublishAsync(new ChatMessageReplyEditedEvent
         {
             MessageId = replyMessage.Id,
+            ReplyToId = replyMessage.ReplyToId,
             NewContent = command.NewContent,
             UserId = _identityContext.Id,
             Timestamp = _clock.Now,

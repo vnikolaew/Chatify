@@ -80,4 +80,6 @@ public class ChatMessage
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.Now;
+
+    public Metadata Metadata { get; set; } = new Dictionary<string, string>();
 }

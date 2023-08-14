@@ -4,11 +4,14 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
 
 
     <ItemGroup>
       <ProjectReference Include="..\Chatify.Shared.Abstractions\Chatify.Shared.Abstractions.csproj" />
+
+
 
 
 

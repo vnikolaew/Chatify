@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig, HttpStatusCode } from "axios";
+import { isServer } from "../utils";
 
 export const USER_LOCATION_LOCAL_STORAGE_KEY = "user-geolocation";
 
@@ -13,7 +14,7 @@ export const createClient = (
       headers: {
          "Content-Type": "application/json; charset=utf-8",
          "Accept": "*/*",
-         "X-User-Locale": window.navigator.language,
+         "X-User-Locale": isServer() ? "" : window.navigator.language,
          "X-User-Location": ``,
       },
       validateStatus: (status) => status < HttpStatusCode.InternalServerError,
@@ -23,6 +24,8 @@ export const createClient = (
    });
 
    client.interceptors.request.use((config) => {
+      if (isServer()) return config;
+
       const userLocation = localStorage.getItem(
          USER_LOCATION_LOCAL_STORAGE_KEY
       ) as string;

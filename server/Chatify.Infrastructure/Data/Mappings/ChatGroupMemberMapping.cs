@@ -2,6 +2,7 @@
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Humanizer;
+using LanguageExt;
 
 namespace Chatify.Infrastructure.Data.Mappings;
 
@@ -18,6 +19,7 @@ public class ChatGroupMemberMapping : Cassandra.Mapping.Mappings
             )
             .UnderscoreColumn(cgm => cgm.Id)
             .UnderscoreColumn(cgm => cgm.UserId)
+            .UnderscoreColumn(cgm => cgm.Username)
             .UnderscoreColumn(cgm => cgm.ChatGroupId)
             .UnderscoreColumn(cgm => cgm.CreatedAt)
             .UnderscoreColumn(cgm => cgm.Metadata)

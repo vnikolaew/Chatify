@@ -43,6 +43,9 @@ public static class ResultExtensions
 
     public static IActionResult ToBadRequest(this Error error)
         => ToBadRequest(new Seq<Error>(new[] { error }));
+    
+    public static IResult ToBadRequestResult(this Error error)
+        => ToBadRequestResult(new Seq<Error>(new[] { error }));
 }
 
 public static class OneOfExtensions

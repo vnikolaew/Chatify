@@ -190,7 +190,6 @@ public class DatabaseInitializationService : BackgroundService
         catch ( AlreadyExistsException )
         {
         }
-
         _session.Execute("CREATE TABLE IF NOT EXISTS " + options.KeyspaceName +
                          ".userclaims ( UserId uuid,  Type text,  Value text,  PRIMARY KEY (UserId, Type, Value));");
         _session.Execute("CREATE TABLE IF NOT EXISTS " + options.KeyspaceName +
@@ -216,10 +215,10 @@ public class DatabaseInitializationService : BackgroundService
 
         _session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS users_by_email AS SELECT * FROM " +
                          options.KeyspaceName + "." + usersTableName +
-                         " WHERE NormalizedEmail IS NOT NULL AND id IS NOT NULL AND username IS NOT NULL AND created_at IS NOT NULL PRIMARY KEY (NormalizedEmail, created_at, id, username)");
+                         " WHERE NormalizedEmail IS NOT NULL AND id IS NOT NULL AND username IS NOT NULL AND created_at IS NOT NULL PRIMARY KEY (NormalizedEmail, id)");
         _session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS users_by_username AS SELECT * FROM " +
                          options.KeyspaceName + "." + usersTableName +
-                         " WHERE NormalizedUserName IS NOT NULL AND Id IS NOT NULL AND username IS NOT NULL AND created_at IS NOT NULL PRIMARY KEY (NormalizedUserName, Id, created_at, username)");
+                         " WHERE NormalizedUserName IS NOT NULL AND Id IS NOT NULL AND username IS NOT NULL AND created_at IS NOT NULL PRIMARY KEY (NormalizedUserName, Id)");
         _session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS roles_by_name AS SELECT * FROM " +
                          options.KeyspaceName + "." + rolesTableName +
                          " WHERE NormalizedName IS NOT NULL AND Id IS NOT NULL PRIMARY KEY (NormalizedName, Id)");

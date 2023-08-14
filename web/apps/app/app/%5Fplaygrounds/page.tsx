@@ -1,0 +1,69 @@
+import React, { PropsWithChildren } from "react";
+import Link from "next/link";
+import Divider from "../../components/Divider";
+import * as fs from "fs";
+import * as path from "path";
+
+const GradientLink = ({
+   children,
+   href,
+}: PropsWithChildren & { href: string }) => {
+   return (
+      <Link
+         className={`hover:underline my-2 text-xl text-blue-500`}
+         href={href}
+      >
+         <span
+            className={` bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-blue-500`}
+         >
+            {children}
+         </span>
+      </Link>
+   );
+};
+
+const PlaygroundsPage = async (props) => {
+   const dir = path.join(
+      __dirname,
+      "..",
+      "..",
+      "..",
+      "..",
+      "app",
+      "%5Fplaygrounds"
+   );
+
+   const components = fs
+      .readdirSync(dir, { encoding: "utf8", withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name);
+
+   return (
+      <div className={`m-6`}>
+         <h2 className={`text-3xl`}>
+            <b>Playgrounds</b> (for testing purposes)
+         </h2>
+         <Divider
+            className={`w-1/2 shadow-lg h-[1px] rounded-md text-gray-200 mt-3`}
+            orientation={"horizontal"}
+         />
+         <div className={`text-2xl mt-4 w-1/3 grid grid-cols-2 gap-2`}>
+            {components.map((c, i) => (
+               <GradientLink href={`_playgrounds/${c}`}>
+                  {c[0].toUpperCase() + c.slice(1)}
+               </GradientLink>
+            ))}
+         </div>
+         <div className={`mt-12`}>
+            <Link
+               className={`hover:underline ml-auto self-end text-xl text-blue-500`}
+               href={`/`}
+            >
+               Go to Index page
+            </Link>
+         </div>
+      </div>
+   );
+};
+
+export default PlaygroundsPage;

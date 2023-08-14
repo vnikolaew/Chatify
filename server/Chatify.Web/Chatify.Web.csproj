@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <ApplicationIcon>logo.ico</ApplicationIcon>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

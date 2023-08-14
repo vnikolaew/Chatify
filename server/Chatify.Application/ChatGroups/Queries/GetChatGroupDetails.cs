@@ -6,6 +6,7 @@ using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using OneOf;
 
 namespace Chatify.Application.ChatGroups.Queries;
@@ -24,7 +25,8 @@ public record GetChatGroupDetails(
 ) : IQuery<GetChatGroupDetailsResult>;
 
 [Timed]
-internal sealed class GetChatGroupDetailsHandler : IQueryHandler<GetChatGroupDetails, GetChatGroupDetailsResult>
+internal sealed class GetChatGroupDetailsHandler
+    : IQueryHandler<GetChatGroupDetails, GetChatGroupDetailsResult>
 {
     private readonly IIdentityContext _identityContext;
     private readonly IUserRepository _users;
@@ -49,12 +51,12 @@ internal sealed class GetChatGroupDetailsHandler : IQueryHandler<GetChatGroupDet
 
         var isMember = await _members.Exists(query.GroupId, _identityContext.Id, cancellationToken);
         if ( !isMember ) return new UserIsNotMemberError(_identityContext.Id, group.Id);
-
-        var groupMembers = ( await _members.ByGroup(group.Id, cancellationToken) ) ?? new List<ChatGroupMember>();
-        var userInfos = await _users.GetByIds(groupMembers.Select(_ => _.UserId), cancellationToken);
-
-        var admin = await _users.GetAsync(group.CreatorId, cancellationToken);
-
+        
+        var adminTask = _users.GetAsync(group.CreatorId, cancellationToken);
+        var groupMembersTask = _members.ByGroup(group.Id, cancellationToken);
+        var (admin, groupMembers ) = await ( adminTask, groupMembersTask ).WhenAll();
+            
+        var userInfos = await _users.GetByIds(groupMembers!.Select(_ => _.UserId), cancellationToken);
         return new ChatGroupDetailsEntry(group, userInfos!, admin!);
     }
 }

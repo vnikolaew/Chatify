@@ -11,7 +11,7 @@ using OneOf;
 
 namespace Chatify.Application.ChatGroups.Queries;
 
-using GetChatGroupMembersListResult = OneOf<UserIsNotMemberError, ChatGroupNotFoundError, List<ChatGroupMember>>;
+using GetChatGroupMembersListResult = OneOf<UserIsNotMemberError, ChatGroupNotFoundError, List<Domain.Entities.User>>;
 
 [Cached("chat-group-members", 30)]
 [Timed]
@@ -24,16 +24,19 @@ internal sealed class GetChatGroupMembersListHandler
 {
     private readonly IChatGroupMemberRepository _members;
     private readonly IDomainRepository<ChatGroup, Guid> _groups;
+    private readonly IUserRepository _users;
     private readonly IIdentityContext _identityContext;
 
     public GetChatGroupMembersListHandler(
         IChatGroupMemberRepository members,
         IDomainRepository<ChatGroup, Guid> groups,
-        IIdentityContext identityContext)
+        IIdentityContext identityContext,
+        IUserRepository users)
     {
         _members = members;
         _groups = groups;
         _identityContext = identityContext;
+        _users = users;
     }
 
     public async Task<GetChatGroupMembersListResult> HandleAsync(
@@ -51,7 +54,10 @@ internal sealed class GetChatGroupMembersListHandler
 
         var members = await _members
             .ByGroup(group.Id, cancellationToken);
+        
+        var users = await _users.GetByIds(
+            members!.Select(_ => _.UserId), cancellationToken);
 
-        return members;
+        return users ?? new List<Domain.Entities.User>();
     }
 }
