@@ -1,5 +1,6 @@
 ﻿using Chatify.Domain.Common;
 using Chatify.Domain.Events.Users;
+using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using Microsoft.Extensions.Logging;
@@ -9,13 +10,13 @@ namespace Chatify.Application.Authentication.EventHandlers;
 internal sealed class UserSignedInHandler : IEventHandler<UserSignedInEvent>
 {
     private readonly ILogger<UserSignedInHandler> _logger;
-    private readonly IDomainRepository<Domain.Entities.User, Guid> _users;
+    private readonly IUserRepository _users;
     private readonly IClock _clock;
 
     public UserSignedInHandler(
         ILogger<UserSignedInHandler> logger,
         IClock clock,
-        IDomainRepository<Domain.Entities.User, Guid> userRepo)
+        IUserRepository userRepo)
     {
         _logger = logger;
         _clock = clock;

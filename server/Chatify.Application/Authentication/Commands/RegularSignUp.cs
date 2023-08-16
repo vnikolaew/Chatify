@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.Authentication.Models;
-using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Events.Users;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Events;
@@ -15,7 +14,8 @@ public sealed record RegularSignUp(
     [EmailAddress, Required] string Email,
     [Required] [Password] string Password) : ICommand<RegularSignUpResult>;
 
-internal sealed class RegularSignUpHandler : ICommandHandler<RegularSignUp, RegularSignUpResult>
+internal sealed class RegularSignUpHandler
+    : ICommandHandler<RegularSignUp, RegularSignUpResult>
 {
     private readonly IAuthenticationService _authService;
     private readonly IEventDispatcher _eventDispatcher;

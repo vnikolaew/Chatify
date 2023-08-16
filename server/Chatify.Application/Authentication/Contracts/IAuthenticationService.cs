@@ -29,21 +29,21 @@ public interface IAuthenticationService
         RegularSignUp request,
         CancellationToken cancellationToken = default);
 
-    Task<Either<Error, UserSignedInResult>> RegularSignInAsync(
+    Task<OneOf<Error, UserSignedInResult>> RegularSignInAsync(
         RegularSignIn request,
         CancellationToken cancellationToken = default);
     
-    Task<Either<Error, Unit>> SignOutAsync(CancellationToken cancellationToken = default);
+    Task<OneOf<Error, Unit>> SignOutAsync(CancellationToken cancellationToken = default);
 
-    Task<Either<Error, UserSignedUpResult>> GoogleSignUpAsync(
+    Task<OneOf<Error, UserSignedUpResult>> GoogleSignUpAsync(
         GoogleSignUp request,
         CancellationToken cancellationToken = default);
     
-    Task<Either<Error, UserSignedUpResult>> GithubSignUpAsync(
+    Task<OneOf<Error, UserSignedUpResult>> GithubSignUpAsync(
         GithubSignUp request,
         CancellationToken cancellationToken = default);
 
-    Task<Either<Error, UserSignedUpResult>> FacebookSignUpAsync(
+    Task<OneOf<Error, UserSignedUpResult>> FacebookSignUpAsync(
         FacebookSignUp request,
         CancellationToken cancellationToken = default);
 

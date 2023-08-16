@@ -26,7 +26,7 @@ async function IndexPage() {
                )}/static`}
             />
          )}
-         <div className={`my-4`}>
+         <div className={`mt-12`}>
             <Link
                className={`hover:underline text-blue-500`}
                href={`_playgrounds`}

@@ -5,7 +5,6 @@ using Chatify.Domain.Events.Users;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Events;
 using LanguageExt;
-
 using FacebookSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
 
 namespace Chatify.Application.Authentication.Commands;
@@ -30,17 +29,15 @@ internal sealed class FacebookSignUpHandler : ICommandHandler<FacebookSignUp, Fa
         CancellationToken cancellationToken = default)
     {
         var result = await _authService.FacebookSignUpAsync(command, cancellationToken);
-        if ( result.IsLeft ) return new SignUpError(result.LeftToArray()[0].Message);
+        if ( result.IsT0 ) return new SignUpError(result.AsT0.Message);
 
-        result.Do(async res =>
+        var res = result.AsT1!;
+        await _eventDispatcher.PublishAsync(new UserSignedUpEvent
         {
-            await _eventDispatcher.PublishAsync(new UserSignedUpEvent
-            {
-                Timestamp = DateTime.Now,
-                UserId = res.UserId,
-                AuthenticationProvider = res.AuthenticationProvider
-            }, cancellationToken);
-        });
+            Timestamp = DateTime.Now,
+            UserId = res.UserId,
+            AuthenticationProvider = res.AuthenticationProvider
+        }, cancellationToken);
 
         return Unit.Default;
     }

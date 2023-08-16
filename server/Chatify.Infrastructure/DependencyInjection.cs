@@ -25,7 +25,6 @@ using Chatify.Infrastructure.Messages.BackgroundJobs;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Shared.Abstractions.Serialization;
 using Chatify.Shared.Abstractions.Time;
-using Chatify.Shared.Infrastructure.Api;
 using Chatify.Shared.Infrastructure.Contexts;
 using Chatify.Shared.Infrastructure.Events;
 using Chatify.Shared.Infrastructure.Serialization;

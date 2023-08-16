@@ -18,7 +18,11 @@ const MainNavbar = () => {
          className={`w-full mx-0 !max-w-[3000px]`}
          isBordered
       >
-         <NavbarBrand className={`text-3xl`}>Chatify</NavbarBrand>
+         <NavbarBrand className={`text-3xl`}>
+            <Link>
+               Chatify
+            </Link>
+         </NavbarBrand>
          <NavbarContent>
             <NavbarItem>
                <Link

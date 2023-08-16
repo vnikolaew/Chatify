@@ -1,5 +1,6 @@
 ﻿using Chatify.Application.Authentication.Contracts;
 using Chatify.Shared.Abstractions.Commands;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using LanguageExt;
 using LanguageExt.Common;
 using OneOf;
@@ -10,11 +11,11 @@ using SignOutResult = OneOf<Error, Unit>;
 
 public record SignOut : ICommand<SignOutResult>;
 
-internal sealed class SignOurHandler : ICommandHandler<SignOut, SignOutResult>
+internal sealed class SignOutHandler : ICommandHandler<SignOut, SignOutResult>
 {
     private readonly IAuthenticationService _authenticationService;
 
-    public SignOurHandler(IAuthenticationService authenticationService)
+    public SignOutHandler(IAuthenticationService authenticationService)
         => _authenticationService = authenticationService;
 
     public async Task<SignOutResult> HandleAsync(
@@ -22,6 +23,5 @@ internal sealed class SignOurHandler : ICommandHandler<SignOut, SignOutResult>
         CancellationToken cancellationToken = default)
         => await _authenticationService
             .SignOutAsync(cancellationToken)
-            .ToAsync()
-            .Match<SignOutResult>(_ => _, err => err);
+            .MatchAsync(err => (SignOutResult) err, _ => _);
 }

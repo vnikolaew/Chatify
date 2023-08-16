@@ -27,7 +27,6 @@ import GoogleSignInButton from "../signin/GoogleSignInButton";
 import FacebookSignInButton from "../signin/FacebookSignInButton";
 import { useGoogleLogin } from "@react-oauth/google";
 import GithubSignInButton from "../signin/GithubSignInButton";
-import axios from "axios";
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 const PASSWORD_REGEX =
@@ -101,7 +100,7 @@ const SignUpPage: NextPage = () => {
    }
 
    return (
-      <div className={`w-1/3 mx-auto mt-24`}>
+      <div className={`w-1/3 max-w-[600px] mx-auto mt-24`}>
          <Card shadow={"lg"} className={`p-6`} radius={"md"}>
             <CardHeader className={`text-2xl`}>Create an account</CardHeader>
             <CardBody className={`mt-0`}>
@@ -124,7 +123,7 @@ const SignUpPage: NextPage = () => {
                      <form
                         autoComplete={"off"}
                         noValidate
-                        className={`flex flex-col gap-3`}
+                        className={`flex  flex-col gap-3`}
                         onSubmit={handleSubmit}
                      >
                         <Input
@@ -134,6 +133,10 @@ const SignUpPage: NextPage = () => {
                            value={values.username}
                            onChange={handleChange}
                            label={"Username"}
+                           classNames={{
+                              input: "text-medium pb-1",
+                              label: "py-1",
+                           }}
                            autoComplete={"off"}
                            errorMessage={errors?.username}
                            validationState={
@@ -142,8 +145,8 @@ const SignUpPage: NextPage = () => {
                                  : "valid"
                            }
                            placeholder={"How are people going to call you?"}
-                           size={"sm"}
-                           className={`py-1 text-md rounded-lg`}
+                           size={"md"}
+                           className={`py-1  text-md rounded-lg`}
                            type={"text"}
                            name={"username"}
                            id={"username"}
@@ -153,6 +156,10 @@ const SignUpPage: NextPage = () => {
                            isClearable
                            onClear={() => setFieldValue("username", "")}
                            value={values.email}
+                           classNames={{
+                              input: "text-medium pb-1",
+                              label: "py-1",
+                           }}
                            onChange={handleChange}
                            description={
                               "We will never share your email with anybody else."
@@ -166,15 +173,19 @@ const SignUpPage: NextPage = () => {
                                  : "valid"
                            }
                            placeholder={"Type in your email"}
-                           size={"sm"}
+                           size={"md"}
                            className={`py-1 text-md rounded-lg`}
                            type={"email"}
                            name={"email"}
                            id={"email"}
                         />
                         <PasswordInput
-                           size={"sm"}
+                           size={"md"}
                            value={values.password}
+                           classNames={{
+                              input: "text-medium pb-1",
+                              label: "py-1",
+                           }}
                            onChange={handleChange}
                            errorMessage={errors.password}
                            validationState={

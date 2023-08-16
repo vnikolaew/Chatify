@@ -32,17 +32,16 @@ internal sealed class RegularSignInHandler : ICommandHandler<RegularSignIn, Regu
     {
         var result = await _authService
             .RegularSignInAsync(command, cancellationToken);
-        if ( result.IsLeft ) return new SignInError(result.LeftToArray()[0].Message);
+        if ( result.IsT0 ) return new SignInError(result.AsT0.Message);
 
-        result.Do(async res =>
+        var res = result.AsT1!;
+        await _eventDispatcher.PublishAsync(new UserSignedInEvent
         {
-            await _eventDispatcher.PublishAsync(new UserSignedInEvent
-            {
-                Timestamp = DateTime.Now,
-                UserId = res.UserId,
-                AuthenticationProvider = res.AuthenticationProvider
-            }, cancellationToken);
-        });
+            Timestamp = DateTime.Now,
+            UserId = res.UserId,
+            AuthenticationProvider = res.AuthenticationProvider
+        }, cancellationToken);
+        
         return Unit.Default;
     }
 }

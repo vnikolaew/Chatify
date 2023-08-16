@@ -31,18 +31,15 @@ internal sealed class GoogleSignUpHandler
     {
         var result = await _authService
             .GoogleSignUpAsync(command, cancellationToken);
+        if ( result.IsT0 ) return new SignUpError(result.AsT0.Message);
 
-        if ( result.IsLeft ) return new SignUpError(result.LeftToArray()[0].Message);
-
-        result.Do(async res =>
+        var res = result.AsT1!;
+        await _eventDispatcher.PublishAsync(new UserSignedUpEvent
         {
-            await _eventDispatcher.PublishAsync(new UserSignedUpEvent
-            {
-                Timestamp = DateTime.Now,
-                UserId = res.UserId,
-                AuthenticationProvider = res.AuthenticationProvider
-            }, cancellationToken);
-        });
+            Timestamp = DateTime.Now,
+            UserId = res.UserId,
+            AuthenticationProvider = res.AuthenticationProvider
+        }, cancellationToken);
 
         return Unit.Default;
     }

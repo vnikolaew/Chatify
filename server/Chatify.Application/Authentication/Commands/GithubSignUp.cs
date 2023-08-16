@@ -31,18 +31,14 @@ internal sealed class GithubSignUpHandler : ICommandHandler<GithubSignUp, Github
         var result = await _authenticationService
             .GithubSignUpAsync(command, cancellationToken);
 
-        if ( result.IsLeft ) return new SignUpError(result.LeftToArray()[0].Message);
+        if ( result.IsT0 ) return new SignUpError(result.AsT0.Message);
 
-        result.Do(async res =>
+        await _eventDispatcher.PublishAsync(new UserSignedUpEvent
         {
-            await _eventDispatcher.PublishAsync(new UserSignedUpEvent
-            {
-                Timestamp = DateTime.Now,
-                UserId = res.UserId,
-                AuthenticationProvider = res.AuthenticationProvider
-            }, cancellationToken);
-        });
-
+            Timestamp = DateTime.Now,
+            UserId = result.AsT1.UserId,
+            AuthenticationProvider = result.AsT1.AuthenticationProvider
+        }, cancellationToken);
         return Unit.Default;
     }
 }

@@ -17,6 +17,7 @@ using LanguageExt.Common;
 using Microsoft.AspNetCore.Identity;
 using OneOf;
 using static Chatify.Infrastructure.Authentication.External.Constants.AuthProviders;
+using static Chatify.Infrastructure.Authentication.External.Constants.ClaimNames;
 using Constants = Chatify.Infrastructure.Data.Constants;
 using IAuthenticationService = Chatify.Application.Authentication.Contracts.IAuthenticationService;
 
@@ -100,9 +101,9 @@ public sealed class AuthenticationService : IAuthenticationService
             new List<Claim>
             {
                 new(nameof(ChatifyUser.DisplayName), chatifyUser.DisplayName),
-                new("locale", _identityContext.UserLocale ?? string.Empty),
+                new(Locale, _identityContext.UserLocale ?? string.Empty),
                 new("location", _identityContext.UserLocation?.ToString() ?? string.Empty),
-                new("picture", chatifyUser.ProfilePicture.MediaUrl)
+                new(External.Constants.ClaimNames.Picture, chatifyUser.ProfilePicture.MediaUrl)
             });
 
         if ( !identityResult.Succeeded ) return identityResult.ToError()!;
@@ -119,7 +120,7 @@ public sealed class AuthenticationService : IAuthenticationService
             : identityResult.ToError()!;
     }
 
-    public async Task<Either<Error, UserSignedInResult>> RegularSignInAsync(
+    public async Task<OneOf<Error, UserSignedInResult>> RegularSignInAsync(
         RegularSignIn request,
         CancellationToken cancellationToken = default)
     {
@@ -150,7 +151,7 @@ public sealed class AuthenticationService : IAuthenticationService
             : Error.New($"Error during sign-in: {result}");
     }
 
-    public async Task<Either<Error, Unit>> SignOutAsync(
+    public async Task<OneOf<Error, Unit>> SignOutAsync(
         CancellationToken cancellationToken = default)
     {
         await _signInManager.SignOutAsync();
@@ -173,7 +174,7 @@ public sealed class AuthenticationService : IAuthenticationService
             userId,
             Github);
 
-    public async Task<Either<Error, UserSignedUpResult>> GoogleSignUpAsync(
+    public async Task<OneOf<Error, UserSignedUpResult>> GoogleSignUpAsync(
         GoogleSignUp request,
         CancellationToken cancellationToken = default)
     {
@@ -213,15 +214,15 @@ public sealed class AuthenticationService : IAuthenticationService
         if ( !identityResult.Succeeded ) return identityResult.ToError()!;
 
         var principal = userInfo.ToClaimsPrincipal();
-        identityResult= await _userManager.AddClaimsAsync(
+        identityResult = await _userManager.AddClaimsAsync(
             chatifyUser,
             new List<Claim>
             {
-                new( External.Constants.ClaimNames.Picture, chatifyUser.ProfilePicture.MediaUrl),
-                new( External.Constants.ClaimNames.Locale, userInfo.Locale)
+                new(External.Constants.ClaimNames.Picture, chatifyUser.ProfilePicture.MediaUrl),
+                new(Locale, userInfo.Locale)
             });
         if ( !identityResult.Succeeded ) return identityResult.ToError()!;
-        
+
         identityResult = await _userManager.AddLoginAsync(
             chatifyUser,
             GetGoogleExternalLoginInfoForUser(principal, userInfo.Id));
@@ -235,7 +236,8 @@ public sealed class AuthenticationService : IAuthenticationService
             : identityResult.ToError()!;
     }
 
-    public async Task<Either<Error, UserSignedUpResult>> GithubSignUpAsync(
+
+    public async Task<OneOf<Error, UserSignedUpResult>> GithubSignUpAsync(
         GithubSignUp request,
         CancellationToken cancellationToken = default)
     {
@@ -291,9 +293,9 @@ public sealed class AuthenticationService : IAuthenticationService
             new List<Claim>
             {
                 new(External.Constants.ClaimNames.Picture, chatifyUser.ProfilePicture.MediaUrl),
-                new(External.Constants.ClaimNames.Locale, userInfo.Location)
+                new(Locale, userInfo.Location)
             });
-        
+
         if ( !identityResult.Succeeded ) return identityResult.ToError()!;
 
         identityResult = await _userManager.AddLoginAsync(
@@ -315,7 +317,7 @@ public sealed class AuthenticationService : IAuthenticationService
             : identityResult.ToError()!;
     }
 
-    public async Task<Either<Error, UserSignedUpResult>> FacebookSignUpAsync(
+    public async Task<OneOf<Error, UserSignedUpResult>> FacebookSignUpAsync(
         FacebookSignUp request,
         CancellationToken cancellationToken = default)
     {
@@ -353,9 +355,10 @@ public sealed class AuthenticationService : IAuthenticationService
 
         var principal = userInfo.ToClaimsPrincipal();
         identityResult = await _userManager.AddClaimsAsync(
-            chatifyUser, principal.Claims);
+            chatifyUser,
+            new[] { new Claim(External.Constants.ClaimNames.Picture, userInfo.Picture.Data.Url) });
         if ( !identityResult.Succeeded ) return identityResult.ToError()!;
-        
+
         identityResult = await _userManager.AddLoginAsync(
             chatifyUser,
             new ExternalLoginInfo(principal,
