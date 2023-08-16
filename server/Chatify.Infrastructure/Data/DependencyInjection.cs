@@ -106,20 +106,46 @@ public static class DependencyInjection
         foreach ( var mapping in mappingsList )
             MappingConfiguration.Global.Define(mapping);
 
-        services
+        return services
             .AddCassandra(configuration)
             .AddTransient<Mapper>(sp => ( sp.GetRequiredService<IMapper>() as Mapper )!)
-            .AddHostedService<DatabaseInitializationService>()
+            .AddHostedService<DatabaseInitializationService>();
+    }
+
+    public static IServiceCollection AddCassandraIdentity(
+        this IServiceCollection services)
+    {
+        services
             .AddIdentity<ChatifyUser, CassandraIdentityRole>(ConfigureIdentityOptions)
             .AddCassandraErrorDescriber<CassandraErrorDescriber>()
             .UseCassandraStores<ISession>()
             .AddDefaultTokenProviders();
 
-        services.ConfigureApplicationCookie(opts =>
-        {
-            opts.Cookie.SameSite = SameSiteMode.None;
-            opts.Cookie.HttpOnly = false;
-        });
+        services
+            .ConfigureExternalCookie(opts =>
+            {
+                opts.Cookie.SameSite = SameSiteMode.None;
+                opts.Events.OnRedirectToAccessDenied = ctx => { return Task.CompletedTask; };
+                opts.Events.OnValidatePrincipal = ctx =>
+                {
+                    var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<IAssemblyMarker>>();
+                    logger.LogInformation("Validating principal ...");
+                    return Task.CompletedTask;
+                };
+                opts.Cookie.HttpOnly = false;
+            })
+            .ConfigureApplicationCookie(opts =>
+            {
+                opts.Cookie.SameSite = SameSiteMode.None;
+                opts.Events.OnRedirectToAccessDenied = ctx => { return Task.CompletedTask; };
+                opts.Events.OnValidatePrincipal = ctx =>
+                {
+                    var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<IAssemblyMarker>>();
+                    logger.LogInformation("Validating principal ...");
+                    return Task.CompletedTask;
+                };
+                opts.Cookie.HttpOnly = false;
+            });
 
         return services;
     }
@@ -127,6 +153,8 @@ public static class DependencyInjection
     private static void ConfigureIdentityOptions(IdentityOptions options)
     {
         options.SignIn.RequireConfirmedEmail = false;
+        options.SignIn.RequireConfirmedAccount = false;
+        options.SignIn.RequireConfirmedPhoneNumber = false;
 
         options.Password.RequiredLength = 6;
         options.Password.RequireNonAlphanumeric = true;

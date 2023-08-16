@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using AspNetCore.Identity.Cassandra.Models;
 using Chatify.Application.Authentication.Commands;
@@ -8,6 +7,7 @@ using Chatify.Application.User.Commands;
 using Chatify.Application.User.Common;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Authentication.External.Facebook;
+using Chatify.Infrastructure.Authentication.External.Github;
 using Chatify.Infrastructure.Authentication.External.Google;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Shared.Abstractions.Contexts;
@@ -18,8 +18,18 @@ using Microsoft.AspNetCore.Identity;
 using OneOf;
 using static Chatify.Infrastructure.Authentication.External.Constants.AuthProviders;
 using Constants = Chatify.Infrastructure.Data.Constants;
+using IAuthenticationService = Chatify.Application.Authentication.Contracts.IAuthenticationService;
 
 namespace Chatify.Infrastructure.Authentication;
+
+public static class Extensions
+{
+    public static Error? ToError(this IdentityResult identityResult)
+        => identityResult.Succeeded
+            ? default
+            : Error.New(string.Join(".", identityResult.Errors
+                .Select(e => Error.New(e.Description))));
+}
 
 public sealed class AuthenticationService : IAuthenticationService
 {
@@ -31,8 +41,10 @@ public sealed class AuthenticationService : IAuthenticationService
 
     private readonly IGoogleOAuthClient _googleOAuthClient;
     private readonly IFacebookOAuthClient _facebookOAuthClient;
+    private readonly IGithubOAuthClient _githubOAuthClient;
 
     private const string AuthenticationTokenName = "access_token";
+    private const string AuthenticationCodeName = "code";
 
     public AuthenticationService(
         UserManager<ChatifyUser> userManager,
@@ -40,7 +52,9 @@ public sealed class AuthenticationService : IAuthenticationService
         IGoogleOAuthClient googleOAuthClient,
         IFacebookOAuthClient facebookOAuthClient,
         IContext context,
-        IUserRepository users, IIdentityContext identityContext)
+        IUserRepository users,
+        IIdentityContext identityContext,
+        IGithubOAuthClient githubOAuthClient)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -49,6 +63,7 @@ public sealed class AuthenticationService : IAuthenticationService
         _context = context;
         _users = users;
         _identityContext = identityContext;
+        _githubOAuthClient = githubOAuthClient;
     }
 
     public async Task<OneOf<Error, UserSignedUpResult>> RegularSignUpAsync(
@@ -68,35 +83,29 @@ public sealed class AuthenticationService : IAuthenticationService
                     ? IPAddress.IsLoopback(address) ? IPAddress.Loopback : address
                     : IPAddress.None
             },
-            ProfilePicture = Constants.DefaultUserProfilePicture,
+            ProfilePicture = Constants.DefaultUserProfilePicture
         };
 
-        var identityResult = await _userManager.CreateAsync(chatifyUser, request.Password);
-        if ( !identityResult.Succeeded )
-        {
-            return Error.Many(new Seq<Error>(
-                identityResult.Errors.Select(e => Error.New(e.Description))
-            ));
-        }
+        var identityResult = await _userManager
+            .CreateAsync(chatifyUser, request.Password);
+        if ( !identityResult.Succeeded ) return identityResult.ToError()!;
 
         identityResult = await _userManager.AddLoginAsync(
             chatifyUser,
             new UserLoginInfo(RegularLogin, chatifyUser.Id.ToString(),
                 nameof(RegularLogin)));
-        
-        await _userManager.AddClaimAsync(chatifyUser, new Claim(nameof(ChatifyUser.DisplayName), chatifyUser.DisplayName ?? string.Empty));
-        await _userManager.AddClaimAsync(chatifyUser, new Claim("locale", _identityContext.UserLocale ?? string.Empty));
-        await _userManager.AddClaimAsync(chatifyUser, new Claim("location", _identityContext.UserLocation?.ToString() ?? string.Empty));
-        await _userManager.AddClaimAsync(chatifyUser, new Claim("picture", chatifyUser.ProfilePicture.MediaUrl));
-        
-        var s = DateTime.Now.ToString(CultureInfo.GetCultureInfo(_identityContext.UserLocale));
 
-        if ( !identityResult.Succeeded )
-        {
-            return Error.Many(new Seq<Error>(
-                identityResult.Errors.Select(e => Error.New(e.Description))
-            ));
-        }
+        await _userManager.AddClaimsAsync(
+            chatifyUser,
+            new List<Claim>
+            {
+                new(nameof(ChatifyUser.DisplayName), chatifyUser.DisplayName),
+                new("locale", _identityContext.UserLocale ?? string.Empty),
+                new("location", _identityContext.UserLocation?.ToString() ?? string.Empty),
+                new("picture", chatifyUser.ProfilePicture.MediaUrl)
+            });
+
+        if ( !identityResult.Succeeded ) return identityResult.ToError()!;
 
         var signInResult = await _signInManager.PasswordSignInAsync(
             chatifyUser, request.Password, isPersistent: true, lockoutOnFailure: true);
@@ -107,9 +116,7 @@ public sealed class AuthenticationService : IAuthenticationService
                 UserId = chatifyUser.Id,
                 AuthenticationProvider = RegularLogin
             }
-            : Error.Many(new Seq<Error>(
-                identityResult.Errors.Select(e => Error.New(e.Description))
-            ));
+            : identityResult.ToError()!;
     }
 
     public async Task<Either<Error, UserSignedInResult>> RegularSignInAsync(
@@ -158,6 +165,14 @@ public sealed class AuthenticationService : IAuthenticationService
             userId,
             Google.Titleize());
 
+    private static ExternalLoginInfo GetGithubExternalLoginInfoForUser(
+        ClaimsPrincipal principal,
+        string userId)
+        => new(principal,
+            Github,
+            userId,
+            Github);
+
     public async Task<Either<Error, UserSignedUpResult>> GoogleSignUpAsync(
         GoogleSignUp request,
         CancellationToken cancellationToken = default)
@@ -195,13 +210,18 @@ public sealed class AuthenticationService : IAuthenticationService
         chatifyUser.AddToken(new TokenInfo(Google, AuthenticationTokenName, request.AccessToken));
 
         var identityResult = await _userManager.CreateAsync(chatifyUser);
-        if ( !identityResult.Succeeded )
-        {
-            return Error.New(string.Join(".", identityResult.Errors
-                .Select(e => Error.New(e.Description))));
-        }
+        if ( !identityResult.Succeeded ) return identityResult.ToError()!;
 
         var principal = userInfo.ToClaimsPrincipal();
+        identityResult= await _userManager.AddClaimsAsync(
+            chatifyUser,
+            new List<Claim>
+            {
+                new( External.Constants.ClaimNames.Picture, chatifyUser.ProfilePicture.MediaUrl),
+                new( External.Constants.ClaimNames.Locale, userInfo.Locale)
+            });
+        if ( !identityResult.Succeeded ) return identityResult.ToError()!;
+        
         identityResult = await _userManager.AddLoginAsync(
             chatifyUser,
             GetGoogleExternalLoginInfoForUser(principal, userInfo.Id));
@@ -212,8 +232,87 @@ public sealed class AuthenticationService : IAuthenticationService
                 UserId = chatifyUser.Id,
                 AuthenticationProvider = Google
             }
-            : Error.New(string.Join(".", identityResult.Errors
-                .Select(e => Error.New(e.Description))));
+            : identityResult.ToError()!;
+    }
+
+    public async Task<Either<Error, UserSignedUpResult>> GithubSignUpAsync(
+        GithubSignUp request,
+        CancellationToken cancellationToken = default)
+    {
+        var userInfo = await _githubOAuthClient.GetUserInfoAsync(request.Code, cancellationToken);
+        if ( userInfo is null ) return Error.New("");
+
+        var existingUser = await _userManager.FindByEmailAsync(userInfo.Email);
+        if ( existingUser is not null )
+        {
+            var loginInfo = ( await _userManager.GetLoginsAsync(existingUser) )[0];
+            await _signInManager.ExternalLoginSignInAsync(
+                loginInfo.LoginProvider,
+                loginInfo.ProviderKey,
+                true, true);
+
+            return new UserSignedUpResult
+            {
+                UserId = existingUser.Id,
+                AuthenticationProvider = loginInfo.LoginProvider
+            };
+        }
+
+        var chatifyUser = new ChatifyUser
+        {
+            Email = userInfo.Email,
+            UserName = userInfo.Login,
+            DisplayName = userInfo.Name,
+            Metadata = new Dictionary<string, string>
+            {
+                { "ExternalId", userInfo.Id.ToString()! },
+                { "Locale", userInfo.Location }
+            },
+            DeviceIps = new System.Collections.Generic.HashSet<IPAddress>
+            {
+                IPAddress.Parse(_context.IpAddress)
+            },
+            EmailConfirmationTime = DateTimeOffset.Now,
+            ProfilePicture = new Media
+            {
+                Type = "",
+                FileName = "",
+                MediaUrl = userInfo.AvatarUrl
+            }
+        };
+        chatifyUser.AddToken(new TokenInfo(Github, AuthenticationCodeName, request.Code));
+
+        var identityResult = await _userManager.CreateAsync(chatifyUser);
+        if ( !identityResult.Succeeded ) return identityResult.ToError()!;
+
+        var principal = userInfo.ToClaimsPrincipal();
+        identityResult = await _userManager.AddClaimsAsync(
+            chatifyUser,
+            new List<Claim>
+            {
+                new(External.Constants.ClaimNames.Picture, chatifyUser.ProfilePicture.MediaUrl),
+                new(External.Constants.ClaimNames.Locale, userInfo.Location)
+            });
+        
+        if ( !identityResult.Succeeded ) return identityResult.ToError()!;
+
+        identityResult = await _userManager.AddLoginAsync(
+            chatifyUser,
+            GetGithubExternalLoginInfoForUser(principal, userInfo.Id.ToString()!));
+        if ( !identityResult.Succeeded ) return identityResult.ToError()!;
+
+        var info = ( await _userManager.GetLoginsAsync(chatifyUser) )[0];
+        var result = await _signInManager.ExternalLoginSignInAsync(
+            info.LoginProvider, info.ProviderKey,
+            isPersistent: true, true);
+
+        return identityResult.Succeeded
+            ? new UserSignedUpResult
+            {
+                UserId = chatifyUser.Id,
+                AuthenticationProvider = Github
+            }
+            : identityResult.ToError()!;
     }
 
     public async Task<Either<Error, UserSignedUpResult>> FacebookSignUpAsync(
@@ -250,13 +349,13 @@ public sealed class AuthenticationService : IAuthenticationService
         chatifyUser.AddToken(new TokenInfo(Facebook, AuthenticationTokenName, request.AccessToken));
 
         var identityResult = await _userManager.CreateAsync(chatifyUser);
-        if ( !identityResult.Succeeded )
-        {
-            return Error.New(string.Join(".", identityResult.Errors
-                .Select(e => Error.New(e.Description))));
-        }
+        if ( !identityResult.Succeeded ) return identityResult.ToError()!;
 
         var principal = userInfo.ToClaimsPrincipal();
+        identityResult = await _userManager.AddClaimsAsync(
+            chatifyUser, principal.Claims);
+        if ( !identityResult.Succeeded ) return identityResult.ToError()!;
+        
         identityResult = await _userManager.AddLoginAsync(
             chatifyUser,
             new ExternalLoginInfo(principal,
@@ -264,14 +363,13 @@ public sealed class AuthenticationService : IAuthenticationService
                 userInfo.Id,
                 Facebook.Titleize()));
 
-        return identityResult.Succeeded
+        return identityResult.Succeeded!
             ? new UserSignedUpResult
             {
                 UserId = chatifyUser.Id,
                 AuthenticationProvider = Facebook
             }
-            : Error.New(string.Join(".", identityResult.Errors
-                .Select(e => Error.New(e.Description))));
+            : identityResult.ToError()!;
     }
 
     public async Task<OneOf<UserNotFound, string>> GenerateEmailConfirmationTokenAsync(

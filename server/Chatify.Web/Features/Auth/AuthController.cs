@@ -1,9 +1,11 @@
 ﻿using Chatify.Application.Authentication.Commands;
+using Chatify.Infrastructure.Authentication.External.Github;
 using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
 using Chatify.Web.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using GithubSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
 using SignOutResult = OneOf.OneOf<LanguageExt.Common.Error, LanguageExt.Unit>;
 using RegularSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
 using RegularSignInResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignInError, LanguageExt.Unit>;
@@ -23,15 +25,21 @@ public class AuthController : ApiController
 
     public const string GoogleSignUpRoute = $"{RegularSignUpRoute}/google";
     public const string FacebookSignUpRoute = $"{RegularSignUpRoute}/facebook";
+    public const string GithubSignUpRoute = $"{RegularSignUpRoute}/github";
 
     public const string ConfirmEmailRoute = "confirm-email";
 
     [HttpGet]
+    [Authorize]
     [Route("me")]
     public IActionResult Info()
         => Ok(new
         {
-            Claims = User.Claims.ToDictionary(c => c.Type, c => c.Value)
+            Claims = User.Claims
+                .DistinctBy(c => c.Type)
+                .ToDictionary(
+                    c => c.Type.Split("/", StringSplitOptions.RemoveEmptyEntries).Last(),
+                    c => c.Value)
         });
 
     [HttpPost]
@@ -77,6 +85,16 @@ public class AuthController : ApiController
         return SendAsync<FacebookSignUp, FacebookSignUpResult>(signUp, cancellationToken)
             .MatchAsync(err => err.ToBadRequest(), NoContent);
     }
+
+    [HttpPost]
+    [Route(GithubSignUpRoute)]
+    public Task<IActionResult> GithubSignUp(
+        [FromServices] IGithubOAuthClient githubOAuthClient,
+        [FromQuery] string code,
+        CancellationToken cancellationToken = default)
+        => SendAsync<GithubSignUp, GithubSignUpResult>(
+                new GithubSignUp(code), cancellationToken)
+            .MatchAsync(err => err.ToBadRequest(), _ => NoContent());
 
     [HttpPost]
     [Route(ConfirmEmailRoute)]

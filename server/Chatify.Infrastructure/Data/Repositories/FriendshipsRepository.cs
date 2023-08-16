@@ -5,6 +5,7 @@ using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Shared.Abstractions.Serialization;
 using Humanizer;
+using LanguageExt;
 using StackExchange.Redis;
 using FriendsRelation = Chatify.Domain.Entities.FriendsRelation;
 using Mapper = Cassandra.Mapping.Mapper;
@@ -29,7 +30,7 @@ public sealed class FriendshipsRepository
 
     private static RedisKey GetUserFriendsCacheKey(Guid userId)
         => $"user:{userId}:friends";
-    
+
     private static RedisKey GetUserCacheKey(Guid userId)
         => $"user:{userId}";
 
@@ -45,18 +46,10 @@ public sealed class FriendshipsRepository
             FriendOneId = entity.FriendTwoId,
             CreatedAt = entity.CreatedAt
         };
-        
+
         var saveOne = base.SaveAsync(entity, cancellationToken);
-        var saveTwo  = base.SaveAsync(swappedFriendRelation, cancellationToken);
+        var saveTwo = base.SaveAsync(swappedFriendRelation, cancellationToken);
         await Task.WhenAll(saveOne, saveTwo);
-        
-        var userOne = DbMapper
-            .FirstOrDefaultAsync<ChatifyUser>("WHERE id = ?", entity.FriendOneId);
-
-        var userTwo = DbMapper
-            .FirstOrDefaultAsync<ChatifyUser>("WHERE id = ?", entity.FriendTwoId);
-
-        var users = await Task.WhenAll(userOne, userTwo);
 
         // Store each user as a friend in the other user's sorted set of friends:
         var storeTasks = new[]
@@ -71,8 +64,8 @@ public sealed class FriendshipsRepository
                 new RedisValue(entity.FriendOneId.ToString()),
                 entity.CreatedAt.Ticks,
                 SortedSetWhen.NotExists),
-            _cache.SetAsync($"user:{entity.FriendOneId}", users[0]),
-            _cache.SetAsync($"user:{entity.FriendTwoId}", users[1]),
+            // _cache.SetAsync($"user:{entity.FriendOneId}", users[0]),
+            // _cache.SetAsync($"user:{entity.FriendTwoId}", users[1]),
         };
 
         var results = await Task.WhenAll(storeTasks);
@@ -110,8 +103,9 @@ public sealed class FriendshipsRepository
                 " WHERE friend_one_id = ? AND friend_two_id = ? ALLOW FILTERING;",
                 friendOneId, friendTwoId);
         if ( friendsRelation is null ) return false;
-            
-        await DbMapper.DeleteAsync<Models.FriendsRelation>(" WHERE friend_one_id = ? AND friend_two_id = ? ALLOW FILTERING;",
+
+        await DbMapper.DeleteAsync<Models.FriendsRelation>(
+            " WHERE friend_one_id = ? AND friend_two_id = ? ALLOW FILTERING;",
             friendOneId, friendTwoId);
 
         // Purge entries from cache as well:
@@ -124,7 +118,7 @@ public sealed class FriendshipsRepository
                 GetUserFriendsCacheKey(friendTwoId),
                 new RedisValue(friendOneId.ToString())),
         };
-        
+
         await Task.WhenAll(deleteTasks);
         return true;
     }
@@ -137,5 +131,15 @@ public sealed class FriendshipsRepository
             GetUserFriendsCacheKey(userId), order: Order.Descending);
 
         return friendsIds.Select(id => Guid.Parse(id.ToString())).ToList();
+    }
+
+    public async Task<List<FriendsRelation>> AllFriendshipsForUser(
+        Guid userId, CancellationToken cancellationToken = default)
+    {
+        var friendships = await
+            DbMapper.FetchAsync<Models.FriendsRelation>(
+                " WHERE friend_one_id = ?", userId);
+
+        return friendships.To<FriendsRelation>(Mapper).ToList();
     }
 }

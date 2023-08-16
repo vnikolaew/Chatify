@@ -1,5 +1,7 @@
-﻿using Cassandra;
+﻿using AutoMapper;
+using Cassandra;
 using Chatify.Application.Common.Mappings;
+using Chatify.Infrastructure.Common.Mappings;
 using Humanizer;
 using Metadata = System.Collections.Generic.IDictionary<string, string>;
 
@@ -14,6 +16,11 @@ public record Media  : IMapFrom<Domain.Entities.Media>
     public string? FileName { get; init; }
     
     public string? Type { get; init; }
+
+    public void Mapping(Profile profile)
+        => profile
+            .CreateMap<Media, Domain.Entities.Media>()
+            .ReverseMap();
 
     public static readonly UdtMap<Media> UdtMap = Cassandra.UdtMap
         .For<Media>(nameof(Media).Underscore())

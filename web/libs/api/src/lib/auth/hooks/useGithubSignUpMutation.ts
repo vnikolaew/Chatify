@@ -2,12 +2,18 @@ import { authClient } from "../client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 
-export interface GoogleSignUpModel {
-   accessToken: string;
+export interface GithubSignUpModel {
+   code: string;
 }
 
-const googleSignUp = async (model: GoogleSignUpModel) => {
-   const { status, data } = await authClient.post(`/signup/google`, model);
+const githubSignUp = async ({ code }: GithubSignUpModel) => {
+   const { status, data } = await authClient.post(
+      `/signup/github`,
+      {},
+      {
+         params: new URLSearchParams({ code }),
+      }
+   );
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error(data.error ?? "Error");
@@ -16,9 +22,10 @@ const googleSignUp = async (model: GoogleSignUpModel) => {
    return data;
 };
 
-export const useGoogleSignUpMutation = () => {
+export const useGithubSignUpMutation = () => {
    const client = useQueryClient();
-   return useMutation(googleSignUp, {
+
+   return useMutation(githubSignUp, {
       onError: (err) => console.error("A sign up error occurred: ", err),
       onSuccess: (data) => console.log("Sign up success: " + data),
       onSettled: (res) => console.log(res),

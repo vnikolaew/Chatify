@@ -11,6 +11,7 @@ public static class Constants
     public static class AuthProviders
     {
         public static readonly string Google = nameof(Google).ToLower();
+        public static readonly string Github = nameof(Github ).ToLower();
         public static readonly string Facebook = nameof(Facebook).ToLower();
         public static readonly string RegularLogin = nameof(RegularLogin).ToLower();
     }

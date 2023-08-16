@@ -17,6 +17,7 @@ public class FriendsRelationMapping : Cassandra.Mapping.Mappings
             .ClusteringKey(fr => fr.CreatedAt, SortOrder.Descending)
             .UnderscoreColumn(fr => fr.FriendOneId)
             .UnderscoreColumn(fr => fr.FriendTwoId)
+            .UnderscoreColumn(fr => fr.GroupId)
             .UnderscoreColumn(fr => fr.CreatedAt);
     }
 }

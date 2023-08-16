@@ -17,4 +17,15 @@ public sealed class EventDispatcher : IEventDispatcher
         var tasks = handlers.Select(handler => handler.HandleAsync(@event, cancellationToken));
         await Task.WhenAll(tasks);
     }
+
+    public async Task PublishAsync<TEvent>(
+        IEnumerable<TEvent> @events,
+        CancellationToken cancellationToken = default)
+        where TEvent : class, IEvent
+    {
+        var tasks = @events
+            .Select(e => PublishAsync(e, cancellationToken))
+            .ToList();
+        await Task.WhenAll(tasks);
+    }
 }

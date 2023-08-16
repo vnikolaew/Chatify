@@ -3,15 +3,15 @@ using ReactionCounts = System.Collections.Generic.IDictionary<int, long>;
 
 namespace Chatify.Domain.Entities;
 
-public record Media
+public class Media
 {
     public Guid Id { get; set; }
     
     public string MediaUrl { get; set; } = default!;
     
-    public string? FileName { get; init; }
+    public string? FileName { get; set; }
     
-    public string? Type { get; init; }
+    public string? Type { get; set; }
 }
 
 

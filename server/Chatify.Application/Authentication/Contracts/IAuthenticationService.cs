@@ -38,13 +38,16 @@ public interface IAuthenticationService
     Task<Either<Error, UserSignedUpResult>> GoogleSignUpAsync(
         GoogleSignUp request,
         CancellationToken cancellationToken = default);
+    
+    Task<Either<Error, UserSignedUpResult>> GithubSignUpAsync(
+        GithubSignUp request,
+        CancellationToken cancellationToken = default);
 
     Task<Either<Error, UserSignedUpResult>> FacebookSignUpAsync(
         FacebookSignUp request,
         CancellationToken cancellationToken = default);
 
     Task<OneOf<UserNotFound, string>> GenerateEmailConfirmationTokenAsync(
-        
         Guid userId,
         CancellationToken cancellationToken = default);
 

@@ -2,6 +2,18 @@
 import React, { useMemo } from "react";
 import { useGetMyClaimsQuery } from "@web/api";
 import Image from "next/image";
+import {
+   Avatar,
+   CircularProgress,
+   getKeyValue,
+   Spinner,
+   Table,
+   TableBody,
+   TableCell,
+   TableColumn,
+   TableHeader,
+   TableRow,
+} from "@nextui-org/react";
 
 export const APPLICATION_COOKIE_NAME = ".AspNetCore.Identity.Application";
 
@@ -18,6 +30,13 @@ function isUserLoggedIn() {
    return false;
 }
 
+function isValidURL(url: string | null) {
+   // Regular expression pattern to match a valid absolute URL
+   const urlPattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
+
+   return urlPattern.test(url);
+}
+
 export interface GreetingProps {
    imagesBaseUrl: string;
 }
@@ -29,7 +48,6 @@ const Greeting = ({ imagesBaseUrl }: GreetingProps) => {
       isLoading,
       isFetching,
    } = useGetMyClaimsQuery({
-      enabled: false,
       useErrorBoundary: (error, query) => false,
    });
 
@@ -41,47 +59,84 @@ const Greeting = ({ imagesBaseUrl }: GreetingProps) => {
       )[1] as string;
    }, [me]);
 
-   if (isLoading && isFetching) return <h3>Loading ...</h3>;
+   if (isLoading && isFetching)
+      return (
+         <span>
+            <Spinner
+               classNames={{
+                  label: "text-small text-default-500",
+               }}
+               size={"md"}
+               color={"danger"}
+               labelColor={"foreground"}
+               label={"Loading ..."}
+            />
+         </span>
+      );
 
    return (
       username && (
          <div>
-            <div>
-               Greetings, <b className={`text-xl`}>{username}</b> !
+            <div className={`flex items-center gap-4`}>
+               <Avatar
+                  src={
+                     isValidURL(me.claims.picture)
+                        ? me.claims.picture
+                        : `${imagesBaseUrl}/${me.claims.picture}`
+                  }
+                  className={``}
+                  size={"lg"}
+                  alt={"profile-picture"}
+                  // name={me.claims.}
+                  radius={"full"}
+                  color={"default"}
+                  isBordered
+               />
+               <h2>
+                  Greetings, <b className={`text-xl`}>{username}</b> !
+               </h2>
             </div>
-            <Image
-               className={`rounded-md shadow-sm`}
-               width={80}
-               height={80}
-               crossOrigin={"use-credentials"}
-               decoding={"async"}
-               src={`${imagesBaseUrl}/${me.claims.picture}`}
-               alt={"profile-picture"}
-            />
-            <table className={`text-sm border my-4 border-blue-500 rounded-md`}>
-               <thead>
-                  <tr className={`border border-blue-500`}>
-                     <th className={`border-blue-500 border`}>Name</th>
-                     <th>Value</th>
-                  </tr>
-               </thead>
-               <tbody>
-                  {Object.entries(me?.claims)
-                     .filter(([_, value]) => !!value)
-                     .map(([key, value]) => (
-                        <tr className={`border border-blue-500`}>
-                           <td
-                              className={`border-blue-500 font-bold py-1 px-2 border`}
+            <h2 className={`mt-8`}>Claims: </h2>
+            <Table className={`mt-4`}>
+               <TableHeader
+                  columns={[
+                     { key: "type", label: "Type" },
+                     { key: "value", label: "Value" },
+                  ]}
+               >
+                  {(column) => (
+                     <TableColumn
+                        isRowHeader
+                        className={`text-medium text-center`}
+                        key={column.key}
+                     >
+                        {column.label}
+                     </TableColumn>
+                  )}
+               </TableHeader>
+               <TableBody
+                  items={Object.entries(me.claims).map(([name, value]) => ({
+                     type: name,
+                     value,
+                  }))}
+               >
+                  {(item: Record<string, any>) => (
+                     <TableRow key={item.type}>
+                        {(columnKey) => (
+                           <TableCell
+                              className={
+                                 columnKey === "value"
+                                    ? "font-light"
+                                    : "font-medium"
+                              }
                            >
-                              {key}
-                           </td>
-                           <td className={`border-blue-500 py-1 px-2 border`}>
-                              {value as string}
-                           </td>
-                        </tr>
-                     ))}
-               </tbody>
-            </table>
+                              {getKeyValue(item, columnKey)}
+                           </TableCell>
+                        )}
+                     </TableRow>
+                  )}
+               </TableBody>
+            </Table>
          </div>
       )
    );

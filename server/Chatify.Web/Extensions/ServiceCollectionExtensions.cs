@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using Chatify.Infrastructure;
 using Chatify.Web.Middleware;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi.Models;
 
 namespace Chatify.Web.Extensions;
@@ -18,6 +19,8 @@ public static class ServiceCollectionExtensions
     {
         services
             // .AddScoped<TraceIdentifierMiddleware>()
+            .AddSingleton<IAuthorizationMiddlewareResultHandler,
+                AuthorizationResultMiddlewareHandler>()
             .AddMappers()
             .AddCors()
             .AddProblemDetails(opts => { opts.CustomizeProblemDetails = _ => { }; })

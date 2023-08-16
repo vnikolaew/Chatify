@@ -6,7 +6,11 @@ import {
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 
-const getMyClaims = async () => {
+export interface GetMyClaimsResponse {
+   claims: Record<string, any>;
+}
+
+export const getMyClaims = async (): Promise<GetMyClaimsResponse> => {
    const { status, data } = await authClient.get(`/me`);
 
    if (status !== HttpStatusCode.Ok) {
@@ -15,6 +19,7 @@ const getMyClaims = async () => {
 
    return data;
 };
+
 export const useGetMyClaimsQuery = (
    options?: Omit<
       UseQueryOptions<any, unknown, any, string[]>,

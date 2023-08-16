@@ -7,21 +7,25 @@ import * as process from "process";
 
 const APPLICATION_COOKIE_NAME = ".AspNetCore.Identity.Application";
 
+export const revalidate = 0;
+
 async function IndexPage() {
    const cookieStore = cookies();
    const isUserLoggedIn = !!cookieStore.get(APPLICATION_COOKIE_NAME);
 
    return (
       <div
-         className={`flex text-xl gap-3 flex-col shadow-gray-300 w-fit px-4 py-2 rounded-md `}
+         className={`flex min-h-[60vh] text-xl gap-3 flex-col items-center shadow-gray-300 w-full px-4 py-4 rounded-md `}
       >
-         <h1 className={`text-3xl`}>Home Page</h1>
-         <Greeting
-            imagesBaseUrl={`${process.env.NEXT_PUBLIC_BACKEND_API_URL.slice(
-               0,
-               -4
-            )}/static`}
-         />
+         <h1 className={`text-3xl my-4`}>Home Page</h1>
+         {isUserLoggedIn && (
+            <Greeting
+               imagesBaseUrl={`${process.env.NEXT_PUBLIC_BACKEND_API_URL.slice(
+                  0,
+                  -4
+               )}/static`}
+            />
+         )}
          <div className={`my-4`}>
             <Link
                className={`hover:underline text-blue-500`}
@@ -35,7 +39,7 @@ async function IndexPage() {
                <h2 className={`font-bold`}>You are currently not logged in.</h2>
                <div className={`flex items-center gap-8`}>
                   <Link
-                     className={`hover:underline text-blue-500`}
+                     className={`hover:underline text-blue-600`}
                      href={`/signup`}
                   >
                      {" "}
@@ -50,7 +54,7 @@ async function IndexPage() {
                </div>
             </Fragment>
          ) : (
-            <div className={`self-end mt-2`}>
+            <div className={`self-center mt-2`}>
                <SignOut />
             </div>
          )}

@@ -10,6 +10,7 @@ using Chatify.Application.Messages.Contracts;
 using Chatify.Domain.Common;
 using Chatify.Infrastructure.Authentication;
 using Chatify.Infrastructure.Authentication.External.Facebook;
+using Chatify.Infrastructure.Authentication.External.Github;
 using Chatify.Infrastructure.Authentication.External.Google;
 using Chatify.Infrastructure.ChatGroups.Services;
 using Chatify.Infrastructure.Common;
@@ -24,6 +25,7 @@ using Chatify.Infrastructure.Messages.BackgroundJobs;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Shared.Abstractions.Serialization;
 using Chatify.Shared.Abstractions.Time;
+using Chatify.Shared.Infrastructure.Api;
 using Chatify.Shared.Infrastructure.Contexts;
 using Chatify.Shared.Infrastructure.Events;
 using Chatify.Shared.Infrastructure.Serialization;
@@ -39,6 +41,7 @@ using Polly.Extensions.Http;
 using Quartz;
 using StackExchange.Redis;
 using AuthenticationService = Chatify.Infrastructure.Authentication.AuthenticationService;
+using Extensions = Chatify.Shared.Infrastructure.Events.Extensions;
 using IAuthenticationService = Chatify.Application.Authentication.Contracts.IAuthenticationService;
 
 namespace Chatify.Infrastructure;
@@ -49,11 +52,13 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
         => services
+            .AddAuthorization()
             .AddData(configuration)
+            .AddCassandraIdentity()
             .AddSeeding(configuration)
             .AddRepositories()
             .AddBackgroundJobs()
-            .AddServices()
+            .AddServices(configuration)
             .AddCaching(configuration)
             .AddContexts();
 
@@ -70,10 +75,12 @@ public static class DependencyInjection
             .AddQuartzHostedService(opts =>
                 opts.WaitForJobsToComplete = true);
 
-    public static IServiceCollection AddServices(this IServiceCollection services)
+    public static IServiceCollection AddServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
         => services
-            .AddAuthenticationServices()
-            .AddEvents(new[] { Assembly.GetExecutingAssembly() })
+            .AddAuthenticationServices(configuration)
+            .AddEvents(new[] { Assembly.GetExecutingAssembly() }, Extensions.EventDispatcherType.FireAndForget)
             .AddTransient<IEmailSender, NullEmailSender>()
             .AddSingleton<IClock, UtcClock>()
             .AddTransient<IFileUploadService, LocalFileSystemUploadService>()
@@ -85,9 +92,11 @@ public static class DependencyInjection
             .AddNotifications()
             .AddCounters();
 
-    public static IServiceCollection AddNotifications(this IServiceCollection services)
+    public static IServiceCollection AddNotifications(
+        this IServiceCollection services)
     {
         services
+            .AddScoped<INotificationService, SignalRNotificationService>()
             .AddSignalR(opts => { opts.KeepAliveInterval = 30.Seconds(); })
             .AddHubOptions<ChatifyHub>(opts =>
             {
@@ -95,7 +104,7 @@ public static class DependencyInjection
                 opts.MaximumParallelInvocationsPerClient = 10;
             }).AddJsonProtocol();
 
-        return services.AddScoped<INotificationService, SignalRNotificationService>();
+        return services;
     }
 
     public static IEndpointRouteBuilder MapNotifications(
@@ -195,7 +204,8 @@ public static class DependencyInjection
     }
 
     public static IServiceCollection AddAuthenticationServices(
-        this IServiceCollection services)
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
         services.AddHttpClient<IGoogleOAuthClient, GoogleOAuthClient>(client =>
         {
@@ -209,7 +219,12 @@ public static class DependencyInjection
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
         }).AddPolicyHandler(RetryPolicy);
 
+        var options = new GithubOptions();
+        configuration.GetSection(nameof(GithubOptions)).Bind(options);
+
         return services
+            .AddSingleton(options)
+            .AddScoped<IGithubOAuthClient, GithubOAuthClient>()
             .AddScoped<IAuthenticationService, AuthenticationService>()
             .AddScoped<IEmailConfirmationService, EmailConfirmationService>();
     }

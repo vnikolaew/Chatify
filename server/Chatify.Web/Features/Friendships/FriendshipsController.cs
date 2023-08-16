@@ -14,7 +14,7 @@ namespace Chatify.Web.Features.Friendships;
 using SendFriendInvitationResult = OneOf<UserNotFound, FriendInviteNotFoundError, Guid>;
 using DeclineFriendInvitationResult = OneOf<FriendInviteNotFoundError, FriendInviteInvalidStateError, Unit>;
 using AcceptFriendInvitationResult = OneOf<FriendInviteNotFoundError, FriendInviteInvalidStateError, Guid>;
-using UnfriendUserResult = OneOf<UsersAreNotFriendsError, Unit>;
+using UnfriendUserResult = OneOf<UsersAreNotFriendsError, Error, Unit>;
 using GetIncomingInvitationsResult = OneOf<Error, List<FriendInvitation>>;
 using GetSentInvitationsResult = OneOf<Error, List<FriendInvitation>>;
 using GetMyFriendsResult = OneOf<Error, List<User>>;
@@ -117,6 +117,7 @@ public class FriendshipsController : ApiController
         var result = await SendAsync<UnfriendUser, UnfriendUserResult>(
             new UnfriendUser(friendId), cancellationToken);
         return result.Match<IActionResult>(
+            _ => BadRequest(),
             _ => BadRequest(),
             _ => NoContent());
     }

@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { useSignOutMutation } from "@web/api";
+import { Button } from "@nextui-org/react";
 
 const SignOut = () => {
    const {
@@ -18,15 +19,17 @@ const SignOut = () => {
    };
 
    return (
-      <div>
-         <button
-            onClick={handleClick}
-            disabled={isLoading}
-            className={`hover:underline text-blue-500`}
-         >
-            {isLoading ? "Loading ..." : "Sign Out"}
-         </button>
-      </div>
+      <Button
+         onClick={handleClick}
+         color={"danger"}
+         radius={"md"}
+         size={"lg"}
+         variant={"flat"}
+         disabled={isLoading}
+         className={`hover:underline`}
+      >
+         {isLoading ? "Loading ..." : "Sign Out"}
+      </Button>
    );
 };
 

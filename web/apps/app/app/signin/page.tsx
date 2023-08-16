@@ -2,11 +2,12 @@
 import React from "react";
 import { NextPage } from "next";
 import { RegularSignInModel, sleep, useRegularSignInMutation } from "@web/api";
-import Link from "next/link";
+import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import {
    Button,
    Card,
+   Link,
    CardBody,
    CardHeader,
    Input,
@@ -15,7 +16,6 @@ import {
 import * as yup from "yup";
 import { Formik } from "formik";
 import PasswordInput from "./PasswordInput";
-import { isLocalFile } from "@swc/core/spack";
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 const PASSWORD_REGEX =
@@ -50,7 +50,7 @@ const SignInPage: NextPage = () => {
    }
 
    return (
-      <div className={`w-1/4 mx-auto mt-24`}>
+      <div className={`w-1/3 mx-auto mt-24`}>
          <Card shadow={"lg"} className={`p-6`} radius={"md"}>
             <CardHeader className={`text-2xl`}>
                Sign in with your account
@@ -80,6 +80,7 @@ const SignInPage: NextPage = () => {
                            autoFocus
                            isClearable
                            value={values.email}
+                           onClear={() => setFieldValue("email", "")}
                            onChange={handleChange}
                            label={"Email"}
                            autoComplete={"off"}
@@ -89,15 +90,15 @@ const SignInPage: NextPage = () => {
                                  ? "invalid"
                                  : "valid"
                            }
-                           placeholder={"Type in your email"}
-                           size={"lg"}
+                           placeholder={"Enter your email"}
+                           size={"md"}
                            className={`py-1 text-md rounded-lg`}
                            type={"email"}
                            name={"email"}
                            id={"email"}
                         />
                         <PasswordInput
-                           size={"lg"}
+                           size={"md"}
                            value={values.password}
                            onChange={handleChange}
                            errorMessage={errors.password}
@@ -113,25 +114,34 @@ const SignInPage: NextPage = () => {
                            id={"password"}
                         />
                         <div className={`w-full flex flex-col justify-between`}>
-                           <Link
-                              className={`hover:underline text-md text-blue-500`}
-                              href={`/signup`}
-                           >
-                              Don't have an account yet? Sign up here.
-                           </Link>
+                           <div>
+                              <span className={`text-default-500 text-small`}>
+                                 Don't have an account yet?
+                              </span>
+                              <Link
+                                 className={`ml-2`}
+                                 underline={"hover"}
+                                 color={"primary"}
+                                 size={"sm"}
+                                 as={NextLink}
+                                 href={`/signup`}
+                              >
+                                 Sign up now.
+                              </Link>
+                           </div>
                            <Button
                               variant={"solid"}
                               isLoading={isSubmitting}
                               spinner={
                                  <Spinner
                                     className={`mr-2`}
-                                    color={"default"}
-                                    size={"md"}
+                                    color={"white"}
+                                    size={"sm"}
                                  />
                               }
                               color={"primary"}
-                              size={"lg"}
-                              className={`text-white mt-12 py-3 w-1/2 text-[1.2rem] hover:opacity-80 self-end shadow-sm rounded-md`}
+                              size={"sm"}
+                              className={`text-white mt-12 py-5 w-1/2 text-[1.0rem] hover:opacity-80 self-end shadow-sm rounded-md`}
                               type={`submit`}
                            >
                               {isSubmitting ? "Loading" : "Sign In"}

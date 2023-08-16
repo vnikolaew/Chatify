@@ -12,4 +12,8 @@ public interface IFriendshipsRepository : IDomainRepository<FriendsRelation, Gui
     Task<List<Guid>> AllFriendIdsForUser(
         Guid userId,
         CancellationToken cancellationToken = default);
+    
+    Task<List<FriendsRelation>> AllFriendshipsForUser(
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }

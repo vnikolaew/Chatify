@@ -1,5 +1,7 @@
 ﻿using System.Collections;
+using System.Linq.Expressions;
 using AutoMapper;
+using AutoMapper.Internal;
 using AutoMapper.QueryableExtensions;
 
 namespace Chatify.Infrastructure.Common.Mappings;
@@ -17,6 +19,17 @@ public static class Extensions
         => enumerable
             .AsQueryable()
             .ProjectTo<T>(mapper.ConfigurationProvider);
+
+    public static IMappingExpression<TSource, TDestination> MapRecordMember<TSource, TDestination, TMember>(
+        this IMappingExpression<TSource, TDestination> mappingExpression,
+        Expression<Func<TDestination, TMember>> destinationMember, Expression<Func<TSource, TMember>> sourceMember)
+    {
+        var memberInfo = ReflectionHelper.FindProperty(destinationMember);
+        string memberName = memberInfo.Name;
+        return mappingExpression
+            .ForMember(destinationMember, opt => opt.MapFrom(sourceMember))
+            .ForCtorParam(memberName, opt => opt.MapFrom(sourceMember));
+    }
 
     public static List<T> ToList<T>(
         this IEnumerable enumerable,

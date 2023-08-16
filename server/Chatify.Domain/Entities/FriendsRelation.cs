@@ -8,5 +8,7 @@ public class FriendsRelation
     
     public Guid FriendTwoId { get; set; }
 
+    public Guid GroupId { get; set; }
+    
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
 }

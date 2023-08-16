@@ -19,6 +19,26 @@ public sealed class FireAndForgetEventDispatcher : IEventDispatcher
         var handlers = scope.ServiceProvider.GetServices<IEventHandler<TEvent>>();
         var tasks = handlers.Select(handler => handler.HandleAsync(@event, cancellationToken));
         
-        Task.Run(async () => await Task.WhenAll(tasks), cancellationToken);
+        Task.Run(async () =>
+        {
+            try
+            {
+                await Task.WhenAll(tasks);
+            }
+            catch ( Exception)
+            {
+            }
+        }, cancellationToken);
+    }
+
+    public async Task PublishAsync<TEvent>(
+        IEnumerable<TEvent> events,
+        CancellationToken cancellationToken = default)
+        where TEvent : class, IEvent
+    {
+        var tasks = @events
+            .Select(e => PublishAsync(e, cancellationToken))
+            .ToList();
+        await Task.WhenAll(tasks);
     }
 }

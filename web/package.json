@@ -11,6 +11,7 @@
       "@microsoft/signalr": "^7.0.5",
       "@nextui-org/react": "^2.0.12",
       "@nx/next": "16.6.0",
+      "@react-oauth/google": "^0.11.1",
       "@swc/helpers": "^0.5.0",
       "@tanstack/react-query": "^4.32.6",
       "@tanstack/react-query-devtools": "^4.32.6",
@@ -20,6 +21,7 @@
       "next": "13.4.1",
       "react": "18.2.0",
       "react-dom": "18.2.0",
+      "react-github-login": "^1.0.3",
       "tslib": "^2.3.0",
       "yup": "^1.2.0"
    },
