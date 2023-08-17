@@ -39,8 +39,9 @@ public static class RedisCacheExtensions
     {
         var values = await database.StringGetAsync(keys.Select(_ => new RedisKey(_)).ToArray());
         return values
-            .Where(_ => _.HasValue)
-            .Select(v => Serializer.Deserialize<T>(v.ToString()));
+            .Select(v => v.HasValue
+                ? Serializer.Deserialize<T>(v.ToString())
+                : default);
     }
 
     public static Task<bool> SetAsync<T>(

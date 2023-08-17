@@ -56,7 +56,7 @@ internal sealed class GetChatGroupDetailsHandler
         var groupMembersTask = _members.ByGroup(group.Id, cancellationToken);
         var (admin, groupMembers ) = await ( adminTask, groupMembersTask ).WhenAll();
             
-        var userInfos = await _users.GetByIds(groupMembers!.Select(_ => _.UserId), cancellationToken);
-        return new ChatGroupDetailsEntry(group, userInfos!, admin!);
+        var members = await _users.GetByIds(groupMembers!.Select(_ => _.UserId), cancellationToken);
+        return new ChatGroupDetailsEntry(group, members!, admin!);
     }
 }

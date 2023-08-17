@@ -20,6 +20,8 @@ using UserIsNotMemberError = Chatify.Application.Messages.Common.UserIsNotMember
 namespace Chatify.Web.Features.Messages;
 
 using SendGroupChatMessageResult = OneOf<ChatGroupNotFoundError, UserIsNotMemberError, Guid>;
+using ShareMessageResult =
+    OneOf<MessageNotFoundError, UserIsNotMessageSenderError, ChatGroupNotFoundError, UserIsNotMemberError, Unit>;
 using ReplyToChatMessageResult = OneOf<UserIsNotMemberError, MessageNotFoundError, Guid>;
 using EditGroupChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
 using EditChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
@@ -139,6 +141,7 @@ public class MessagesController : ApiController
     [HttpPut]
     [Route("replies/{messageId:guid}")]
     [ProducesResponseType(typeof(void), ( int )HttpStatusCode.Accepted)]
+    [ProducesResponseType(typeof(void), ( int )HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
     public async Task<IActionResult> EditGroupChatMessageReply(
         [FromBody] EditGroupChatMessageRequest request,
@@ -157,6 +160,7 @@ public class MessagesController : ApiController
     [HttpDelete]
     [Route("{messageId:guid}")]
     [ProducesResponseType(typeof(void), ( int )HttpStatusCode.NoContent)]
+    [ProducesResponseType(typeof(void), ( int )HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
     public async Task<IActionResult> DeleteGroupChatMessage(
         [FromBody] DeleteGroupChatMessageRequest request,
@@ -171,11 +175,12 @@ public class MessagesController : ApiController
             _ => BadRequest(),
             _ => NoContent());
     }
-    
+
     [HttpPost]
     [Route("/pins/{messageId:guid}")]
     [ProducesResponseType(typeof(void), ( int )HttpStatusCode.NoContent)]
     [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.NotFound)]
     public async Task<IActionResult> PinGroupChatMessage(
         [FromBody] PinChatGroupMessage request,
         [FromRoute] Guid messageId,
@@ -188,6 +193,27 @@ public class MessagesController : ApiController
             _ => NotFound(),
             _ => BadRequest(),
             _ => NoContent()
-            );
+        );
+    }
+
+    [HttpPost]
+    [Route("/share/{messageId:guid}")]
+    [ProducesResponseType(typeof(void), ( int )HttpStatusCode.Accepted)]
+    [ProducesResponseType(typeof(void), ( int )HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
+    public async Task<IActionResult> ShareChatMessage(
+        [FromBody] ShareMessage request,
+        [FromRoute] Guid messageId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await SendAsync<ShareMessage, ShareMessageResult>(
+            request, cancellationToken);
+        return result.Match<IActionResult>(
+            _ => NotFound(),
+            _ => BadRequest(),
+            _ => NotFound(),
+            _ => BadRequest(),
+            _ => Accepted()
+        );
     }
 }

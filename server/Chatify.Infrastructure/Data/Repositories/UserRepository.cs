@@ -1,4 +1,6 @@
-﻿using Chatify.Domain.Repositories;
+﻿using System.Reflection;
+using Cassandra.Mapping;
+using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Models;
@@ -30,7 +32,24 @@ public sealed class UserRepository
     public async Task<List<Domain.Entities.User>?> GetByIds(
         IEnumerable<Guid> userIds, CancellationToken cancellationToken = default)
     {
-        var cacheUsers = await _cache.GetAsync<ChatifyUser>(userIds.Select(id => $"user:{id.ToString()}"));
+        var cacheUsers = (await _cache.GetAsync<ChatifyUser>(userIds.Select(id => $"user:{id.ToString()}"))).ToList();
+        
+        var missingUserIds = userIds.ToHashSet();
+        missingUserIds.ExceptWith(cacheUsers.Select(_ => _.Id));
+        
+        if ( missingUserIds.Any() )
+        {
+            var paramPlaceholders = string.Join(", ", missingUserIds.Select(_ => "?"));
+            var cql = new Cql($"SELECT * FROM users WHERE id IN ({paramPlaceholders});");
+            cql.GetType()
+                .GetProperty(nameof(Cql.Arguments),
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
+                .SetValue(cql, missingUserIds.ToArray());
+
+            var missingUsers = await DbMapper.FetchAsync<ChatifyUser>(cql);
+            cacheUsers.AddRange(missingUsers.ToList());
+        }
+
         return cacheUsers
             .To<Domain.Entities.User>(Mapper)
             .ToList();

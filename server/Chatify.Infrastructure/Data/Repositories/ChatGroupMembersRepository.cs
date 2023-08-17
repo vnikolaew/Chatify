@@ -108,6 +108,15 @@ public sealed class ChatGroupMembersRepository :
             .FetchAsync<Models.ChatGroupMember>(" WHERE chat_group_id = ?", groupId)
             .ToAsyncNullable<IEnumerable<Models.ChatGroupMember>, List<ChatGroupMember>>(Mapper);
 
+    public async Task<List<Guid>?> UserIdsByGroup(
+        Guid groupId,
+        CancellationToken cancellationToken = default)
+    {
+        var memberIds = await DbMapper
+            .FetchAsync<Guid>("SELECT user_id FROM chat_group_members WHERE chat_group_id = ?", groupId);
+        return memberIds.ToList();
+    }
+
     public async Task<List<Guid>> GroupsIdsByUser(
         Guid userId,
         CancellationToken cancellationToken = default)

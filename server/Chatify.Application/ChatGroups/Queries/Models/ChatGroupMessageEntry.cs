@@ -23,6 +23,8 @@ public record MessageRepliersInfoEntry(
 public record ChatGroupMessageEntry
 {
     public required ChatMessage Message { get; set; }
+    
+    public ChatMessage? ForwardedMessage { get; set; }
 
     public MessageSenderInfoEntry SenderInfo { get; set; }
 

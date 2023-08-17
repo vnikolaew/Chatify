@@ -3,7 +3,9 @@ using System.ComponentModel.DataAnnotations;
 using Chatify.Application.ChatGroups.Queries.Models;
 using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Application.Common.Contracts;
+using Chatify.Application.Messages.Commands;
 using Chatify.Application.Messages.Common;
+using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
@@ -71,6 +73,21 @@ internal sealed class GetMessagesByChatGroupHandler
         var (messages, messageReplySummaries) =
             await ( messagesTask, messageReplierInfosTask ).WhenAll();
 
+        var forwardedMessages = messages
+            .Where(m => m.Metadata.ContainsKey(ShareMessageHandler.SharedMessageIdKey))
+            .ToList();
+
+        var originMessages = new Dictionary<Guid, ChatMessage>();
+        if ( forwardedMessages.Any() )
+        {
+            var forwardedMessagesIds = forwardedMessages
+                .Select(m => m.Metadata[ShareMessageHandler.SharedMessageIdKey])
+                .Select(Guid.Parse);
+
+            originMessages =( await _messages.GetByIds(forwardedMessagesIds, cancellationToken) )
+                !.ToDictionary(m => m.Id);
+        }
+
         var userInfos = ( await _users
                 .GetByIds(messages.Select(m => m.UserId).ToHashSet(), cancellationToken) )!
             .ToImmutableDictionary(u => u.Id);
@@ -87,6 +104,9 @@ internal sealed class GetMessagesByChatGroupHandler
                     return new ChatGroupMessageEntry
                     {
                         Message = message,
+                        ForwardedMessage = message.Metadata.TryGetValue(ShareMessageHandler.SharedMessageIdKey, out var messageId)
+                            ? originMessages[Guid.Parse(messageId)]
+                            : default,
                         RepliersInfo = new MessageRepliersInfoEntry(
                             repliersSummary.Total,
                             repliersSummary.LastUpdatedAt,

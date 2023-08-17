@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Chatify.Application.ChatGroups.Contracts;
+﻿using Chatify.Application.ChatGroups.Contracts;
 using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Domain.Entities;
 using Chatify.Shared.Abstractions.Contexts;

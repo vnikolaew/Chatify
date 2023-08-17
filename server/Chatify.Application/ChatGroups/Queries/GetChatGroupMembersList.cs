@@ -52,12 +52,11 @@ internal sealed class GetChatGroupMembersListHandler
             group.Id, _identityContext.Id, cancellationToken);
         if ( !isMember ) return new UserIsNotMemberError(_identityContext.Id, group.Id);
 
-        var members = await _members
-            .ByGroup(group.Id, cancellationToken);
-        
-        var users = await _users.GetByIds(
-            members!.Select(_ => _.UserId), cancellationToken);
+        var memberIds = await _members
+            .UserIdsByGroup(group.Id, cancellationToken);
 
-        return users ?? new List<Domain.Entities.User>();
+        var users = await _users.GetByIds(memberIds!, cancellationToken)
+                    ?? new List<Domain.Entities.User>();
+        return users;
     }
 }

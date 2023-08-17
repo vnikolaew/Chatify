@@ -35,11 +35,13 @@ public class AuthController : ApiController
     public IActionResult Info()
         => Ok(new
         {
-            Claims = User.Claims
-                .DistinctBy(c => c.Type)
-                .ToDictionary(
-                    c => c.Type.Split("/", StringSplitOptions.RemoveEmptyEntries).Last(),
-                    c => c.Value)
+            Claims = User.Identity?.IsAuthenticated ?? false
+                ? User.Claims
+                    .DistinctBy(c => c.Type)
+                    .ToDictionary(
+                        c => c.Type.Split("/", StringSplitOptions.RemoveEmptyEntries).Last(),
+                        c => c.Value)
+                : null!
         });
 
     [HttpPost]

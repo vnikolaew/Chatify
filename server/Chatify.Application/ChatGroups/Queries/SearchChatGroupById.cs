@@ -29,6 +29,6 @@ internal sealed class SearchChatGroupByIdHandler : IQueryHandler<SearchChatGroup
         CancellationToken cancellationToken = default)
     {
         var group = await _groups.GetAsync(query.GroupId, cancellationToken);
-        return group is null ? new ChatGroupNotFoundError() : group;
+        return (SearchChatGroupByIdResult?) group ?? new ChatGroupNotFoundError();
     }
 }

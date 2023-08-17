@@ -18,7 +18,6 @@ const Providers = ({ children, isDevelopment }: ProvidersProps) => {
             USER_LOCATION_LOCAL_STORAGE_KEY,
             `${position.coords.latitude};${position.coords.longitude}`
          );
-         console.log(position);
       });
    }, []);
 

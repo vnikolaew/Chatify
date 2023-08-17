@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Guid = System.Guid;
 using CreateChatGroupResult = OneOf.OneOf<Chatify.Application.User.Commands.FileUploadError, System.Guid>;
 using SearchChatGroupMembersByNameResult =
-    OneOf.OneOf<LanguageExt.Common.Error, System.Collections.Generic.List<Chatify.Domain.Entities.User>>;
+    OneOf.OneOf<Chatify.Application.ChatGroups.Commands.UserIsNotMemberError, System.Collections.Generic.List<Chatify.Domain.Entities.User>>;
 using GetChatGroupPinnedMessagesResult =
     OneOf.OneOf<Chatify.Application.Messages.Common.ChatGroupNotFoundError,
         Chatify.Application.Messages.Common.UserIsNotMemberError,
@@ -98,7 +98,7 @@ public class ChatGroupsController : ApiController
             new SearchChatGroupMembersByName(groupId, usernameQuery), cancellationToken);
 
         return result.Match(
-            err => err.ToBadRequest(),
+            err => (IActionResult) BadRequest(),
             entries => Ok(new { Data = entries }));
     }
 

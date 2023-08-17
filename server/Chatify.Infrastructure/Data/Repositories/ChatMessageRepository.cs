@@ -79,7 +79,7 @@ public sealed class ChatMessageRepository :
         CancellationToken cancellationToken = default)
     {
         var paramPlaceholders = string.Join(", ", messageIds.Select(_ => "?"));
-        var cql = new Cql($" WHERE id IN ({paramPlaceholders})");
+        var cql = new Cql($" WHERE id IN ({paramPlaceholders}) ALLOW FILTERING;");
 
         cql.GetType()
             .GetProperty(nameof(Cql.Arguments),

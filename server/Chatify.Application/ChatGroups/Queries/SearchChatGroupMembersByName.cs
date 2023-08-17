@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Domain.Repositories;
@@ -9,7 +10,7 @@ using OneOf;
 
 namespace Chatify.Application.ChatGroups.Queries;
 
-using SearchChatGroupMembersByNameResult = OneOf<Error, List<Domain.Entities.User>>;
+using SearchChatGroupMembersByNameResult = OneOf<UserIsNotMemberError, List<Domain.Entities.User>>;
 
 [Cached("members", 60)]
 public record SearchChatGroupMembersByName(
@@ -40,10 +41,10 @@ internal sealed class SearchChatGroupMembersByNameHandler
     {
         var isMember = await _members
             .Exists(query.GroupId, _identityContext.Id, cancellationToken);
-        if ( !isMember ) return Error.New("");
+        if ( !isMember ) return new UserIsNotMemberError(_identityContext.Id, query.GroupId);
 
         var members = await _members.ByGroup(query.GroupId, cancellationToken);
-        if ( members is null ) return Error.New("");
+        if ( members is null ) return default;
         
         // Execute an in-memory search:
         var userIds = members

@@ -12,7 +12,8 @@ using GithubSignUpResult = OneOf.OneOf<SignUpError, Unit>;
 
 public sealed record GithubSignUp([Required] string Code) : ICommand<GithubSignUpResult>;
 
-internal sealed class GithubSignUpHandler : ICommandHandler<GithubSignUp, GithubSignUpResult>
+internal sealed class GithubSignUpHandler
+    : ICommandHandler<GithubSignUp, GithubSignUpResult>
 {
     private readonly IAuthenticationService _authenticationService;
     private readonly IEventDispatcher _eventDispatcher;
