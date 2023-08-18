@@ -1,18 +1,16 @@
 ﻿using AutoMapper;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
+using Chatify.Infrastructure.Data.Services;
 using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
-public sealed class FriendInvitationRepository :
-    BaseCassandraRepository<FriendInvitation, Models.FriendInvitation, Guid>,
-    IFriendInvitationRepository
+public sealed class FriendInvitationRepository(IMapper mapper, Mapper dbMapper, IEntityChangeTracker changeTracker)
+    :
+        BaseCassandraRepository<FriendInvitation, Models.FriendInvitation, Guid>(mapper, dbMapper, changeTracker),
+        IFriendInvitationRepository
 {
-    public FriendInvitationRepository(IMapper mapper, Mapper dbMapper) : base(mapper, dbMapper)
-    {
-    }
-
     public async Task<List<FriendInvitation>> AllSentByUserAsync(
         Guid userId, CancellationToken cancellationToken = default)
     {

@@ -12,7 +12,7 @@ using ChangeUserStatusResult = OneOf.OneOf<UserNotFound, Unit>;
 using GetUserDetailsResult = OneOf.OneOf<UserNotFound, NotFriendsError, Domain.Entities.User>;
 using EditUserDetailsResult =
     OneOf.OneOf<UserNotFound, FileUploadError, PasswordChangeError, Unit>;
-using SearchUsersByNameResult = OneOf.OneOf<UserNotFound, Domain.Entities.User>;
+using SearchUsersByNameResult = OneOf.OneOf<UserNotFound, List<Domain.Entities.User>>;
 
 public class ProfileController : ApiController
 {
@@ -59,7 +59,7 @@ public class ProfileController : ApiController
     }
 
     [HttpGet]
-    [Route("details")]
+    [Route("search")]
     public async Task<IActionResult> SearchUsersByName(
         [FromQuery] string usernameQuery,
         CancellationToken cancellationToken = default)

@@ -7,7 +7,7 @@ using OneOf;
 
 namespace Chatify.Application.User.Queries;
 
-using SearchUsersByNameResult = OneOf<UserNotFound, Domain.Entities.User>;
+using SearchUsersByNameResult = OneOf<UserNotFound, List<Domain.Entities.User>>;
 
 [Cached("user-by-username", 30)]
 public record SearchUsersByName(
@@ -28,8 +28,8 @@ internal sealed class SearchUsersByNameHandler
         CancellationToken cancellationToken = default)
     {
         // Figure put Full-Text search here:
-        var user = await _users.GetByUsername(command.SearchQuery, cancellationToken);
-        if ( user is null ) return new UserNotFound();
-        return user;
+        var users = await _users.SearchByUsername(command.SearchQuery, cancellationToken);
+        if ( users is null ) return new UserNotFound();
+        return users;
     }
 }

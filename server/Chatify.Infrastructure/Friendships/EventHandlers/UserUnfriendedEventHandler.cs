@@ -4,14 +4,9 @@ using Chatify.Shared.Abstractions.Events;
 
 namespace Chatify.Infrastructure.Friendships.EventHandlers;
 
-internal sealed class UserUnfriendedEventHandler : IEventHandler<UserUnfriendedEvent>
+internal sealed class UserUnfriendedEventHandler(IChatGroupRepository groups) : IEventHandler<UserUnfriendedEvent>
 {
-    private readonly IChatGroupRepository _groups;
-
-    public UserUnfriendedEventHandler(IChatGroupRepository groups)
-    {
-        _groups = groups;
-    }
+    private readonly IChatGroupRepository _groups = groups;
 
     public async Task HandleAsync(
         UserUnfriendedEvent @event, CancellationToken cancellationToken = default)

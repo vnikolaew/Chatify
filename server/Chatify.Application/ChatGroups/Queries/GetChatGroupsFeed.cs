@@ -13,9 +13,9 @@ using GetChatGroupsFeedResult = OneOf<Error, List<ChatGroupFeedEntry>>;
 public record ChatGroupFeedEntry
 {
     public ChatGroup ChatGroup { get; set; }
-    
+
     public Domain.Entities.User User { get; set; }
-    
+
     public ChatMessage ChatMessage { get; set; }
 }
 

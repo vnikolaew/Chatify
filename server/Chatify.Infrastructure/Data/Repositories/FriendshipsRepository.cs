@@ -3,6 +3,7 @@ using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Models;
+using Chatify.Infrastructure.Data.Services;
 using Chatify.Shared.Abstractions.Serialization;
 using Humanizer;
 using LanguageExt;
@@ -12,22 +13,15 @@ using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
-public sealed class FriendshipsRepository
-    : BaseCassandraRepository<FriendsRelation, Models.FriendsRelation, Guid>,
+public sealed class FriendshipsRepository(IMapper mapper, Mapper dbMapper,
+        IEntityChangeTracker changeTracker,
+        IDatabase cache,
+        ISerializer serializer)
+    : BaseCassandraRepository<FriendsRelation, Models.FriendsRelation, Guid>(mapper, dbMapper,
+            changeTracker,
+            nameof(FriendsRelation.FriendOneId).Underscore()),
         IFriendshipsRepository
 {
-    private readonly IDatabase _cache;
-    private readonly ISerializer _serializer;
-
-    public FriendshipsRepository(
-        IMapper mapper, Mapper dbMapper,
-        IDatabase cache, ISerializer serializer)
-        : base(mapper, dbMapper, nameof(FriendsRelation.FriendOneId).Underscore())
-    {
-        _cache = cache;
-        _serializer = serializer;
-    }
-
     private static RedisKey GetUserFriendsCacheKey(Guid userId)
         => $"user:{userId}:friends";
 
@@ -54,12 +48,12 @@ public sealed class FriendshipsRepository
         // Store each user as a friend in the other user's sorted set of friends:
         var storeTasks = new[]
         {
-            _cache.SortedSetAddAsync(
+            cache.SortedSetAddAsync(
                 new RedisKey(GetUserFriendsCacheKey(entity.FriendOneId)),
                 new RedisValue(entity.FriendTwoId.ToString()),
                 entity.CreatedAt.Ticks,
                 SortedSetWhen.NotExists),
-            _cache.SortedSetAddAsync(
+            cache.SortedSetAddAsync(
                 new RedisKey(GetUserFriendsCacheKey(entity.FriendTwoId)),
                 new RedisValue(entity.FriendOneId.ToString()),
                 entity.CreatedAt.Ticks,
@@ -75,19 +69,19 @@ public sealed class FriendshipsRepository
     public async Task<List<Domain.Entities.User>> AllForUser(
         Guid userId, CancellationToken cancellationToken = default)
     {
-        var friendsIds = await _cache.SortedSetRangeByScoreAsync(
+        var friendsIds = await cache.SortedSetRangeByScoreAsync(
             GetUserFriendsCacheKey(userId), order: Order.Descending);
 
         // Potentially chunk Ids to ease cache server processing:
         var friendsStrings = new List<string>();
         foreach ( var idsChunk in friendsIds.Chunk(10) )
         {
-            var chunkStrings = await _cache.GetAsync<string>(idsChunk.Select(id => $"user:{id.ToString()}"));
+            var chunkStrings = await cache.GetAsync<string>(idsChunk.Select(id => $"user:{id.ToString()}"));
             friendsStrings.AddRange(chunkStrings!);
         }
 
         return friendsStrings
-            .Select(f => _serializer.Deserialize<ChatifyUser>(f))
+            .Select(f => serializer.Deserialize<ChatifyUser>(f))
             .AsQueryable()
             .To<Domain.Entities.User>(Mapper)
             .ToList();
@@ -111,10 +105,10 @@ public sealed class FriendshipsRepository
         // Purge entries from cache as well:
         var deleteTasks = new Task[]
         {
-            _cache.SortedSetRemoveAsync(
+            cache.SortedSetRemoveAsync(
                 GetUserFriendsCacheKey(friendOneId),
                 new RedisValue(friendTwoId.ToString())),
-            _cache.SortedSetRemoveAsync(
+            cache.SortedSetRemoveAsync(
                 GetUserFriendsCacheKey(friendTwoId),
                 new RedisValue(friendOneId.ToString())),
         };
@@ -127,7 +121,7 @@ public sealed class FriendshipsRepository
         Guid userId,
         CancellationToken cancellationToken = default)
     {
-        var friendsIds = await _cache.SortedSetRangeByScoreAsync(
+        var friendsIds = await cache.SortedSetRangeByScoreAsync(
             GetUserFriendsCacheKey(userId), order: Order.Descending);
 
         return friendsIds.Select(id => Guid.Parse(id.ToString())).ToList();

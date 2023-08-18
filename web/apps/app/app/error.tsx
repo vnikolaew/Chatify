@@ -14,9 +14,15 @@ const ErrorPage = ({
    }, [error]);
 
    return (
-      <div className={`w-full flex flex-col gap-4 items-center`}>
-         <h2>Oops, Something went wrong!</h2>
-         <Button onClick={(_) => reset()} color={"primary"} variant={"solid"}>
+      <div className={`w-full my-8 flex flex-col gap-4 items-center`}>
+         <h2 className={`text-large`}>Oops, Something went wrong!</h2>
+         <Button
+            size={"md"}
+            className={`px-8`}
+            onClick={(_) => reset()}
+            color={"primary"}
+            variant={"solid"}
+         >
             Try again
          </Button>
       </div>

@@ -5,30 +5,21 @@ using Octokit;
 
 namespace Chatify.Infrastructure.Authentication.External.Github;
 
-internal sealed class GithubOAuthClient : IGithubOAuthClient
+internal sealed class GithubOAuthClient(GithubOptions githubOptions, IMapper mapper) : IGithubOAuthClient
 {
     private readonly GitHubClient _gitHubClient
         = new(new ProductHeaderValue("Chatify"));
-
-    private readonly GithubOptions _githubOptions;
-    private readonly IMapper _mapper;
-
-    public GithubOAuthClient(GithubOptions githubOptions, IMapper mapper)
-    {
-        _githubOptions = githubOptions;
-        _mapper = mapper;
-    }
 
     public async Task<GithubUserInfo?> GetUserInfoAsync(
         string code, CancellationToken cancellationToken = default)
         => ( await new TryAsync<GithubUserInfo>(async () =>
             {
-                var request = new OauthTokenRequest(_githubOptions.ClientId, _githubOptions.ClientSecret, code);
+                var request = new OauthTokenRequest(githubOptions.ClientId, githubOptions.ClientSecret, code);
                 var token = await _gitHubClient.Oauth.CreateAccessToken(request);
 
                 _gitHubClient.Credentials = new Credentials(token.AccessToken);
                 var res = await _gitHubClient.User.Current();
-                return res.To<GithubUserInfo>(_mapper);
+                return res.To<GithubUserInfo>(mapper);
             }).Invoke() )
             .Match(u => u, _ => default);
 }

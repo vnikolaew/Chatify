@@ -113,7 +113,7 @@ internal sealed class GetMessagesByChatGroupHandler
                             repliersSummary.ReplierInfos.Select(
                                     ri => new MessageReplierInfoEntry(ri.UserId, ri.Username, ri.ProfilePictureUrl))
                                 .ToList()),
-                        SenderInfo = new MessageReplierInfoEntry(
+                        SenderInfo = new MessageSenderInfoEntry(
                             user.Id,
                             user.Username,
                             user.ProfilePicture.MediaUrl)

@@ -11,9 +11,12 @@ namespace Chatify.Application.Authentication.Commands;
 
 public sealed record RegularSignIn(
     [EmailAddress, Required] string Email,
-    [Required] [Password] string Password) : ICommand<RegularSignInResult>;
+    [Required] [Password] string Password,
+    [Required] bool RememberMe
+    ) : ICommand<RegularSignInResult>;
 
-internal sealed class RegularSignInHandler : ICommandHandler<RegularSignIn, RegularSignInResult>
+internal sealed class RegularSignInHandler
+    : ICommandHandler<RegularSignIn, RegularSignInResult>
 {
     private readonly IAuthenticationService _authService;
     private readonly IEventDispatcher _eventDispatcher;

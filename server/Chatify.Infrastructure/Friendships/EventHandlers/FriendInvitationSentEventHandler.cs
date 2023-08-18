@@ -6,16 +6,11 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Chatify.Infrastructure.Friendships.EventHandlers;
 
-internal sealed class FriendInvitationSentEventHandler : IEventHandler<FriendInvitationSentEvent>
+internal sealed class FriendInvitationSentEventHandler
+    (IHubContext<ChatifyHub, IChatifyHubClient> hubContext) : IEventHandler<FriendInvitationSentEvent>
 {
-    private readonly IHubContext<ChatifyHub, IChatifyHubClient> _hubContext;
-
-    public FriendInvitationSentEventHandler(
-        IHubContext<ChatifyHub, IChatifyHubClient> hubContext)
-        => _hubContext = hubContext;
-
     public Task HandleAsync(FriendInvitationSentEvent @event, CancellationToken cancellationToken = default)
-        => _hubContext
+        => hubContext
             .Clients
             .User(@event.InviteeId.ToString())
             .ReceiveFriendInvitation(new ReceiveFriendInvitation(

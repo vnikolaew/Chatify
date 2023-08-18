@@ -17,7 +17,7 @@ public static class Extensions
         IEnumerable<Assembly> assemblies,
         EventDispatcherType dispatcherType = EventDispatcherType.TaskWhenAll)
     {
-        if (dispatcherType is EventDispatcherType.FireAndForget)
+        if ( dispatcherType is EventDispatcherType.FireAndForget )
         {
             services.AddSingleton<IEventDispatcher, FireAndForgetEventDispatcher>();
         }
@@ -25,8 +25,12 @@ public static class Extensions
 
         return services
             .Scan(s => s.FromAssemblies(assemblies)
-                .AddClasses(c => c.AssignableTo(typeof(IEventHandler<>))
-                    .WithoutAttribute<DecoratorAttribute>(), false)
+                .AddClasses(c =>
+                    c.Where(t => t is { IsAbstract: false, IsInterface: false }
+                                 && t.GetInterfaces()
+                                     .Any(i => i.IsGenericType && i.GetGenericTypeDefinition()
+                                         == typeof(IEventHandler<>)))
+                        .WithoutAttribute<DecoratorAttribute>(), false)
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());
     }

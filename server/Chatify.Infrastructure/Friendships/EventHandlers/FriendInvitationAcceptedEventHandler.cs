@@ -12,28 +12,15 @@ using StackExchange.Redis;
 
 namespace Chatify.Infrastructure.Friendships.EventHandlers;
 
-internal sealed class FriendInvitationAcceptedEventHandler
-    : IEventHandler<FriendInvitationAcceptedEvent>
-{
-    private readonly IHubContext<ChatifyHub, IChatifyHubClient> _hubContext;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IGuidGenerator _guidGenerator;
-    private readonly IChatGroupRepository _groups;
-    private readonly IClock _clock;
-    private readonly IDatabase _cache;
-
-    public FriendInvitationAcceptedEventHandler(
-        IHubContext<ChatifyHub, IChatifyHubClient> hubContext,
+internal sealed class FriendInvitationAcceptedEventHandler(IHubContext<ChatifyHub, IChatifyHubClient> hubContext,
         IDatabase cache,
         IChatGroupRepository groups, IGuidGenerator guidGenerator, IClock clock, IEventDispatcher eventDispatcher)
-    {
-        _hubContext = hubContext;
-        _cache = cache;
-        _groups = groups;
-        _guidGenerator = guidGenerator;
-        _clock = clock;
-        _eventDispatcher = eventDispatcher;
-    }
+    : IEventHandler<FriendInvitationAcceptedEvent>
+{
+    private readonly IEventDispatcher _eventDispatcher = eventDispatcher;
+    private readonly IGuidGenerator _guidGenerator = guidGenerator;
+    private readonly IChatGroupRepository _groups = groups;
+    private readonly IClock _clock = clock;
 
     public async Task HandleAsync(
         FriendInvitationAcceptedEvent @event,
@@ -41,12 +28,12 @@ internal sealed class FriendInvitationAcceptedEventHandler
     {
         var cacheSaveTasks = new Task[]
         {
-            _cache.SortedSetAddAsync(
+            cache.SortedSetAddAsync(
                 new RedisKey($"user:{@event.InviterId}:friends"),
                 new RedisValue(@event.InviteeId.ToString()),
                 @event.Timestamp.Ticks,
                 SortedSetWhen.NotExists),
-            _cache.SortedSetAddAsync(
+            cache.SortedSetAddAsync(
                 new RedisKey($"user:{@event.InviteeId}:friends"),
                 new RedisValue(@event.InviterId.ToString()),
                 @event.Timestamp.Ticks,
@@ -55,7 +42,7 @@ internal sealed class FriendInvitationAcceptedEventHandler
         await Task.WhenAll(cacheSaveTasks);
 
         
-        await _hubContext
+        await hubContext
             .Clients
             .User(@event.InviterId.ToString())
             .FriendInvitationAccepted(new FriendInvitationAccepted(

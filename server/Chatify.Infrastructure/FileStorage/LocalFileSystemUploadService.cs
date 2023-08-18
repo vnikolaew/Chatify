@@ -6,18 +6,15 @@ using OneOf;
 
 namespace Chatify.Infrastructure.FileStorage;
 
-public class LocalFileSystemUploadService : IFileUploadService
+public class LocalFileSystemUploadService(IWebHostEnvironment environment) : IFileUploadService
 {
-    private readonly string _fileStorageBaseFolder;
+    private readonly string _fileStorageBaseFolder = Path.Combine(environment.ContentRootPath, "Files");
     private const long MaxFileUploadSizeLimit = 50 * 1024 * 1024;
 
     private static readonly System.Collections.Generic.HashSet<string> AllowedFileTypes = new()
     {
         "jpg", "png", "webp", "jpeg"
     };
-
-    public LocalFileSystemUploadService(IWebHostEnvironment environment)
-        => _fileStorageBaseFolder = Path.Combine(environment.ContentRootPath, "Files");
 
     public async Task<OneOf<Error, FileUploadResult>> UploadAsync(
         SingleFileUploadRequest singleFileUploadRequest,

@@ -1,10 +1,11 @@
 ﻿using System.Net;
+using Chatify.Domain.Common;
 using Chatify.Domain.ValueObjects;
 using Metadata = System.Collections.Generic.IDictionary<string, string>;
 
 namespace Chatify.Domain.Entities;
 
-public class User
+public class User : IDomainEntity
 {
     public Guid Id { get; set; }
 

@@ -8,7 +8,7 @@ public class FriendInvitation
     
     public Guid InviteeId { get; set; }
 
-    public sbyte Status { get; set; }
+    public FriendInvitationStatus Status { get; set; }
     
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
 

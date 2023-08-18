@@ -4,18 +4,13 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Chatify.Infrastructure.Common.Security;
 
-public class PasswordHasher : IPasswordHasher
+public class PasswordHasher(IPasswordHasher<ChatifyUser> internalHasher) : IPasswordHasher
 {
-    private readonly IPasswordHasher<ChatifyUser> _internalHasher;
-
-    public PasswordHasher(IPasswordHasher<ChatifyUser> internalHasher)
-        => _internalHasher = internalHasher;
-
     public string Secure(string password)
-        => _internalHasher.HashPassword(null!, password);
+        => internalHasher.HashPassword(null!, password);
 
     public bool Verify(string hashedPassword, string providedPassword)
-        => _internalHasher
+        => internalHasher
                .VerifyHashedPassword(null!, hashedPassword, providedPassword)
            == PasswordVerificationResult.Success;
 }

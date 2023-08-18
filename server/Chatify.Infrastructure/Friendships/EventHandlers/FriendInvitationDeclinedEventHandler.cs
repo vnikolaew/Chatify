@@ -7,18 +7,12 @@ using Microsoft.AspNetCore.SignalR;
 namespace Chatify.Infrastructure.Friendships.EventHandlers;
 
 internal sealed class FriendInvitationDeclinedEventHandler
-    : IEventHandler<FriendInvitationDeclinedEvent>
+    (IHubContext<ChatifyHub, IChatifyHubClient> hubContext) : IEventHandler<FriendInvitationDeclinedEvent>
 {
-    private readonly IHubContext<ChatifyHub, IChatifyHubClient> _hubContext;
-
-    public FriendInvitationDeclinedEventHandler(
-        IHubContext<ChatifyHub, IChatifyHubClient> hubContext) =>
-        _hubContext = hubContext;
-
     public Task HandleAsync(
         FriendInvitationDeclinedEvent @event,
         CancellationToken cancellationToken = default)
-        => _hubContext
+        => hubContext
             .Clients
             .User(@event.InviterId.ToString())
             .FriendInvitationDeclined(new FriendInvitationDeclined(

@@ -5,7 +5,7 @@ namespace Chatify.Domain.Repositories;
 
 public interface IUserRepository : IDomainRepository<User, Guid>
 {
-    Task<User?> GetByUsername(
+    Task<List<User>?> SearchByUsername(
         string usernameQuery,
         CancellationToken cancellationToken = default);
     

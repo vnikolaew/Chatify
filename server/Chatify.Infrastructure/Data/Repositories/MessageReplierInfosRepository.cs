@@ -2,21 +2,17 @@
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Data.Models;
+using Chatify.Infrastructure.Data.Services;
 using Humanizer;
 using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
-public class MessageReplierInfosRepository
-    : BaseCassandraRepository<MessageRepliersInfo, ChatMessageRepliesSummary, Guid>,
+public class MessageReplierInfosRepository(IMapper mapper, Mapper dbMapper, IEntityChangeTracker changeTracker)
+    : BaseCassandraRepository<MessageRepliersInfo, ChatMessageRepliesSummary, Guid>(mapper, dbMapper, changeTracker,
+            nameof(MessageRepliersInfo.ChatGroupId).Underscore()),
         IChatMessageReplierInfosRepository
 {
-    public MessageReplierInfosRepository(
-        IMapper mapper, Mapper dbMapper)
-        : base(mapper, dbMapper, nameof(MessageRepliersInfo.ChatGroupId).Underscore())
-    {
-    }
-
     public async Task<bool> DeleteAllForMessage(
         Guid messageId,
         CancellationToken cancellationToken = default)

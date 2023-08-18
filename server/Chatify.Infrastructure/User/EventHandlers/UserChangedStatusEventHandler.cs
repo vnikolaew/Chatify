@@ -8,36 +8,24 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Chatify.Infrastructure.User.EventHandlers;
 
-internal sealed class UserChangedStatusEventHandler
-    : IEventHandler<UserChangedStatusEvent>
-{
-    private readonly IHubContext<ChatifyHub, IChatifyHubClient> _hubContext;
-    private readonly IFriendshipsRepository _friends;
-    private readonly IIdentityContext _identityContext;
-
-    public UserChangedStatusEventHandler(
-        IHubContext<ChatifyHub, IChatifyHubClient> hubContext,
+internal sealed class UserChangedStatusEventHandler(IHubContext<ChatifyHub, IChatifyHubClient> hubContext,
         IFriendshipsRepository friends,
         IIdentityContext identityContext)
-    {
-        _friends = friends;
-        _identityContext = identityContext;
-        _hubContext = hubContext;
-    }
-
+    : IEventHandler<UserChangedStatusEvent>
+{
     public async Task HandleAsync(
         UserChangedStatusEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var friendIds = await _friends.AllFriendIdsForUser(@event.UserId, cancellationToken);
+        var friendIds = await friends.AllFriendIdsForUser(@event.UserId, cancellationToken);
 
-        await _hubContext
+        await hubContext
             .Clients
             .Users(friendIds.Select(_ => _.ToString()))
             .UserStatusChanged(
                 new UserStatusChanged(
                     @event.UserId,
-                    _identityContext.Username,
+                    identityContext.Username,
                     (sbyte) @event.NewStatus,
                     @event.Timestamp));
     }

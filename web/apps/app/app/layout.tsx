@@ -4,6 +4,8 @@ import { Metadata } from "next";
 import { Inter, Roboto } from "next/font/google";
 import Providers from "./providers";
 import MainNavbar from "../components/Navbar";
+import process from "process";
+import { getImagesBaseUrl } from "@web/api";
 
 export const metadata: Metadata = {
    title: "Welcome to app!",
@@ -27,22 +29,19 @@ export function __IS_DEV__() {
 
 async function ChatifyLayout({ children, ...rest }: PropsWithChildren) {
    return (
-      <html
-         lang={`en`}
-         className={`${inter.className} bg-gray-950 text-white dark`}
-      >
-         <body>
-            <MainNavbar />
-            <main className="app">
-               <Providers isDevelopment={__IS_DEV__()}>{children}</Providers>
-            </main>
-            <footer
-               className={`w-full text-center mt-20 p-12 text-large border-t border-t-gray-700`}
-            >
-               <h2 className={`text-foreground font-medium text-2xl`}>
-                  Footer Area
-               </h2>
-            </footer>
+      <html lang={`en`} className={`${inter.className} bg-gray-950 text-white`}>
+         <body className={`dark`}>
+            <Providers isDevelopment={__IS_DEV__()}>
+               <MainNavbar baseImagesUrl={getImagesBaseUrl()} />
+               <main className="app">{children}</main>
+               <footer
+                  className={`w-full text-center mt-20 p-12 text-large border-t border-t-gray-700`}
+               >
+                  <h2 className={`text-foreground font-medium text-2xl`}>
+                     Footer Area
+                  </h2>
+               </footer>
+            </Providers>
          </body>
       </html>
    );

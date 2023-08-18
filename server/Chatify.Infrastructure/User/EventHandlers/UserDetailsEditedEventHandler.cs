@@ -8,31 +8,19 @@ using StackExchange.Redis;
 
 namespace Chatify.Infrastructure.User.EventHandlers;
 
-internal sealed class UserDetailsEditedEventHandler
-    : IEventHandler<UserDetailsEditedEvent>
-{
-    private readonly IDatabase _cache;
-    private readonly IMapper _mapper;
-    private readonly IUserRepository _users;
-
-    public UserDetailsEditedEventHandler(
-        IDatabase cache,
+internal sealed class UserDetailsEditedEventHandler(IDatabase cache,
         IUserRepository users,
         IMapper mapper)
-    {
-        _cache = cache;
-        _users = users;
-        _mapper = mapper;
-    }
-
+    : IEventHandler<UserDetailsEditedEvent>
+{
     public async Task HandleAsync(
         UserDetailsEditedEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var user = await _users.GetAsync(@event.UserId, cancellationToken);
+        var user = await users.GetAsync(@event.UserId, cancellationToken);
         if ( user is null ) return;
 
         // Invalidate stale User cache info:
-        await _cache.SetAsync($"user:{user.Id}", user.To<Domain.Entities.User>(_mapper));
+        await cache.SetAsync($"user:{user.Id}", user.To<Domain.Entities.User>(mapper));
     }
 }

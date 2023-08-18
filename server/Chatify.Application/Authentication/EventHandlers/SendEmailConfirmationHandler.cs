@@ -6,7 +6,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Chatify.Application.Authentication.EventHandlers;
 
-internal sealed class SendEmailConfirmationHandler : IEventHandler<UserSignedUpEvent>
+public sealed class SendEmailConfirmationHandler
+    : IEventHandler<UserSignedUpEvent>
 {
     private readonly ILogger<SendEmailConfirmationHandler> _logger;
     private readonly IUserRepository _users;
