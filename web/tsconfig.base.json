@@ -15,7 +15,8 @@
       "skipDefaultLibCheck": true,
       "baseUrl": ".",
       "paths": {
-         "@web/api": ["libs/api/src/index.ts"]
+         "@web/api": ["libs/api/src/index.ts"],
+         "@openapi": ["openapi/index.ts"]
       }
    },
    "exclude": ["node_modules", "tmp"]

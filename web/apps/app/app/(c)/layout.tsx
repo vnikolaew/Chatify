@@ -7,10 +7,12 @@ import {
    DropdownMenu,
    DropdownTrigger,
    Input,
+   Skeleton,
 } from "@nextui-org/react";
 import SearchIcon from "../../components/icons/SearchIcon";
 import HamburgerMenuIcon from "../../components/icons/HamburgerMenuIcon";
 import { useGetChatGroupsFeedQuery } from "@web/api";
+import ChatGroupFeedEntry from "../../components/feed/ChatGroupFeedEntry";
 
 export interface LayoutProps extends PropsWithChildren {}
 
@@ -26,9 +28,13 @@ const Layout = ({ children }: LayoutProps) => {
    console.log(feedEntries);
 
    return (
-      <div className={`flex items-start gap-0`}>
-         <aside className={`grow-[1] flex flex-col items-center gap-2`}>
-            <div className={`flex w-full items-center p-2 gap-2`}>
+      <div className={`flex border-b-1 border-b-default-200 items-start gap-0`}>
+         <aside
+            className={`grow-[1] border-r-1 border-r-default-200 flex max-w-[400px] flex-col items-center gap-2`}
+         >
+            <div
+               className={`flex border-b-1 border-b-default-200 w-full items-center p-2 gap-2`}
+            >
                <Dropdown offset={10} showArrow>
                   <DropdownTrigger>
                      <Button
@@ -72,11 +78,46 @@ const Layout = ({ children }: LayoutProps) => {
                   />
                </div>
             </div>
-            <div className={`w-full flex flex-col p-2 items-center`}>
-               Sidebar
+            <div className={`w-full pr-4 flex flex-col gap-2 p-2 items-center`}>
+               {isLoading ? (
+                  <>
+                     {Array.from({ length: 10 }).map((_, i) => (
+                        <div
+                           key={i}
+                           className={`flex items-center w-full gap-4 p-2`}
+                        >
+                           <Skeleton className={`w-14 h-14 rounded-full`} />
+                           <div
+                              className={`flex flex-1 flex-col items-center gap-2`}
+                           >
+                              <div
+                                 className={`flex w-full items-center justify-between`}
+                              >
+                                 <Skeleton
+                                    className={`w-3/5 h-3 rounded-full`}
+                                 />
+                                 <Skeleton
+                                    className={`w-1/6 h-3 rounded-full`}
+                                 />
+                              </div>
+                              <Skeleton className={`w-full h-4 rounded-full`} />
+                           </div>
+                        </div>
+                     ))}
+                  </>
+               ) : (
+                  feedEntries.map((e, i) => (
+                     <ChatGroupFeedEntry key={i} feedEntry={e} />
+                  ))
+               )}
             </div>
          </aside>
          <div className={`grow-[3]`}>{children}</div>
+         <div
+            className={`grow-[1] flex flex-col items-center py-2 min-h-[80vh] h-full border-l-1 border-l-default-200`}
+         >
+            Sidebar
+         </div>
       </div>
    );
 };

@@ -21,7 +21,7 @@ const getChatGroupDetails = async (model: GetChatGroupDetailsModel) => {
 export const useGetChatGroupDetailsQuery = (chatGroupId: string) => {
    const client = useQueryClient();
 
-   useQuery({
+   return useQuery({
       queryKey: [`chat-group`, chatGroupId],
       queryFn: ({ queryKey: [_, id] }) =>
          getChatGroupDetails({ chatGroupId: id }),

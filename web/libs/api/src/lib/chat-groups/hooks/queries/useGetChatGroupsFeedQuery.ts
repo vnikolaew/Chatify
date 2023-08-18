@@ -1,7 +1,8 @@
 import { chatGroupsClient } from "../../client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
-import { ChatGroupFeedEntry } from "../../../../../../../openapi";
+import { ChatGroupFeedEntry } from "@openapi";
+import { sleep } from "../../../utils";
 
 export interface GetChatGroupsFeedModel {
    limit: number;
@@ -10,7 +11,7 @@ export interface GetChatGroupsFeedModel {
 
 const getChatGroupsFeed = async (
    model: GetChatGroupsFeedModel
-): Promise<ChatGroupFeedEntry> => {
+): Promise<ChatGroupFeedEntry[]> => {
    const params = new URLSearchParams({
       limit: `${model.limit}`,
       offset: model.offset.toString(),
@@ -21,6 +22,7 @@ const getChatGroupsFeed = async (
       data: model,
       params,
    });
+   await sleep(2000);
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
@@ -38,7 +40,7 @@ export const useGetChatGroupsFeedQuery = (
       queryKey: [`feed`],
       queryFn: () => getChatGroupsFeed(model),
       refetchOnWindowFocus: false,
-      refetchInterval: 30 * 1000,
+      refetchInterval: 60 * 5 * 1000,
       cacheTime: 60 * 60 * 1000,
    });
 };

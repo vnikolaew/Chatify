@@ -168,7 +168,7 @@ paths:
       responses:
         '200':
           description: Success
-  '/api/chatgroups/{groupId}':
+  '/api/chatgroups/requests/{groupId}':
     get:
       tags:
         - ChatGroupJoinRequests
@@ -1054,7 +1054,6 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
-        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1085,6 +1084,7 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
+        - Unknown
       type: string
     ChangeUserStatus:
       type: object
