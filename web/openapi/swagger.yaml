@@ -30,10 +30,23 @@ paths:
       responses:
         '200':
           description: Success
+  /api/Auth/signout:
+    post:
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: Success
   /api/Auth/signin:
     post:
       tags:
         - Auth
+      parameters:
+        - name: returnUrl
+          in: query
+          style: form
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -84,6 +97,19 @@ paths:
       responses:
         '200':
           description: Success
+  /api/Auth/signup/github:
+    post:
+      tags:
+        - Auth
+      parameters:
+        - name: code
+          in: query
+          style: form
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
   /api/Auth/confirm-email:
     post:
       tags:
@@ -94,6 +120,66 @@ paths:
           style: form
           schema:
             type: string
+      responses:
+        '200':
+          description: Success
+  '/api/chatgroups/join/{groupId}':
+    post:
+      tags:
+        - ChatGroupJoinRequests
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+  '/api/chatgroups/accept/{requestId}':
+    post:
+      tags:
+        - ChatGroupJoinRequests
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+  '/api/chatgroups/decline/{requestId}':
+    post:
+      tags:
+        - ChatGroupJoinRequests
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+  '/api/chatgroups/{groupId}':
+    get:
+      tags:
+        - ChatGroupJoinRequests
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: Success
@@ -196,6 +282,38 @@ paths:
             type: integer
             format: int32
       responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatGroupFeedEntry'
+  '/api/ChatGroups/{groupId}/members/search':
+    get:
+      tags:
+        - ChatGroups
+      parameters:
+        - name: q
+          in: query
+          style: form
+          schema:
+            type: string
+        - name: groupId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
         '200':
           description: Success
   '/api/ChatGroups/{groupId}/attachments':
@@ -221,6 +339,21 @@ paths:
           application/*+json:
             schema:
               $ref: '#/components/schemas/GetChatGroupSharedAttachmentsRequest'
+      responses:
+        '200':
+          description: Success
+  '/api/ChatGroups/{groupId}/pins':
+    get:
+      tags:
+        - ChatGroups
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: Success
@@ -373,13 +506,6 @@ paths:
           schema:
             type: string
             format: uuid
-      responses:
-        '200':
-          description: Success
-  /index:
-    get:
-      tags:
-        - Index
       responses:
         '200':
           description: Success
@@ -594,6 +720,8 @@ paths:
       responses:
         '202':
           description: Accepted
+        '404':
+          description: Not Found
         '400':
           description: Bad Request
           content:
@@ -655,6 +783,77 @@ paths:
       responses:
         '204':
           description: No Content
+        '404':
+          description: Not Found
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { }
+  '/pins/{messageId}':
+    post:
+      tags:
+        - Messages
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PinChatGroupMessage'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/PinChatGroupMessage'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/PinChatGroupMessage'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { }
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema: { }
+  '/share/{messageId}':
+    post:
+      tags:
+        - Messages
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShareMessage'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/ShareMessage'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/ShareMessage'
+      responses:
+        '202':
+          description: Accepted
+        '404':
+          description: Not Found
         '400':
           description: Bad Request
           content:
@@ -696,18 +895,6 @@ paths:
       responses:
         '200':
           description: Success
-    get:
-      tags:
-        - Profile
-      parameters:
-        - name: usernameQuery
-          in: query
-          style: form
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Success
   '/api/Profile/{userId}/details':
     get:
       tags:
@@ -720,6 +907,19 @@ paths:
           schema:
             type: string
             format: uuid
+      responses:
+        '200':
+          description: Success
+  /api/Profile/search:
+    get:
+      tags:
+        - Profile
+      parameters:
+        - name: usernameQuery
+          in: query
+          style: form
+          schema:
+            type: string
       responses:
         '200':
           description: Success
@@ -852,11 +1052,140 @@ components:
           type: integer
           format: int32
       additionalProperties: false
+    AddressFamily:
+      enum:
+        - Unknown
+        - Unspecified
+        - Unix
+        - InterNetwork
+        - ImpLink
+        - Pup
+        - Chaos
+        - NS
+        - Iso
+        - Ecma
+        - DataKit
+        - Ccitt
+        - Sna
+        - DecNet
+        - DataLink
+        - Lat
+        - HyperChannel
+        - AppleTalk
+        - NetBios
+        - VoiceView
+        - FireFox
+        - Banyan
+        - Atm
+        - InterNetworkV6
+        - Cluster
+        - Ieee12844
+        - Irda
+        - NetworkDesigners
+        - Max
+        - Packet
+        - ControllerAreaNetwork
+      type: string
     ChangeUserStatus:
       type: object
       properties:
         newStatus:
           $ref: '#/components/schemas/UserStatus'
+      additionalProperties: false
+    ChatGroup:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        creatorId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        about:
+          type: string
+          nullable: true
+        picture:
+          $ref: '#/components/schemas/Media'
+        adminIds:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            format: uuid
+          nullable: true
+        admins:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+          nullable: true
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ChatGroupFeedEntry:
+      type: object
+      properties:
+        chatGroup:
+          $ref: '#/components/schemas/ChatGroup'
+        user:
+          $ref: '#/components/schemas/User'
+        chatMessage:
+          $ref: '#/components/schemas/ChatMessage'
+      additionalProperties: false
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        chatGroupId:
+          type: string
+          format: uuid
+        chatGroup:
+          $ref: '#/components/schemas/ChatGroup'
+        userId:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/User'
+        content:
+          type: string
+          nullable: true
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Media'
+          nullable: true
+        reactionCounts:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
       additionalProperties: false
     DeleteGroupChatMessageRequest:
       type: object
@@ -900,6 +1229,14 @@ components:
           nullable: true
         newPasswordInput:
           $ref: '#/components/schemas/NewPasswordInput'
+      additionalProperties: false
+    Email:
+      type: object
+      properties:
+        value:
+          type: string
+          nullable: true
+          readOnly: true
       additionalProperties: false
     FacebookSignUp:
       type: object
@@ -954,6 +1291,37 @@ components:
           type: string
           nullable: true
       additionalProperties: false
+    IPAddress:
+      type: object
+      properties:
+        addressFamily:
+          $ref: '#/components/schemas/AddressFamily'
+        scopeId:
+          type: integer
+          format: int64
+        isIPv6Multicast:
+          type: boolean
+          readOnly: true
+        isIPv6LinkLocal:
+          type: boolean
+          readOnly: true
+        isIPv6SiteLocal:
+          type: boolean
+          readOnly: true
+        isIPv6Teredo:
+          type: boolean
+          readOnly: true
+        isIPv6UniqueLocal:
+          type: boolean
+          readOnly: true
+        isIPv4MappedToIPv6:
+          type: boolean
+          readOnly: true
+        address:
+          type: integer
+          format: int64
+          deprecated: true
+      additionalProperties: false
     InputFile:
       type: object
       properties:
@@ -977,6 +1345,22 @@ components:
           type: string
           nullable: true
       additionalProperties: false
+    Media:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        mediaUrl:
+          type: string
+          nullable: true
+        fileName:
+          type: string
+          nullable: true
+        type:
+          type: string
+          nullable: true
+      additionalProperties: false
     NewPasswordInput:
       type: object
       properties:
@@ -987,6 +1371,41 @@ components:
           type: string
           nullable: true
       additionalProperties: false
+    PhoneNumber:
+      type: object
+      properties:
+        value:
+          type: string
+          nullable: true
+          readOnly: true
+      additionalProperties: false
+    PinChatGroupMessage:
+      type: object
+      properties:
+        messageId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        status:
+          type: integer
+          format: int32
+          nullable: true
+        detail:
+          type: string
+          nullable: true
+        instance:
+          type: string
+          nullable: true
+      additionalProperties: { }
     ReactToChatMessageRequest:
       type: object
       properties:
@@ -1009,6 +1428,8 @@ components:
         password:
           type: string
           nullable: true
+        rememberMe:
+          type: boolean
       additionalProperties: false
     RegularSignUp:
       type: object
@@ -1057,6 +1478,19 @@ components:
             type: string
           nullable: true
       additionalProperties: false
+    ShareMessage:
+      type: object
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        groupId:
+          type: string
+          format: uuid
+        content:
+          type: string
+          nullable: true
+      additionalProperties: false
     Stream:
       type: object
       properties:
@@ -1098,6 +1532,57 @@ components:
         groupId:
           type: string
           format: uuid
+      additionalProperties: false
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+          nullable: true
+        email:
+          $ref: '#/components/schemas/Email'
+        status:
+          $ref: '#/components/schemas/UserStatus'
+        roles:
+          type: array
+          items:
+            type: string
+          nullable: true
+        phoneNumbers:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/PhoneNumber'
+          nullable: true
+        profilePicture:
+          $ref: '#/components/schemas/Media'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastLogin:
+          type: string
+          format: date-time
+        deviceIps:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/IPAddress'
+          nullable: true
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
+        displayName:
+          type: string
+          nullable: true
       additionalProperties: false
     UserStatus:
       enum:

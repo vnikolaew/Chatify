@@ -6,4 +6,5 @@
 export type RegularSignIn = {
     email?: string | null;
     password?: string | null;
+    rememberMe?: boolean;
 };
