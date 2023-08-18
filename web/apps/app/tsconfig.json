@@ -19,7 +19,7 @@
       {
         "name": "next"
       }
-    ]
+    ],
   },
   "include": [
     "**/*.ts",
@@ -27,6 +27,7 @@
     "**/*.js",
     "**/*.jsx",
     "next-env.d.ts",
+    "index.d.ts",
     "../../apps/app/.next/types/**/*.ts",
     ".next/types/**/*.ts"
   ],

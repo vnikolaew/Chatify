@@ -5,7 +5,6 @@ import {
    RegularSignUpModel,
    sleep,
    useGithubSignUpMutation,
-   useGoogleSignUpMutation,
    useRegularSignUpMutation,
 } from "@web/api";
 import NextLink from "next/link";
@@ -25,8 +24,8 @@ import { Formik } from "formik";
 import PasswordInput from "../signin/PasswordInput";
 import GoogleSignInButton from "../signin/GoogleSignInButton";
 import FacebookSignInButton from "../signin/FacebookSignInButton";
-import { useGoogleLogin } from "@react-oauth/google";
 import GithubSignInButton from "../signin/GithubSignInButton";
+import { useGoogleSignIn } from "../../hooks/auth/useGoogleSignIn";
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 const PASSWORD_REGEX =
@@ -58,36 +57,15 @@ const SignUpPage: NextPage = () => {
       error: googleSignUpError,
       data: googleLoginData,
       isLoading,
-      mutateAsync: googleSignUp,
-   } = useGoogleSignUpMutation();
+      login,
+   } = useGoogleSignIn((r) => router.push(`/`));
+
    const {
       data: githubData,
       error: githubError,
       isLoading: githubLoading,
       mutateAsync: githubSignUp,
    } = useGithubSignUpMutation();
-
-   const login = useGoogleLogin({
-      onSuccess: ({ access_token, scope }) => {
-         googleSignUp(
-            { accessToken: access_token },
-            {
-               onError: (err) =>
-                  console.error("A sign up error occurred: ", err),
-            }
-         )
-            .then((r) => {
-               console.log("Google login data: ", googleLoginData);
-               router.push(`/`);
-            })
-            .catch((err) => {
-               console.log("Google login error: ", googleSignUpError);
-            });
-      },
-      scope: "https://www.googleapis.com/auth/userinfo.profile",
-      flow: "implicit",
-      onError: console.error,
-   });
 
    async function handleFormSubmit(data: RegularSignUpModel) {
       try {
@@ -134,7 +112,7 @@ const SignUpPage: NextPage = () => {
                            onChange={handleChange}
                            label={"Username"}
                            classNames={{
-                              input: "text-medium pb-1",
+                              input: "text-small pb-1",
                               label: "py-1",
                            }}
                            autoComplete={"off"}
@@ -146,7 +124,7 @@ const SignUpPage: NextPage = () => {
                            }
                            placeholder={"How are people going to call you?"}
                            size={"md"}
-                           className={`py-1  text-md rounded-lg`}
+                           className={`py-1 text-md rounded-lg`}
                            type={"text"}
                            name={"username"}
                            id={"username"}
@@ -157,7 +135,7 @@ const SignUpPage: NextPage = () => {
                            onClear={() => setFieldValue("username", "")}
                            value={values.email}
                            classNames={{
-                              input: "text-medium pb-1",
+                              input: "text-small pb-1",
                               label: "py-1",
                            }}
                            onChange={handleChange}
@@ -183,7 +161,7 @@ const SignUpPage: NextPage = () => {
                            size={"md"}
                            value={values.password}
                            classNames={{
-                              input: "text-medium pb-1",
+                              input: "text-small pb-1",
                               label: "py-1",
                            }}
                            onChange={handleChange}

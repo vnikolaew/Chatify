@@ -1,5 +1,9 @@
 import { authClient } from "../client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+   useMutation,
+   UseMutationOptions,
+   useQueryClient,
+} from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 
 export interface GithubSignUpModel {
@@ -22,7 +26,14 @@ const githubSignUp = async ({ code }: GithubSignUpModel) => {
    return data;
 };
 
-export const useGithubSignUpMutation = () => {
+export const useGithubSignUpMutation = (
+   options?:
+      | Omit<
+           UseMutationOptions<any, unknown, GithubSignUpModel, unknown>,
+           "mutationFn"
+        >
+      | undefined
+) => {
    const client = useQueryClient();
 
    return useMutation(githubSignUp, {
@@ -30,5 +41,6 @@ export const useGithubSignUpMutation = () => {
       onSuccess: (data) => console.log("Sign up success: " + data),
       onSettled: (res) => console.log(res),
       cacheTime: 60 * 60 * 1000,
+      ...options,
    });
 };

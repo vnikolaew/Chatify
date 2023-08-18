@@ -1,7 +1,13 @@
 "use client";
 import React from "react";
+import GithubLogin from "react-github-login";
 import { NextPage } from "next";
-import { RegularSignInModel, sleep, useRegularSignInMutation } from "@web/api";
+import {
+   RegularSignInModel,
+   sleep,
+   useGithubSignUpMutation,
+   useRegularSignInMutation,
+} from "@web/api";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -12,10 +18,16 @@ import {
    CardHeader,
    Input,
    Spinner,
+   Checkbox,
+   Divider,
 } from "@nextui-org/react";
 import * as yup from "yup";
 import { Formik } from "formik";
 import PasswordInput from "./PasswordInput";
+import { GoogleIcon } from "../../components/icons/GoogleIcon";
+import { GithubIcon } from "../../components/icons/GithubIcon";
+import { FacebookIcon } from "../../components/icons/FacebookIcon";
+import { useGoogleSignIn } from "../../hooks/auth/useGoogleSignIn";
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 const PASSWORD_REGEX =
@@ -33,11 +45,28 @@ const signInSchema = yup.object({
       .max(50, "Password must have less than 50 characters.")
       .required("Password is required.")
       .matches(PASSWORD_REGEX, { message: "Invalid password." }),
+   rememberMe: yup.boolean().required(),
 });
 
 const SignInPage: NextPage = () => {
    const router = useRouter();
    const { data, mutateAsync: signIn, error } = useRegularSignInMutation();
+
+   const {
+      error: googleError,
+      data: googleData,
+      isLoading,
+      login: googleLogin,
+   } = useGoogleSignIn((res) =>
+      router.push(`/`, { forceOptimisticNavigation: false })
+   );
+
+   const {
+      data: githubData,
+      error: githubError,
+      isLoading: githubLoading,
+      mutateAsync: githubSignUp,
+   } = useGithubSignUpMutation();
 
    async function handleFormSubmit(data: RegularSignInModel) {
       try {
@@ -113,7 +142,20 @@ const SignInPage: NextPage = () => {
                            name={"password"}
                            id={"password"}
                         />
-                        <div className={`w-full flex flex-col justify-between`}>
+                        <Checkbox
+                           name={"rememberMe"}
+                           classNames={{
+                              label: "text-small text-foreground",
+                           }}
+                           title={"Remember me"}
+                           radius={"md"}
+                           color={"primary"}
+                        >
+                           Remember me
+                        </Checkbox>
+                        <div
+                           className={`w-full mt-2 flex flex-col justify-between`}
+                        >
                            <div>
                               <span className={`text-default-500 text-small`}>
                                  Don't have an account yet?
@@ -141,11 +183,71 @@ const SignInPage: NextPage = () => {
                               }
                               color={"primary"}
                               size={"sm"}
-                              className={`text-white mt-12 py-5 w-1/2 text-[1.0rem] hover:opacity-80 self-end shadow-sm rounded-md`}
+                              className={`text-white mt-12 py-5 w-full text-[1.0rem] hover:opacity-80 self-center shadow-sm rounded-md`}
                               type={`submit`}
                            >
                               {isSubmitting ? "Loading" : "Sign In"}
                            </Button>
+                           <div
+                              className={`w-full mt-2 flex items-center space-x-4`}
+                           >
+                              <Divider
+                                 orientation={"horizontal"}
+                                 className={"h-[1px] flex-1 my-4"}
+                              />
+                              <span
+                                 className={`text-medium font-semibold text-default-600`}
+                              >
+                                 OR
+                              </span>
+                              <Divider
+                                 orientation={"horizontal"}
+                                 className={"h-[1px] flex-1 my-4"}
+                              />
+                           </div>
+                           <div
+                              className={`w-full mt-4 gap-4 justify-center flex items-center`}
+                           >
+                              <Button
+                                 color={"default"}
+                                 className={`bg-white`}
+                                 onPress={(_) => googleLogin()}
+                                 isIconOnly
+                                 startContent={<GoogleIcon size={24} />}
+                              />
+                              <GithubLogin
+                                 redirectUri={`http://localhost:4200`}
+                                 buttonText={
+                                    <div className={`bg-black p-2 rounded-xl`}>
+                                       <GithubIcon size={24} />
+                                    </div>
+                                 }
+                                 id={"github"}
+                                 clientId={
+                                    process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID
+                                 }
+                                 onError={console.error}
+                                 onSuccess={async ({ code }) => {
+                                    githubSignUp({ code })
+                                       .then((res) => {
+                                          router.push(`/`, {
+                                             forceOptimisticNavigation: false,
+                                          });
+                                       })
+                                       .catch((err) => {
+                                          console.error(err);
+                                          console.error(githubError);
+                                       });
+                                 }}
+                              />
+                              <Button
+                                 color={"primary"}
+                                 isIconOnly
+                                 startContent={
+                                    <FacebookIcon fill={"white"} size={24} />
+                                 }
+                              />
+                           </div>
                         </div>
                      </form>
                   )}

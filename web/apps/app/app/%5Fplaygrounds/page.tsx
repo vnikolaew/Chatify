@@ -39,15 +39,15 @@ const PlaygroundsPage = async (props) => {
       .map((e) => e.name);
 
    return (
-      <div className={`m-6`}>
+      <div className={`m-6 w-full flex flex-col items-center text-center`}>
          <h2 className={`text-3xl`}>
             <b>Playgrounds</b> (for testing purposes)
          </h2>
          <Divider
-            className={`w-1/2 shadow-lg h-[1px] rounded-md text-gray-200 mt-3`}
+            className={`shadow-lg w-1/2 h-[1px] rounded-md text-gray-200 mt-3`}
             orientation={"horizontal"}
          />
-         <div className={`text-2xl mt-4 w-1/3 grid grid-cols-2 gap-2`}>
+         <div className={`text-2xl mt-4 w-3/5 grid grid-cols-3 gap-2`}>
             {components.map((c, i) => (
                <GradientLink href={`_playgrounds/${c}`}>
                   {c[0].toUpperCase() + c.slice(1)}

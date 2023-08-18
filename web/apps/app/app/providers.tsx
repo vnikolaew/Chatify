@@ -1,10 +1,11 @@
 "use client";
 import React, { PropsWithChildren, useEffect } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "@web/api";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { USER_LOCATION_LOCAL_STORAGE_KEY } from "@web/api";
 import { NextUIProvider } from "@nextui-org/react";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { queryClient, USER_LOCATION_LOCAL_STORAGE_KEY } from "@web/api";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 export interface ProvidersProps extends PropsWithChildren {
    isDevelopment: boolean;
@@ -23,7 +24,15 @@ const Providers = ({ children, isDevelopment }: ProvidersProps) => {
 
    return (
       <QueryClientProvider client={queryClient}>
-         <NextUIProvider>{children}</NextUIProvider>
+         <NextUIProvider>
+            <NextThemesProvider defaultTheme={"dark"} attribute={"class"}>
+               <GoogleOAuthProvider
+                  clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+               >
+                  {children}
+               </GoogleOAuthProvider>
+            </NextThemesProvider>
+         </NextUIProvider>
          {isDevelopment && (
             <ReactQueryDevtools position={"bottom-left"} initialIsOpen={true} />
          )}

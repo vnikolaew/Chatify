@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useSignOutMutation } from "@web/api";
-import { Button } from "@nextui-org/react";
+import { Button, Spinner } from "@nextui-org/react";
 
 const SignOut = () => {
    const {
@@ -24,6 +24,8 @@ const SignOut = () => {
          color={"danger"}
          radius={"md"}
          size={"lg"}
+         isLoading={isLoading}
+         spinner={<Spinner className={`mr-2`} color={"default"} size={"sm"} />}
          variant={"flat"}
          disabled={isLoading}
          className={`hover:underline`}
