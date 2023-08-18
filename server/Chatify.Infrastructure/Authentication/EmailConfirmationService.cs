@@ -3,38 +3,25 @@ using System.Text.Encodings.Web;
 using Chatify.Application.Authentication.Commands;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.Common.Contracts;
-using Chatify.Application.User.Commands;
 using Chatify.Application.User.Common;
 using Chatify.Infrastructure.Data.Models;
 using LanguageExt;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
 using OneOf;
 
 namespace Chatify.Infrastructure.Authentication;
 
-public sealed class EmailConfirmationService : IEmailConfirmationService
-{
-    private readonly IEmailSender _emailSender;
-    private readonly IAuthenticationService _authenticationService;
-    private readonly UserManager<ChatifyUser> _userManager;
-    private readonly IHttpContextAccessor _contextAccessor;
-
-    private HttpContext HttpContext => _contextAccessor.HttpContext!;
-
-    public EmailConfirmationService(
+public sealed class EmailConfirmationService(IServiceScopeFactory scopeFactory,
         IEmailSender emailSender,
-        UserManager<ChatifyUser> userManager,
         IHttpContextAccessor contextAccessor,
         IAuthenticationService authenticationService)
-    {
-        _emailSender = emailSender;
-        _userManager = userManager;
-        _contextAccessor = contextAccessor;
-        _authenticationService = authenticationService;
-    }
-    
+    : IEmailConfirmationService
+{
+    private HttpContext HttpContext => contextAccessor.HttpContext!;
+
     private string GetEmailConfirmationCallbackUrl(string code)
         => new UriBuilder
         {
@@ -48,15 +35,17 @@ public sealed class EmailConfirmationService : IEmailConfirmationService
         Domain.Entities.User user,
         CancellationToken cancellationToken = default)
     {
-        var tokenResult = await _authenticationService
+        return true;
+
+        var tokenResult = await authenticationService
             .GenerateEmailConfirmationTokenAsync(user.Id, cancellationToken);
         if ( tokenResult.Value is UserNotFound ) return false;
 
         var token = tokenResult.AsT1!;
         var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var callbackUrl = GetEmailConfirmationCallbackUrl(code);
-        
-        await _emailSender.SendEmailAsync(user.Email, "Confirm your email",
+
+        await emailSender.SendEmailAsync(user.Email, "Confirm your email",
             $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
         return true;
@@ -67,10 +56,13 @@ public sealed class EmailConfirmationService : IEmailConfirmationService
         Guid userId,
         CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ChatifyUser>>();
+
+        var user = await userManager.FindByIdAsync(userId.ToString());
         if ( user is null ) return new UserNotFound();
 
-        var result = await _userManager.ConfirmEmailAsync(user, token);
+        var result = await userManager.ConfirmEmailAsync(user, token);
         return result.Succeeded ? Unit.Default : new EmailConfirmationError(result.Errors.First().Description);
     }
 }

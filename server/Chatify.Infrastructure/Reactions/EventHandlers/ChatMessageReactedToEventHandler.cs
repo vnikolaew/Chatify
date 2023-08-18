@@ -9,36 +9,26 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Chatify.Infrastructure.Reactions.EventHandlers;
 
-internal sealed class ChatMessageReactedToEventHandler
+internal sealed class ChatMessageReactedToEventHandler(IHubContext<ChatifyHub, IChatifyHubClient> hubContext,
+        IChatMessageReactionRepository reactions, IMapper mapper)
     : IEventHandler<ChatMessageReactedToEvent>
 {
-    private readonly IHubContext<ChatifyHub, IChatifyHubClient> _hubContext;
-    private readonly IChatMessageReactionRepository _reactions;
-    private readonly IMapper _mapper;
-
-    public ChatMessageReactedToEventHandler(
-        IHubContext<ChatifyHub, IChatifyHubClient> hubContext,
-        IChatMessageReactionRepository reactions, IMapper mapper)
-    {
-        _hubContext = hubContext;
-        _reactions = reactions;
-        _mapper = mapper;
-    }
+    private readonly IChatMessageReactionRepository _reactions = reactions;
 
     public async Task HandleAsync(
         ChatMessageReactedToEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var currentCount = await _mapper.FirstOrDefaultAsync<long>(
+        var currentCount = await mapper.FirstOrDefaultAsync<long>(
                 $"SELECT reaction_counts[{@event.ReactionType}] FROM message_reactions WHERE message_id = ?;",
                 @event.MessageId);
 
-        await _mapper.UpdateAsync<ChatMessageReaction>(
+        await mapper.UpdateAsync<ChatMessageReaction>(
             $" SET reaction_counts[{@event.ReactionType}] = ? WHERE message_id = ?",
         currentCount + 1, @event.MessageId);
 
         var groupId = $"chat-groups:{@event.GroupId}";
-        await _hubContext
+        await hubContext
             .Clients
             .Group(groupId)
             .ChatGroupMessageReactedTo(

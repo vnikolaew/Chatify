@@ -1,7 +1,9 @@
-﻿using Cassandra;
+﻿using System.Reflection;
+using Cassandra;
 using Cassandra.Mapping;
 using Chatify.Domain.Common;
 using Chatify.Infrastructure.Common.Mappings;
+using Chatify.Infrastructure.Data.Services;
 using IMapper = AutoMapper.IMapper;
 using Mapper = Cassandra.Mapping.Mapper;
 
@@ -13,15 +15,24 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
     protected readonly IMapper Mapper;
     protected readonly Mapper DbMapper;
 
-    protected readonly string IdColumn;
+    private readonly string _idColumn;
+    private readonly IEntityChangeTracker _changeTracker;
 
-    protected BaseCassandraRepository(IMapper mapper, Mapper dbMapper, string? idColumn = default!)
+    protected static readonly ITypeDefinition MappingDefinition
+        = MappingConfiguration.Global.Get<TDataEntity>();
+    
+    protected BaseCassandraRepository(
+        IMapper mapper,
+        Mapper dbMapper,
+        IEntityChangeTracker changeTracker,
+        string? idColumn = default!)
     {
         Mapper = mapper;
         DbMapper = dbMapper;
+        _changeTracker = changeTracker;
 
         var definition = MappingConfiguration.Global.Get<TDataEntity>();
-        IdColumn = idColumn ?? definition.PartitionKeys[0];
+        _idColumn = idColumn ?? definition.PartitionKeys[0];
     }
 
     public async Task<TEntity> SaveAsync(
@@ -38,22 +49,50 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         return entity;
     }
 
-    public async Task<TEntity?> UpdateAsync(TId id, Action<TEntity> updateAction,
+    public async Task<TEntity?> UpdateAsync(
+        TId id, Action<TEntity> updateAction,
         CancellationToken cancellationToken = default)
     {
-        var dataEntity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {IdColumn} = ?", id);
+        var dataEntity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {_idColumn} = ?", id);
         if ( dataEntity is null ) return default;
 
         var entity = dataEntity.To<TEntity>(Mapper);
-        updateAction(entity);
+
+        var changedProps = _changeTracker.Track(entity, updateAction);
         Mapper.Map(entity, dataEntity);
 
-        await DbMapper.UpdateAsync(dataEntity,
-            new CqlQueryOptions()
-                .SetConsistencyLevel(ConsistencyLevel.Quorum)
-                .SetRetryPolicy(new DefaultRetryPolicy()));
-
+        var cql = GetUpdateCqlStatement(id, changedProps);
+        await DbMapper.ExecuteAsync(cql);
+        
         return entity;
+    }
+
+    private static Cql GetUpdateCqlStatement(
+        TId id,
+        Dictionary<string, object?> changedProps)
+    {
+        var tableColumnNames = changedProps
+            .Keys
+            .Select(prop => typeof(TEntity).GetProperty(prop)!)
+            .Select(pi => MappingDefinition.GetColumnDefinition(pi).ColumnName)
+            .ToList();
+
+        var cql = new Cql($" UPDATE {MappingDefinition.TableName} SET {string.Join(
+            ", ",
+            tableColumnNames
+                .Select(c => $"{c} = ?").ToList())} WHERE {MappingDefinition.PartitionKeys[0].ToLower()} = ?;")
+            .WithOptions(opts =>
+                opts.SetConsistencyLevel(ConsistencyLevel.Quorum)
+                    .SetRetryPolicy(new DefaultRetryPolicy()));
+
+        cql.GetType()
+            .GetProperty(nameof(Cql.Arguments),
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
+            .SetValue(cql, changedProps
+                .Select(_ => _.Value)
+                .Append(id).ToArray());
+        
+        return cql;
     }
 
     public async Task<TEntity?> UpdateAsync(
@@ -61,18 +100,17 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         Func<TEntity, Task> updateAction,
         CancellationToken cancellationToken = default)
     {
-        var dataEntity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {IdColumn} = ?", id);
+        var dataEntity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {_idColumn} = ?", id);
         if ( dataEntity is null ) return default;
 
         var entity = dataEntity.To<TEntity>(Mapper);
-        await updateAction(entity);
+
+        var changedProps = await _changeTracker.TrackAsync(entity, updateAction);
         Mapper.Map(entity, dataEntity);
 
-        await DbMapper.UpdateAsync(dataEntity,
-            new CqlQueryOptions()
-                .SetConsistencyLevel(ConsistencyLevel.Quorum)
-                .SetRetryPolicy(new DefaultRetryPolicy()));
-
+        var cql = GetUpdateCqlStatement(id, changedProps);
+        await DbMapper.ExecuteAsync(cql);
+        
         return entity;
     }
 
@@ -80,7 +118,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
     {
         try
         {
-            await DbMapper.DeleteAsync<TDataEntity>($"WHERE {IdColumn} = ?", id);
+            await DbMapper.DeleteAsync<TDataEntity>($"WHERE {_idColumn} = ?", id);
             return true;
         }
         catch ( Exception )
@@ -91,6 +129,6 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
 
     public Task<TEntity?> GetAsync(TId id, CancellationToken cancellationToken = default)
         => DbMapper
-            .FirstOrDefaultAsync<TDataEntity>($"WHERE {IdColumn} = ?", id)
+            .FirstOrDefaultAsync<TDataEntity>($"WHERE {_idColumn} = ?", id)
             .ToAsync<TDataEntity, TEntity>(Mapper);
 }

@@ -4,14 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Chatify.Infrastructure.Data.Seeding;
 
-internal sealed class ChatMessageRepliesSeeder : ChatGroupMessageSeeder
+internal sealed class ChatMessageRepliesSeeder(IServiceScopeFactory scopeFactory) : ChatGroupMessageSeeder(scopeFactory)
 {
     public new int Priority => 5;
-
-    public ChatMessageRepliesSeeder(IServiceScopeFactory scopeFactory)
-        : base(scopeFactory)
-    {
-    }
 
     public new async Task SeedAsync(CancellationToken cancellationToken = default)
     {

@@ -62,10 +62,15 @@ public class AuthController : ApiController
     [Route(RegularSignInRoute)]
     public Task<IActionResult> RegularSignIn(
         [FromBody] RegularSignIn signIn,
+        [FromQuery] string? returnUrl,
         CancellationToken cancellationToken = default)
     {
         return SendAsync<RegularSignIn, RegularSignInResult>(signIn, cancellationToken)
-            .MatchAsync(err => err.ToBadRequest(), NoContent);
+            .MatchAsync(
+                err => err.ToBadRequest(),
+                _ => returnUrl is not null
+                    ? Redirect(returnUrl)
+                    : NoContent());
     }
 
     [HttpPost]

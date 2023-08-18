@@ -7,21 +7,14 @@ using Microsoft.AspNetCore.SignalR;
 namespace Chatify.Infrastructure.Reactions.EventHandlers;
 
 internal sealed class ChatMessageUnreactedToEventHandler
-    : IEventHandler<ChatMessageUnreactedToEvent>
+    (IHubContext<ChatifyHub, IChatifyHubClient> hubContext) : IEventHandler<ChatMessageUnreactedToEvent>
 {
-    private readonly IHubContext<ChatifyHub, IChatifyHubClient> _hubContext;
-
-    public ChatMessageUnreactedToEventHandler(IHubContext<ChatifyHub, IChatifyHubClient> hubContext)
-    {
-        _hubContext = hubContext;
-    }
-
     public async Task HandleAsync(
         ChatMessageUnreactedToEvent @event,
         CancellationToken cancellationToken = default)
     {
         var groupId = $"chat-groups:{@event.GroupId}";
-        await _hubContext
+        await hubContext
             .Clients
             .Group(groupId)
             .ChatGroupMessageUnReactedTo(

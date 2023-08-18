@@ -3,18 +3,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Chatify.Infrastructure.Data.Seeding;
 
-internal sealed class CompositeSeeder : ISeeder
+internal sealed class CompositeSeeder(IServiceScopeFactory scopeFactory) : ISeeder
 {
     public int Priority => 1;
 
-    private readonly IServiceScopeFactory _scopeFactory;
-
-    public CompositeSeeder(IServiceScopeFactory scopeFactory)
-        => _scopeFactory = scopeFactory;
-
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        await using var scope = _scopeFactory.CreateAsyncScope();
+        await using var scope = scopeFactory.CreateAsyncScope();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<CompositeSeeder>>();
 
         var seeders = scope.ServiceProvider

@@ -11,41 +11,29 @@ using Quartz;
 
 namespace Chatify.Infrastructure.Messages.EventHandlers;
 
-internal sealed class ChatMessageEditedEventHandler
-    : IEventHandler<ChatMessageEditedEvent>
-{
-    private readonly IHubContext<ChatifyHub, IChatifyHubClient> _hubContext;
-    private readonly ISchedulerFactory _schedulerFactory;
-    private readonly IMapper _mapper;
-
-    public ChatMessageEditedEventHandler(
-        IHubContext<ChatifyHub, IChatifyHubClient> hubContext,
+internal sealed class ChatMessageEditedEventHandler(IHubContext<ChatifyHub, IChatifyHubClient> hubContext,
         IMapper mapper,
         ISchedulerFactory schedulerFactory)
-    {
-        _hubContext = hubContext;
-        _mapper = mapper;
-        _schedulerFactory = schedulerFactory;
-    }
-
+    : IEventHandler<ChatMessageEditedEvent>
+{
     public async Task HandleAsync(
         ChatMessageEditedEvent @event,
         CancellationToken cancellationToken = default)
     {
         // Update Message Reply Summaries "View" table:
-        await _mapper.UpdateAsync<ChatMessageRepliesSummary>(
+        await mapper.UpdateAsync<ChatMessageRepliesSummary>(
             "SET updated_at = ?, updated = ? WHERE message_id = ? ALLOW FILTERING;",
             @event.Timestamp,
             true,
             @event.MessageId
         );
         
-        var scheduler = await _schedulerFactory.GetScheduler(cancellationToken);
+        var scheduler = await schedulerFactory.GetScheduler(cancellationToken);
         await scheduler.ScheduleImmediateJob<ProcessChatMessageJob>(builder =>
             builder.WithMessageId(@event.MessageId), cancellationToken);
         
         var groupId = $"chat-groups:{@event.GroupId}";
-        await  _hubContext
+        await  hubContext
             .Clients
             .Group(groupId)
             .ChatGroupMessageEdited(

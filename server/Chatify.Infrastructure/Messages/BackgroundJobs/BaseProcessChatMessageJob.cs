@@ -10,31 +10,23 @@ using Quartz;
 
 namespace Chatify.Infrastructure.Messages.BackgroundJobs;
 
-internal abstract class BaseProcessChatMessageJob<TMessage> : IJob
+internal abstract class BaseProcessChatMessageJob<TMessage>(IOpenGraphMetadataEnricher openGraphMetadataEnricher,
+        IDomainRepository<TMessage, Guid> messages,
+        IEventDispatcher eventDispatcher)
+    : IJob
     where TMessage : ChatMessage
 {
     public Guid MessageId { private get; set; }
 
-    private readonly IOpenGraphMetadataEnricher _openGraphMetadataEnricher;
     // private readonly ILogger<ProcessChatMessageReplyJob> _logger;
 
     protected abstract Func<Guid, CancellationToken, Task<TMessage?>> GetById { get; init; }
 
-    protected readonly IDomainRepository<TMessage, Guid> Messages;
+    protected readonly IDomainRepository<TMessage, Guid> Messages = messages;
 
-    protected readonly IEventDispatcher EventDispatcher;
+    protected readonly IEventDispatcher EventDispatcher = eventDispatcher;
 
     public abstract JobKey JobKey { get; }
-
-    public BaseProcessChatMessageJob(
-        IOpenGraphMetadataEnricher openGraphMetadataEnricher,
-        IDomainRepository<TMessage, Guid> messages,
-        IEventDispatcher eventDispatcher)
-    {
-        _openGraphMetadataEnricher = openGraphMetadataEnricher;
-        Messages = messages;
-        EventDispatcher = eventDispatcher;
-    }
 
     public async Task Execute(IJobExecutionContext context)
     {
@@ -52,7 +44,7 @@ internal abstract class BaseProcessChatMessageJob<TMessage> : IJob
             .ToList();
 
         var metadataTasks = validLinks
-            .Select(async l => await _openGraphMetadataEnricher.GetAsync(l.Url!, context.CancellationToken))
+            .Select(async l => await openGraphMetadataEnricher.GetAsync(l.Url!, context.CancellationToken))
             .ToList();
 
         var metadatas = await Task.WhenAll(metadataTasks);

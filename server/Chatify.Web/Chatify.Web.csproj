@@ -20,9 +20,13 @@
     <ItemGroup>
         <Folder Include="swagger\v1" />
     </ItemGroup>
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Views\Index\Index.cshtml" />
+    </ItemGroup>
 
     <Target Name="OpenAPI" AfterTargets="Build" Condition="$(Configuration)=='Debug'">
         <Exec Command="dotnet tool restore"></Exec>
-<!--        <Exec Command="dotnet swagger tofile &#45;&#45;output ./swagger/v1/swagger.yaml &#45;&#45;yaml $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />-->
+        <Exec Command="dotnet swagger tofile --output ./swagger/v1/swagger.yaml --yaml $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
+        <Exec Command="pwsh -File openapi-swagger.ps1" WorkingDirectory="$(ProjectDir)" />
     </Target>
 </Project>

@@ -3,26 +3,21 @@ using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Mappings;
+using Chatify.Infrastructure.Data.Services;
 using Chatify.Shared.Abstractions.Queries;
 using Humanizer;
 using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
-public sealed class ChatMessageReplyRepository
-    : BaseCassandraRepository<ChatMessageReply, Models.ChatMessageReply, Guid>,
+public sealed class ChatMessageReplyRepository(IMapper mapper,
+        IEntityChangeTracker changeTracker,
+        Mapper dbMapper,
+        IPagingCursorHelper pagingCursorHelper)
+    : BaseCassandraRepository<ChatMessageReply, Models.ChatMessageReply, Guid>(mapper, dbMapper, changeTracker,
+            nameof(ChatMessageReply.Id).Underscore()),
         IChatMessageReplyRepository
 {
-    private readonly IPagingCursorHelper _pagingCursorHelper;
-
-    public ChatMessageReplyRepository(
-        IMapper mapper,
-        Mapper dbMapper, IPagingCursorHelper pagingCursorHelper) : base(mapper, dbMapper,
-        nameof(ChatMessageReply.Id).Underscore())
-    {
-        _pagingCursorHelper = pagingCursorHelper;
-    }
-
     public async Task<bool> DeleteAllForMessage(Guid messageId, CancellationToken cancellationToken = default)
     {
         try
@@ -44,7 +39,7 @@ public sealed class ChatMessageReplyRepository
         CancellationToken cancellationToken)
     {
         var messagesPage = await DbMapper.FetchPageAsync<Models.ChatMessageReply>(
-            pageSize, _pagingCursorHelper.ToPagingState(pagingCursor), "WHERE reply_to_id = ?;",
+            pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE reply_to_id = ?;",
             new object[] { messageId });
 
         return new CursorPaged<ChatMessageReply>(
@@ -52,6 +47,6 @@ public sealed class ChatMessageReplyRepository
                 .AsQueryable()
                 .To<ChatMessageReply>(Mapper)
                 .ToList(),
-            _pagingCursorHelper.ToPagingCursor(messagesPage.PagingState));
+            pagingCursorHelper.ToPagingCursor(messagesPage.PagingState));
     }
 }

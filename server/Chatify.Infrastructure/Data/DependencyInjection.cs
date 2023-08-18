@@ -109,6 +109,7 @@ public static class DependencyInjection
         return services
             .AddCassandra(configuration)
             .AddTransient<Mapper>(sp => ( sp.GetRequiredService<IMapper>() as Mapper )!)
+            .AddHostedService<RedisIndicesCreationService>()
             .AddHostedService<DatabaseInitializationService>();
     }
 

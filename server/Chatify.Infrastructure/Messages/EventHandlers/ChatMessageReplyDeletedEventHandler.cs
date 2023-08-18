@@ -12,40 +12,27 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Chatify.Infrastructure.Messages.EventHandlers;
 
-internal sealed partial class ChatMessageReplyDeletedEventHandler
-    : IEventHandler<ChatMessageReplyDeletedEvent>
-{
-    private readonly ICounterService<ChatMessageReplyCount, Guid> _replyCounts;
-    private readonly IHubContext<ChatifyHub, IChatifyHubClient> _chatifyContext;
-    private readonly IMapper _mapper;
-    private readonly IIdentityContext _identityContext;
-
-    public ChatMessageReplyDeletedEventHandler(
+internal sealed partial class ChatMessageReplyDeletedEventHandler(
         ICounterService<ChatMessageReplyCount, Guid> replyCounts,
         IIdentityContext identityContext,
         IHubContext<ChatifyHub, IChatifyHubClient> chatifyContext, IMapper mapper)
-    {
-        _replyCounts = replyCounts;
-        _identityContext = identityContext;
-        _chatifyContext = chatifyContext;
-        _mapper = mapper;
-    }
-
+    : IEventHandler<ChatMessageReplyDeletedEvent>
+{
     public async Task HandleAsync(ChatMessageReplyDeletedEvent @event, CancellationToken cancellationToken = default)
     {
-        await _replyCounts.Decrement(
+        await replyCounts.Decrement(
             @event.ReplyToId,
             cancellationToken: cancellationToken);
 
         // Update Message Reply Summaries "View" table:
-        var messageReplierIds = await _mapper.FetchAsync<Guid>(
+        var messageReplierIds = await mapper.FetchAsync<Guid>(
             "SELECT user_id FROM chat_message_replies WHERE reply_to = ?;", @event.ReplyToId);
 
         // We need to remove replier Id since there's no more replies by him:
         if ( messageReplierIds.Count(id => id == @event.UserId) <= 1 )
         {
             // Delete UserInfo object from HashSet
-            var userInfo = await _mapper.FirstOrDefaultAsync<ChatifyUser>(
+            var userInfo = await mapper.FirstOrDefaultAsync<ChatifyUser>(
                 "SELECT id, username, profile_picture_url FROM users WHERE id = ?;", @event.UserId);
 
             var userInfoDict = new Dictionary<string, string>
@@ -60,20 +47,20 @@ internal sealed partial class ChatMessageReplyDeletedEventHandler
                     JsonSerializer.Serialize(userInfoDict),
                     match => match.Groups[0].Value.Replace("\"", ""));
 
-            await _mapper.UpdateAsync<ChatMessageRepliesSummary>(
+            await mapper.UpdateAsync<ChatMessageRepliesSummary>(
                 $" SET replier_ids = replier_ids - ?, total = total - 1, user_infos = user_infos - {userInfoDictString} WHERE message_id = ? ALLOW FILTERING;",
                 @event.UserId,
                 @event.MessageId);
         }
         else
         {
-            await _mapper.UpdateAsync<ChatMessageRepliesSummary>(
+            await mapper.UpdateAsync<ChatMessageRepliesSummary>(
                 " SET total = total - 1 WHERE message_id = ? ALLOW FILTERING;",
                 @event.MessageId);
         }
 
         var groupId = $"chat-groups:{@event.GroupId}";
-        await _chatifyContext
+        await chatifyContext
             .Clients
             .Group(groupId)
             .ChatGroupMessageRemoved(
@@ -81,7 +68,7 @@ internal sealed partial class ChatMessageReplyDeletedEventHandler
                     @event.GroupId,
                     @event.MessageId,
                     @event.UserId,
-                    _identityContext.Username,
+                    identityContext.Username,
                     @event.Timestamp));
     }
 

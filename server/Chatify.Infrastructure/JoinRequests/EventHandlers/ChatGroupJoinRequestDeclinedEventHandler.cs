@@ -7,28 +7,19 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Chatify.Infrastructure.JoinRequests.EventHandlers;
 
-internal sealed class ChatGroupJoinRequestDeclinedEventHandler
-    : IEventHandler<ChatGroupJoinRequestDeclined>
-{
-    private readonly IHubContext<ChatifyHub, IChatifyHubClient> _chatifyContext;
-    private readonly IUserRepository _users;
-    private readonly IChatGroupRepository _groups;
-
-    public ChatGroupJoinRequestDeclinedEventHandler(
+internal sealed class ChatGroupJoinRequestDeclinedEventHandler(
         IHubContext<ChatifyHub, IChatifyHubClient> chatifyContext,
         IUserRepository users, IChatGroupRepository groups)
-    {
-        _chatifyContext = chatifyContext;
-        _users = users;
-        _groups = groups;
-    }
+    : IEventHandler<ChatGroupJoinRequestDeclined>
+{
+    private readonly IChatGroupRepository _groups = groups;
 
     public async Task HandleAsync(ChatGroupJoinRequestDeclined @event, CancellationToken cancellationToken = default)
     {
-        var adminUser = await _users.GetAsync(@event.DeclinedById, cancellationToken);
+        var adminUser = await users.GetAsync(@event.DeclinedById, cancellationToken);
         if ( adminUser is null ) return;
 
-        await _chatifyContext
+        await chatifyContext
             .Clients
             .User(@event.UserId.ToString())
             .ChatGroupUserJoinRequestDeclined(new ChatGroupUserJoinRequestDeclined(

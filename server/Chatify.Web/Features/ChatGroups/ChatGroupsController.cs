@@ -1,4 +1,5 @@
-﻿using Chatify.Application.ChatGroups.Commands;
+﻿using System.Net;
+using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.ChatGroups.Queries;
 using Chatify.Application.Messages.Queries;
 using Chatify.Shared.Infrastructure.Common.Extensions;
@@ -8,7 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Guid = System.Guid;
 using CreateChatGroupResult = OneOf.OneOf<Chatify.Application.User.Commands.FileUploadError, System.Guid>;
 using SearchChatGroupMembersByNameResult =
-    OneOf.OneOf<Chatify.Application.ChatGroups.Commands.UserIsNotMemberError, System.Collections.Generic.List<Chatify.Domain.Entities.User>>;
+    OneOf.OneOf<Chatify.Application.ChatGroups.Commands.UserIsNotMemberError,
+        System.Collections.Generic.List<Chatify.Domain.Entities.User>>;
 using GetChatGroupPinnedMessagesResult =
     OneOf.OneOf<Chatify.Application.Messages.Common.ChatGroupNotFoundError,
         Chatify.Application.Messages.Common.UserIsNotMemberError,
@@ -75,6 +77,8 @@ public class ChatGroupsController : ApiController
 
     [HttpGet]
     [Route("feed")]
+    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(List<ChatGroupFeedEntry>), ( int )HttpStatusCode.OK)]
     public async Task<IActionResult> Feed(
         [FromQuery] int limit,
         [FromQuery] int offset,
@@ -84,7 +88,7 @@ public class ChatGroupsController : ApiController
             new GetChatGroupsFeed(limit, offset), cancellationToken);
         return result.Match(
             err => err.ToBadRequest(),
-            entries => Ok(new { Data = entries }));
+            Ok);
     }
 
     [HttpGet]
@@ -98,7 +102,7 @@ public class ChatGroupsController : ApiController
             new SearchChatGroupMembersByName(groupId, usernameQuery), cancellationToken);
 
         return result.Match(
-            err => (IActionResult) BadRequest(),
+            err => ( IActionResult )BadRequest(),
             entries => Ok(new { Data = entries }));
     }
 
@@ -124,7 +128,7 @@ public class ChatGroupsController : ApiController
     {
         var result = await QueryAsync<GetChatGroupPinnedMessages, GetChatGroupPinnedMessagesResult>(
             new GetChatGroupPinnedMessages(groupId), cancellationToken);
-        
+
         return result.Match<IActionResult>(
             _ => NotFound(),
             _ => BadRequest(),

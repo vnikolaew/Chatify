@@ -21,20 +21,17 @@ internal sealed class DeclineFriendInvitationHandler :
     private readonly IIdentityContext _identityContext;
     private readonly IDomainRepository<FriendInvitation, Guid> _friendInvites;
     private readonly IEventDispatcher _eventDispatcher;
-    private readonly IDomainRepository<FriendsRelation, Guid> _friends;
     private readonly IClock _clock;
 
     public DeclineFriendInvitationHandler(
         IIdentityContext identityContext,
         IDomainRepository<FriendInvitation, Guid> friendInvites,
         IEventDispatcher eventDispatcher,
-        IDomainRepository<FriendsRelation, Guid> friends,
         IClock clock)
     {
         _identityContext = identityContext;
         _friendInvites = friendInvites;
         _eventDispatcher = eventDispatcher;
-        _friends = friends;
         _clock = clock;
     }
 
@@ -45,13 +42,14 @@ internal sealed class DeclineFriendInvitationHandler :
         // Check if friend invite exists and is in a 'Pending' state:
         var friendInvite = await _friendInvites.GetAsync(command.InviteId, cancellationToken: cancellationToken);
         if ( friendInvite is null ) return new FriendInviteNotFoundError(command.InviteId);
-        if (friendInvite.Status != (sbyte)FriendInvitationStatus.Pending)
+        
+        if (friendInvite.Status != FriendInvitationStatus.Pending)
         {
-            return new FriendInviteInvalidStateError(( FriendInvitationStatus )friendInvite.Status);
+            return new FriendInviteInvalidStateError(friendInvite.Status);
         }
         if (friendInvite.InviteeId != _identityContext.Id)
         {
-            return new FriendInviteInvalidStateError(( FriendInvitationStatus )friendInvite.Status);
+            return new FriendInviteInvalidStateError(friendInvite.Status);
         }
 
         // Update friend invite:
@@ -59,7 +57,7 @@ internal sealed class DeclineFriendInvitationHandler :
             friendInvite.Id,
             invite =>
             {
-                invite.Status = (sbyte)FriendInvitationStatus.Declined;
+                invite.Status = FriendInvitationStatus.Declined;
                 invite.UpdatedAt = _clock.Now;
             },
             cancellationToken);

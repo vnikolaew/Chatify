@@ -5,18 +5,12 @@ using Humanizer;
 
 namespace Chatify.Infrastructure.Data.Counters;
 
-public abstract class BaseCounterService<TEntity, TId> : ICounterService<TEntity, TId>
-{
-    protected readonly Expression<Func<TEntity, long>> PropertyGetter;
-    protected readonly IMapper Mapper;
-
-    protected BaseCounterService(
-        Expression<Func<TEntity, long>> propertyGetter,
+public abstract class BaseCounterService<TEntity, TId>(Expression<Func<TEntity, long>> propertyGetter,
         IMapper mapper)
-    {
-        PropertyGetter = propertyGetter;
-        Mapper = mapper;
-    }
+    : ICounterService<TEntity, TId>
+{
+    protected readonly Expression<Func<TEntity, long>> PropertyGetter = propertyGetter;
+    protected readonly IMapper Mapper = mapper;
 
     public async Task<TEntity?> Increment(TId id, long by = 1, CancellationToken cancellationToken = default)
     {

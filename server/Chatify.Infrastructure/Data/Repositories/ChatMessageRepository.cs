@@ -5,6 +5,7 @@ using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Models;
+using Chatify.Infrastructure.Data.Services;
 using Chatify.Shared.Abstractions.Queries;
 using ChatMessage = Chatify.Domain.Entities.ChatMessage;
 using IMapper = AutoMapper.IMapper;
@@ -12,17 +13,13 @@ using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
-public sealed class ChatMessageRepository :
-    BaseCassandraRepository<ChatMessage, Models.ChatMessage, Guid>,
-    IChatMessageRepository
+public sealed class ChatMessageRepository(
+        IMapper mapper, Mapper dbMapper, IEntityChangeTracker changeTracker,
+        IPagingCursorHelper pagingCursorHelper)
+    :
+        BaseCassandraRepository<ChatMessage, Models.ChatMessage, Guid>(mapper, dbMapper, changeTracker),
+        IChatMessageRepository
 {
-    private readonly IPagingCursorHelper _pagingCursorHelper;
-
-    public ChatMessageRepository(
-        IMapper mapper, Mapper dbMapper, IPagingCursorHelper pagingCursorHelper)
-        : base(mapper, dbMapper)
-        => _pagingCursorHelper = pagingCursorHelper;
-
     public async Task<CursorPaged<ChatMessage>> GetPaginatedByGroupAsync(
         Guid groupId,
         int pageSize,
@@ -30,12 +27,12 @@ public sealed class ChatMessageRepository :
         CancellationToken cancellationToken = default)
     {
         var messagesPage = await DbMapper.FetchPageAsync<Models.ChatMessage>(
-            pageSize, _pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?",
+            pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?",
             new object[] { groupId });
 
         return new CursorPaged<ChatMessage>(
             messagesPage.To<ChatMessage>(Mapper).ToList(),
-            _pagingCursorHelper.ToPagingCursor(messagesPage.PagingState)
+            pagingCursorHelper.ToPagingCursor(messagesPage.PagingState)
         );
     }
 
@@ -44,14 +41,14 @@ public sealed class ChatMessageRepository :
         CancellationToken cancellationToken = default)
     {
         var replierInfoes = await DbMapper.FetchPageAsync<ChatMessageRepliesSummary>(
-            pageSize, _pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?;",
+            pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?;",
             new object[] { groupId });
 
         return new CursorPaged<MessageRepliersInfo>(
             replierInfoes
                 .To<MessageRepliersInfo>(Mapper)
                 .ToList(),
-            _pagingCursorHelper.ToPagingCursor(replierInfoes.PagingState));
+            pagingCursorHelper.ToPagingCursor(replierInfoes.PagingState));
     }
 
     public async Task<IDictionary<Guid, ChatMessage>> GetLatestForGroups(

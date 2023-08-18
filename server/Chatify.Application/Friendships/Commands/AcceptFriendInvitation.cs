@@ -55,9 +55,9 @@ internal sealed class AcceptFriendInvitationHandler :
         // Check if friend invite exists and is in a 'Pending' state:
         var friendInvite = await _friendInvites.GetAsync(command.InviteId, cancellationToken: cancellationToken);
         if ( friendInvite is null ) return new FriendInviteNotFoundError(command.InviteId);
-        if (friendInvite.Status != (sbyte)FriendInvitationStatus.Pending)
+        if ( friendInvite.Status != ( sbyte )FriendInvitationStatus.Pending )
         {
-            return new FriendInviteInvalidStateError((FriendInvitationStatus)
+            return new FriendInviteInvalidStateError(
                 friendInvite.Status);
         }
 
@@ -71,10 +71,10 @@ internal sealed class AcceptFriendInvitationHandler :
             GroupId = groupId,
             CreatedAt = _clock.Now
         };
-        
+
         // Save new friendship:
         await _friends.SaveAsync(friendsRelation, cancellationToken);
-        
+
         // Create new DM group between the two users: 
         var group = new ChatGroup
         {
@@ -84,34 +84,36 @@ internal sealed class AcceptFriendInvitationHandler :
             CreatorId = friendInvite.InviterId,
         };
         await _groups.SaveAsync(group, cancellationToken);
-        
-        await _eventDispatcher.PublishAsync(new ChatGroupCreatedEvent
-        {
-            CreatorId = group.CreatorId,
-            Timestamp = group.CreatedAt.DateTime,
-            Name = group.Name,
-            GroupId = group.Id
-        }, cancellationToken);
-        
+
         // Update friend invite:
         await _friendInvites.UpdateAsync(
             friendInvite.Id,
             invite =>
             {
-                invite.Status = (sbyte)FriendInvitationStatus.Accepted;
+                invite.Status = FriendInvitationStatus.Accepted;
                 invite.UpdatedAt = _clock.Now;
             },
             cancellationToken);
-        
-        await _eventDispatcher.PublishAsync(new FriendInvitationAcceptedEvent
+
+        var events = new IDomainEvent[]
         {
-            FriendsRelationId = friendsRelationId,
-            InviterId = friendInvite.InviterId,
-            InviteeId = friendInvite.InviteeId,
-            InviteId = friendInvite.Id,
-            Timestamp = _clock.Now
-        }, cancellationToken);
-        
+            new ChatGroupCreatedEvent
+            {
+                CreatorId = group.CreatorId,
+                Timestamp = group.CreatedAt.DateTime,
+                Name = group.Name,
+                GroupId = group.Id
+            },
+            new FriendInvitationAcceptedEvent
+            {
+                FriendsRelationId = friendsRelationId,
+                InviterId = friendInvite.InviterId,
+                InviteeId = friendInvite.InviteeId,
+                InviteId = friendInvite.Id,
+                Timestamp = _clock.Now
+            }
+        };
+        await _eventDispatcher.PublishAsync(events, cancellationToken);
         return friendsRelation.Id;
     }
 }

@@ -12,35 +12,21 @@ using ChatGroup = Chatify.Domain.Entities.ChatGroup;
 
 namespace Chatify.Infrastructure.ChatGroups.EventHandlers;
 
-internal sealed class ChatGroupMemberAddedEventHandler
-    : IEventHandler<ChatGroupMemberAddedEvent>
-{
-    private readonly IDomainRepository<ChatGroup, Guid> _groups;
-    private readonly ILogger<ChatGroupMemberAddedEventHandler> _logger;
-    private readonly ICounterService<ChatGroupMembersCount, Guid> _membersCounts;
-    private readonly IHubContext<ChatifyHub, IChatifyHubClient> _chatifyHubContext;
-
-    public ChatGroupMemberAddedEventHandler(
-        ILogger<ChatGroupMemberAddedEventHandler> logger,
+internal sealed class ChatGroupMemberAddedEventHandler(ILogger<ChatGroupMemberAddedEventHandler> logger,
         IDomainRepository<ChatGroup, Guid> groups,
         ICounterService<ChatGroupMembersCount, Guid> membersCounts,
         IHubContext<ChatifyHub, IChatifyHubClient> chatifyHubContext)
-    {
-        _logger = logger;
-        _groups = groups;
-        _membersCounts = membersCounts;
-        _chatifyHubContext = chatifyHubContext;
-    }
-    
+    : IEventHandler<ChatGroupMemberAddedEvent>
+{
     public async Task HandleAsync(
         ChatGroupMemberAddedEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var group = await _groups.GetAsync(@event.GroupId, cancellationToken);
+        var group = await groups.GetAsync(@event.GroupId, cancellationToken);
         if(group is null) return;
 
-        var membersCount = await _membersCounts.Increment(group.Id, cancellationToken: cancellationToken);
-        _logger.LogInformation("Incremented Membership count for Chat Group with Id '{Id}' to {Count} ",
+        var membersCount = await membersCounts.Increment(group.Id, cancellationToken: cancellationToken);
+        logger.LogInformation("Incremented Membership count for Chat Group with Id '{Id}' to {Count} ",
             @event.GroupId, membersCount?.MembersCount);
         
         // // Add new member to cache set as well:
@@ -49,7 +35,7 @@ internal sealed class ChatGroupMemberAddedEventHandler
         // await _cache.SetAddAsync(groupKey, userKey);
         
         var groupId = $"chat-groups:{@event.GroupId}";
-        await _chatifyHubContext
+        await chatifyHubContext
             .Clients
             .Group(groupId)
             .AddedToChatGroup(new AddedToChatGroup(

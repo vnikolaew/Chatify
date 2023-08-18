@@ -9,23 +9,11 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Chatify.Infrastructure.ChatGroups.EventHandlers;
 
-internal sealed class ChatGroupMemberLeftHandler
-    : IEventHandler<ChatGroupMemberLeftEvent>
-{
-    private readonly ICounterService<ChatGroupMembersCount, Guid> _memberCounts;
-    private readonly IHubContext<ChatifyHub, IChatifyHubClient> _chatifyHubContext;
-    private readonly IIdentityContext _identityContext;
-
-    public ChatGroupMemberLeftHandler(
-        ICounterService<ChatGroupMembersCount, Guid> memberCounts,
+internal sealed class ChatGroupMemberLeftHandler(ICounterService<ChatGroupMembersCount, Guid> memberCounts,
         IHubContext<ChatifyHub, IChatifyHubClient> chatifyHubContext,
         IIdentityContext identityContext)
-    {
-        _memberCounts = memberCounts;
-        _chatifyHubContext = chatifyHubContext;
-        _identityContext = identityContext;
-    }
-    
+    : IEventHandler<ChatGroupMemberLeftEvent>
+{
     // private static RedisKey GetGroupMembersCacheKey(Guid groupId)
     //     => new($"groups:{groupId.ToString()}:members");
 
@@ -33,16 +21,16 @@ internal sealed class ChatGroupMemberLeftHandler
         ChatGroupMemberLeftEvent @event,
         CancellationToken cancellationToken = default)
     {
-        await _memberCounts.Decrement(@event.GroupId, cancellationToken: cancellationToken);
+        await memberCounts.Decrement(@event.GroupId, cancellationToken: cancellationToken);
         
         var groupId = $"chat-groups:{@event.GroupId}";
-        await _chatifyHubContext
+        await chatifyHubContext
             .Clients
             .Group(groupId)
             .ChatGroupMemberLeft(new ChatGroupMemberLeft(
                 @event.GroupId,
                 @event.UserId,
-                _identityContext.Username,
+                identityContext.Username,
                 @event.Timestamp));
     }
 }

@@ -2,6 +2,7 @@
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Models;
+using Chatify.Infrastructure.Data.Services;
 using Humanizer;
 using StackExchange.Redis;
 using ChatGroupMember = Chatify.Domain.Entities.ChatGroupMember;
@@ -9,18 +10,14 @@ using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
-public sealed class ChatGroupMembersRepository :
-    BaseCassandraRepository<ChatGroupMember, Models.ChatGroupMember, Guid>,
-    IChatGroupMemberRepository
+public sealed class ChatGroupMembersRepository(IMapper mapper, Mapper dbMapper, IDatabase cache,
+        IEntityChangeTracker changeTracker)
+    :
+        BaseCassandraRepository<ChatGroupMember, Models.ChatGroupMember, Guid>(mapper, dbMapper, changeTracker,
+            nameof(ChatGroupMember.ChatGroupId).Underscore()),
+        IChatGroupMemberRepository
 
 {
-    private readonly IDatabase _cache;
-
-    public ChatGroupMembersRepository(
-        IMapper mapper, Mapper dbMapper, IDatabase cache)
-        : base(mapper, dbMapper, nameof(ChatGroupMember.ChatGroupId).Underscore())
-        => _cache = cache;
-
     private static RedisKey GetGroupMembersCacheKey(Guid groupId)
         => new($"groups:{groupId.ToString()}:members");
 
@@ -41,7 +38,7 @@ public sealed class ChatGroupMembersRepository :
                 ChatGroupId = entity.ChatGroupId,
                 Id = entity.Id
             });
-        var cacheSaveTask = _cache.ExecuteAsync("BF.ADD", groupKey, userKey);
+        var cacheSaveTask = cache.ExecuteAsync("BF.ADD", groupKey, userKey);
 
         // (dbSaveTask, cacheSaveTask, groupMemberByUserIdSaveTask).when
         var saveTasks = new[] { dbSaveTask, cacheSaveTask, groupMemberByUserIdSaveTask };
@@ -82,7 +79,7 @@ public sealed class ChatGroupMembersRepository :
         {
             base.DeleteAsync(member.Id, cancellationToken),
             groupMemberByUserIdDeleteTask,
-            _cache.SetRemoveAsync(groupKey, userKey)
+            cache.SetRemoveAsync(groupKey, userKey)
         };
 
         var results = await Task.WhenAll(deleteTasks);
@@ -134,6 +131,6 @@ public sealed class ChatGroupMembersRepository :
         var groupKey = GetGroupMembersCacheKey(groupId);
         var userKey = new RedisValue(userId.ToString());
 
-        return ( bool )await _cache.ExecuteAsync("BF.EXISTS", groupKey, userKey);
+        return ( bool )await cache.ExecuteAsync("BF.EXISTS", groupKey, userKey);
     }
 }

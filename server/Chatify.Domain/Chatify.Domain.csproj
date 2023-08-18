@@ -7,25 +7,7 @@
         <LangVersion>default</LangVersion>
     </PropertyGroup>
 
-
     <ItemGroup>
-      <ProjectReference Include="..\Chatify.Shared.Abstractions\Chatify.Shared.Abstractions.csproj" />
-
-
-
-
-
-
-
-
-
-
+        <ProjectReference Include="..\Chatify.Shared.Abstractions\Chatify.Shared.Abstractions.csproj"/>
     </ItemGroup>
-
-
-
-
-
-
-
 </Project>

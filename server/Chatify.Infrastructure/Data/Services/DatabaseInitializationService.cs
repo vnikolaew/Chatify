@@ -13,27 +13,15 @@ using InvalidOperationException = System.InvalidOperationException;
 
 namespace Chatify.Infrastructure.Data.Services;
 
-public class DatabaseInitializationService : BackgroundService
-{
-    private readonly CassandraOptions _cassandraOptions;
-    private readonly ILogger<DatabaseInitializationService> _logger;
-
-    private const string KeyspaceName = "chatify";
-
-    private readonly string _schemaFilePath;
-    private readonly ISession _session;
-
-    public DatabaseInitializationService(
-        CassandraOptions cassandraOptions,
+public class DatabaseInitializationService(CassandraOptions cassandraOptions,
         ISession session,
         ILogger<DatabaseInitializationService> logger)
-    {
-        _cassandraOptions = cassandraOptions;
-        _session = session;
-        _logger = logger;
-        _schemaFilePath = Path.Combine(Directory.GetParent(Assembly.GetExecutingAssembly().Location)!.FullName, "Data",
-            "schema.cql");
-    }
+    : BackgroundService
+{
+    private const string KeyspaceName = "chatify";
+
+    private readonly string _schemaFilePath = Path.Combine(Directory.GetParent(Assembly.GetExecutingAssembly().Location)!.FullName, "Data",
+        "schema.cql");
 
     private static Regex GetUdtCollectionRegex(string keyspaceName)
     {
@@ -93,13 +81,13 @@ public class DatabaseInitializationService : BackgroundService
     {
         try
         {
-            await DefineUdts(_session);
-            await CreateIdentityTablesAsync(_cassandraOptions);
+            await DefineUdts(session);
+            await CreateIdentityTablesAsync(cassandraOptions);
             await CreateApplicationTablesAsync(stoppingToken);
         }
         catch ( Exception e )
         {
-            _logger.LogError(e, "An exception was thrown during table creation");
+            logger.LogError(e, "An exception was thrown during table creation");
         }
     }
 
@@ -135,16 +123,16 @@ public class DatabaseInitializationService : BackgroundService
             ";", StringSplitOptions.TrimEntries
                  | StringSplitOptions.RemoveEmptyEntries);
 
-        _logger.LogInformation("Starting creation of database tables ...");
+        logger.LogInformation("Starting creation of database tables ...");
         foreach ( var cqlClause in cqlClauses )
         {
             var statement = new SimpleStatement(cqlClause);
             statement.SetKeyspace(Constants.KeyspaceName);
 
-            var rs = await _session.ExecuteAsync(statement);
+            var rs = await session.ExecuteAsync(statement);
         }
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "Finished creation of database tables. Created {TableCount} tables",
             cqlClauses.Length);
     }
@@ -156,43 +144,43 @@ public class DatabaseInitializationService : BackgroundService
             throw new InvalidOperationException("Keyspace is null or empty.");
         try
         {
-            _session.ChangeKeyspace(options.KeyspaceName);
+            session.ChangeKeyspace(options.KeyspaceName);
         }
         catch ( InvalidQueryException )
         {
-            _session.CreateKeyspaceIfNotExists(options.KeyspaceName, options.Replication, options.DurableWrites);
-            _session.ChangeKeyspace(options.KeyspaceName);
+            session.CreateKeyspaceIfNotExists(options.KeyspaceName, options.Replication, options.DurableWrites);
+            session.ChangeKeyspace(options.KeyspaceName);
         }
 
-        _session.Execute("CREATE TYPE IF NOT EXISTS " + options.KeyspaceName +
+        session.Execute("CREATE TYPE IF NOT EXISTS " + options.KeyspaceName +
                          ".LockoutInfo (EndDate timestamp, Enabled boolean, AccessFailedCount int);");
-        _session.Execute("CREATE TYPE IF NOT EXISTS " + options.KeyspaceName +
+        session.Execute("CREATE TYPE IF NOT EXISTS " + options.KeyspaceName +
                          ".PhoneInfo (Number text, ConfirmationTime timestamp);");
-        _session.Execute("CREATE TYPE IF NOT EXISTS " + options.KeyspaceName +
+        session.Execute("CREATE TYPE IF NOT EXISTS " + options.KeyspaceName +
                          ".LoginInfo (LoginProvider text, ProviderKey text, ProviderDisplayName text);");
-        _session.Execute("CREATE TYPE IF NOT EXISTS " + options.KeyspaceName +
+        session.Execute("CREATE TYPE IF NOT EXISTS " + options.KeyspaceName +
                          ".TokenInfo (LoginProvider text, Name text, Value text);");
 
-        await _session.UserDefinedTypes.DefineAsync(
+        await session.UserDefinedTypes.DefineAsync(
             UdtMap.For<LockoutInfo>(),
             UdtMap.For<PhoneInfo>(),
             UdtMap.For<LoginInfo>(),
             UdtMap.For<TokenInfo>());
 
-        var usersTable = new Table<ChatifyUser>(_session);
-        var rolesTable = new Table<CassandraIdentityRole>(_session);
+        var usersTable = new Table<ChatifyUser>(session);
+        var rolesTable = new Table<CassandraIdentityRole>(session);
 
         try
         {
-            await CreateTableIfNotExists(_session, usersTable);
-            await CreateTableIfNotExists(_session, rolesTable);
+            await CreateTableIfNotExists(session, usersTable);
+            await CreateTableIfNotExists(session, rolesTable);
         }
         catch ( AlreadyExistsException )
         {
         }
-        _session.Execute("CREATE TABLE IF NOT EXISTS " + options.KeyspaceName +
+        session.Execute("CREATE TABLE IF NOT EXISTS " + options.KeyspaceName +
                          ".userclaims ( UserId uuid,  Type text,  Value text,  PRIMARY KEY (UserId, Type, Value));");
-        _session.Execute("CREATE TABLE IF NOT EXISTS " + options.KeyspaceName +
+        session.Execute("CREATE TABLE IF NOT EXISTS " + options.KeyspaceName +
                          ".roleclaims ( RoleId uuid,  Type text,  Value text,  PRIMARY KEY (RoleId, Type, Value));");
 
         var usersTableName = usersTable.GetTable().Name;
@@ -213,16 +201,16 @@ public class DatabaseInitializationService : BackgroundService
             .GetProperty("RolesTableName", BindingFlags.Public | BindingFlags.Static)!
             .SetValue(null, rolesTableName);
 
-        _session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS users_by_email AS SELECT * FROM " +
+        session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS users_by_email AS SELECT * FROM " +
                          options.KeyspaceName + "." + usersTableName +
                          " WHERE NormalizedEmail IS NOT NULL AND id IS NOT NULL AND username IS NOT NULL AND created_at IS NOT NULL PRIMARY KEY (NormalizedEmail, id)");
-        _session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS users_by_username AS SELECT * FROM " +
+        session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS users_by_username AS SELECT * FROM " +
                          options.KeyspaceName + "." + usersTableName +
                          " WHERE NormalizedUserName IS NOT NULL AND Id IS NOT NULL AND username IS NOT NULL AND created_at IS NOT NULL PRIMARY KEY (NormalizedUserName, Id)");
-        _session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS roles_by_name AS SELECT * FROM " +
+        session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS roles_by_name AS SELECT * FROM " +
                          options.KeyspaceName + "." + rolesTableName +
                          " WHERE NormalizedName IS NOT NULL AND Id IS NOT NULL PRIMARY KEY (NormalizedName, Id)");
-        _session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS userclaims_by_type_and_value AS SELECT * FROM " +
+        session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS userclaims_by_type_and_value AS SELECT * FROM " +
                          options.KeyspaceName +
                          ".userclaims WHERE Type IS NOT NULL AND Value IS NOT NULL AND userid IS NOT NULL PRIMARY KEY ((Type, Value), UserId)");
     }

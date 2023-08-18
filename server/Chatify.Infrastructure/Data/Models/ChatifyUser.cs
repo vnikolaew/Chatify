@@ -4,46 +4,65 @@ using AutoMapper;
 using Chatify.Application.Common.Mappings;
 using Chatify.Domain.Entities;
 using Chatify.Domain.ValueObjects;
+using Redis.OM.Modeling;
 using Metadata = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Chatify.Infrastructure.Data.Models;
 
-public class ChatifyUser : CassandraIdentityUser, IMapFrom<Domain.Entities.User>
+[Document(
+    StorageType = StorageType.Json,
+    IndexName = "users",
+    Prefixes = new[] { nameof(User) })]
+public class ChatifyUser() :
+    CassandraIdentityUser(Guid.NewGuid()),
+    IMapFrom<Domain.Entities.User>
 {
-    public ChatifyUser() : base(Guid.NewGuid())
-    {
-    }
+    [RedisIdField]
+    [Indexed]
+    public string RedisId => Id.ToString();
 
+    [Searchable]
+    public string RedisUsername => UserName;
+    
+    [Searchable]
     public string DisplayName { get; set; }
-
+    
+    [Indexed]
     public sbyte Status { get; set; }
 
     private readonly IList<string> _phoneNumbers = new List<string>();
 
+    [Indexed]
     public HashSet<string> PhoneNumbers
     {
         get => _phoneNumbers.ToHashSet();
         init => _phoneNumbers = value.ToList();
     }
 
+    [Indexed(CascadeDepth = 1)]
     public Media ProfilePicture { get; set; }
 
     private readonly IList<Media> _bannerPictures = new List<Media>();
 
+    [Indexed]
     public HashSet<Media> BannerPictures
     {
         get => _bannerPictures.ToHashSet();
         init => _bannerPictures = value.ToList();
     }
 
+    [Indexed]
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
 
+    [Indexed]
     public DateTimeOffset? UpdatedAt { get; set; }
 
+    [Indexed]
     public DateTimeOffset LastLogin { get; set; } = DateTimeOffset.Now;
 
     // private readonly HashSet<byte[]> _deviceIpsBytes = new();
 
+    [Indexed]
     public HashSet<byte[]> DeviceIpsBytes
     {
         get => _deviceIps.Select(_ => _.GetAddressBytes()).ToHashSet();
@@ -62,6 +81,7 @@ public class ChatifyUser : CassandraIdentityUser, IMapFrom<Domain.Entities.User>
         }
     }
 
+    [Indexed]
     public Metadata Metadata { get; init; } = new();
 
     public void AddToken(TokenInfo token)

@@ -2,22 +2,19 @@
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Mappings;
+using Chatify.Infrastructure.Data.Services;
 using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
-internal sealed class ChatGroupJoinRequestRepository
-    : BaseCassandraRepository<ChatGroupJoinRequest, Models.ChatGroupJoinRequest, Guid>,
+internal sealed class ChatGroupJoinRequestRepository(IMapper mapper,
+        Mapper dbMapper,
+        IEntityChangeTracker changeTracker,
+        string? idColumn = default)
+    : BaseCassandraRepository<ChatGroupJoinRequest, Models.ChatGroupJoinRequest, Guid>(mapper, dbMapper, changeTracker,
+            idColumn),
         IChatGroupJoinRequestRepository
 {
-    public ChatGroupJoinRequestRepository(
-        IMapper mapper,
-        Mapper dbMapper,
-        string? idColumn = default)
-        : base(mapper, dbMapper, idColumn)
-    {
-    }
-
     public async Task<List<ChatGroupJoinRequest>> ByGroup(
         Guid groupId,
         CancellationToken cancellationToken = default)

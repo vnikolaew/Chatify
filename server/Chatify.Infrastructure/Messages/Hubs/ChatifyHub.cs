@@ -13,11 +13,9 @@ namespace Chatify.Infrastructure.Messages.Hubs;
 using SendGroupChatMessageResult = Either<Error, Guid>;
 
 // [Authorize]
-public sealed class ChatifyHub : Hub<IChatifyHubClient>
+public sealed class ChatifyHub(IChatGroupMemberRepository members, IIdentityContext identityContext)
+    : Hub<IChatifyHubClient>
 {
-    private readonly IChatGroupMemberRepository _members;
-    private readonly IIdentityContext _identityContext;
-
     public const string Endpoint = "/chat";
 
     private Guid UserId => Guid.TryParse(Context.User!
@@ -42,12 +40,6 @@ public sealed class ChatifyHub : Hub<IChatifyHubClient>
     private TService GetService<TService>()
         where TService : notnull
         => Services!.GetRequiredService<TService>();
-
-    public ChatifyHub(IChatGroupMemberRepository members, IIdentityContext identityContext)
-    {
-        _members = members;
-        _identityContext = identityContext;
-    }
 
     public async Task<Either<Error, Unit>> SubscribeToAllChatGroupMessagesRequest(
         SubscribeToAllChatGroupMessagesRequest request,
@@ -126,7 +118,7 @@ public sealed class ChatifyHub : Hub<IChatifyHubClient>
         Guid chatGroupId,
         CancellationToken cancellationToken = default)
     {
-        var isChatGroupMember = await _members.Exists(chatGroupId, _identityContext.Id, cancellationToken);
+        var isChatGroupMember = await members.Exists(chatGroupId, identityContext.Id, cancellationToken);
         if (!isChatGroupMember) return Error.New($"You are not a member of Chat group with Id '{chatGroupId}'.");
 
         var groupId = $"chat-groups:{chatGroupId}";
@@ -140,7 +132,7 @@ public sealed class ChatifyHub : Hub<IChatifyHubClient>
         Guid chatGroupId,
         CancellationToken cancellationToken = default)
     {
-        var isChatGroupMember = await _members.Exists(chatGroupId, _identityContext.Id, cancellationToken);
+        var isChatGroupMember = await members.Exists(chatGroupId, identityContext.Id, cancellationToken);
         if (!isChatGroupMember) return Error.New($"You are not a member of Chat group with Id '{chatGroupId}'.");
 
         var groupId = $"chat-groups:{chatGroupId}";

@@ -1,6 +1,8 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using AutoMapper.Internal;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.ChatGroups.Contracts;
@@ -15,9 +17,11 @@ using Chatify.Infrastructure.Authentication.External.Google;
 using Chatify.Infrastructure.ChatGroups.Services;
 using Chatify.Infrastructure.Common;
 using Chatify.Infrastructure.Common.Caching;
+using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Common.Security;
 using Chatify.Infrastructure.Data;
 using Chatify.Infrastructure.Data.Repositories;
+using Chatify.Infrastructure.Data.Services;
 using Chatify.Infrastructure.FileStorage;
 using Chatify.Infrastructure.Mailing;
 using Chatify.Infrastructure.Messages;
@@ -38,12 +42,35 @@ using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Extensions.Http;
 using Quartz;
+using Redis.OM;
+using Redis.OM.Contracts;
+using Redis.OM.Modeling;
+using Redis.OM.Searching;
 using StackExchange.Redis;
 using AuthenticationService = Chatify.Infrastructure.Authentication.AuthenticationService;
 using Extensions = Chatify.Shared.Infrastructure.Events.Extensions;
 using IAuthenticationService = Chatify.Application.Authentication.Contracts.IAuthenticationService;
 
 namespace Chatify.Infrastructure;
+
+public sealed class IPAddressConverter : JsonConverter<IPAddress>
+{
+    public override IPAddress Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        string ipAddressString = reader.GetString();
+        if ( IPAddress.TryParse(ipAddressString, out var ipAddress) )
+        {
+            return ipAddress;
+        }
+
+        throw new JsonException($"Invalid IP address: {ipAddressString}");
+    }
+
+    public override void Write(Utf8JsonWriter writer, IPAddress value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToString());
+    }
+}
 
 public static class DependencyInjection
 {
@@ -127,6 +154,42 @@ public static class DependencyInjection
         var endpoint = configuration.GetValue<string>("Redis:Endpoint")!;
         var connectionMultiplexer = ConnectionMultiplexer.Connect(endpoint);
 
+        services
+            .AddSingleton(sp =>
+                new RedisConnectionProvider(sp.GetRequiredService<IConnectionMultiplexer>()))
+            .AddSingleton<IRedisConnectionProvider>(sp =>
+                sp.GetRequiredService<RedisConnectionProvider>());
+        RedisSerializationSettings
+            .JsonSerializerOptions
+            .Converters
+            .Add(new IPAddressConverter());
+
+        var cacheIndexTypes = Assembly.GetExecutingAssembly()
+            .GetTypes()
+            .Where(t => t is { IsAbstract: false, IsInterface: false } &&
+                        t.GetCustomAttribute<DocumentAttribute>() is not null)
+            .ToList();
+        foreach ( var cacheIndexType in cacheIndexTypes )
+        {
+            services.AddScoped(
+                typeof(RedisCollection<>).MakeGenericType(cacheIndexType),
+                sp =>
+                {
+                    var redisCollectionMethod = typeof(RedisConnectionProvider)
+                        .GetMethods()
+                        .FirstOrDefault(m => m.Name.Contains(nameof(RedisConnectionProvider.RedisCollection)));
+
+                    var provider = sp.GetRequiredService<RedisConnectionProvider>();
+                    return redisCollectionMethod!
+                        .MakeGenericMethod(cacheIndexType)
+                        .Invoke(provider, Array.Empty<object?>())!;
+                });
+
+            services.AddScoped(
+                typeof(IRedisCollection<>),
+                typeof(RedisCollection<>));
+        }
+
         return services
             .AddSingleton<IConnectionMultiplexer>(connectionMultiplexer)
             .AddScoped<ICacheService, RedisCacheService>()
@@ -161,6 +224,7 @@ public static class DependencyInjection
                 i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDomainRepository<,>)))
             .ToList();
 
+        services.AddTransient<IEntityChangeTracker, EntityChangeTracker>();
         foreach ( var repositoryType in repositoryTypes )
         {
             // Register type using all implemented interfaces:

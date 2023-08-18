@@ -4,6 +4,7 @@ using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Mappings;
+using Chatify.Infrastructure.Data.Services;
 using Chatify.Shared.Abstractions.Queries;
 using Humanizer;
 using LanguageExt;
@@ -11,18 +12,14 @@ using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
-public class ChatGroupAttachmentRepository
-    : BaseCassandraRepository<ChatGroupAttachment, Models.ChatGroupAttachment, Guid>,
+public class ChatGroupAttachmentRepository(IMapper mapper,
+        IEntityChangeTracker changeTracker,
+        Mapper dbMapper,
+        IPagingCursorHelper pagingCursorHelper)
+    : BaseCassandraRepository<ChatGroupAttachment, Models.ChatGroupAttachment, Guid>(mapper, dbMapper, changeTracker,
+            nameof(Models.ChatGroupAttachment.ChatGroupId).Underscore()),
         IChatGroupAttachmentRepository
 {
-    private readonly IPagingCursorHelper _pagingCursorHelper;
-
-    public ChatGroupAttachmentRepository(
-        IMapper mapper,
-        Mapper dbMapper, IPagingCursorHelper pagingCursorHelper)
-        : base(mapper, dbMapper, nameof(Models.ChatGroupAttachment.ChatGroupId).Underscore())
-        => _pagingCursorHelper = pagingCursorHelper;
-
     public async Task<IEnumerable<ChatGroupAttachment>> SaveManyAsync(
         IEnumerable<ChatGroupAttachment> attachments,
         CancellationToken cancellationToken = default)
@@ -60,7 +57,7 @@ public class ChatGroupAttachmentRepository
         CancellationToken cancellationToken = default)
     {
         var attachmentsPage = await DbMapper.FetchPageAsync<Models.ChatGroupAttachment>(
-            pageSize, _pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?",
+            pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?",
             new object[] { groupId });
 
         return new CursorPaged<ChatGroupAttachment>(
@@ -68,6 +65,6 @@ public class ChatGroupAttachmentRepository
                 .AsQueryable()
                 .To<ChatGroupAttachment>(Mapper)
                 .ToList(),
-            _pagingCursorHelper.ToPagingCursor(attachmentsPage.PagingState));
+            pagingCursorHelper.ToPagingCursor(attachmentsPage.PagingState));
     }
 }

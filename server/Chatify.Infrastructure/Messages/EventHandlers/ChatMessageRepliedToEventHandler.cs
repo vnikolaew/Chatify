@@ -14,45 +14,29 @@ using Quartz;
 
 namespace Chatify.Infrastructure.Messages.EventHandlers;
 
-internal sealed class ChatMessageRepliedToEventHandler
-    : IEventHandler<ChatMessageRepliedToEvent>
-{
-    private readonly ICounterService<ChatMessageReplyCount, Guid> _replyCounts;
-    private readonly IHubContext<ChatifyHub, IChatifyHubClient> _chatifyContext;
-    private readonly IMapper _mapper;
-    private readonly ISchedulerFactory _schedulerFactory;
-    private readonly IIdentityContext _identityContext;
-
-    public ChatMessageRepliedToEventHandler(
-        ICounterService<ChatMessageReplyCount, Guid> replyCounts,
+internal sealed class ChatMessageRepliedToEventHandler(ICounterService<ChatMessageReplyCount, Guid> replyCounts,
         IHubContext<ChatifyHub, IChatifyHubClient> chatifyContext,
         IIdentityContext identityContext,
         IMapper mapper, ISchedulerFactory schedulerFactory)
-    {
-        _replyCounts = replyCounts;
-        _chatifyContext = chatifyContext;
-        _identityContext = identityContext;
-        _mapper = mapper;
-        _schedulerFactory = schedulerFactory;
-    }
-
+    : IEventHandler<ChatMessageRepliedToEvent>
+{
     public async Task HandleAsync(
         ChatMessageRepliedToEvent @event,
         CancellationToken cancellationToken = default)
     {
-        await _replyCounts.Increment(
+        await replyCounts.Increment(
             @event.ReplyToId,
             cancellationToken: cancellationToken);
 
         // Update Message Reply Summaries "View" table:
-        var replierIds = await _mapper.FirstOrDefaultAsync<HashSet<Guid>>(
+        var replierIds = await mapper.FirstOrDefaultAsync<HashSet<Guid>>(
             "SELECT replier_ids FROM chat_message_reply_summaries WHERE message_id = ? ALLOW FILTERING;",
             @event.MessageId);
         if ( replierIds is not null )
         {
             if ( !replierIds.Contains(@event.UserId) )
             {
-                var userInfo = await _mapper.FirstOrDefaultAsync<ChatifyUser>(
+                var userInfo = await mapper.FirstOrDefaultAsync<ChatifyUser>(
                     "SELECT id, username, profile_picture_url FROM users WHERE id = ?;", @event.UserId);
 
                 var userInfoDict = new Dictionary<string, string>
@@ -61,7 +45,7 @@ internal sealed class ChatMessageRepliedToEventHandler
                     { "profile_picture_url", userInfo.ProfilePicture.MediaUrl }
                 };
 
-                await _mapper.UpdateAsync<ChatMessageRepliesSummary>(
+                await mapper.UpdateAsync<ChatMessageRepliesSummary>(
                     $" SET replier_ids = replier_ids + ?, updated_at = ?, updated = ?, user_infos = user_infos + {JsonSerializer.Serialize(userInfoDict)}, total = total + 1 WHERE message_id = ?",
                     userInfo.Id,
                     @event.Timestamp,
@@ -74,7 +58,7 @@ internal sealed class ChatMessageRepliedToEventHandler
             }
             else
             {
-                await _mapper.UpdateAsync<ChatMessageRepliesSummary>(
+                await mapper.UpdateAsync<ChatMessageRepliesSummary>(
                     " SET total = total + 1, updated_at = ?, updated = ? WHERE message_id = ?",
                     @event.MessageId,
                     @event.Timestamp,
@@ -83,12 +67,12 @@ internal sealed class ChatMessageRepliedToEventHandler
             }
         }
 
-        var scheduler = await _schedulerFactory.GetScheduler(cancellationToken);
+        var scheduler = await schedulerFactory.GetScheduler(cancellationToken);
         await scheduler.ScheduleImmediateJob<ProcessChatMessageReplyJob>(builder =>
             builder.WithMessageId(@event.MessageId), cancellationToken);
         
         var groupId = $"chat-groups:{@event.GroupId}";
-        await _chatifyContext
+        await chatifyContext
             .Clients
             .Group(groupId)
             .ReceiveGroupChatMessage(
@@ -96,7 +80,7 @@ internal sealed class ChatMessageRepliedToEventHandler
                     @event.GroupId,
                     @event.UserId,
                     @event.MessageId,
-                    _identityContext.Username,
+                    identityContext.Username,
                     @event.Content,
                     @event.Timestamp));
     }

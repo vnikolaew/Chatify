@@ -4,18 +4,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Chatify.Infrastructure.Data.Seeding;
 
-internal sealed class ChatGroupMemberSeeder : ISeeder
+internal sealed class ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory) : ISeeder
 {
     public int Priority => 2;
 
-    private readonly IServiceScopeFactory _scopeFactory;
-
-    public ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory)
-        => _scopeFactory = scopeFactory;
-
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        await using var scope = _scopeFactory.CreateAsyncScope();
+        await using var scope = scopeFactory.CreateAsyncScope();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
         
         var insertedMembers = new HashSet<(Guid, Guid)>();

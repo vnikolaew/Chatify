@@ -2,22 +2,18 @@
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Mappings;
+using Chatify.Infrastructure.Data.Services;
 using StackExchange.Redis;
 using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
-public sealed class ChatMessageReactionRepository
-    : BaseCassandraRepository<ChatMessageReaction, Models.ChatMessageReaction, Guid>,
+public sealed class ChatMessageReactionRepository(IMapper mapper, Mapper dbMapper, IDatabase cache,
+        IEntityChangeTracker changeTracker, string? idColumn = default)
+    : BaseCassandraRepository<ChatMessageReaction, Models.ChatMessageReaction, Guid>(mapper, dbMapper, changeTracker,
+            idColumn),
         IChatMessageReactionRepository
 {
-    private readonly IDatabase _cache;
-
-    public ChatMessageReactionRepository(
-        IMapper mapper, Mapper dbMapper, IDatabase cache, string? idColumn = default)
-        : base(mapper, dbMapper, idColumn)
-        => _cache = cache;
-
     public new async Task<ChatMessageReaction> SaveAsync(
         ChatMessageReaction messageReaction,
         CancellationToken cancellationToken = default)
@@ -27,7 +23,7 @@ public sealed class ChatMessageReactionRepository
         var messageReactionsKey = new RedisKey($"message-reactions:{messageReaction.MessageId}");
         var userId = new RedisValue(messageReaction.UserId.ToString());
 
-        await _cache.SetAddAsync(messageReactionsKey, userId);
+        await cache.SetAddAsync(messageReactionsKey, userId);
         return model;
     }
 
@@ -44,7 +40,7 @@ public sealed class ChatMessageReactionRepository
         var removeTasks = new[]
         {
             base.DeleteAsync(id, cancellationToken),
-            _cache.SetRemoveAsync(messageReactionsKey, userId)
+            cache.SetRemoveAsync(messageReactionsKey, userId)
         };
 
         var results = await Task.WhenAll(removeTasks);
@@ -59,7 +55,7 @@ public sealed class ChatMessageReactionRepository
         var messageReactionsKey = new RedisKey($"message-reactions:{messageId}");
         var userIdValue = new RedisValue(userId.ToString());
 
-        return await _cache.SetContainsAsync(messageReactionsKey, userIdValue);
+        return await cache.SetContainsAsync(messageReactionsKey, userIdValue);
     }
 
     public Task<ChatMessageReaction?> ByMessageAndUser(Guid messageId, Guid userId,
