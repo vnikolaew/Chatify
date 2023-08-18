@@ -25,7 +25,7 @@ internal sealed class TimedHandlerDecorator<TQuery, TResult> : IQueryHandler<TQu
                 || t.IsAssignableTo(typeof(IQuery<>)))
             .Select(t => t.IsAssignableTo(typeof(IQuery<>))
                 ? t
-                : t.GetGenericArguments()[0])
+                : t.GetInterfaces()[0].GetGenericArguments()[0])
             .ToImmutableHashSet();
 
     private static bool IsTimingEnabled => EnabledQueries.Contains(typeof(TQuery));

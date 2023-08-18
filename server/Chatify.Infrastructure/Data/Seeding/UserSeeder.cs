@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using AspNetCore.Identity.Cassandra.Models;
 using Bogus;
 using Cassandra.Mapping;
 using Chatify.Application.Common.Contracts;
@@ -6,11 +7,12 @@ using Chatify.Domain.Entities;
 using Chatify.Infrastructure.Data.Models;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
+using static Chatify.Infrastructure.Authentication.External.Constants.AuthProviders;
 using Media = Chatify.Infrastructure.Data.Models.Media;
 
 namespace Chatify.Infrastructure.Data.Seeding;
 
-internal sealed class UserSeeder : ISeeder
+public sealed class UserSeeder : ISeeder
 {
     public int Priority => 0;
 
@@ -25,12 +27,20 @@ internal sealed class UserSeeder : ISeeder
             .RuleFor(u => u.UserName, f => f.Internet.UserName())
             .RuleFor(u => u.PasswordHash, (_, u) => hasher.Secure($"{u.UserName}123"))
             .RuleFor(u => u.Status, f => f.PickRandom(Enum.GetValues<UserStatus>().Select(_ => ( sbyte )_)))
-            .RuleFor(u => u.ProfilePicture, f => new Media { MediaUrl = f.Internet.Avatar() })
+            .RuleFor(u => u.ProfilePicture, f => new Media { MediaUrl = f.Internet.Avatar(), Id = Guid.NewGuid() })
+            .RuleFor(u => u.PhoneNumbers, f => new HashSet<string> { f.Phone.PhoneNumber(), f.Phone.PhoneNumber() })
             .RuleFor(u => u.EmailConfirmed, _ => true)
+            .RuleFor(u => u.Logins,
+                (_, u) => new LoginInfo[]
+                {
+                    new(RegularLogin, u.Id.ToString(), nameof(RegularLogin))
+                })
+            .RuleFor(u => u.NormalizedUserName, (_, u) => u.UserName.ToUpper())
+            .RuleFor(u => u.Email, f => f.Internet.Email())
+            .RuleFor(u => u.NormalizedEmail, (_, u) => u.Email.ToUpper())
             .RuleFor(u => u.EmailConfirmationTime, _ => DateTimeOffset.Now)
             .RuleFor(u => u.DeviceIps, f => new HashSet<IPAddress> { f.Internet.IpAddress() })
-            .RuleFor(u => u.DisplayName, (f, u) => u.UserName.Humanize())
-            .RuleFor(u => u.Email, f => f.Internet.Email());
+            .RuleFor(u => u.DisplayName, (_, u) => u.UserName.Humanize());
     }
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)

@@ -20,7 +20,7 @@ internal sealed class UserSignedUpEventCacheFillHandler(
         CancellationToken cancellationToken = default)
     {
         var user = await dbMapper.FirstOrDefaultAsync<ChatifyUser>(
-            " WHERE id = ?", @event.UserId.ToString());
+            " WHERE id = ?", @event.UserId);
         if(user is null) return;
 
         await _cacheUsers.InsertAsync(user);

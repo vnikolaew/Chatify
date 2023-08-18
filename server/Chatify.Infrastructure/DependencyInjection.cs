@@ -39,6 +39,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Polly;
 using Polly.Extensions.Http;
 using Quartz;
@@ -105,6 +106,7 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
         => services
+            .Configure<HostOptions>(opts => opts.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore)
             .AddAuthenticationServices(configuration)
             .AddEvents(new[] { Assembly.GetExecutingAssembly() }, Extensions.EventDispatcherType.FireAndForget)
             .AddTransient<IEmailSender, NullEmailSender>()

@@ -31,9 +31,9 @@ public static class DependencyInjection
 
         return services
             .AddHostedService<DatabaseSeedingService>()
-            .Scan(s => s.FromExecutingAssembly()
+            .Scan(s => s.FromAssemblyOf<ISeeder>()
                 .AddClasses(c => c.AssignableTo<ISeeder>()
-                    .Where(t => t is { IsAbstract: false, IsInterface: false }))
+                    .Where(t => t is { IsAbstract: false, IsInterface: false }), false)
                 .AsImplementedInterfaces()
                 .WithScopedLifetime())
             .AddScoped<CompositeSeeder>();

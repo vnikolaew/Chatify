@@ -17,9 +17,15 @@ internal class ChatGroupMessageSeeder : ISeeder
         ScopeFactory = scopeFactory;
         MessageFaker = new Faker<ChatMessage>()
             .RuleFor(m => m.Id, _ => Guid.NewGuid())
+            .RuleFor(m => m.Attachments, 
+                f => f.Random.Bool() ? new Media[] { new()
+                {
+                    Id = Guid.NewGuid(),
+                    MediaUrl = f.Internet.Avatar(),
+                }} : Array.Empty<Media>())
             .RuleFor(m => m.CreatedAt, f => f.Date.Past())
             .RuleFor(m => m.Content, f => f.Lorem.Sentences(2))
-            .RuleFor(m => m.ReactionCounts, _ => new Dictionary<int, long>());
+            .RuleFor(m => m.ReactionCounts, _ => new Dictionary<short, long>());
     }
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)

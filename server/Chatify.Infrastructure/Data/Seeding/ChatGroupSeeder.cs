@@ -19,7 +19,7 @@ internal sealed class ChatGroupSeeder : ISeeder
             .RuleFor(g => g.Id, _ => Guid.NewGuid())
             .RuleFor(g => g.About, f => f.Lorem.Sentences(2, " "))
             .RuleFor(g => g.Name, f => f.Company.CompanyName(0))
-            .RuleFor(g => g.Picture, f => new Media { MediaUrl = f.Internet.Avatar() });
+            .RuleFor(g => g.Picture, f => new Media { MediaUrl = f.Internet.Avatar(), Id = Guid.NewGuid() });
 
         _scopeFactory = scopeFactory;
     }

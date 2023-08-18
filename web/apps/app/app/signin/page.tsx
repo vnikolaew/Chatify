@@ -22,7 +22,7 @@ import {
    Divider,
 } from "@nextui-org/react";
 import * as yup from "yup";
-import { Formik } from "formik";
+import { Form, Formik } from "formik";
 import PasswordInput from "./PasswordInput";
 import { GoogleIcon } from "../../components/icons/GoogleIcon";
 import { GithubIcon } from "../../components/icons/GithubIcon";
@@ -43,8 +43,8 @@ const signInSchema = yup.object({
       .string()
       .min(3, "Password must have more than 3 characters.")
       .max(50, "Password must have less than 50 characters.")
-      .required("Password is required.")
-      .matches(PASSWORD_REGEX, { message: "Invalid password." }),
+      .required("Password is required."),
+   // .matches(PASSWORD_REGEX, { message: "Invalid password." }),
    rememberMe: yup.boolean().required(),
 });
 
@@ -69,17 +69,18 @@ const SignInPage: NextPage = () => {
    } = useGithubSignUpMutation();
 
    async function handleFormSubmit(data: RegularSignInModel) {
+      console.log("im here");
       try {
-         // await signIn(signInModel);
+         await signIn(data);
          await sleep(2000);
-         // router.push(`/`, { forceOptimisticNavigation: false });
+         router.push(`/`, { forceOptimisticNavigation: false });
       } catch (e) {
          console.error(e);
       }
    }
 
    return (
-      <div className={`w-1/3 mx-auto mt-24`}>
+      <div className={`w-1/3 mx-auto max-w-[500px] mt-24`}>
          <Card shadow={"lg"} className={`p-6`} radius={"md"}>
             <CardHeader className={`text-2xl`}>
                Sign in with your account
@@ -99,7 +100,7 @@ const SignInPage: NextPage = () => {
                      handleSubmit,
                      isSubmitting,
                   }) => (
-                     <form
+                     <Form
                         autoComplete={"off"}
                         noValidate
                         className={`flex flex-col gap-3`}
@@ -172,7 +173,9 @@ const SignInPage: NextPage = () => {
                               </Link>
                            </div>
                            <Button
+                              as={"button"}
                               variant={"solid"}
+                              onClick={(_) => handleSubmit()}
                               isLoading={isSubmitting}
                               spinner={
                                  <Spinner
@@ -249,7 +252,7 @@ const SignInPage: NextPage = () => {
                               />
                            </div>
                         </div>
-                     </form>
+                     </Form>
                   )}
                </Formik>
             </CardBody>

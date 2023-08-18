@@ -15,32 +15,37 @@ internal sealed class ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory) :
         
         var insertedMembers = new HashSet<(Guid, Guid)>();
             
-        var userIds = (await mapper
-            .FetchAsync<Guid>("SELECT id FROM users;")).ToArray();
+        var users = (await mapper
+            .FetchAsync<ChatifyUser>("SELECT * FROM users;")).ToArray();
         
-        var groupIds = (await mapper
-            .FetchAsync<Guid>("SELECT id FROM chat_groups;")).ToArray();
+        var groups = (await mapper
+            .FetchAsync<ChatGroup>("SELECT * FROM chat_groups;")).ToArray();
         
         foreach (var _ in Enumerable.Range(1, 100))
         {
-            var userId = userIds[Random.Shared.Next(0, userIds.Length)];
-            var groupId = groupIds[Random.Shared.Next(0, groupIds.Length)];
+            var user = users[Random.Shared.Next(0, users.Length)];
+            var group = groups[Random.Shared.Next(0, groups.Length)];
 
-            if(insertedMembers.Contains((userId, groupId))) continue;
+            if(insertedMembers.Contains((user.Id, group.Id))) continue;
             
             var memberId = Guid.NewGuid();
             var member = new ChatGroupMember
             {
                 Id = memberId,
+                Username = user.UserName,
                 CreatedAt = DateTimeOffset.Now,
-                UserId = userId,
-                ChatGroupId = groupId
+                UserId = user.Id,
+                ChatGroupId = group.Id,
             };
-            insertedMembers.Add((userId, groupId));
             
-            await mapper.InsertAsync(member, insertNulls: true);
-            await mapper.ExecuteAsync(
-                " UPDATE chat_group_members_count SET members_count = members_count + 1 WHERE id = ?", groupId);
+            insertedMembers.Add((user.Id, group.Id));
+            
+            await mapper.InsertAsync(member, insertNulls: false);
+            var count = await mapper.FirstOrDefaultAsync<long?>(" SELECT members_count FROM chat_group_members WHERE chat_group_id = ?",
+                group.Id);
+
+            await mapper.ExecuteAsync("UPDATE chat_group_members SET members_count = ?  WHERE chat_group_id = ?", (count ?? 0) + 1,
+                group.Id);
         }
     }
 }

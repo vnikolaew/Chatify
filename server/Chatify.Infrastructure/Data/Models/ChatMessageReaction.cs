@@ -1,5 +1,5 @@
 ﻿using Metadata = System.Collections.Generic.IDictionary<string, string>;
-using ReactionCounts = System.Collections.Generic.IDictionary<int, long>;
+using ReactionCounts = System.Collections.Generic.IDictionary<short, long>;
 
 namespace Chatify.Infrastructure.Data.Models;
 
@@ -23,6 +23,6 @@ public class ChatMessageReaction
     
     public DateTimeOffset UpdatedAt { get; set; }
 
-    public ReactionCounts ReactionCounts { get; set; } = new Dictionary<int, long>();
+    public ReactionCounts ReactionCounts { get; set; } = new Dictionary<short, long>();
     public bool Updated { get; set; }
 }

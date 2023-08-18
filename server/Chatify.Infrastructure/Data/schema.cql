@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS friends
 (
     id            uuid,
     friend_one_id uuid,
+    group_id      uuid,
     friend_two_id uuid,
     created_at    timestamp,
     PRIMARY KEY ( (friend_one_id), created_at )
@@ -83,7 +84,7 @@ CREATE TABLE IF NOT EXISTS chat_messages
     content         text,
     attachments     set<frozen<media>>,
     metadata        map<text, text>,
-    reaction_counts map<tinyint, bigint>,
+    reaction_counts map<smallint, bigint>,
     created_at      timestamp,
     updated_at      timestamp,
     updated         boolean,
@@ -108,7 +109,7 @@ CREATE TABLE IF NOT EXISTS chat_message_replies
     content         text,
     attachments     set<frozen<media>>,
     metadata        map<text, text>,
-    reaction_counts map<tinyint, bigint>,
+    reaction_counts map<smallint, bigint>,
     created_at      timestamp,
     updated_at      timestamp,
     replies_count   bigint static,
@@ -134,37 +135,38 @@ CREATE TABLE IF NOT EXISTS friend_invitations
 CREATE INDEX IF NOT EXISTS friend_invitations_id_idx ON friend_invitations (id);
 CREATE INDEX IF NOT EXISTS friend_invitations_invitee_id_idx ON friend_invitations (invitee_id);
 
-CREATE TABLE IF NOT EXISTS message_reactions
+CREATE TABLE IF NOT EXISTS chat_message_reactions
 (
     id              uuid,
     message_id      uuid,
-    group_chat_id   uuid,
+    chat_group_id   uuid,
     user_id         uuid,
     reaction_type   tinyint,
     metadata        map<text, text>,
     created_at      timestamp,
     updated_at      timestamp,
-    reaction_counts map<tinyint, bigint> static,
+    reaction_counts map<smallint, bigint> static,
     updated         boolean,
     PRIMARY KEY ((message_id), created_at, id)
 ) WITH CLUSTERING ORDER BY (created_at DESC, id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
-CREATE INDEX IF NOT EXISTS message_reactions_id_idx ON message_reactions (id);
+CREATE INDEX IF NOT EXISTS message_reactions_id_idx ON chat_message_reactions (id);
 
 CREATE TABLE IF NOT EXISTS chat_group_members
 (
-    id            uuid,
-    user_id       uuid,
-    chat_group_id uuid,
-    created_at    timestamp,
-    metadata      map<text, text>,
-    members_count bigint static,
-    type          tinyint,
+    id              uuid,
+    user_id         uuid,
+    chat_group_id   uuid,
+    username        text,
+    created_at      timestamp,
+    metadata        map<text, text>,
+    members_count   bigint static,
+    membership_type tinyint,
     PRIMARY KEY ( (chat_group_id), created_at, user_id )
 ) WITH CLUSTERING ORDER BY (created_at DESC, user_id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS chat_group_members_by_user_id AS
-SELECT id, user_id, chat_group_id, created_at, metadata, type
+SELECT id, user_id, chat_group_id, created_at, metadata, membership_type
 FROM chat_group_members
 WHERE user_id IS NOT NULL
   AND created_at IS NOT NULL
