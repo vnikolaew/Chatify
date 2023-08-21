@@ -5,9 +5,11 @@ import SignOut from "../../components/SignOut";
 import { useSearchParams } from "next/navigation";
 import { useGetChatGroupDetailsQuery, useGetMyClaimsQuery } from "@web/api";
 import { useIsUserLoggedIn } from "../../hooks/useIsUserLoggedIn";
-import { Avatar, Button, Skeleton, Tooltip } from "@nextui-org/react";
+import { Avatar, Button, Chip, Skeleton, Tooltip } from "@nextui-org/react";
 import PinIcon from "../../components/icons/PinIcon";
 import AddUserIcon from "../../components/icons/AddUserIcon";
+import { Chicle } from "next/dist/compiled/@next/font/dist/google";
+import TooltipButton from "../../components/TooltipButton";
 
 export const revalidate = 0;
 
@@ -41,90 +43,66 @@ function IndexPage(props) {
             className={`flex border-b-1 border-b-default-200 w-full items-center justify-between p-3 gap-2`}
          >
             <div className={`flex h-full ml-4 items-start gap-4`}>
-               <Avatar
-                  fallback={<Skeleton className={`h-10 w-10 rounded-full`} />}
-                  isBordered
-                  radius={"full"}
-                  color={"danger"}
-                  size={"md"}
-                  className={`aspect-square object-cover`}
-                  src={chatGroupDetails?.chatGroup?.picture?.mediaUrl}
-               />
-               <div
-                  className={`flex flex-col items-start justify-evenly h-full`}
-               >
-                  {isLoading ? (
-                     <>
-                        <Skeleton
-                           as={"div"}
-                           className={`text-medium rounded-full w-20 h-4 text-foreground`}
-                        />
-                        <Skeleton
-                           as={"div"}
-                           className={`text-small rounded-full w-10 h-2 text-default-500`}
-                        />
-                     </>
-                  ) : (
-                     <>
-                        <span className={`text-medium text-foreground`}>
-                           {" "}
-                           {chatGroupDetails.chatGroup.name}
-                        </span>
-                        <span className={`text-xs text-default-400`}>
-                           {chatGroupDetails.members.length} members
-                        </span>
-                     </>
-                  )}
-               </div>
-            </div>
-            <div className="mx-2 flex items-center gap-1">
-               <Tooltip
-                  isOpen={tooltipsOpen.pin}
-                  onOpenChange={(open) =>
-                     setTooltipsOpen((s) => ({ ...s, pin: open }))
-                  }
-                  shadow={"md"}
-                  classNames={{
-                     base: "text-xs",
-                  }}
-                  showArrow
-                  color={"default"}
-                  placement={"bottom"}
-                  offset={2}
-                  size={"md"}
-                  content={"Pinned messages"}
-               >
-                  <Button
-                     className={`bg-transparent duration-200 hover:bg-default-200`}
-                     radius={"full"}
-                     color={"default"}
-                     isIconOnly
-                  >
-                     <PinIcon fill={"white"} size={20} />
-                  </Button>
-               </Tooltip>
-               {true && (
-                  // chatGroupDetails?.chatGroup?.adminIds?.some( (id) => id === me.claims.nameidentifier
-                  <Tooltip
-                     isOpen={tooltipsOpen.addMember}
-                     onOpenChange={(open) =>
-                        setTooltipsOpen((s) => ({ ...s, addMember: open }))
-                     }
-                     shadow={"md"}
-                     color={"primary"}
-                     size={"md"}
-                     content={"Add a new member"}
-                     placement={"bottom"}
-                  >
-                     <Button
-                        className={`bg-transparent duration-200 hover:bg-default-200`}
+               {chatGroupDetails ? (
+                  <Fragment>
+                     <Avatar
+                        fallback={
+                           <Skeleton className={`h-10 w-10 rounded-full`} />
+                        }
+                        isBordered
                         radius={"full"}
-                        color={"default"}
-                        isIconOnly
+                        color={"danger"}
+                        size={"md"}
+                        className={`aspect-square object-cover`}
+                        src={chatGroupDetails?.chatGroup?.picture?.mediaUrl}
+                     />
+                     <div
+                        className={`flex flex-col items-start justify-evenly h-full`}
                      >
-                        <AddUserIcon fill={"white"} size={22} />
-                     </Button>
-                  </Tooltip>
+                        {isLoading ? (
+                           <Fragment>
+                              <Skeleton
+                                 as={"div"}
+                                 className={`text-medium rounded-full w-20 h-4 text-foreground`}
+                              />
+                              <Skeleton
+                                 as={"div"}
+                                 className={`text-small rounded-full w-10 h-2 text-default-500`}
+                              />
+                           </Fragment>
+                        ) : (
+                           <Fragment>
+                              <span className={`text-medium text-foreground`}>
+                                 {" "}
+                                 {chatGroupDetails.chatGroup.name}
+                              </span>
+                              <span className={`text-xs text-default-400`}>
+                                 {chatGroupDetails.members.length} members
+                              </span>
+                           </Fragment>
+                        )}
+                     </div>
+                  </Fragment>
+               ) : (
+                  <div>
+                     <span className={`text-default-200 text-medium`}>
+                        There's no chat group selected.
+                     </span>
+                  </div>
+               )}
+            </div>
+            <div className="mx-2 flex items-center gap-2">
+               <TooltipButton
+                  content={"Pinned messages"}
+                  icon={<PinIcon fill={"white"} size={24} />}
+               />
+               {chatGroupDetails?.chatGroup?.adminIds?.some(
+                  (id) => id === me.claims.nameidentifier
+               ) && (
+                  <TooltipButton
+                     content={"Add a new member"}
+                     icon={<AddUserIcon fill={"white"} size={24} />}
+                  />
                )}
             </div>
          </div>

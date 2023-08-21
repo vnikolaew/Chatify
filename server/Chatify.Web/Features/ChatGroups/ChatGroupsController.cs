@@ -8,6 +8,7 @@ using Chatify.Web.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Guid = System.Guid;
 using CreateChatGroupResult = OneOf.OneOf<Chatify.Application.User.Commands.FileUploadError, System.Guid>;
+using SearchChatGroupsByNameResult = OneOf.OneOf<LanguageExt.Common.Error, System.Collections.Generic.List<Chatify.Domain.Entities.ChatGroup>>;
 using SearchChatGroupMembersByNameResult =
     OneOf.OneOf<Chatify.Application.ChatGroups.Commands.UserIsNotMemberError,
         System.Collections.Generic.List<Chatify.Domain.Entities.User>>;
@@ -93,13 +94,27 @@ public class ChatGroupsController : ApiController
 
     [HttpGet]
     [Route("{groupId:guid}/members/search")]
-    public async Task<IActionResult> Feed(
+    public async Task<IActionResult> SearchMembers(
         [FromQuery(Name = "q")] string usernameQuery,
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
     {
         var result = await QueryAsync<SearchChatGroupMembersByName, SearchChatGroupMembersByNameResult>(
             new SearchChatGroupMembersByName(groupId, usernameQuery), cancellationToken);
+
+        return result.Match(
+            err => ( IActionResult )BadRequest(),
+            entries => Ok(new { Data = entries }));
+    }
+    
+    [HttpGet]
+    [Route("search")]
+    public async Task<IActionResult> Search(
+        [FromQuery(Name = "q")] string nameQuery,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await QueryAsync<SearchChatGroupsByName, SearchChatGroupsByNameResult >(
+            new SearchChatGroupsByName(nameQuery), cancellationToken);
 
         return result.Match(
             err => ( IActionResult )BadRequest(),

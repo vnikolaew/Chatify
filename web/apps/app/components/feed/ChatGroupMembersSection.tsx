@@ -56,125 +56,84 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
                {/*<Divider*/}
                {/*   className={`w-4/5 h-[1.5px] mb-4 text-default mx-auto`}*/}
                {/*/>*/}
-               {data &&
-                  Object.entries(membersByCategory).map(
-                     ([category, members], id) => (
-                        <div key={id} className={`my-2`}>
-                           <div className={`w-full mt-2 px-4`}>
-                              <h2
-                                 className={`text-xs uppercase text-default-400`}
-                              >
-                                 {category} - {members.length}
-                              </h2>
+               {Object.entries(membersByCategory).map(
+                  ([category, members], id) => (
+                     <div key={id} className={`my-2 w-full`}>
+                        <div className={`w-full mt-2 px-4`}>
+                           <h2 className={`text-xs uppercase text-default-400`}>
+                              {category} - {members.length}
+                           </h2>
+                        </div>
+                        {isLoading ? (
+                           <div className={`w-full`}>
+                              {Array.from({ length: 3 }).map((_, i) => (
+                                 <div
+                                    key={i}
+                                    className={`w-3/5 ml-4 mt-2 flex items-start gap-2`}
+                                 >
+                                    <Skeleton
+                                       className={`rounded-full h-10 w-10 `}
+                                    />
+                                    <Skeleton
+                                       className={`rounded-full h-5 w-4/5`}
+                                    />
+                                 </div>
+                              ))}
                            </div>
-                           {
-                              <div>
-                                 {members.map((member) => (
-                                    <div
-                                       key={member.id}
-                                       className={`w-4/5 ml-4 mt-3 flex items-start gap-3`}
+                        ) : (
+                           <div>
+                              {members.map((member) => (
+                                 <div
+                                    key={member.id}
+                                    className={`w-4/5 ml-4 mt-3 flex items-start gap-3`}
+                                 >
+                                    <Badge
+                                       color={
+                                          member.status === UserStatus.ONLINE
+                                             ? "success"
+                                             : member.status === UserStatus.AWAY
+                                             ? "warning"
+                                             : "default"
+                                       }
+                                       content={""}
+                                       classNames={
+                                          {
+                                             // badge: "h-3 w-3 border-[1px]",
+                                          }
+                                       }
+                                       placement={"bottom-right"}
+                                       size={"sm"}
+                                       variant={"shadow"}
+                                       as={"span"}
                                     >
-                                       <Badge
+                                       <Avatar
+                                          fallback={
+                                             <Skeleton
+                                                className={`h-10 w-10 rounded-full`}
+                                             />
+                                          }
+                                          isBordered
+                                          radius={"full"}
                                           color={
                                              member.status === UserStatus.ONLINE
                                                 ? "success"
-                                                : member.status ===
-                                                  UserStatus.AWAY
-                                                ? "warning"
                                                 : "default"
                                           }
-                                          content={""}
-                                          classNames={
-                                             {
-                                                // badge: "h-3 w-3 border-[1px]",
-                                             }
-                                          }
-                                          placement={"bottom-right"}
                                           size={"sm"}
-                                          variant={"shadow"}
-                                          as={"span"}
-                                       >
-                                          <Avatar
-                                             fallback={
-                                                <Skeleton
-                                                   className={`h-10 w-10 rounded-full`}
-                                                />
-                                             }
-                                             isBordered
-                                             radius={"full"}
-                                             color={
-                                                member.status ===
-                                                UserStatus.ONLINE
-                                                   ? "success"
-                                                   : "default"
-                                             }
-                                             size={"sm"}
-                                             className={`aspect-square outline-1 object-cover`}
-                                             src={
-                                                member.profilePicture.mediaUrl
-                                             }
-                                          />
-                                       </Badge>
-                                       <span className={`text-medium`}>
-                                          {member.username}
-                                       </span>
-                                    </div>
-                                 ))}
-                              </div>
-                           }
-                        </div>
-                     )
-                  )}
-               {isLoading
-                  ? Array.from({ length: 10 }).map((_, i) => (
-                       <div
-                          key={i}
-                          className={`w-4/5 ml-4 mt-2 flex items-start gap-2`}
-                       >
-                          <Skeleton className={`rounded-full h-10 w-10 `} />
-                          <Skeleton className={`rounded-full h-6 w-4/5`} />
-                       </div>
-                    ))
-                  : data.members.map((member) => (
-                       <div
-                          key={member.id}
-                          className={`w-4/5 ml-4 mt-3 flex items-start gap-3`}
-                       >
-                          <Badge
-                             color={
-                                member.status === UserStatus.ONLINE
-                                   ? "success"
-                                   : "default"
-                             }
-                             content={""}
-                             placement={"bottom-right"}
-                             size={"sm"}
-                             variant={"solid"}
-                             as={"span"}
-                          >
-                             <Avatar
-                                fallback={
-                                   <Skeleton
-                                      className={`h-10 w-10 rounded-full`}
-                                   />
-                                }
-                                isBordered
-                                radius={"full"}
-                                color={
-                                   member.status === UserStatus.ONLINE
-                                      ? "success"
-                                      : "default"
-                                }
-                                size={"sm"}
-                                className={`aspect-square outline-1 object-cover`}
-                                src={member.profilePicture.mediaUrl}
-                             />
-                          </Badge>
-                          <span className={`text-medium`}>
-                             {member.username}
-                          </span>
-                       </div>
-                    ))}
+                                          className={`aspect-square outline-1 object-cover`}
+                                          src={member.profilePicture.mediaUrl}
+                                       />
+                                    </Badge>
+                                    <span className={`text-medium`}>
+                                       {member.username}
+                                    </span>
+                                 </div>
+                              ))}
+                           </div>
+                        )}
+                     </div>
+                  )
+               )}
             </Fragment>
          )}
       </div>

@@ -14,5 +14,6 @@ internal sealed class RedisIndicesCreationService(IServiceScopeFactory scopeFact
             .GetRequiredService<RedisConnectionProvider>();
         
         await connectionProvider.Connection.CreateIndexAsync(typeof(ChatifyUser));
+        await connectionProvider.Connection.CreateIndexAsync(typeof(ChatGroup));
     }
 }

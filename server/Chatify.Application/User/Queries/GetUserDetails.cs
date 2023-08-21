@@ -11,7 +11,6 @@ namespace Chatify.Application.User.Queries;
 
 using GetUserDetailsResult = OneOf<UserNotFound, NotFriendsError, Domain.Entities.User>;
 
-
 public record NotFriendsError(string? Message = default) : BaseError(Message);
 
 [Cached("user-details", 10)]
@@ -38,8 +37,9 @@ internal sealed class GetUserDetailsHandler
         GetUserDetails query,
         CancellationToken cancellationToken = default)
     {
-        var areFriends = ( await _friendships.AllFriendIdsForUser(_identityContext.Id, cancellationToken) )
-            .Any(fid => fid == query.UserId);
+        var areFriends = ( query.UserId == _identityContext.Id ) ||
+                         ( await _friendships.AllFriendIdsForUser(_identityContext.Id, cancellationToken) )
+                         .Any(fid => fid == query.UserId);
         if ( !areFriends ) return new NotFriendsError();
 
         var user = await _users.GetAsync(query.UserId, cancellationToken);

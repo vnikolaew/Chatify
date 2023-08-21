@@ -19,12 +19,16 @@ import {
 import useCookie from "react-use-cookie";
 import { usePathname } from "next/navigation";
 import NextLink from "next/link";
-import { useGetMyClaimsQuery, useSignOutMutation } from "@web/api";
+import {
+   useGetMyClaimsQuery,
+   useGetUserDetailsQuery,
+   useSignOutMutation,
+} from "@web/api";
 import { isValidURL } from "./Greeting";
 import ExitIcon from "./icons/ExitIcon";
-import { useQueryClient } from "@tanstack/react-query";
 import ProfileIcon from "./icons/ProfileIcon";
 import { useTheme } from "next-themes";
+import { UserStatus } from "../../../libs/api/openapi";
 
 const NAV_LINKS = [
    {
@@ -56,16 +60,21 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
       select: (data) => data.claims,
       enabled: userHasCookie,
    });
+   const { data: userDetails } = useGetUserDetailsQuery(
+      claims?.nameidentifier,
+      {
+         enabled: !!claims?.nameidentifier,
+      }
+   );
 
    const { theme, setTheme } = useTheme();
    const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
-
-   const queryClient = useQueryClient();
    const { mutateAsync: signOut } = useSignOutMutation();
+
+   console.log(userDetails);
 
    const handleSignOut = async () => {
       await signOut(null!);
-      queryClient.clear();
       window.location.reload();
    };
 
@@ -95,8 +104,8 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
                   <Dropdown
                      showArrow
                      offset={10}
-                     onOpenChange={setIsDropdownMenuOpen}
-                     isOpen={isDropdownMenuOpen}
+                     // onOpenChange={setIsDropdownMenuOpen}
+                     // isOpen={isDropdownMenuOpen}
                   >
                      <DropdownTrigger>
                         <div
@@ -105,7 +114,13 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
                            <Badge // disableOutline
                               content={""}
                               shape={"circle"}
-                              color={"success"}
+                              color={
+                                 userDetails?.status === UserStatus.ONLINE
+                                    ? "success"
+                                    : userDetails?.status === UserStatus.AWAY
+                                    ? "warning"
+                                    : "default"
+                              }
                               size={"sm"}
                               placement={"bottom-right"}
                            >
@@ -134,19 +149,52 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
                            if (key === "sign-out") {
                               await handleSignOut();
                            }
+                           if (key === "status") {
+                              console.log("im here");
+                              setIsDropdownMenuOpen(true);
+                           }
                         }}
                         aria-label={"User actions"}
                      >
                         <DropdownSection showDivider>
                            <DropdownItem
                               textValue={"profile"}
+                              classNames={{
+                                 description: "text-[.75rem] text-default-300",
+                              }}
+                              description={"Manage your profile settings"}
                               className={`flex px-3 py-2 items-center gap-3`}
                               startContent={<ProfileIcon size={18} />}
                               key={"profile"}
                            >
                               <span className={`text-sm`}>Profile</span>
                            </DropdownItem>
-
+                           {/*<DropdownItem*/}
+                           {/*   endContent={*/}
+                           {/*      <RightArrow*/}
+                           {/*         className={`fill-default-400`}*/}
+                           {/*         size={24}*/}
+                           {/*      />*/}
+                           {/*   }*/}
+                           {/*   className={`flex px-3 py-2 items-center gap-3`}*/}
+                           {/*   key={"status"}*/}
+                           {/*>*/}
+                           {/*   /!*<Select*!/*/}
+                           {/*   /!*   placeholder={"Placeholder"}*!/*/}
+                           {/*   /!*   variant={"flat"}*!/*/}
+                           {/*   /!*   color={"default"}*!/*/}
+                           {/*   /!*   id={"status-select"}*!/*/}
+                           {/*   /!*   label={"Change your status"}*!/*/}
+                           {/*   /!*>*!/*/}
+                           {/*   /!*   <SelectItem value={"1"} key={"1"}>*!/*/}
+                           {/*   /!*      Item 1*!/*/}
+                           {/*   /!*   </SelectItem>*!/*/}
+                           {/*   /!*   <SelectItem value={"2"} key={"1"}>*!/*/}
+                           {/*   /!*      Item 2*!/*/}
+                           {/*   /!*   </SelectItem>*!/*/}
+                           {/*   /!*</Select>*!/*/}
+                           {/*   Change your status*/}
+                           {/*</DropdownItem>*/}
                            <DropdownItem
                               onClick={(e) => e.stopPropagation()}
                               textValue={"darkMode"}

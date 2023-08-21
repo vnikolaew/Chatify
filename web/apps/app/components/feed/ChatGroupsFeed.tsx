@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { Fragment, useMemo, useState } from "react";
 import { useGetChatGroupsFeedQuery } from "@web/api";
 import {
    Button,
@@ -8,24 +8,56 @@ import {
    DropdownMenu,
    DropdownTrigger,
    Input,
+   Link,
    Skeleton,
 } from "@nextui-org/react";
 import HamburgerMenuIcon from "../icons/HamburgerMenuIcon";
 import SearchIcon from "../icons/SearchIcon";
 import ChatGroupFeedEntry from "./ChatGroupFeedEntry";
+import { useIsUserLoggedIn } from "../../hooks/useIsUserLoggedIn";
+import { useDebounce } from "../../hooks/useDebounce";
+import { useSearchChatGroupsByName } from "../../../../libs/api/src/lib/chat-groups/hooks/queries/useSearchChatGroupsByName";
+import NotSentIcon from "../icons/NotSentIcon";
 
 export interface ChatGroupsFeedProps {}
 
 const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
+   const { isUserLoggedIn } = useIsUserLoggedIn();
+   const [searchTerm, setSearchTerm] = useState("");
+   const debouncedSearch = useDebounce(searchTerm, 2000);
+   const {
+      data: searchEntries,
+      isLoading: searchLoading,
+      isFetching: searchFetching,
+      error: searchError,
+   } = useSearchChatGroupsByName(
+      { query: debouncedSearch },
+      { enabled: debouncedSearch?.length >= 3 }
+   );
+
    const {
       data: feedEntries,
       isLoading,
+      isFetching,
       error,
-   } = useGetChatGroupsFeedQuery({
-      offset: 0,
-      limit: 10,
-   });
+   } = useGetChatGroupsFeedQuery(
+      {
+         offset: 0,
+         limit: 10,
+      },
+      { enabled: isUserLoggedIn }
+   );
+
+   const filteredEntries = useMemo(() => {
+      if (!debouncedSearch || !searchEntries) return feedEntries;
+
+      const searchEntryIds = new Set(searchEntries?.data.map((_) => _.id));
+      return feedEntries?.filter((e) => searchEntryIds.has(e.chatGroup.id));
+   }, [debouncedSearch, searchEntries?.data, feedEntries]);
+
    console.log(feedEntries);
+   console.log(`q = ${debouncedSearch}`, filteredEntries);
+   console.log(searchEntries);
 
    return (
       <aside
@@ -56,6 +88,9 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
             </Dropdown>
             <div className={`flex-1 text-medium`}>
                <Input
+                  value={searchTerm}
+                  isClearable
+                  onValueChange={setSearchTerm}
                   className={`w-3/4 px-2`}
                   classNames={{
                      inputWrapper:
@@ -76,8 +111,8 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
             </div>
          </div>
          <div className={`w-full pr-4 flex flex-col gap-2 p-2 items-center`}>
-            {isLoading ? (
-               <>
+            {(isLoading || searchLoading) && (isFetching || searchFetching) && (
+               <Fragment>
                   {Array.from({ length: 10 }).map((_, i) => (
                      <div
                         key={i}
@@ -97,9 +132,27 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                         </div>
                      </div>
                   ))}
-               </>
+               </Fragment>
+            )}
+            {!!filteredEntries && filteredEntries.length === 0 ? (
+               <div
+                  className={`mt-12 flex-col flex items-center justify-center gap-2 text-default-300 text-large`}
+               >
+                  <NotSentIcon className={`fill-default-200`} size={50} />
+                  <span>No chat groups found.</span>
+                  <Link></Link>
+                  <Button
+                     href={`/chat-groups/create`}
+                     as={Link}
+                     size={"sm"}
+                     variant={"solid"}
+                     color={"primary"}
+                  >
+                     Create Chat group
+                  </Button>
+               </div>
             ) : (
-               feedEntries.map((e, i) => (
+               (filteredEntries ?? feedEntries)?.map((e, i) => (
                   <ChatGroupFeedEntry key={i} feedEntry={e} />
                ))
             )}

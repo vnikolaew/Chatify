@@ -6,13 +6,19 @@ using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Data.Services;
 using Humanizer;
+using Redis.OM.Contracts;
+using Redis.OM.Searching;
 using StackExchange.Redis;
+using ChatGroup = Chatify.Domain.Entities.ChatGroup;
 using ChatGroupMember = Chatify.Domain.Entities.ChatGroupMember;
 using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
-public sealed class ChatGroupMembersRepository(IMapper mapper, Mapper dbMapper, IDatabase cache,
+public sealed class ChatGroupMembersRepository(
+        IMapper mapper,
+        Mapper dbMapper,
+        IDatabase cache,
         IEntityChangeTracker changeTracker)
     :
         BaseCassandraRepository<ChatGroupMember, Models.ChatGroupMember, Guid>(mapper, dbMapper, changeTracker,

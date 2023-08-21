@@ -9,7 +9,7 @@
    "private": true,
    "dependencies": {
       "@microsoft/signalr": "^7.0.5",
-      "@nextui-org/react": "^2.0.12",
+      "@nextui-org/react": "^2.1.0",
       "@nx/next": "16.6.0",
       "@react-oauth/google": "^0.11.1",
       "@swc/helpers": "^0.5.0",

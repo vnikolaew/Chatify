@@ -1,8 +1,13 @@
 import { chatGroupsClient } from "../../client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+   UseQueryOptions,
+   useQuery,
+   useQueryClient,
+} from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
-import { sleep } from "../../../../lib/utils";
+// @ts-ignore
 import { ChatGroupFeedEntry } from "@openapi/models/ChatGroupFeedEntry";
+import { sleep } from "../../../utils";
 
 export interface GetChatGroupsFeedModel {
    limit: number;
@@ -30,9 +35,19 @@ const getChatGroupsFeed = async (
 
    return data;
 };
-
 export const useGetChatGroupsFeedQuery = (
-   model: GetChatGroupsFeedModel = { limit: 10, offset: 0 }
+   model: GetChatGroupsFeedModel = { limit: 10, offset: 0 },
+   options?: Omit<
+      UseQueryOptions<
+         ChatGroupFeedEntry[],
+         unknown,
+         ChatGroupFeedEntry[],
+         string[]
+      >,
+      "initialData"
+   > & {
+      initialData?: (() => undefined) | undefined;
+   }
 ) => {
    const client = useQueryClient();
 
@@ -42,5 +57,6 @@ export const useGetChatGroupsFeedQuery = (
       refetchOnWindowFocus: false,
       refetchInterval: 60 * 5 * 1000,
       cacheTime: 60 * 60 * 1000,
+      ...options,
    });
 };

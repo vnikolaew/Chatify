@@ -2,6 +2,7 @@
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Microsoft.Extensions.DependencyInjection;
+using Redis.OM.Contracts;
 using Guid = System.Guid;
 using IMapper = Cassandra.Mapping.IMapper;
 
@@ -30,6 +31,8 @@ internal sealed class ChatGroupSeeder : ISeeder
         await using var scope = _scopeFactory.CreateAsyncScope();
 
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
+        var provider = scope.ServiceProvider
+            .GetRequiredService<IRedisConnectionProvider>();
         var groups = _groupsFaker.Generate(20);
 
         var users = await mapper.FetchListAsync<ChatifyUser>("SELECT * FROM users;");
@@ -43,6 +46,8 @@ internal sealed class ChatGroupSeeder : ISeeder
             chatGroup.AdminIds.Add(chatGroup.CreatorId);
 
             await mapper.InsertAsync(chatGroup, insertNulls: true);
+            await provider.RedisCollection<ChatGroup>().InsertAsync(chatGroup);
+            
             var groupMember = new ChatGroupMember
             {
                 Id = Guid.NewGuid(),

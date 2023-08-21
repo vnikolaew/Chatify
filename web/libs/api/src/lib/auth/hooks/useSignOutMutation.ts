@@ -27,7 +27,10 @@ export const useSignOutMutation = (
 
    return useMutation(signOut, {
       onError: console.error,
-      onSuccess: (data) => console.log("Sign out success: " + data),
+      onSuccess: (data) => {
+         console.log("Sign out success: " + data);
+         client.clear();
+      },
       onSettled: (res) => console.log(res),
       cacheTime: 60 * 60 * 1000,
       ...options,

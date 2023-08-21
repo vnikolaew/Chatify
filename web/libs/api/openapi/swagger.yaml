@@ -316,6 +316,19 @@ paths:
       responses:
         '200':
           description: Success
+  /api/ChatGroups/search:
+    get:
+      tags:
+        - ChatGroups
+      parameters:
+        - name: q
+          in: query
+          style: form
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
   '/api/ChatGroups/{groupId}/attachments':
     get:
       tags:
@@ -1054,7 +1067,6 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
-        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1085,6 +1097,7 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
+        - Unknown
       type: string
     ChangeUserStatus:
       type: object

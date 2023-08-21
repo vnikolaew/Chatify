@@ -1,12 +1,18 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+   UseQueryOptions,
+   useQuery,
+   useQueryClient,
+} from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { profileClient } from "../../client";
+// @ts-ignore
+import { User } from "@openapi/models/User";
 
 export interface GetUserDetailsModel {
    userId: string;
 }
 
-const getUserDetails = async (model: GetUserDetailsModel) => {
+const getUserDetails = async (model: GetUserDetailsModel): Promise<User> => {
    const { status, data } = await profileClient.get(`${model.userId}/details`, {
       headers: {},
    });
@@ -18,11 +24,20 @@ const getUserDetails = async (model: GetUserDetailsModel) => {
    return data;
 };
 
-export const useGetUserDetailsQuery = (userId: string) => {
+export const useGetUserDetailsQuery = (
+   userId: string,
+   options?: Omit<
+      UseQueryOptions<any, unknown, any, string[]>,
+      "initialData"
+   > & {
+      initialData?: (() => undefined) | undefined;
+   }
+) => {
    const client = useQueryClient();
    return useQuery({
       queryKey: ["user-details", userId],
       queryFn: ({ queryKey: [_, userId] }) => getUserDetails({ userId }),
       cacheTime: 60 * 60 * 1000,
+      ...options,
    });
 };

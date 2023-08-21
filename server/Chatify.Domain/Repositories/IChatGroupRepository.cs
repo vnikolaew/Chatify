@@ -8,4 +8,8 @@ public interface IChatGroupRepository : IDomainRepository<ChatGroup, Guid>
     Task<List<ChatGroup>> GetByIds(
         IEnumerable<Guid> groupIds,
         CancellationToken cancellationToken = default);
+    
+    Task<List<ChatGroup>> SearchByName(
+        string nameQuery,
+        CancellationToken cancellationToken = default);
 }
