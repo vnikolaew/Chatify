@@ -24,7 +24,8 @@ using IAuthenticationService = Chatify.Application.Authentication.Contracts.IAut
 
 namespace Chatify.Infrastructure.Authentication;
 
-public sealed class AuthenticationService(UserManager<ChatifyUser> userManager,
+public sealed class AuthenticationService(
+        UserManager<ChatifyUser> userManager,
         SignInManager<ChatifyUser> signInManager,
         IGoogleOAuthClient googleOAuthClient,
         IFacebookOAuthClient facebookOAuthClient,

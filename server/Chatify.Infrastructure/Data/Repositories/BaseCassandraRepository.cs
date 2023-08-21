@@ -4,6 +4,7 @@ using Cassandra.Mapping;
 using Chatify.Domain.Common;
 using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Services;
+using Humanizer;
 using IMapper = AutoMapper.IMapper;
 using Mapper = Cassandra.Mapping.Mapper;
 
@@ -20,7 +21,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
 
     protected static readonly ITypeDefinition MappingDefinition
         = MappingConfiguration.Global.Get<TDataEntity>();
-    
+
     protected BaseCassandraRepository(
         IMapper mapper,
         Mapper dbMapper,
@@ -63,7 +64,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
 
         var cql = GetUpdateCqlStatement(id, changedProps);
         await DbMapper.ExecuteAsync(cql);
-        
+
         return entity;
     }
 
@@ -71,10 +72,12 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         TId id,
         Dictionary<string, object?> changedProps)
     {
+        if ( changedProps.Count == 0 ) return new Cql("SELECT 1 + 1 ;");
+
         var tableColumnNames = changedProps
             .Keys
-            .Select(prop => typeof(TEntity).GetProperty(prop)!)
-            .Select(pi => MappingDefinition.GetColumnDefinition(pi).ColumnName)
+            .Select(prop => typeof(TDataEntity).GetProperty(prop)!)
+            .Select(pi => MappingDefinition.GetColumnDefinition(pi).ColumnName ?? pi.Name.Underscore())
             .ToList();
 
         var cql = new Cql($" UPDATE {MappingDefinition.TableName} SET {string.Join(
@@ -91,7 +94,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
             .SetValue(cql, changedProps
                 .Select(_ => _.Value)
                 .Append(id).ToArray());
-        
+
         return cql;
     }
 
@@ -110,7 +113,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
 
         var cql = GetUpdateCqlStatement(id, changedProps);
         await DbMapper.ExecuteAsync(cql);
-        
+
         return entity;
     }
 

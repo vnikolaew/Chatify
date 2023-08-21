@@ -9,7 +9,7 @@ public class ChatGroupAttachmentMapping : Cassandra.Mapping.Mappings
 {
     public ChatGroupAttachmentMapping()
         => For<ChatGroupAttachment>()
-            .TableName(nameof(ChatGroupAttachment).Underscore())
+            .TableName(nameof(ChatGroupAttachment).Pluralize().Underscore())
             .PartitionKey(a => a.ChatGroupId)
             .ClusteringKey(
                 new Tuple<string, SortOrder>(nameof(ChatGroupAttachment.CreatedAt), SortOrder.Descending),

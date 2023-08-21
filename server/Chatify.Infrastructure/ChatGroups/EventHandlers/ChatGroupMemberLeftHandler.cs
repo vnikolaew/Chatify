@@ -23,10 +23,9 @@ internal sealed class ChatGroupMemberLeftHandler(ICounterService<ChatGroupMember
     {
         await memberCounts.Decrement(@event.GroupId, cancellationToken: cancellationToken);
         
-        var groupId = $"chat-groups:{@event.GroupId}";
         await chatifyHubContext
             .Clients
-            .Group(groupId)
+            .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
             .ChatGroupMemberLeft(new ChatGroupMemberLeft(
                 @event.GroupId,
                 @event.UserId,

@@ -10,11 +10,9 @@ internal sealed class ChatGroupAdminAddedHandler(IHubContext<ChatifyHub, IChatif
 {
     public async Task HandleAsync(ChatGroupAdminAdded @event, CancellationToken cancellationToken = default)
     {
-        var groupId = $"chat-groups:{@event.GroupId}";
-        
         await hubContext
             .Clients
-            .Group(groupId)
+            .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
             .ChatGroupNewAdminAdded(new ChatGroupNewAdminAdded(
                 @event.GroupId,
                 @event.AdminId,

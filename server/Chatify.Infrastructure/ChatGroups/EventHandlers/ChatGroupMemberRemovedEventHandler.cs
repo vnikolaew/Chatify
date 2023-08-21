@@ -16,7 +16,8 @@ internal sealed class ChatGroupMemberRemovedEventHandler(IDomainRepository<Domai
         ILogger<ChatGroupMemberRemovedEventHandler> logger,
         ICounterService<ChatGroupMembersCount, Guid> membersCounts,
         IHubContext<ChatifyHub, IChatifyHubClient> chatifyHubContext,
-        IIdentityContext identityContext, IDatabase cache)
+        IIdentityContext identityContext,
+        IDatabase cache)
     : IEventHandler<ChatGroupMemberRemovedEvent>
 {
     private static RedisKey GetGroupMembersCacheKey(Guid groupId)
@@ -35,14 +36,18 @@ internal sealed class ChatGroupMemberRemovedEventHandler(IDomainRepository<Domai
 
       // Remove new member to cache set as well:
       var groupKey = GetGroupMembersCacheKey(group.Id);
-      var userKey = new RedisValue(@event.MemberId.ToString());
-      var userFeedCacheKey = new RedisKey($"user:{@event.MemberId}:feed");
+      var memberId = @event.MemberId.ToString();
+      var userFeedCacheKey = $"user:{@event.MemberId}:feed";
 
       var cacheRemoveTasks = new[]
       {
-         cache.SetRemoveAsync(groupKey, userKey),
-         cache.KeyDeleteAsync(userFeedCacheKey)
+          // Remove user from `group-members` set
+         cache.SetRemoveAsync(groupKey, memberId),
+         
+          // Remove `group entry` user feed sorted set
+         cache.SortedSetRemoveAsync(userFeedCacheKey, @event.GroupId.ToString())
       };
+      
       var success = await Task.WhenAll(cacheRemoveTasks);
       if ( success.All(_ => _) )
       {
@@ -51,10 +56,9 @@ internal sealed class ChatGroupMemberRemovedEventHandler(IDomainRepository<Domai
             @event.MemberId);
       }
 
-      var groupId = $"chat-groups:{@event.GroupId}";
       await chatifyHubContext
          .Clients
-         .Group(groupId)
+         .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
          .ChatGroupMemberRemoved(new ChatGroupMemberRemoved(
             @event.GroupId,
             @event.RemovedById,
