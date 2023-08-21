@@ -26,7 +26,11 @@ public static class ServiceCollectionExtensions
             .AddProblemDetails(opts => { opts.CustomizeProblemDetails = _ => { }; })
             .AddConfiguredSwagger()
             .AddControllers(opts => opts.Filters.Add<GlobalExceptionFilter>())
-            .AddJsonOptions(opts => opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
+            .AddJsonOptions(opts =>
+            {
+                opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                opts.JsonSerializerOptions.Converters.Add(new IPAddressConverter());
+            })
             .ConfigureApiBehaviorOptions(opts => opts.SuppressModelStateInvalidFilter = true);
 
         services.AddControllersWithViews();

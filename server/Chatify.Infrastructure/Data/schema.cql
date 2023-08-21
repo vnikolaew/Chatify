@@ -71,9 +71,9 @@ CREATE TABLE IF NOT EXISTS chat_groups
 
 CREATE TABLE IF NOT EXISTS chat_group_members_count
 (
-    id            uuid,
+    chat_group_id uuid,
     members_count counter,
-    PRIMARY KEY ( id )
+    PRIMARY KEY ( chat_group_id )
 ) WITH CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
 CREATE TABLE IF NOT EXISTS chat_messages
@@ -95,16 +95,16 @@ CREATE INDEX IF NOT EXISTS chat_messages_id_idx ON chat_messages (id);
 
 CREATE TABLE IF NOT EXISTS chat_messages_reply_count
 (
-    id          uuid,
+    message_id  uuid,
     reply_count counter,
-    PRIMARY KEY (id)
+    PRIMARY KEY (message_id)
 ) WITH CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
 CREATE TABLE IF NOT EXISTS chat_message_replies
 (
     id              uuid,
     chat_group_id   uuid,
-    reply_to        uuid,
+    reply_to_id     uuid,
     user_id         uuid,
     content         text,
     attachments     set<frozen<media>>,
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS chat_message_replies
     updated_at      timestamp,
     replies_count   bigint static,
     updated         boolean,
-    PRIMARY KEY ( (reply_to), created_at)
+    PRIMARY KEY ( (reply_to_id), created_at)
 ) WITH CLUSTERING ORDER BY (created_at DESC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
 CREATE INDEX IF NOT EXISTS chat_message_replies_id_idx ON chat_message_replies (id);
@@ -174,21 +174,22 @@ WHERE user_id IS NOT NULL
 PRIMARY KEY ( (user_id), created_at, chat_group_id );
 
 // Chat message replies summary info table:
-CREATE TABLE IF NOT EXISTS chat_message_reply_summaries
+CREATE TABLE IF NOT EXISTS chat_message_replies_summaries
 (
     chat_group_id uuid,
     message_id    uuid,
     id            uuid,
     created_at    timestamp,
+    updated       boolean,
     updated_at    timestamp,
     total         bigint,
     replier_ids   set<uuid>,
-    user_infos    set<frozen<message_replier_info>>,
+    replier_infos set<frozen<message_replier_info>>,
     PRIMARY KEY ( (chat_group_id), created_at )
 ) WITH CLUSTERING ORDER BY (created_at DESC)
    AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
-CREATE INDEX IF NOT EXISTS chat_message_reply_summaries_message_id_idx on chat_message_reply_summaries (message_id);
+CREATE INDEX IF NOT EXISTS chat_message_reply_summaries_message_id_idx on chat_message_replies_summaries (message_id);
 
 CREATE TYPE IF NOT EXISTS attachment_info (
     absolute_url text,

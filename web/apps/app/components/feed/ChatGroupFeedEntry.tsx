@@ -19,8 +19,6 @@ function formatDate(dateTime: string) {
 }
 
 const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
-   console.log(feedEntry);
-
    return (
       <Button
          color={"default"}
@@ -44,7 +42,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
             className={`flex flex-1 flex-col justify-evenly items-center gap-2`}
          >
             <div className={`flex w-full items-center justify-between`}>
-               <span className="text-large font-semibold text-default-800">
+               <span className="text-large w-3/4 truncate font-semibold text-default-800">
                   {feedEntry.chatGroup.name}
                </span>
                <time className={`text-xs text-default-500`}>
@@ -53,7 +51,9 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
                </time>
             </div>
             <div className={`w-full h-4 rounded-full`}>
-               <p className={`text-small leading-3 text-default-500`}>
+               <p
+                  className={`text-small w-full truncate leading-3 text-default-500`}
+               >
                   {feedEntry.chatMessage.content.substring(0, 40)}...
                </p>
             </div>

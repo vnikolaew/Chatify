@@ -15,10 +15,9 @@ internal sealed class SignalRNotificationService(IHubContext<ChatifyHub, IChatif
         ChatMessageDeletedEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var groupId = $"chat-groups:{@event.GroupId}";
         await chatifyHubContext
             .Clients
-            .Group(groupId)
+            .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
             .ChatGroupMessageRemoved(new ChatGroupMessageRemoved(
                 @event.GroupId,
                 @event.MessageId,

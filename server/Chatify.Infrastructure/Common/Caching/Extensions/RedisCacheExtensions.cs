@@ -51,6 +51,18 @@ public static class RedisCacheExtensions
         TimeSpan? expiry = default)
         => database.StringSetAsync(new RedisKey(key), new RedisValue(Serializer.Serialize(value)), expiry);
 
+    public static Task<RedisResult> BloomFilterAddAsync<T>(
+        this IDatabase database,
+        string key,
+        T value)
+        => database.ExecuteAsync("BF.ADD", key, new RedisValue(Serializer.Serialize(value)));
+
+    public static async Task<bool> BloomFilterExistsAsync(
+        this IDatabase database,
+        string filterKey,
+        string itemKey)
+        => ( bool )await database.ExecuteAsync("BF.EXISTS", filterKey, itemKey);
+
     public static async Task<IEnumerable<T?>> SetMembersAsync<T>(
         this IDatabase database, string key)
         => ( await database.SetMembersAsync(key) )

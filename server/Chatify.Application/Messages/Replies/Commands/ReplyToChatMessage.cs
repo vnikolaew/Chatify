@@ -74,7 +74,7 @@ internal sealed class ReplyToChatMessageHandler
             ReplyToId = message.Id,
             Content = command.Content,
             CreatedAt = _clock.Now,
-            ReactionCounts = new Dictionary<int, long>()
+            ReactionCounts = new Dictionary<short, long>()
         };
 
         await _replies.SaveAsync(messageReply, cancellationToken);
