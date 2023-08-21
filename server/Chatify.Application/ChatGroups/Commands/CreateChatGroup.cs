@@ -28,6 +28,8 @@ internal sealed class CreateChatGroupHandler
     : ICommandHandler<CreateChatGroup, CreateChatGroupResult>
 {
     private readonly IDomainRepository<ChatGroup, Guid> _groups;
+    private readonly IChatGroupMemberRepository _members;
+    private readonly IClock _clock;
     private readonly IEventDispatcher _eventDispatcher;
     private readonly IIdentityContext _identityContext;
     private readonly IFileUploadService _fileUploadService;
@@ -38,13 +40,15 @@ internal sealed class CreateChatGroupHandler
         IIdentityContext identityContext,
         IEventDispatcher eventDispatcher,
         IFileUploadService fileUploadService,
-        IGuidGenerator guidGenerator)
+        IGuidGenerator guidGenerator, IChatGroupMemberRepository members, IClock clock)
     {
         _groups = groups;
         _identityContext = identityContext;
         _eventDispatcher = eventDispatcher;
         _fileUploadService = fileUploadService;
         _guidGenerator = guidGenerator;
+        _members = members;
+        _clock = clock;
     }
 
     public async Task<CreateChatGroupResult> HandleAsync(
@@ -81,10 +85,24 @@ internal sealed class CreateChatGroupHandler
             Name = command.Name,
             AdminIds = new HashSet<Guid> { _identityContext.Id },
             CreatorId = _identityContext.Id,
-            Picture = groupPicture
+            Picture = groupPicture,
+            CreatedAt = _clock.Now,
         };
 
         await _groups.SaveAsync(chatGroup, cancellationToken);
+
+        var membershipId = _guidGenerator.New();
+        var groupMember = new ChatGroupMember
+        {
+            Id = membershipId,
+            CreatedAt = _clock.Now,
+            ChatGroupId = chatGroup.Id,
+            UserId = _identityContext.Id,
+            Username = _identityContext.Username,
+            MembershipType = 0
+        };
+        await _members.SaveAsync(groupMember, cancellationToken);
+
         await _eventDispatcher.PublishAsync(new ChatGroupCreatedEvent
         {
             CreatorId = chatGroup.CreatorId,

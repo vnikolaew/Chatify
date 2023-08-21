@@ -6,4 +6,6 @@ namespace Chatify.Infrastructure.Data.Models;
 public class ChatMessageReply : ChatMessage
 {
     public Guid ReplyToId { get; set; }
+    
+    public long RepliesCount { get; set; }
 }

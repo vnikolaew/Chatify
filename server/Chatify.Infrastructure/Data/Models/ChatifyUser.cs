@@ -1,10 +1,14 @@
 ﻿using System.Net;
+using System.Reflection;
 using AspNetCore.Identity.Cassandra.Models;
 using AutoMapper;
+using Cassandra.Data.Linq;
 using Chatify.Application.Common.Mappings;
 using Chatify.Domain.Entities;
 using Chatify.Domain.ValueObjects;
+using Newtonsoft.Json;
 using Redis.OM.Modeling;
+using DateTimeOffset = System.DateTimeOffset;
 using Metadata = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Chatify.Infrastructure.Data.Models;
@@ -19,16 +23,21 @@ public class ChatifyUser() :
 {
     [RedisIdField]
     [Indexed]
-    public string RedisId => Id.ToString();
+    [Ignore]
+    public string RedisId
+    {
+        get => Id.ToString();
+        set => GetType()
+            .GetProperty(nameof(Id),
+                BindingFlags.Instance | BindingFlags.Public)!
+            .SetValue(this, Guid.TryParse(value, out var guid) ? guid : default);
+    }
 
-    [Searchable]
-    public string RedisUsername => UserName;
-    
-    [Searchable]
-    public string DisplayName { get; set; }
-    
-    [Indexed]
-    public sbyte Status { get; set; }
+    [Searchable] public string RedisUsername => UserName;
+
+    [Searchable] public string DisplayName { get; set; }
+
+    [Indexed] public sbyte Status { get; set; }
 
     private readonly IList<string> _phoneNumbers = new List<string>();
 
@@ -39,8 +48,7 @@ public class ChatifyUser() :
         init => _phoneNumbers = value.ToList();
     }
 
-    [Indexed(CascadeDepth = 1)]
-    public Media ProfilePicture { get; set; }
+    [Indexed(CascadeDepth = 1)] public Media ProfilePicture { get; set; }
 
     private readonly IList<Media> _bannerPictures = new List<Media>();
 
@@ -51,18 +59,16 @@ public class ChatifyUser() :
         init => _bannerPictures = value.ToList();
     }
 
-    [Indexed]
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
+    [Indexed] public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
 
-    [Indexed]
-    public DateTimeOffset? UpdatedAt { get; set; }
+    [Indexed] public DateTimeOffset? UpdatedAt { get; set; }
 
-    [Indexed]
-    public DateTimeOffset LastLogin { get; set; } = DateTimeOffset.Now;
+    [Indexed] public DateTimeOffset LastLogin { get; set; } = DateTimeOffset.Now;
 
     // private readonly HashSet<byte[]> _deviceIpsBytes = new();
 
-    [Indexed]
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonIgnore]
     public HashSet<byte[]> DeviceIpsBytes
     {
         get => _deviceIps.Select(_ => _.GetAddressBytes()).ToHashSet();
@@ -71,18 +77,29 @@ public class ChatifyUser() :
 
     private HashSet<IPAddress> _deviceIps = new();
 
-    public ISet<IPAddress> DeviceIps
+    [Indexed]
+    public string[] DevicesIpAddresses
+    {
+        get => DeviceIps.Select(ip => ip.ToString()).ToArray();
+        set => DeviceIps = value
+            .Select(ip => IPAddress.TryParse(ip, out var ipAddress) ? ipAddress : default)
+            .Where(_ => _ is not null)
+            .ToHashSet();
+    }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonIgnore]
+    public HashSet<IPAddress> DeviceIps
     {
         get => _deviceIps;
-        init
+        set
         {
             DeviceIpsBytes = value.Select(_ => _.GetAddressBytes()).ToHashSet();
             _deviceIps = value.ToHashSet();
         }
     }
 
-    [Indexed]
-    public Metadata Metadata { get; init; } = new();
+    [Indexed] public Metadata Metadata { get; init; } = new();
 
     public void AddToken(TokenInfo token)
     {

@@ -18,6 +18,9 @@ public sealed class ChatifyHub(IChatGroupMemberRepository members, IIdentityCont
 {
     public const string Endpoint = "/chat";
 
+    public static string GetChatGroupId(Guid groupId)
+        => $"chat-groups:{groupId}";
+
     private Guid UserId => Guid.TryParse(Context.User!
         .Claims
         .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)!
@@ -50,7 +53,7 @@ public sealed class ChatifyHub(IChatGroupMemberRepository members, IIdentityCont
 
         var joinGroupsTasks = groupIds.Select(id => Groups.AddToGroupAsync(
             Context.ConnectionId,
-            $"chat-groups:{id}",
+            GetChatGroupId(id),
             cancellationToken
         ));
 
@@ -64,11 +67,10 @@ public sealed class ChatifyHub(IChatGroupMemberRepository members, IIdentityCont
     {
         var isGroupMember = await GetService<IChatGroupMemberRepository>()
             .Exists(request.ChatGroupId, UserId, cancellationToken);
-        if (!isGroupMember) return Error.New("");
+        if ( !isGroupMember ) return Error.New("");
 
-        var groupId = $"chat-groups:{request.ChatGroupId}";
         await Groups.AddToGroupAsync(Context.ConnectionId,
-            groupId,
+            GetChatGroupId(request.ChatGroupId),
             cancellationToken);
 
         return Unit.Default;
@@ -81,7 +83,7 @@ public sealed class ChatifyHub(IChatGroupMemberRepository members, IIdentityCont
     {
         var isGroupMember = await GetService<IChatGroupMemberRepository>()
             .Exists(groupId, UserId, cancellationToken);
-        if (!isGroupMember) return Error.New("");
+        if ( !isGroupMember ) return Error.New("");
 
         await Clients
             .Group(groupId.ToString())
@@ -90,10 +92,10 @@ public sealed class ChatifyHub(IChatGroupMemberRepository members, IIdentityCont
                 UserId,
                 Username,
                 timestamp));
-        
+
         return Unit.Default;
     }
-    
+
     public async Task<Either<Error, Unit>> StopTypingInGroupChat(
         Guid groupId,
         DateTime timestamp,
@@ -101,7 +103,7 @@ public sealed class ChatifyHub(IChatGroupMemberRepository members, IIdentityCont
     {
         var isGroupMember = await GetService<IChatGroupMemberRepository>()
             .Exists(groupId, UserId, cancellationToken);
-        if (!isGroupMember) return Error.New("");
+        if ( !isGroupMember ) return Error.New("");
 
         await Clients
             .Group(groupId.ToString())
@@ -110,7 +112,7 @@ public sealed class ChatifyHub(IChatGroupMemberRepository members, IIdentityCont
                 UserId,
                 Username,
                 timestamp));
-        
+
         return Unit.Default;
     }
 
@@ -119,10 +121,9 @@ public sealed class ChatifyHub(IChatGroupMemberRepository members, IIdentityCont
         CancellationToken cancellationToken = default)
     {
         var isChatGroupMember = await members.Exists(chatGroupId, identityContext.Id, cancellationToken);
-        if (!isChatGroupMember) return Error.New($"You are not a member of Chat group with Id '{chatGroupId}'.");
+        if ( !isChatGroupMember ) return Error.New($"You are not a member of Chat group with Id '{chatGroupId}'.");
 
-        var groupId = $"chat-groups:{chatGroupId}";
-        await Groups.AddToGroupAsync(Context.ConnectionId, groupId, cancellationToken);
+        await Groups.AddToGroupAsync(Context.ConnectionId, GetChatGroupId(chatGroupId), cancellationToken);
         // await Clients.OthersInGroup(groupId).SendAsync("UserJoined", _identityContext.Id, cancellationToken);
 
         return Unit.Default;
@@ -133,10 +134,9 @@ public sealed class ChatifyHub(IChatGroupMemberRepository members, IIdentityCont
         CancellationToken cancellationToken = default)
     {
         var isChatGroupMember = await members.Exists(chatGroupId, identityContext.Id, cancellationToken);
-        if (!isChatGroupMember) return Error.New($"You are not a member of Chat group with Id '{chatGroupId}'.");
+        if ( !isChatGroupMember ) return Error.New($"You are not a member of Chat group with Id '{chatGroupId}'.");
 
-        var groupId = $"chat-groups:{chatGroupId}";
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupId, cancellationToken);
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, GetChatGroupId(chatGroupId), cancellationToken);
         // await Clients.OthersInGroup(groupId).SendAsync("UserLeft", _identityContext.Id, cancellationToken);
 
         return Unit.Default;

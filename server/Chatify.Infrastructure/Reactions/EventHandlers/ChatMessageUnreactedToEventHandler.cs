@@ -13,10 +13,9 @@ internal sealed class ChatMessageUnreactedToEventHandler
         ChatMessageUnreactedToEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var groupId = $"chat-groups:{@event.GroupId}";
         await hubContext
             .Clients
-            .Group(groupId)
+            .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
             .ChatGroupMessageUnReactedTo(
                 new ChatGroupMessageUnReactedTo(
                     @event.GroupId,

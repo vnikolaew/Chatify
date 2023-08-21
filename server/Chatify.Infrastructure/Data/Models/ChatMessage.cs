@@ -1,4 +1,5 @@
-﻿using Cassandra.Mapping.Attributes;
+﻿using AutoMapper;
+using Cassandra.Mapping.Attributes;
 using Chatify.Application.Common.Mappings;
 using Metadata = System.Collections.Generic.IDictionary<string, string>;
 using ReactionCounts = System.Collections.Generic.IDictionary<short, long>;
@@ -15,10 +16,13 @@ public class ChatMessage : IMapFrom<Domain.Entities.ChatMessage>
 
     public string Content { get; set; } = default!;
 
-    protected readonly HashSet<Media> _attachments = new();
+    protected HashSet<Media> _attachments = new();
 
-    [FrozenKey]
-    public IEnumerable<Media> Attachments => _attachments;
+    [FrozenKey] public IEnumerable<Media> Attachments
+    {
+        get => _attachments;
+        set => _attachments = value.ToHashSet();
+    }
 
     public Metadata Metadata { get; set; } = new Dictionary<string, string>();
 
@@ -29,4 +33,9 @@ public class ChatMessage : IMapFrom<Domain.Entities.ChatMessage>
     public DateTimeOffset? UpdatedAt { get; set; }
 
     public bool Updated => UpdatedAt.HasValue;
+
+    public void Mapping(Profile profile)
+        => profile
+            .CreateMap<ChatMessage, Domain.Entities.ChatMessage>()
+            .ReverseMap();
 }

@@ -20,7 +20,8 @@ public class DatabaseInitializationService(CassandraOptions cassandraOptions,
 {
     private const string KeyspaceName = "chatify";
 
-    private readonly string _schemaFilePath = Path.Combine(Directory.GetParent(Assembly.GetExecutingAssembly().Location)!.FullName, "Data",
+    private readonly string _schemaFilePath = Path.Combine(
+        Directory.GetParent(Assembly.GetExecutingAssembly().Location)!.FullName, "Data",
         "schema.cql");
 
     private static Regex GetUdtCollectionRegex(string keyspaceName)

@@ -23,10 +23,11 @@ public sealed class ChatGroupRepository(IMapper mapper, Mapper dbMapper, IEntity
         cql.GetType()
             .GetProperty(nameof(Cql.Arguments),
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
-            .SetValue(cql, groupIds);
-        
-        return await DbMapper
-            .FetchAsync<Models.ChatGroup>(cql)
-            .ToAsync<IEnumerable<Models.ChatGroup>, List<ChatGroup>>(Mapper);
+            .SetValue(cql, groupIds.Cast<object>().ToArray());
+
+        return ( await DbMapper
+                .FetchAsync<Models.ChatGroup>(cql) )
+            .To<ChatGroup>(Mapper)
+            .ToList();
     }
 }

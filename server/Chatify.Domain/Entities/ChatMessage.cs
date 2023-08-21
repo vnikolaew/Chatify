@@ -1,5 +1,5 @@
 ﻿using Metadata = System.Collections.Generic.IDictionary<string, string>;
-using ReactionCounts = System.Collections.Generic.IDictionary<int, long>;
+using ReactionCounts = System.Collections.Generic.IDictionary<short, long>;
 
 namespace Chatify.Domain.Entities;
 
@@ -37,7 +37,7 @@ public class ChatMessage
         init => _attachments = value.ToHashSet();
     }
 
-    public ReactionCounts ReactionCounts { get; set; } = new Dictionary<int, long>();
+    public ReactionCounts ReactionCounts { get; set; } = new Dictionary<short, long>();
 
     public void AddAttachment(Media media) => _attachments.Add(media);
 

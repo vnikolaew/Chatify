@@ -48,9 +48,10 @@ internal sealed class ChatMessageReactionsSeeder : ISeeder
             reaction.ChatGroupId = group.Id;
             reaction.MessageId = groupMessages[Random.Shared.Next(0, groupMessages.Count)].Id;
             reaction.UserId = groupMembers[Random.Shared.Next(0, groupMembers.Count)].Id;
-            
-            var reactionCounts = (await mapper.FirstOrDefaultAsync<Dictionary<short, long>>(
-                "SELECT reaction_counts FROM chat_message_reactions WHERE message_id = ?;", reaction.MessageId)) ?? new Dictionary<short, long>();
+
+            var reactionCounts = await mapper.FirstOrDefaultAsync<Dictionary<short, long>>(
+                "SELECT reaction_counts FROM chat_message_reactions WHERE message_id = ?;",
+                reaction.MessageId) ?? new Dictionary<short, long>();
 
             if ( !reactionCounts.ContainsKey(reaction.ReactionType) ) reactionCounts[reaction.ReactionType] = 0;
             reactionCounts[reaction.ReactionType]++;
@@ -64,6 +65,7 @@ internal sealed class ChatMessageReactionsSeeder : ISeeder
             {
                 message.ReactionCounts[reaction.ReactionType] = 0;
             }
+
             message.ReactionCounts[reaction.ReactionType]++;
 
             await mapper.InsertAsync(message);

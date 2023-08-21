@@ -14,7 +14,7 @@ public class ChatMessageRepliesSummaryMapping : Cassandra.Mapping.Mappings
                 new Tuple<string, SortOrder>(nameof(ChatMessageRepliesSummary.CreatedAt), SortOrder.Descending),
                 new Tuple<string, SortOrder>(nameof(ChatMessageRepliesSummary.MessageId), SortOrder.Ascending)
             )
-            .TableName(nameof(ChatMessageRepliesSummary).Underscore())
+            .TableName(nameof(ChatMessageRepliesSummary).Pluralize().Underscore())
             .UnderscoreColumn(s => s.ChatGroupId)
             .UnderscoreColumn(s => s.MessageId,
                 cm => cm.WithSecondaryIndex())

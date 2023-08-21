@@ -32,10 +32,9 @@ internal sealed class ChatMessageEditedEventHandler(IHubContext<ChatifyHub, ICha
         await scheduler.ScheduleImmediateJob<ProcessChatMessageJob>(builder =>
             builder.WithMessageId(@event.MessageId), cancellationToken);
         
-        var groupId = $"chat-groups:{@event.GroupId}";
         await  hubContext
             .Clients
-            .Group(groupId)
+            .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
             .ChatGroupMessageEdited(
                 new ChatGroupMessageEdited(
                     @event.GroupId,

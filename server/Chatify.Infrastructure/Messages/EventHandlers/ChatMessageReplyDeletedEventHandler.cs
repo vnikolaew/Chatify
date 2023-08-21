@@ -7,6 +7,7 @@ using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Server;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
+using LanguageExt.ClassInstances.Const;
 using Microsoft.AspNetCore.SignalR;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -59,10 +60,9 @@ internal sealed partial class ChatMessageReplyDeletedEventHandler(
                 @event.MessageId);
         }
 
-        var groupId = $"chat-groups:{@event.GroupId}";
         await chatifyContext
             .Clients
-            .Group(groupId)
+            .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
             .ChatGroupMessageRemoved(
                 new ChatGroupMessageRemoved(
                     @event.GroupId,

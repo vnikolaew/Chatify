@@ -27,10 +27,9 @@ internal sealed class ChatMessageReactedToEventHandler(IHubContext<ChatifyHub, I
             $" SET reaction_counts[{@event.ReactionType}] = ? WHERE message_id = ?",
         currentCount + 1, @event.MessageId);
 
-        var groupId = $"chat-groups:{@event.GroupId}";
         await hubContext
             .Clients
-            .Group(groupId)
+            .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
             .ChatGroupMessageReactedTo(
                 new ChatGroupMessageReactedTo(
                     @event.GroupId,

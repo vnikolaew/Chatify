@@ -4,6 +4,7 @@ using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Mappings;
+using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Data.Services;
 using Chatify.Shared.Abstractions.Queries;
@@ -56,15 +57,15 @@ public sealed class ChatMessageRepository(
         CancellationToken cancellationToken = default)
     {
         var paramPlaceholders = string.Join(", ", groupIds.Select(_ => "?"));
-        var cql = new Cql($" WHERE chat_group_id IN ({paramPlaceholders})");
+        var cql = new Cql($" WHERE chat_group_id IN ({paramPlaceholders}) PER PARTITION LIMIT 1;");
 
         cql.GetType()
             .GetProperty(nameof(Cql.Arguments),
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
-            .SetValue(cql, groupIds.ToArray());
+            .SetValue(cql, groupIds.Cast<object>().ToArray());
 
         var messages = await DbMapper
-            .FetchAsync<Models.ChatMessage>(cql);
+            .FetchListAsync<Models.ChatMessage>(cql);
 
         return messages
             .To<ChatMessage>(Mapper)
@@ -81,11 +82,13 @@ public sealed class ChatMessageRepository(
         cql.GetType()
             .GetProperty(nameof(Cql.Arguments),
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
-            .SetValue(cql, messageIds.ToArray());
+            .SetValue(cql, messageIds.Cast<object>().ToArray());
 
         var messages = await DbMapper
-            .FetchAsync<Models.ChatMessage>(cql);
+            .FetchListAsync<Models.ChatMessage>(cql);
 
-        return messages.To<ChatMessage>(Mapper).ToList();
+        return messages
+            .To<ChatMessage>(Mapper)
+            .ToList();
     }
 }

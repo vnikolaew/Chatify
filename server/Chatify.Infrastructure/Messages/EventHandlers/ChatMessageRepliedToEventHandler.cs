@@ -71,10 +71,9 @@ internal sealed class ChatMessageRepliedToEventHandler(ICounterService<ChatMessa
         await scheduler.ScheduleImmediateJob<ProcessChatMessageReplyJob>(builder =>
             builder.WithMessageId(@event.MessageId), cancellationToken);
         
-        var groupId = $"chat-groups:{@event.GroupId}";
         await chatifyContext
             .Clients
-            .Group(groupId)
+            .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
             .ReceiveGroupChatMessage(
                 new ReceiveGroupChatMessage(
                     @event.GroupId,

@@ -21,6 +21,7 @@ public class ChatMessageReplyMapping : Cassandra.Mapping.Mappings
             .UnderscoreColumn(cm => cm.ReplyToId)
             .UnderscoreColumn(cm => cm.ChatGroupId)
             .UnderscoreColumn(cm => cm.Metadata)
+            .UnderscoreColumn(cm => cm.RepliesCount, cm => cm.AsStatic())
             .UnderscoreColumn(cm => cm.UserId)
             .UnderscoreColumn(cm => cm.Content)
             .UnderscoreColumn(cm => cm.Attachments)
