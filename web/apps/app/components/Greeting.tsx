@@ -149,7 +149,7 @@ const Greeting = ({}: GreetingProps) => {
                            <TableCell
                               className={
                                  columnKey === "value"
-                                    ? "font-light"
+                                    ? "font-light truncate max-w-[300px]"
                                     : "font-medium"
                               }
                            >

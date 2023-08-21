@@ -2,7 +2,6 @@
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using AutoMapper.Internal;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.ChatGroups.Contracts;
@@ -17,7 +16,6 @@ using Chatify.Infrastructure.Authentication.External.Google;
 using Chatify.Infrastructure.ChatGroups.Services;
 using Chatify.Infrastructure.Common;
 using Chatify.Infrastructure.Common.Caching;
-using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Common.Security;
 using Chatify.Infrastructure.Data;
 using Chatify.Infrastructure.Data.Repositories;
@@ -54,23 +52,19 @@ using IAuthenticationService = Chatify.Application.Authentication.Contracts.IAut
 
 namespace Chatify.Infrastructure;
 
-public sealed class IPAddressConverter : JsonConverter<IPAddress>
+public sealed class IPAddressConverter
+    : System.Text.Json.Serialization.JsonConverter<IPAddress>
 {
-    public override IPAddress Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override IPAddress? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         string ipAddressString = reader.GetString();
-        if ( IPAddress.TryParse(ipAddressString, out var ipAddress) )
-        {
-            return ipAddress;
-        }
-
-        throw new JsonException($"Invalid IP address: {ipAddressString}");
+        return IPAddress.TryParse(ipAddressString, out var ipAddress)
+            ? ipAddress
+            : default;
     }
 
     public override void Write(Utf8JsonWriter writer, IPAddress value, JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value.ToString());
-    }
+        => writer.WriteStringValue(value.ToString());
 }
 
 public static class DependencyInjection
@@ -106,7 +100,8 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
         => services
-            .Configure<HostOptions>(opts => opts.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore)
+            .Configure<HostOptions>(opts =>
+                opts.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore)
             .AddAuthenticationServices(configuration)
             .AddEvents(new[] { Assembly.GetExecutingAssembly() }, Extensions.EventDispatcherType.FireAndForget)
             .AddTransient<IEmailSender, NullEmailSender>()
@@ -161,10 +156,10 @@ public static class DependencyInjection
                 new RedisConnectionProvider(sp.GetRequiredService<IConnectionMultiplexer>()))
             .AddSingleton<IRedisConnectionProvider>(sp =>
                 sp.GetRequiredService<RedisConnectionProvider>());
-        RedisSerializationSettings
-            .JsonSerializerOptions
-            .Converters
-            .Add(new IPAddressConverter());
+
+        RedisSerializationSettings.JsonSerializerOptions
+            .Converters.Add(new IPAddressConverter());
+        RedisSerializationSettings.JsonSerializerOptions.IncludeFields = false;
 
         var cacheIndexTypes = Assembly.GetExecutingAssembly()
             .GetTypes()

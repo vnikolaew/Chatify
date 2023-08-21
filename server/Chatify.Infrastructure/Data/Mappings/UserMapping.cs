@@ -25,6 +25,9 @@ public class UserMapping : Cassandra.Mapping.Mappings
             .UnderscoreColumn(u => u.UpdatedAt)
             .UnderscoreColumn(u => u.LastLogin)
             .Column(u => u.DeviceIps, cm => cm.Ignore())
+            .Column(u => u.RedisId, cm => cm.Ignore())
+            .Column(u => u.RedisUsername, cm => cm.Ignore())
+            .Column(u => u.DevicesIpAddresses, cm => cm.Ignore())
             .Column(u => u.UserName, m => m.WithName(nameof(ChatifyUser.UserName).ToLower()))
             .UnderscoreColumn(u => u.Email)
             .Column(u => u.DeviceIpsBytes,

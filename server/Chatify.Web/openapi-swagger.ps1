@@ -1,2 +1,1 @@
-﻿Echo "adfsdfsdf"
-Copy-Item -Path "./swagger/v1/swagger.yaml" -Destination "../../web/openapi/swagger.yaml"
+﻿Copy-Item -Path "./swagger/v1/swagger.yaml" -Destination "../../web/libs/api/openapi/swagger.yaml"

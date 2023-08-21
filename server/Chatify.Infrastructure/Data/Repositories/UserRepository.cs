@@ -40,7 +40,7 @@ public sealed class UserRepository(
     {
         var usersById = await _cacheUsers
             .FindByIdsAsync(userIds.Select(_ => _.ToString()));
-        
+            
         return usersById
             .Values
             .To<Domain.Entities.User>(Mapper)

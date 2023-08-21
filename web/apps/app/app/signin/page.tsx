@@ -22,7 +22,7 @@ import {
    Divider,
 } from "@nextui-org/react";
 import * as yup from "yup";
-import { Form, Formik } from "formik";
+import { Field, Form, Formik } from "formik";
 import PasswordInput from "./PasswordInput";
 import { GoogleIcon } from "../../components/icons/GoogleIcon";
 import { GithubIcon } from "../../components/icons/GithubIcon";
@@ -69,7 +69,6 @@ const SignInPage: NextPage = () => {
    } = useGithubSignUpMutation();
 
    async function handleFormSubmit(data: RegularSignInModel) {
-      console.log("im here");
       try {
          await signIn(data);
          await sleep(2000);
@@ -88,7 +87,7 @@ const SignInPage: NextPage = () => {
             <CardBody className={`mt-4`}>
                <Formik<RegularSignInModel>
                   validationSchema={signInSchema}
-                  initialValues={{ email: "", password: "" }}
+                  initialValues={{ email: "", password: "", rememberMe: false }}
                   onSubmit={handleFormSubmit}
                >
                   {({
@@ -102,9 +101,9 @@ const SignInPage: NextPage = () => {
                   }) => (
                      <Form
                         autoComplete={"off"}
-                        noValidate
+                        // noValidate
                         className={`flex flex-col gap-3`}
-                        onSubmit={handleSubmit}
+                        // onSubmit={handleSubmit}
                      >
                         <Input
                            autoFocus
@@ -175,7 +174,6 @@ const SignInPage: NextPage = () => {
                            <Button
                               as={"button"}
                               variant={"solid"}
-                              onClick={(_) => handleSubmit()}
                               isLoading={isSubmitting}
                               spinner={
                                  <Spinner

@@ -4,7 +4,8 @@
       "outDir": "../../dist/out-tsc",
 //      "plugins": [{ "name": "@swc/nx"}],
       "declaration": true,
-      "types": ["node"]
+      "baseUrl": "./src",
+      "types": ["node"],
    },
    "include": ["src/**/*.ts"],
    "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]

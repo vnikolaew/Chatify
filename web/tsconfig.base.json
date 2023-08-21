@@ -16,8 +16,9 @@
       "baseUrl": ".",
       "paths": {
          "@web/api": ["libs/api/src/index.ts"],
-         "@openapi": ["openapi/index.ts"]
+         "@openapi": ["./openapi/index.ts"]
       }
    },
+   "include": [ "apps", "libs", "openapi"],
    "exclude": ["node_modules", "tmp"]
 }

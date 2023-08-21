@@ -8,12 +8,19 @@
       "allowSyntheticDefaultImports": true,
       "noImplicitOverride": true,
       "noPropertyAccessFromIndexSignature": true,
+      "moduleResolution": "node",
       "noImplicitReturns": true,
       "noFallthroughCasesInSwitch": true,
-      "jsxImportSource": "react"
+      "jsxImportSource": "react",
+      "baseUrl": ".",
+      "paths": {
+         "@utils/*": ["src/lib/utils/*"],
+         "@openapi/*": ["openapi/*"]
+      }
    },
+
    "files": [],
-   "include": [],
+   "include": ["src", "openapi"],
    "references": [
       {
          "path": "./tsconfig.lib.json"
