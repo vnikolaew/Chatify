@@ -1,8 +1,8 @@
 import { chatGroupsClient } from "../../client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
-import { ChatGroupFeedEntry } from "@openapi";
-import { sleep } from "../../../utils";
+import { sleep } from "../../../../lib/utils";
+import { ChatGroupFeedEntry } from "@openapi/models/ChatGroupFeedEntry";
 
 export interface GetChatGroupsFeedModel {
    limit: number;

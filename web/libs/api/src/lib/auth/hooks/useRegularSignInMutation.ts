@@ -5,6 +5,7 @@ import { HttpStatusCode } from "axios";
 export interface RegularSignInModel {
    email: string;
    password: string;
+   rememberMe: boolean;
 }
 const regularSignIn = async (model: RegularSignInModel) => {
    const { status, data } = await authClient.post(`/signin`, model);
