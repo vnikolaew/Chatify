@@ -1,9 +1,11 @@
 "use client";
 import React from "react";
-import { ChatGroupFeedEntry } from "@openapi";
+import { ChatGroupFeedEntry } from "@openapi/index";
 import { Avatar, Button, Skeleton } from "@nextui-org/react";
 import moment from "moment";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
+import { getChatGroupDetails } from "@web/api";
 
 export interface ChatGroupFeedEntryProps {
    feedEntry: ChatGroupFeedEntry;
@@ -19,8 +21,17 @@ function formatDate(dateTime: string) {
 }
 
 const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
+   const client = useQueryClient();
+   const handlePrefetchGroupDetails = async () => {
+      await client.prefetchQuery(["chat-group", feedEntry.chatGroup.id], {
+         queryFn: ({ queryKey: [_, id] }) =>
+            getChatGroupDetails({ chatGroupId: id }),
+         staleTime: 30 * 60 * 1000,
+      });
+   };
    return (
       <Button
+         onMouseEnter={async (_) => await handlePrefetchGroupDetails()}
          color={"default"}
          as={Link}
          href={`?c=${feedEntry.chatGroup.id}`}
