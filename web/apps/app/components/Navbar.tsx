@@ -1,8 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
    Avatar,
    Badge,
+   Button,
+   ButtonProps,
    Dropdown,
    DropdownItem,
    DropdownMenu,
@@ -10,16 +12,23 @@ import {
    DropdownTrigger,
    Image,
    Link,
+   Listbox,
+   ListboxItem,
    Navbar,
    NavbarBrand,
    NavbarContent,
    NavbarItem,
+   Popover,
+   PopoverContent,
+   PopoverTrigger,
+   Spinner,
    Switch,
 } from "@nextui-org/react";
-import useCookie from "react-use-cookie";
 import { usePathname } from "next/navigation";
 import NextLink from "next/link";
 import {
+   ChangeUserStatusModel,
+   useChangeUserStatusMutation,
    useGetMyClaimsQuery,
    useGetUserDetailsQuery,
    useSignOutMutation,
@@ -28,7 +37,9 @@ import { isValidURL } from "./Greeting";
 import ExitIcon from "./icons/ExitIcon";
 import ProfileIcon from "./icons/ProfileIcon";
 import { useTheme } from "next-themes";
-import { UserStatus } from "../../../libs/api/openapi";
+import { UserStatus } from "@openapi";
+import RightArrow from "./icons/RightArrow";
+import { useIsUserLoggedIn } from "../hooks/useIsUserLoggedIn";
 
 const NAV_LINKS = [
    {
@@ -46,36 +57,61 @@ const NAV_LINKS = [
    },
 ];
 
+const USER_STATUSES = new Set<{
+   status: UserStatus;
+   color: ButtonProps["color"];
+}>([
+   { status: UserStatus.AWAY, color: "warning" },
+   {
+      status: UserStatus.ONLINE,
+      color: "success",
+   },
+   { status: UserStatus.OFFLINE, color: "default" },
+]);
+
 const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
    const pathname = usePathname();
-   const userHasCookie = !!useCookie(
-      process.env.NEXT_PUBLIC_APPLICATION_COOKIE_NAME,
-      null
-   )[0];
+   const { isUserLoggedIn } = useIsUserLoggedIn();
+   const [loadingAction, setLoadingAction] = useState<string>(null!);
+
    const {
-      data: claims,
-      isLoading,
-      error,
-   } = useGetMyClaimsQuery({
-      select: (data) => data.claims,
-      enabled: userHasCookie,
+      data: _,
+      error: changeStatusError,
+      isLoading: changeStatusLoading,
+      mutateAsync: changeUserStatus,
+   } = useChangeUserStatusMutation();
+   const { data, isLoading, error } = useGetMyClaimsQuery({
+      enabled: isUserLoggedIn,
    });
    const { data: userDetails } = useGetUserDetailsQuery(
-      claims?.nameidentifier,
+      data?.claims?.nameidentifier,
       {
-         enabled: !!claims?.nameidentifier,
+         enabled: !!data?.claims?.nameidentifier,
       }
    );
 
    const { theme, setTheme } = useTheme();
+   const [isStatusPopoverOpen, setIsStatusPopoverOpen] = useState(false);
    const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
    const { mutateAsync: signOut } = useSignOutMutation();
-
-   console.log(userDetails);
 
    const handleSignOut = async () => {
       await signOut(null!);
       window.location.reload();
+   };
+
+   useEffect(() => {
+      if (!isDropdownMenuOpen) setIsStatusPopoverOpen(false);
+   }, [isDropdownMenuOpen]);
+
+   const handleChangeUserStatus = async (newStatus: string) => {
+      setLoadingAction(newStatus);
+      await changeUserStatus({
+         newStatus,
+      } as ChangeUserStatusModel);
+      console.log(newStatus);
+      setLoadingAction(null!);
+      setIsStatusPopoverOpen(false);
    };
 
    return (
@@ -99,49 +135,56 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
             </Link>
          </NavbarBrand>
          <NavbarContent justify={"end"} className={`flex gap-4`}>
-            {claims && Object.keys(claims).length ? (
+            {data?.claims && Object.keys(data?.claims).length ? (
                <NavbarItem>
                   <Dropdown
                      showArrow
                      offset={10}
-                     // onOpenChange={setIsDropdownMenuOpen}
-                     // isOpen={isDropdownMenuOpen}
+                     onOpenChange={setIsDropdownMenuOpen}
+                     isOpen={changeStatusLoading || isDropdownMenuOpen}
                   >
                      <DropdownTrigger>
-                        <div
-                           className={`flex transition-opacity duration-300 cursor-pointer hover:opacity-90 items-center gap-4`}
-                        >
-                           <Badge // disableOutline
-                              content={""}
-                              shape={"circle"}
-                              color={
-                                 userDetails?.status === UserStatus.ONLINE
-                                    ? "success"
-                                    : userDetails?.status === UserStatus.AWAY
-                                    ? "warning"
-                                    : "default"
-                              }
-                              size={"sm"}
-                              placement={"bottom-right"}
-                           >
-                              <Avatar
-                                 src={
-                                    isValidURL(claims.picture)
-                                       ? claims.picture
-                                       : `${baseImagesUrl}/${claims.picture}`
+                        <Button
+                           color={"default"}
+                           variant={"light"}
+                           size={"md"}
+                           startContent={
+                              <Badge // disableOutline
+                                 content={""}
+                                 shape={"circle"}
+                                 color={
+                                    userDetails?.user.status ===
+                                    UserStatus.ONLINE
+                                       ? "success"
+                                       : userDetails?.user.status ===
+                                         UserStatus.AWAY
+                                       ? "warning"
+                                       : "default"
                                  }
-                                 size={"md"}
-                                 alt={"profile-picture"}
-                                 radius={"full"}
-                                 color={"default"}
-                              />
-                           </Badge>
+                                 size={"sm"}
+                                 placement={"bottom-right"}
+                              >
+                                 <Avatar
+                                    src={
+                                       isValidURL(data?.claims.picture)
+                                          ? data?.claims.picture
+                                          : `${baseImagesUrl}/${data.claims.picture}`
+                                    }
+                                    size={"md"}
+                                    alt={"profile-picture"}
+                                    radius={"full"}
+                                    color={"default"}
+                                 />
+                              </Badge>
+                           }
+                           className={`flex py-2 items-center gap-4`}
+                        >
                            <span
                               className={`text-small light:text-red dark:text-foreground-500`}
                            >
-                              {claims.name}
+                              {data.claims.name}
                            </span>
-                        </div>
+                        </Button>
                      </DropdownTrigger>
                      <DropdownMenu
                         className={`gap-2 min-w-[200px]`}
@@ -151,7 +194,6 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
                            }
                            if (key === "status") {
                               console.log("im here");
-                              setIsDropdownMenuOpen(true);
                            }
                         }}
                         aria-label={"User actions"}
@@ -169,34 +211,83 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
                            >
                               <span className={`text-sm`}>Profile</span>
                            </DropdownItem>
-                           {/*<DropdownItem*/}
-                           {/*   endContent={*/}
-                           {/*      <RightArrow*/}
-                           {/*         className={`fill-default-400`}*/}
-                           {/*         size={24}*/}
-                           {/*      />*/}
-                           {/*   }*/}
-                           {/*   className={`flex px-3 py-2 items-center gap-3`}*/}
-                           {/*   key={"status"}*/}
-                           {/*>*/}
-                           {/*   /!*<Select*!/*/}
-                           {/*   /!*   placeholder={"Placeholder"}*!/*/}
-                           {/*   /!*   variant={"flat"}*!/*/}
-                           {/*   /!*   color={"default"}*!/*/}
-                           {/*   /!*   id={"status-select"}*!/*/}
-                           {/*   /!*   label={"Change your status"}*!/*/}
-                           {/*   /!*>*!/*/}
-                           {/*   /!*   <SelectItem value={"1"} key={"1"}>*!/*/}
-                           {/*   /!*      Item 1*!/*/}
-                           {/*   /!*   </SelectItem>*!/*/}
-                           {/*   /!*   <SelectItem value={"2"} key={"1"}>*!/*/}
-                           {/*   /!*      Item 2*!/*/}
-                           {/*   /!*   </SelectItem>*!/*/}
-                           {/*   /!*</Select>*!/*/}
-                           {/*   Change your status*/}
-                           {/*</DropdownItem>*/}
+                           <DropdownItem textValue={"rsdff"} key={"status-2"}>
+                              <Popover
+                                 color={"default"}
+                                 size={"sm"}
+                                 // keep popover open while request is in-flight:
+                                 isOpen={
+                                    changeStatusLoading || isStatusPopoverOpen
+                                 }
+                                 onOpenChange={setIsStatusPopoverOpen}
+                                 offset={10}
+                                 placement={"right"}
+                              >
+                                 <PopoverTrigger className={`px-1`}>
+                                    <Button
+                                       className={`bg-transparent text-small  w-full items-center justify-between`}
+                                       size={"sm"}
+                                       endContent={
+                                          <RightArrow
+                                             className={`fill:default-100 text-default-300`}
+                                             size={24}
+                                          />
+                                       }
+                                    >
+                                       Change your status
+                                    </Button>
+                                 </PopoverTrigger>
+                                 <PopoverContent>
+                                    <Listbox
+                                       onSelectionChange={console.log}
+                                       onAction={handleChangeUserStatus}
+                                       className={`w-[140px] px-0 py-1`}
+                                       selectionMode={"single"}
+                                       variant={"solid"}
+                                       aria-label={"Statuses"}
+                                    >
+                                       {[...USER_STATUSES]
+                                          .filter(
+                                             (s) =>
+                                                s.status !==
+                                                userDetails?.user.status
+                                          )
+                                          .map(({ status, color }, i) => (
+                                             <ListboxItem
+                                                // color={color}
+                                                variant={"shadow"}
+                                                selectedIcon={null!}
+                                                // className={`w-[140px]`}
+                                                classNames={{
+                                                   wrapper: "w-[300px]",
+                                                }}
+                                                endContent={
+                                                   changeStatusLoading &&
+                                                   status === loadingAction && (
+                                                      <Spinner
+                                                         color={color}
+                                                         size={"sm"}
+                                                      />
+                                                   )
+                                                }
+                                                startContent={
+                                                   <Avatar
+                                                      className={`w-3 mr-1 h-3`}
+                                                      icon={""}
+                                                      size={"sm"}
+                                                      color={color}
+                                                   />
+                                                }
+                                                key={status}
+                                             >
+                                                {status}
+                                             </ListboxItem>
+                                          ))}
+                                    </Listbox>
+                                 </PopoverContent>
+                              </Popover>
+                           </DropdownItem>
                            <DropdownItem
-                              onClick={(e) => e.stopPropagation()}
                               textValue={"darkMode"}
                               endContent={
                                  <Switch
@@ -205,7 +296,6 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
                                     onClick={(e) => e.stopPropagation()}
                                     onValueChange={(_) => {
                                        setTheme(_ ? "dark" : "light");
-                                       setIsDropdownMenuOpen(true);
                                     }}
                                     isSelected={theme === "dark"}
                                  />
@@ -219,11 +309,15 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
                         <DropdownSection>
                            <DropdownItem
                               textValue={"sign-out"}
-                              className={`flex px-3 py-2 items-center gap-3`}
+                              className={`flex px-3 py-2 transition-colors duration-100 items-center gap-3 fill-current data-[hover=true]:text-danger`}
                               startContent={
-                                 <ExitIcon size={22} fill={"white"} />
+                                 <ExitIcon
+                                    className={`fill-current`}
+                                    size={22}
+                                 />
                               }
-                              color={"default"}
+                              color={"danger"}
+                              variant={"bordered"}
                               key={"sign-out"}
                            >
                               <span className={`text-small`}>Sign Out</span>
@@ -231,10 +325,10 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
                         </DropdownSection>
                         <DropdownSection>
                            <DropdownItem
-                              onClick={(e) => {
-                                 e.stopPropagation();
-                                 setIsDropdownMenuOpen(true);
-                              }}
+                              // onClick={(e) => {
+                              //    e.stopPropagation();
+                              //    setIsDropdownMenuOpen(true);
+                              // }}
                               isDisabled
                               textValue={"about"}
                               className={`cursor-default`}

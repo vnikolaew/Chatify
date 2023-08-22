@@ -2,6 +2,7 @@
 using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Application.Common.Models;
 using Chatify.Application.User.Common;
+using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
@@ -9,7 +10,11 @@ using OneOf;
 
 namespace Chatify.Application.User.Queries;
 
-using GetUserDetailsResult = OneOf<UserNotFound, NotFriendsError, Domain.Entities.User>;
+using GetUserDetailsResult = OneOf<UserNotFound, NotFriendsError, UserDetailsEntry>;
+
+public record UserDetailsEntry(
+    Domain.Entities.User User,
+    FriendsRelation? FriendsRelation = default);
 
 public record NotFriendsError(string? Message = default) : BaseError(Message);
 
@@ -37,14 +42,11 @@ internal sealed class GetUserDetailsHandler
         GetUserDetails query,
         CancellationToken cancellationToken = default)
     {
-        var areFriends = ( query.UserId == _identityContext.Id ) ||
-                         ( await _friendships.AllFriendIdsForUser(_identityContext.Id, cancellationToken) )
-                         .Any(fid => fid == query.UserId);
-        if ( !areFriends ) return new NotFriendsError();
-
         var user = await _users.GetAsync(query.UserId, cancellationToken);
         if ( user is null ) return new UserNotFound();
 
-        return user;
+        var friendships = await _friendships.AllFriendshipsForUser(_identityContext.Id, cancellationToken);
+        return new UserDetailsEntry(user,
+            friendships.FirstOrDefault(_ => _.FriendTwoId == query.UserId));
     }
 }

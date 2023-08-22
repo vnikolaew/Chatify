@@ -9,6 +9,7 @@ import {
    DropdownTrigger,
    Input,
    Link,
+   ScrollShadow,
    Skeleton,
 } from "@nextui-org/react";
 import HamburgerMenuIcon from "../icons/HamburgerMenuIcon";
@@ -16,7 +17,7 @@ import SearchIcon from "../icons/SearchIcon";
 import ChatGroupFeedEntry from "./ChatGroupFeedEntry";
 import { useIsUserLoggedIn } from "../../hooks/useIsUserLoggedIn";
 import { useDebounce } from "../../hooks/useDebounce";
-import { useSearchChatGroupsByName } from "../../../../libs/api/src/lib/chat-groups/hooks/queries/useSearchChatGroupsByName";
+import { useSearchChatGroupsByName } from "@web/api";
 import NotSentIcon from "../icons/NotSentIcon";
 
 export interface ChatGroupsFeedProps {}
@@ -110,7 +111,10 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                />
             </div>
          </div>
-         <div className={`w-full pr-4 flex flex-col gap-2 p-2 items-center`}>
+         <ScrollShadow
+            size={50}
+            className={`w-full pr-4 flex flex-col gap-2 p-2 items-center`}
+         >
             {(isLoading || searchLoading) && (isFetching || searchFetching) && (
                <Fragment>
                   {Array.from({ length: 10 }).map((_, i) => (
@@ -156,7 +160,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                   <ChatGroupFeedEntry key={i} feedEntry={e} />
                ))
             )}
-         </div>
+         </ScrollShadow>
       </aside>
    );
 };

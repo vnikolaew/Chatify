@@ -5,7 +5,9 @@ using AspNetCore.Identity.Cassandra.Extensions;
 using AspNetCore.Identity.Cassandra.Models;
 using Cassandra;
 using Cassandra.Mapping;
+using Cassandra.Mapping.TypeConversion;
 using Cassandra.Serialization;
+using Chatify.Infrastructure.Data.Mappings;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Data.Seeding;
 using Chatify.Infrastructure.Data.Services;
@@ -24,12 +26,8 @@ namespace Chatify.Infrastructure.Data;
 public static class DependencyInjection
 {
     public static IServiceCollection AddSeeding(
-        this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        if ( !configuration.GetValue<bool>("UseSeeding") ) return services;
-
-        return services
+        this IServiceCollection services)
+        => services
             .AddHostedService<DatabaseSeedingService>()
             .Scan(s => s.FromAssemblyOf<ISeeder>()
                 .AddClasses(c => c.AssignableTo<ISeeder>()
@@ -37,7 +35,6 @@ public static class DependencyInjection
                 .AsImplementedInterfaces()
                 .WithScopedLifetime())
             .AddScoped<CompositeSeeder>();
-    }
 
     public static IServiceCollection AddCassandra(
         this IServiceCollection services,
@@ -65,6 +62,7 @@ public static class DependencyInjection
                         .WithCredentials(
                             requiredService.Credentials.UserName,
                             requiredService.Credentials.Password)
+                        .WithTypeSerializers(new TypeSerializerDefinitions().Define(new UserStatusTypeSerializer()))
                         .WithQueryOptions(options).Build();
 
                     ISession session = null!;

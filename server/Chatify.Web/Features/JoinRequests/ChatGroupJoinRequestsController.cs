@@ -1,4 +1,5 @@
-﻿using Chatify.Application.ChatGroups.Commands;
+﻿using System.Net;
+using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.JoinRequests.Commands;
 using Chatify.Application.JoinRequests.Queries;
 using Chatify.Web.Common;
@@ -19,6 +20,8 @@ public class ChatGroupJoinRequestsController : ApiController
 {
     [HttpPost]
     [Route("join/{groupId:guid}")]
+    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(Guid), ( int )HttpStatusCode.Accepted)]
     public async Task<IActionResult> JoinChatGroup(
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
@@ -34,6 +37,8 @@ public class ChatGroupJoinRequestsController : ApiController
 
     [HttpPost]
     [Route("accept/{requestId:guid}")]
+    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(Guid), ( int )HttpStatusCode.Accepted)]
     public async Task<IActionResult> AcceptJoinRequest(
         [FromRoute] Guid requestId,
         CancellationToken cancellationToken = default)
@@ -48,6 +53,8 @@ public class ChatGroupJoinRequestsController : ApiController
 
     [HttpPost]
     [Route("decline/{requestId:guid}")]
+    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(Unit), ( int )HttpStatusCode.Accepted)]
     public async Task<IActionResult> DeclineJoinRequest(
         [FromRoute] Guid requestId,
         CancellationToken cancellationToken = default)
@@ -62,6 +69,8 @@ public class ChatGroupJoinRequestsController : ApiController
 
     [HttpGet]
     [Route("requests/{groupId:guid}")]
+    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.OK)]
     public async Task<IActionResult> GetForChatGroup(
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)

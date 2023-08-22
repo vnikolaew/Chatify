@@ -37,7 +37,7 @@ public class ChatifyUser() :
 
     [Searchable] public string DisplayName { get; set; }
 
-    [Indexed] public sbyte Status { get; set; }
+    [Indexed] public UserStatus Status { get; set; }
 
     private readonly IList<string> _phoneNumbers = new List<string>();
 
@@ -138,16 +138,12 @@ public class ChatifyUser() :
             .ForMember(u => u.Roles,
                 cfg =>
                     cfg.MapFrom(u => u.Roles.ToList()))
-            .ForMember(u => u.Status,
-                cfg => cfg.MapFrom(u => ( UserStatus )u.Status))
             .ForMember(u => u.PhoneNumbers,
                 cfg => cfg.MapFrom(
                     u => u.PhoneNumbers
                         .Select(_ => new PhoneNumber(_))
                         .ToHashSet()))
             .ReverseMap()
-            .ForMember(u => u.Status,
-                cfg => cfg.MapFrom(u => u.Status))
             .ForMember(u => u.PhoneNumbers,
                 cfg => cfg.MapFrom(
                     u => u.PhoneNumbers

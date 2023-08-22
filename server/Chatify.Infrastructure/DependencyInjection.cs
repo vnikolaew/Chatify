@@ -76,7 +76,7 @@ public static class DependencyInjection
             .AddAuthorization()
             .AddData(configuration)
             .AddCassandraIdentity()
-            .AddSeeding(configuration)
+            .AddSeeding()
             .AddRepositories()
             .AddBackgroundJobs()
             .AddServices(configuration)

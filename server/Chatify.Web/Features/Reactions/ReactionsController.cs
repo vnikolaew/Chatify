@@ -1,4 +1,5 @@
-﻿using Chatify.Application.Messages.Common;
+﻿using System.Net;
+using Chatify.Application.Messages.Common;
 using Chatify.Application.Messages.Reactions.Commands;
 using Chatify.Web.Common;
 using LanguageExt;
@@ -25,6 +26,8 @@ public class ReactionsController : ApiController
 {
     [HttpPost]
     [Route("{messageId:guid}")]
+    [ProducesResponseType((int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(object), (int) HttpStatusCode.Accepted)]
     public async Task<IActionResult> ReactToGroupChatMessage(
         [FromBody] ReactToChatMessageRequest request,
         [FromRoute] Guid messageId,
@@ -41,6 +44,8 @@ public class ReactionsController : ApiController
 
     [HttpPost]
     [Route("replies/{messageId:guid}")]
+    [ProducesResponseType((int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(object), (int) HttpStatusCode.Accepted)]
     public async Task<IActionResult> ReactToGroupChatMessageReply(
         [FromBody] ReactToChatMessageRequest request,
         [FromRoute] Guid messageId,
@@ -56,6 +61,9 @@ public class ReactionsController : ApiController
 
     [HttpDelete]
     [Route("{messageReactionId:guid}")]
+    [ProducesResponseType((int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType((int) HttpStatusCode.NotFound)]
+    [ProducesResponseType((int) HttpStatusCode.NoContent)]
     public async Task<IActionResult> UnreactToGroupChatMessage(
         [FromBody] UnreactToChatMessageRequest request,
         [FromRoute] Guid messageReactionId,
@@ -72,6 +80,9 @@ public class ReactionsController : ApiController
 
     [HttpDelete]
     [Route("replies/{messageReactionId:guid}")]
+    [ProducesResponseType((int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType((int) HttpStatusCode.NotFound)]
+    [ProducesResponseType((int) HttpStatusCode.NoContent)]
     public async Task<IActionResult> UnreactToGroupChatMessageReply(
         [FromBody] UnreactToChatMessageRequest request,
         [FromRoute] Guid messageReactionId,

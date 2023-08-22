@@ -3,16 +3,13 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using AspNetCore.Identity.Cassandra.Models;
 using Bogus;
-using Cassandra.Mapping;
 using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Entities;
 using Chatify.Infrastructure.Data.Models;
 using Humanizer;
-using LanguageExt;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Redis.OM.Contracts;
-using Redis.OM.Searching;
 using static Chatify.Infrastructure.Authentication.External.Constants.AuthProviders;
 using Media = Chatify.Infrastructure.Data.Models.Media;
 
@@ -31,7 +28,7 @@ public sealed partial class UserSeeder : ISeeder
         _userFaker = new Faker<ChatifyUser>()
             .RuleFor(u => u.Id, f => Guid.NewGuid())
             .RuleFor(u => u.UserName, f => $"{f.Person.FirstName}_${f.Person.LastName}".ToLower())
-            .RuleFor(u => u.Status, f => f.PickRandom(Enum.GetValues<UserStatus>().Select(_ => ( sbyte )_)))
+            .RuleFor(u => u.Status, f => f.PickRandom(Enum.GetValues<UserStatus>()))
             .RuleFor(u => u.ProfilePicture, f => new Media { MediaUrl = f.Internet.Avatar(), Id = Guid.NewGuid() })
             .RuleFor(u => u.PhoneNumbers,
                 f => new System.Collections.Generic.HashSet<string> { f.Phone.PhoneNumber(), f.Phone.PhoneNumber() })

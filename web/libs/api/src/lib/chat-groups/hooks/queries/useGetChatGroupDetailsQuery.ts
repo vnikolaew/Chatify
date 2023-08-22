@@ -5,8 +5,11 @@ import {
    useQueryClient,
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
-import { User } from "@openapi/models/User";
-import { ChatGroup } from "@openapi/models/ChatGroup";
+// @ts-ignore
+import { User, UserStatus } from "@openapi";
+// @ts-ignore
+import { useMemo } from "react";
+import { ChatGroup } from "../../../../../openapi";
 
 export interface GetChatGroupDetailsModel {
    chatGroupId: string;
@@ -32,6 +35,33 @@ const getChatGroupDetails = async (
    return data;
 };
 
+export const useMembersByCategory = (members?: User[], adminIds?: string[]) =>
+   useMemo<Record<string, User[]>>(
+      () =>
+         (members ?? []).reduce(
+            (acc, member: User) => {
+               if (adminIds?.some((id) => id === member.id)) {
+                  acc.admins.push(member);
+                  return acc;
+               } else
+                  switch (member.status) {
+                     case UserStatus.ONLINE:
+                        acc.online.push(member);
+                        break;
+                     case UserStatus.OFFLINE:
+                        acc.offline.push(member);
+                        break;
+                     case UserStatus.AWAY:
+                        acc.away.push(member);
+                        break;
+                  }
+               return acc;
+            },
+            { admins: [], online: [], offline: [], away: [] }
+         ),
+      [members]
+   );
+
 export const useGetChatGroupDetailsQuery = (
    chatGroupId: string,
    options?: Omit<
@@ -48,6 +78,8 @@ export const useGetChatGroupDetailsQuery = (
       queryFn: ({ queryKey: [_, id] }) =>
          getChatGroupDetails({ chatGroupId: id }),
       cacheTime: 60 * 60 * 1000,
+      enabled: !!chatGroupId,
+      staleTime: 30 * 60 * 1000,
       ...options,
    });
 };

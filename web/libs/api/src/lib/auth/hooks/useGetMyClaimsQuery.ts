@@ -22,7 +22,12 @@ export const getMyClaims = async (): Promise<GetMyClaimsResponse> => {
 
 export const useGetMyClaimsQuery = (
    options?: Omit<
-      UseQueryOptions<any, unknown, any, string[]>,
+      UseQueryOptions<
+         GetMyClaimsResponse,
+         unknown,
+         GetMyClaimsResponse,
+         string[]
+      >,
       "initialData"
    > & {
       initialData?: (() => undefined) | undefined;

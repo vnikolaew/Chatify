@@ -1,4 +1,5 @@
-﻿using Chatify.Application.Authentication.Commands;
+﻿using System.Net;
+using Chatify.Application.Authentication.Commands;
 using Chatify.Infrastructure.Authentication.External.Github;
 using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
@@ -32,6 +33,7 @@ public class AuthController : ApiController
     [HttpGet]
     [Authorize]
     [Route("me")]
+    [ProducesResponseType(typeof(object), (int) HttpStatusCode.OK)]
     public IActionResult Info()
         => Ok(new
         {
@@ -46,6 +48,8 @@ public class AuthController : ApiController
 
     [HttpPost]
     [Route(RegularSignUpRoute)]
+    [ProducesResponseType(typeof(object), (int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType((int) HttpStatusCode.NoContent)]
     public Task<IActionResult> RegularSignUp(
         [FromBody] RegularSignUp signUp,
         CancellationToken cancellationToken = default)
@@ -54,12 +58,17 @@ public class AuthController : ApiController
 
     [HttpPost]
     [Route(SignOutRoute)]
+    [ProducesResponseType(typeof(object), (int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType((int) HttpStatusCode.NoContent)]
     public Task<IActionResult> SignOut(CancellationToken cancellationToken = default)
         => SendAsync<SignOut, SignOutResult>(new SignOut(), cancellationToken)
             .MatchAsync(err => err.ToBadRequest(), NoContent);
 
     [HttpPost]
     [Route(RegularSignInRoute)]
+    [ProducesResponseType(typeof(object), (int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType((int) HttpStatusCode.NoContent)]
+    [ProducesResponseType((int) HttpStatusCode.Redirect)]
     public Task<IActionResult> RegularSignIn(
         [FromBody] RegularSignIn signIn,
         [FromQuery] string? returnUrl,
@@ -75,6 +84,8 @@ public class AuthController : ApiController
 
     [HttpPost]
     [Route(GoogleSignUpRoute)]
+    [ProducesResponseType(typeof(object), (int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType((int) HttpStatusCode.NoContent)]
     public Task<IActionResult> GoogleSignUp(
         [FromBody] GoogleSignUp signUp,
         CancellationToken cancellationToken = default)
@@ -85,6 +96,8 @@ public class AuthController : ApiController
 
     [HttpPost]
     [Route(FacebookSignUpRoute)]
+    [ProducesResponseType(typeof(object), (int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType((int) HttpStatusCode.NoContent)]
     public Task<IActionResult> FacebookSignUp(
         [FromBody] FacebookSignUp signUp,
         CancellationToken cancellationToken = default)
@@ -95,6 +108,8 @@ public class AuthController : ApiController
 
     [HttpPost]
     [Route(GithubSignUpRoute)]
+    [ProducesResponseType(typeof(object), (int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType((int) HttpStatusCode.NoContent)]
     public Task<IActionResult> GithubSignUp(
         [FromServices] IGithubOAuthClient githubOAuthClient,
         [FromQuery] string code,
@@ -105,6 +120,8 @@ public class AuthController : ApiController
 
     [HttpPost]
     [Route(ConfirmEmailRoute)]
+    [ProducesResponseType(typeof(object), (int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType((int) HttpStatusCode.Accepted)]
     public Task<IActionResult> ConfirmEmail(
         [FromQuery(Name = "token")] string tokenCode,
         CancellationToken cancellationToken = default)

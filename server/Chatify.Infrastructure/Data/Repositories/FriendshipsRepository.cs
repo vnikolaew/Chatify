@@ -2,6 +2,7 @@
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Common.Mappings;
+using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Data.Services;
 using Chatify.Shared.Abstractions.Serialization;
@@ -130,10 +131,12 @@ public sealed class FriendshipsRepository(IMapper mapper, Mapper dbMapper,
     public async Task<List<FriendsRelation>> AllFriendshipsForUser(
         Guid userId, CancellationToken cancellationToken = default)
     {
-        var friendships = await
-            DbMapper.FetchAsync<Models.FriendsRelation>(
+        var friendships = await DbMapper
+            .FetchListAsync<Models.FriendsRelation>(
                 " WHERE friend_one_id = ?", userId);
 
-        return friendships.To<FriendsRelation>(Mapper).ToList();
+        return friendships
+            .To<FriendsRelation>(Mapper)
+            .ToList();
     }
 }

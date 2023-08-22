@@ -1,4 +1,5 @@
-﻿using Chatify.Application.Friendships.Commands;
+﻿using System.Net;
+using Chatify.Application.Friendships.Commands;
 using Chatify.Application.Friendships.Queries;
 using Chatify.Application.User.Common;
 using Chatify.Domain.Entities;
@@ -25,7 +26,7 @@ public class FriendshipsController : ApiController
     private const string IncomingFriendshipsEndpoint = "incoming";
 
     private const string InviteEndpoint = "invite";
-    
+
     private const string AcceptEndpoint = "accept";
     private const string DeclineEndpoint = "decline";
 
@@ -42,6 +43,8 @@ public class FriendshipsController : ApiController
 
     [HttpGet]
     [Route(SentFriendshipsEndpoint)]
+    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.OK)]
     public async Task<IActionResult> GetSentInvitations(
         CancellationToken cancellationToken = default)
     {
@@ -56,6 +59,8 @@ public class FriendshipsController : ApiController
 
     [HttpGet]
     [Route(IncomingFriendshipsEndpoint)]
+    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.OK)]
     public async Task<IActionResult> GetIncomingInvitations(CancellationToken cancellationToken = default)
     {
         var result = await QueryAsync<GetIncomingInvitations, GetIncomingInvitationsResult>(
@@ -68,6 +73,8 @@ public class FriendshipsController : ApiController
 
     [HttpPost]
     [Route($"{InviteEndpoint}/{{userId:guid}}")]
+    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(Guid), ( int )HttpStatusCode.Accepted)]
     public async Task<IActionResult> SendFriendInvite([FromRoute] Guid userId,
         CancellationToken cancellationToken = default)
     {
@@ -82,6 +89,8 @@ public class FriendshipsController : ApiController
 
     [HttpPost]
     [Route($"{AcceptEndpoint}/{{inviteId:guid}}")]
+    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(Guid), ( int )HttpStatusCode.Accepted)]
     public async Task<IActionResult> AcceptFriendInvite([FromRoute] Guid inviteId,
         CancellationToken cancellationToken = default)
     {
@@ -97,6 +106,9 @@ public class FriendshipsController : ApiController
 
     [HttpPost]
     [Route($"{DeclineEndpoint}/{{inviteId:guid}}")]
+    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
+    [ProducesResponseType(( int )HttpStatusCode.NotFound)]
+    [ProducesResponseType(( int )HttpStatusCode.NoContent)]
     public async Task<IActionResult> DeclineFriendInvite([FromRoute] Guid inviteId,
         CancellationToken cancellationToken = default)
     {
@@ -110,6 +122,8 @@ public class FriendshipsController : ApiController
 
     [HttpDelete]
     [Route("{friendId:guid}")]
+    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
+    [ProducesResponseType(( int )HttpStatusCode.NoContent)]
     public async Task<IActionResult> UnfriendFriend(
         [FromRoute] Guid friendId,
         CancellationToken cancellationToken = default)

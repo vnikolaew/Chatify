@@ -6,13 +6,15 @@ import {
 import { HttpStatusCode } from "axios";
 import { profileClient } from "../../client";
 // @ts-ignore
-import { User } from "@openapi/models/User";
+import { UserDetailsEntry } from "@openapi";
 
 export interface GetUserDetailsModel {
    userId: string;
 }
 
-const getUserDetails = async (model: GetUserDetailsModel): Promise<User> => {
+export const getUserDetails = async (
+   model: GetUserDetailsModel
+): Promise<UserDetailsEntry> => {
    const { status, data } = await profileClient.get(`${model.userId}/details`, {
       headers: {},
    });
@@ -24,10 +26,12 @@ const getUserDetails = async (model: GetUserDetailsModel): Promise<User> => {
    return data;
 };
 
+export const USER_DETAILS_KEY = "user-details";
+
 export const useGetUserDetailsQuery = (
    userId: string,
    options?: Omit<
-      UseQueryOptions<any, unknown, any, string[]>,
+      UseQueryOptions<any, unknown, UserDetailsEntry, string[]>,
       "initialData"
    > & {
       initialData?: (() => undefined) | undefined;
@@ -35,9 +39,10 @@ export const useGetUserDetailsQuery = (
 ) => {
    const client = useQueryClient();
    return useQuery({
-      queryKey: ["user-details", userId],
+      queryKey: [USER_DETAILS_KEY, userId],
       queryFn: ({ queryKey: [_, userId] }) => getUserDetails({ userId }),
       cacheTime: 60 * 60 * 1000,
+      staleTime: 60 * 60 * 1000, // 1 HOUR
       ...options,
    });
 };

@@ -1,9 +1,17 @@
 "use client";
-import React, { Fragment, useMemo } from "react";
-import { useGetChatGroupDetailsQuery } from "@web/api";
+import React, { Fragment } from "react";
+import {
+   getUserDetails,
+   useGetChatGroupDetailsQuery,
+   useGetUserDetailsQuery,
+   useMembersByCategory,
+   USER_DETAILS_KEY,
+} from "@web/api";
 import { useSearchParams } from "next/navigation";
-import { Avatar, Badge, Divider, Skeleton } from "@nextui-org/react";
-import { User, UserStatus } from "../../../../libs/api/openapi";
+import { Avatar, Badge, Skeleton, Tooltip } from "@nextui-org/react";
+import { UserStatus } from "@openapi";
+import { useQueryClient } from "@tanstack/react-query";
+import ChatGroupMemberInfoCard from "./ChatGroupMemberInfoCard";
 
 export interface ChatGroupMembersSectionProps {}
 
@@ -13,25 +21,21 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
    const { data, error, isLoading } = useGetChatGroupDetailsQuery(chatGroupId, {
       enabled: !!chatGroupId,
    });
-   const membersByCategory = useMemo<Record<string, User[]>>(
-      () =>
-         (data?.members ?? []).reduce(
-            (acc, member: User) => {
-               if (data.chatGroup.adminIds.some((id) => id === member.id)) {
-                  acc.admins.push(member);
-                  return acc;
-               } else if (member.status === UserStatus.ONLINE)
-                  acc.online.push(member);
-               else if (member.status === UserStatus.OFFLINE)
-                  acc.offline.push(member);
-               else if (member.status === UserStatus.AWAY)
-                  acc.away.push(member);
-               return acc;
-            },
-            { admins: [], online: [], offline: [], away: [] }
-         ),
-      [data]
+   const membersByCategory = useMembersByCategory(
+      data?.members,
+      data?.chatGroup?.adminIds
    );
+   const client = useQueryClient();
+
+   const handlePrefetchUserDetails = async (userId: string) => {
+      console.log(`Fetching data for user ${userId} ...`);
+
+      await client.prefetchQuery([USER_DETAILS_KEY, userId], {
+         queryFn: ({ queryKey: [_, id] }) => getUserDetails({ userId: id }),
+         staleTime: 60 * 1000,
+      });
+   };
+
    console.log(membersByCategory);
 
    return (
@@ -83,51 +87,71 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
                         ) : (
                            <div>
                               {members.map((member) => (
-                                 <div
+                                 <Tooltip
+                                    delay={500}
+                                    closeDelay={300}
+                                    placement={"left"}
                                     key={member.id}
-                                    className={`w-4/5 ml-4 mt-3 flex items-start gap-3`}
+                                    content={
+                                       <ChatGroupMemberInfoCard
+                                          userId={member.id}
+                                       />
+                                    }
                                  >
-                                    <Badge
-                                       color={
-                                          member.status === UserStatus.ONLINE
-                                             ? "success"
-                                             : member.status === UserStatus.AWAY
-                                             ? "warning"
-                                             : "default"
+                                    <div
+                                       onMouseEnter={async (_) =>
+                                          await handlePrefetchUserDetails(
+                                             member.id
+                                          )
                                        }
-                                       content={""}
-                                       classNames={
-                                          {
-                                             // badge: "h-3 w-3 border-[1px]",
-                                          }
-                                       }
-                                       placement={"bottom-right"}
-                                       size={"sm"}
-                                       variant={"shadow"}
-                                       as={"span"}
+                                       className={`w-4/5 ml-4 mt-4 flex items-start gap-3`}
                                     >
-                                       <Avatar
-                                          fallback={
-                                             <Skeleton
-                                                className={`h-10 w-10 rounded-full`}
-                                             />
-                                          }
-                                          isBordered
-                                          radius={"full"}
+                                       <Badge
                                           color={
                                              member.status === UserStatus.ONLINE
                                                 ? "success"
+                                                : member.status ===
+                                                  UserStatus.AWAY
+                                                ? "warning"
                                                 : "default"
                                           }
+                                          content={""}
+                                          classNames={
+                                             {
+                                                // badge: "h-3 w-3 border-[1px]",
+                                             }
+                                          }
+                                          placement={"bottom-right"}
                                           size={"sm"}
-                                          className={`aspect-square outline-1 object-cover`}
-                                          src={member.profilePicture.mediaUrl}
-                                       />
-                                    </Badge>
-                                    <span className={`text-medium`}>
-                                       {member.username}
-                                    </span>
-                                 </div>
+                                          variant={"shadow"}
+                                          as={"span"}
+                                       >
+                                          <Avatar
+                                             fallback={
+                                                <Skeleton
+                                                   className={`h-10 w-10 rounded-full`}
+                                                />
+                                             }
+                                             isBordered
+                                             radius={"full"}
+                                             color={
+                                                member.status ===
+                                                UserStatus.ONLINE
+                                                   ? "success"
+                                                   : "default"
+                                             }
+                                             size={"sm"}
+                                             className={`aspect-square outline-1 object-cover`}
+                                             src={
+                                                member.profilePicture.mediaUrl
+                                             }
+                                          />
+                                       </Badge>
+                                       <span className={`text-medium`}>
+                                          {member.username}
+                                       </span>
+                                    </div>
+                                 </Tooltip>
                               ))}
                            </div>
                         )}

@@ -2,14 +2,23 @@
 import React, { Fragment, useState } from "react";
 import Link from "next/link";
 import SignOut from "../../components/SignOut";
-import { useSearchParams } from "next/navigation";
 import { useGetChatGroupDetailsQuery, useGetMyClaimsQuery } from "@web/api";
 import { useIsUserLoggedIn } from "../../hooks/useIsUserLoggedIn";
-import { Avatar, Button, Chip, Skeleton, Tooltip } from "@nextui-org/react";
+import {
+   Avatar,
+   Button,
+   Modal,
+   ModalBody,
+   ModalContent,
+   ModalFooter,
+   ModalHeader,
+   Skeleton,
+   useDisclosure,
+} from "@nextui-org/react";
 import PinIcon from "../../components/icons/PinIcon";
 import AddUserIcon from "../../components/icons/AddUserIcon";
-import { Chicle } from "next/dist/compiled/@next/font/dist/google";
 import TooltipButton from "../../components/TooltipButton";
+import { useCurrentChatGroup } from "../../hooks/chat-groups/useCurrentChatGroup";
 
 export const revalidate = 0;
 
@@ -17,8 +26,7 @@ function IndexPage(props) {
    const [tooltipsOpen, setTooltipsOpen] = useState<Record<string, boolean>>(
       {}
    );
-   const params = useSearchParams();
-   const chatGroupId = params.get("c");
+   const chatGroupId = useCurrentChatGroup();
    const { isUserLoggedIn } = useIsUserLoggedIn();
    const {
       data: chatGroupDetails,
@@ -29,6 +37,10 @@ function IndexPage(props) {
    });
    const { data: me, error: meError } = useGetMyClaimsQuery({
       enabled: isUserLoggedIn,
+   });
+
+   const { isOpen, onOpenChange, onOpen } = useDisclosure({
+      defaultOpen: false,
    });
 
    console.log(chatGroupId);
@@ -109,6 +121,53 @@ function IndexPage(props) {
          <h1 className={`text-3xl my-4`}>
             {chatGroupDetails?.chatGroup?.name}
          </h1>
+         <div>
+            <Button
+               onPress={onOpen}
+               size={"md"}
+               variant={"shadow"}
+               color={"warning"}
+            >
+               Open modal
+            </Button>
+         </div>
+         <Modal
+            backdrop={"transparent"}
+            classNames={{
+               base: "absolute right-10 bg-default-200 -bottom-10",
+            }}
+            shadow={"md"}
+            radius={"sm"}
+            motionProps={{
+               variants: {
+                  enter: {
+                     y: 0,
+                     opacity: 1,
+                     transition: {
+                        duration: 0.3,
+                        ease: "easeOut",
+                     },
+                  },
+                  exit: {
+                     y: 20,
+                     opacity: 0,
+                     transition: {
+                        duration: 0.2,
+                     },
+                  },
+               },
+            }}
+            size={"md"}
+            placement={"bottom"}
+            isOpen={isOpen}
+            onOpenChange={onOpenChange}
+         >
+            <ModalContent>
+               <ModalHeader>Header</ModalHeader>
+               <ModalBody>Body</ModalBody>
+               <ModalFooter>Footer</ModalFooter>
+            </ModalContent>
+         </Modal>
          {!isUserLoggedIn ? (
             <Fragment>
                <h2 className={`font-bold`}>You are currently not logged in.</h2>

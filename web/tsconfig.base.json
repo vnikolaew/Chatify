@@ -16,7 +16,7 @@
       "baseUrl": ".",
       "paths": {
          "@web/api": ["libs/api/src/index.ts"],
-         "@openapi": ["./openapi/index.ts"]
+         "@openapi/*": ["libs/api/openapi/*"]
       }
    },
    "include": [ "apps", "libs", "openapi"],

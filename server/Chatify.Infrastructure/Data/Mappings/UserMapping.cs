@@ -1,5 +1,4 @@
-﻿using Cassandra.Mapping;
-using Chatify.Infrastructure.Data.Extensions;
+﻿using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Humanizer;
 
@@ -17,7 +16,7 @@ public class UserMapping : Cassandra.Mapping.Mappings
             .Column(u => u.Metadata, cm => cm.WithDbType<Dictionary<string, string>>())
             .UnderscoreColumn(u => u.DisplayName)
             .UnderscoreColumn(u => u.Metadata)
-            .UnderscoreColumn(u => u.Status)
+            .UnderscoreColumn(u => u.Status, cm => cm.WithDbType<sbyte>())
             .UnderscoreColumn(u => u.PhoneNumbers)
             .UnderscoreColumn(u => u.ProfilePicture)
             .UnderscoreColumn(u => u.BannerPictures)

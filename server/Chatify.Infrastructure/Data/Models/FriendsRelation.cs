@@ -1,4 +1,5 @@
-﻿using Chatify.Application.Common.Mappings;
+﻿using AutoMapper;
+using Chatify.Application.Common.Mappings;
 
 namespace Chatify.Infrastructure.Data.Models;
 
@@ -13,4 +14,9 @@ public class FriendsRelation : IMapFrom<Domain.Entities.FriendsRelation>
     public Guid GroupId { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
+
+    public void Mapping(Profile profile)
+        => profile
+            .CreateMap<FriendsRelation, Domain.Entities.FriendsRelation>()
+            .ReverseMap();
 }

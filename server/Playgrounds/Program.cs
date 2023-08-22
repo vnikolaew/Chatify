@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Cassandra;
 using Cassandra.Mapping;
-using OpenGraphNet;
+using Castle.DynamicProxy;
 using Playgrounds;
 
 public class KeyValuePair : Mappings
@@ -21,9 +21,19 @@ internal class Program
 {
     public static async Task Main(string[] args)
     {
-        await MarkdownPlaygrounds.Run();
-        return;
+        var person = new Person().Test();
+        person.PropertyChanged += (sender, args) =>
+        {
+            var value = sender!
+                .GetType()
+                .GetProperty(args.PropertyName!)!
+                .GetValue(sender);
+            Console.WriteLine($"{args.PropertyName} => {value}");
+        };
+        person.FirstName = "sdfsdf";
         
+        return;
+
         var cluster = Cluster.Builder()
             .AddContactPoint("localhost")
             .WithPort(9043)
@@ -42,7 +52,8 @@ internal class Program
         {
             kvs = await mapper.FetchPageAsync<KeyValuePair>(
                 10, kvs.PagingState!, "SELECT * FROM kv_pairs;", null!);
-            Console.WriteLine($"Paging state: {Encoding.UTF8.GetString(kvs.PagingState)}. Length in bytes: {kvs.PagingState.Length}");
+            Console.WriteLine(
+                $"Paging state: {Encoding.UTF8.GetString(kvs.PagingState)}. Length in bytes: {kvs.PagingState.Length}");
 
             Console.WriteLine($"Fetched next {kvs.Count} records.");
         }
