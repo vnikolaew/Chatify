@@ -12,5 +12,5 @@ public class FriendInvitation
     
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
 
-    public DateTimeOffset? UpdatedAt { get; set; } = default;
+    public DateTimeOffset? UpdatedAt { get; set; }
 }

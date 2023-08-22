@@ -9,6 +9,11 @@ public interface IFriendInvitationRepository : IDomainRepository<FriendInvitatio
         Guid userId,
         CancellationToken cancellationToken = default);
     
+    Task<FriendInvitation?> ForUsersAsync(
+        Guid userOneId,
+        Guid userTwoId,
+        CancellationToken cancellationToken = default);
+    
     Task<List<FriendInvitation>> AllSentToUserAsync(
         Guid userId,
         CancellationToken cancellationToken = default);

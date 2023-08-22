@@ -1,6 +1,11 @@
 "use client";
 import React, { Fragment, useMemo } from "react";
-import { useGetChatGroupDetailsQuery, useGetUserDetailsQuery } from "@web/api";
+import {
+   useGetChatGroupDetailsQuery,
+   useGetUserDetailsQuery,
+   useGetUserMembershipDetailsQuery,
+   useSendFriendInviteMutation,
+} from "@web/api";
 import {
    Avatar,
    AvatarProps,
@@ -8,13 +13,11 @@ import {
    Card,
    CardBody,
    CardHeader,
-   Divider,
    Skeleton,
    Spinner,
 } from "@nextui-org/react";
-import { UserStatus } from "@openapi";
+import { FriendInvitationStatus, UserStatus } from "@openapi/index";
 import PlusIcon from "../icons/PlusIcon";
-import { useGetUserMembershipDetailsQuery } from "@web/api";
 import { useCurrentChatGroup } from "../../hooks/chat-groups/useCurrentChatGroup";
 import moment from "moment";
 
@@ -36,6 +39,12 @@ const ChatGroupMemberInfoCard = ({ userId }: ChatGroupMemberInfoCardProps) => {
          staleTime: 60 * 30 * 1000,
       }
    );
+   const {
+      mutateAsync: sendFriendInvite,
+      error: friendInviteError,
+      isLoading: friendInviteLoading,
+   } = useSendFriendInviteMutation();
+
    const { data: chatGroupDetails } = useGetChatGroupDetailsQuery(chatGroupId, {
       networkMode: "offlineFirst",
    });
@@ -68,8 +77,20 @@ const ChatGroupMemberInfoCard = ({ userId }: ChatGroupMemberInfoCardProps) => {
       return <Spinner size={"md"} color={"danger"} />;
    }
 
+   const handleSendFriendInvite = async () => {
+      await sendFriendInvite(
+         { userId },
+         {
+            onSuccess: (data) => console.log(data),
+         }
+      );
+   };
+
    return (
-      <Card className={`max-w-[500px]`}>
+      <Card
+         classNames={{ base: "border-none  border-0" }}
+         className={`max-w-[500px] bg-transparent shadow-none border-none`}
+      >
          <CardHeader className={`flex gap-3`}>
             <Avatar
                color={statusColor}
@@ -139,13 +160,43 @@ const ChatGroupMemberInfoCard = ({ userId }: ChatGroupMemberInfoCardProps) => {
                   </div>
                </div>
             </div>
-            <div className={`my-4 items-start flex-col flex gap-1`}>
+            <div className={`my-0 items-start flex-col flex gap-1`}>
                <span className={`text-foreground text-xs uppercase`}>
                   Roles
                </span>
+               <span className={`text-default-300 text-xs`}>
+                  {chatGroupDetails.chatGroup.adminIds.some(
+                     (_) => _ === userDetails.user.id
+                  )
+                     ? " - Admin"
+                     : "None."}
+               </span>
             </div>
-            {!userDetails.friendsRelation && (
+            {userDetails.friendInvitation?.status ===
+               FriendInvitationStatus.PENDING && (
+               <div className={`mt-4`}>
+                  {" "}
+                  Friend invite{" "}
+                  {userDetails.friendInvitation.inviterId ===
+                  userDetails.user.id
+                     ? "from"
+                     : "to"}{" "}
+                  {userDetails.user.username} is pending
+               </div>
+            )}
+            {userDetails.friendInvitation?.status ===
+               FriendInvitationStatus.ACCEPTED &&
+               !!userDetails.friendsRelation && (
+                  <div className={`text-default-300 mt-4`}>
+                     Friends since{" "}
+                     {moment(
+                        new Date(userDetails.friendsRelation.createdAt)
+                     ).format("MMM DD, YYYY")}
+                  </div>
+               )}
+            {!userDetails.friendsRelation && !userDetails.friendInvitation && (
                <Button
+                  isLoading={friendInviteLoading}
                   startContent={
                      <PlusIcon
                         size={16}
@@ -153,12 +204,14 @@ const ChatGroupMemberInfoCard = ({ userId }: ChatGroupMemberInfoCardProps) => {
                         className={`fill-foreground`}
                      />
                   }
+                  spinner={<Spinner color={"white"} size={"sm"} />}
+                  onPress={(_) => handleSendFriendInvite()}
                   className={`mt-4 self-center w-3/5`}
                   variant={"shadow"}
                   color={"primary"}
                   size={"sm"}
                >
-                  Add as friend
+                  {friendInviteLoading ? "" : "Add as friend"}
                </Button>
             )}
          </CardBody>

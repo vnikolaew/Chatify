@@ -24,11 +24,14 @@ const sendFriendInvite = async (model: SendFriendInvitationModel) => {
 export const useSendFriendInviteMutation = () => {
    const client = useQueryClient();
 
-   return useMutation(sendFriendInvite, {
-      onError: console.error,
-      onSuccess: (data) =>
-         console.log("Friend invite sent successfully: " + data),
-      onSettled: (res) => console.log(res),
-      cacheTime: 60 * 60 * 1000,
-   });
+   return useMutation<any, Error, SendFriendInvitationModel, any>(
+      sendFriendInvite,
+      {
+         onError: console.error,
+         onSuccess: (data) =>
+            console.log("Friend invite sent successfully: " + data),
+         onSettled: (res) => console.log(res),
+         cacheTime: 60 * 60 * 1000,
+      }
+   );
 };

@@ -10,7 +10,7 @@ public class FriendInvitationMapping :  Cassandra.Mapping.Mappings
     public FriendInvitationMapping()
     {
         For<FriendInvitation>()
-            .TableName(nameof(FriendInvitation).Underscore().Pluralize())
+            .TableName(nameof(FriendInvitation).Pluralize().Underscore())
             .PartitionKey(fi => fi.InviterId)
             .ClusteringKey(fi => fi.CreatedAt,
                 SortOrder.Descending)

@@ -14,7 +14,8 @@ using GetUserDetailsResult = OneOf<UserNotFound, NotFriendsError, UserDetailsEnt
 
 public record UserDetailsEntry(
     Domain.Entities.User User,
-    FriendsRelation? FriendsRelation = default);
+    FriendsRelation? FriendsRelation = default,
+    FriendInvitation? FriendInvitation = default);
 
 public record NotFriendsError(string? Message = default) : BaseError(Message);
 
@@ -27,15 +28,20 @@ internal sealed class GetUserDetailsHandler
     : IQueryHandler<GetUserDetails, GetUserDetailsResult>
 {
     private readonly IIdentityContext _identityContext;
+    private readonly IFriendInvitationRepository _friendInvites;
     private readonly IFriendshipsRepository _friendships;
     private readonly IUserRepository _users;
 
-    public GetUserDetailsHandler(IIdentityContext identityContext, IUserRepository users,
-        IFriendshipsRepository friendships)
+    public GetUserDetailsHandler(
+        IIdentityContext identityContext,
+        IUserRepository users,
+        IFriendshipsRepository friendships,
+        IFriendInvitationRepository friendInvites)
     {
         _identityContext = identityContext;
         _users = users;
         _friendships = friendships;
+        _friendInvites = friendInvites;
     }
 
     public async Task<GetUserDetailsResult> HandleAsync(
@@ -44,9 +50,14 @@ internal sealed class GetUserDetailsHandler
     {
         var user = await _users.GetAsync(query.UserId, cancellationToken);
         if ( user is null ) return new UserNotFound();
+        if ( query.UserId == _identityContext.Id ) return new UserDetailsEntry(user);
 
         var friendships = await _friendships.AllFriendshipsForUser(_identityContext.Id, cancellationToken);
-        return new UserDetailsEntry(user,
-            friendships.FirstOrDefault(_ => _.FriendTwoId == query.UserId));
+        var friendInvite = await _friendInvites.ForUsersAsync(_identityContext.Id, query.UserId, cancellationToken);
+
+        return new UserDetailsEntry(
+            user,
+            friendships.FirstOrDefault(_ => _.FriendTwoId == query.UserId),
+            friendInvite);
     }
 }

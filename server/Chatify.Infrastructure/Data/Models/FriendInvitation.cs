@@ -28,5 +28,9 @@ public class FriendInvitation : IMapFrom<Domain.Entities.FriendInvitation>
             .CreateMap<FriendInvitation, Domain.Entities.FriendInvitation>()
             .ForMember(i => i.Status,
                 cfg =>
-                    cfg.MapFrom(i => ( FriendInvitationStatus )i.Status));
+                    cfg.MapFrom(i => (FriendInvitationStatus) i.Status))
+            .ReverseMap()
+            .ForMember(i => i.Status,
+                cfg =>
+                    cfg.MapFrom(i => ( sbyte )i.Status));
 }

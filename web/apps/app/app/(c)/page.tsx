@@ -6,6 +6,7 @@ import { useGetChatGroupDetailsQuery, useGetMyClaimsQuery } from "@web/api";
 import { useIsUserLoggedIn } from "../../hooks/useIsUserLoggedIn";
 import {
    Avatar,
+   AvatarGroup,
    Button,
    Modal,
    ModalBody,
@@ -19,6 +20,7 @@ import PinIcon from "../../components/icons/PinIcon";
 import AddUserIcon from "../../components/icons/AddUserIcon";
 import TooltipButton from "../../components/TooltipButton";
 import { useCurrentChatGroup } from "../../hooks/chat-groups/useCurrentChatGroup";
+import { UserStatus } from "@openapi/models/UserStatus";
 
 export const revalidate = 0;
 
@@ -69,7 +71,7 @@ function IndexPage(props) {
                         src={chatGroupDetails?.chatGroup?.picture?.mediaUrl}
                      />
                      <div
-                        className={`flex flex-col items-start justify-evenly h-full`}
+                        className={`flex flex-col items-start justify-around h-full`}
                      >
                         {isLoading ? (
                            <Fragment>
@@ -88,9 +90,61 @@ function IndexPage(props) {
                                  {" "}
                                  {chatGroupDetails.chatGroup.name}
                               </span>
-                              <span className={`text-xs text-default-400`}>
-                                 {chatGroupDetails.members.length} members
-                              </span>
+                              <div className={`flex items-center gap-3`}>
+                                 <span className={`text-xs text-default-400`}>
+                                    {chatGroupDetails.members.length} members
+                                 </span>
+
+                                 <div
+                                    className={`bg-default-200 rounded-full w-[4px] h-[4px]`}
+                                 />
+                                 <div className={`flex items-center gap-2`}>
+                                    <AvatarGroup
+                                       renderCount={(count) => (
+                                          <div
+                                             className={`w-5 flex items-end text-[.5rem] h-5 rounded-full bg-default-300 justify-center`}
+                                          >
+                                             +{count}
+                                          </div>
+                                       )}
+                                       size={"sm"}
+                                       className={`h-3`}
+                                       max={3}
+                                    >
+                                       {chatGroupDetails.members
+                                          .filter(
+                                             (_) =>
+                                                _.status === UserStatus.ONLINE
+                                          )
+                                          .map((user, i) => (
+                                             <Avatar
+                                                classNames={{
+                                                   base: "w-4 h-4",
+                                                }}
+                                                size={"sm"}
+                                                color={"success"}
+                                                radius={"full"}
+                                                className={`w-4 h-4`}
+                                                src={
+                                                   user.profilePicture.mediaUrl
+                                                }
+                                                key={user.id}
+                                             />
+                                          ))}
+                                    </AvatarGroup>
+                                    <span
+                                       className={`text-xs text-success-300`}
+                                    >
+                                       {
+                                          chatGroupDetails.members.filter(
+                                             (m) =>
+                                                m.status === UserStatus.ONLINE
+                                          ).length
+                                       }{" "}
+                                       online
+                                    </span>
+                                 </div>
+                              </div>
                            </Fragment>
                         )}
                      </div>
@@ -126,7 +180,7 @@ function IndexPage(props) {
                onPress={onOpen}
                size={"md"}
                variant={"shadow"}
-               color={"warning"}
+               color={"primary"}
             >
                Open modal
             </Button>

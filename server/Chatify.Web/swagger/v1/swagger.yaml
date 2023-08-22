@@ -1421,7 +1421,6 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
-        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1452,6 +1451,7 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
+        - Unknown
       type: string
     ChangeUserStatus:
       type: object
@@ -1651,6 +1651,34 @@ components:
           type: string
           nullable: true
       additionalProperties: false
+    FriendInvitation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        inviterId:
+          type: string
+          format: uuid
+        inviteeId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/FriendInvitationStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+      additionalProperties: false
+    FriendInvitationStatus:
+      enum:
+        - Pending
+        - Declined
+        - Accepted
+      type: string
     FriendsRelation:
       type: object
       properties:
@@ -2019,6 +2047,8 @@ components:
           $ref: '#/components/schemas/User'
         friendsRelation:
           $ref: '#/components/schemas/FriendsRelation'
+        friendInvitation:
+          $ref: '#/components/schemas/FriendInvitation'
       additionalProperties: false
     UserStatus:
       enum:

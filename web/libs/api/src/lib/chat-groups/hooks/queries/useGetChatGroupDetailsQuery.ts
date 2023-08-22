@@ -6,10 +6,9 @@ import {
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 // @ts-ignore
-import { User, UserStatus } from "@openapi";
 // @ts-ignore
 import { useMemo } from "react";
-import { ChatGroup } from "../../../../../openapi";
+import { ChatGroup, User, UserStatus } from "../../../../../openapi";
 
 export interface GetChatGroupDetailsModel {
    chatGroupId: string;
@@ -21,7 +20,7 @@ export interface GetChatGroupDetailsResponse {
    members: User[];
 }
 
-const getChatGroupDetails = async (
+export const getChatGroupDetails = async (
    model: GetChatGroupDetailsModel
 ): Promise<GetChatGroupDetailsResponse> => {
    const { status, data } = await chatGroupsClient.get(`${model.chatGroupId}`, {

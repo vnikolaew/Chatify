@@ -54,9 +54,8 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
 
       const searchEntryIds = new Set(searchEntries?.data.map((_) => _.id));
       return feedEntries?.filter((e) => searchEntryIds.has(e.chatGroup.id));
-   }, [debouncedSearch, searchEntries?.data, feedEntries]);
+   }, [debouncedSearch, searchEntries, feedEntries]);
 
-   console.log(feedEntries);
    console.log(`q = ${debouncedSearch}`, filteredEntries);
    console.log(searchEntries);
 

@@ -5,8 +5,8 @@ import {
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { profileClient } from "../../client";
+import { UserDetailsEntry } from "../../../../../openapi";
 // @ts-ignore
-import { UserDetailsEntry } from "@openapi";
 
 export interface GetUserDetailsModel {
    userId: string;
@@ -31,7 +31,7 @@ export const USER_DETAILS_KEY = "user-details";
 export const useGetUserDetailsQuery = (
    userId: string,
    options?: Omit<
-      UseQueryOptions<any, unknown, UserDetailsEntry, string[]>,
+      UseQueryOptions<UserDetailsEntry, unknown, UserDetailsEntry, string[]>,
       "initialData"
    > & {
       initialData?: (() => undefined) | undefined;

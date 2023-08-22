@@ -3,13 +3,13 @@ import React, { Fragment } from "react";
 import {
    getUserDetails,
    useGetChatGroupDetailsQuery,
-   useGetUserDetailsQuery,
    useMembersByCategory,
    USER_DETAILS_KEY,
+   useSendFriendInviteMutation,
 } from "@web/api";
 import { useSearchParams } from "next/navigation";
 import { Avatar, Badge, Skeleton, Tooltip } from "@nextui-org/react";
-import { UserStatus } from "@openapi";
+import { UserStatus } from "@openapi/index";
 import { useQueryClient } from "@tanstack/react-query";
 import ChatGroupMemberInfoCard from "./ChatGroupMemberInfoCard";
 
@@ -57,9 +57,6 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
                      Group members
                   </h2>
                </div>
-               {/*<Divider*/}
-               {/*   className={`w-4/5 h-[1.5px] mb-4 text-default mx-auto`}*/}
-               {/*/>*/}
                {Object.entries(membersByCategory).map(
                   ([category, members], id) => (
                      <div key={id} className={`my-2 w-full`}>
@@ -104,7 +101,7 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
                                              member.id
                                           )
                                        }
-                                       className={`w-4/5 ml-4 mt-4 flex items-start gap-3`}
+                                       className={`h-fit w-fit px-3 ml-4 mt-4 rounded-md transition-background duration-100 hover:bg-default-100 cursor-pointer flex items-start gap-3`}
                                     >
                                        <Badge
                                           color={
@@ -135,8 +132,10 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
                                              isBordered
                                              radius={"full"}
                                              color={
-                                                member.status ===
-                                                UserStatus.ONLINE
+                                                category === "admins"
+                                                   ? "secondary"
+                                                   : member.status ===
+                                                     UserStatus.ONLINE
                                                    ? "success"
                                                    : "default"
                                              }
