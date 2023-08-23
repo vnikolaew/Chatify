@@ -59,7 +59,7 @@ internal sealed class SendFriendInvitationHandler
         var friendInviteId = _guidGenerator.New();
         var friendInvite = new FriendInvitation
         {
-            InviteeId = command.InviteeId,
+            InviteeId = invitee.Id,
             Id = friendInviteId,
             Status = (sbyte)FriendInvitationStatus.Pending,
             CreatedAt = _clock.Now,

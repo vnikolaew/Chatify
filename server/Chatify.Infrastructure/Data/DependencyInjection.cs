@@ -44,7 +44,7 @@ public static class DependencyInjection
         //     .GetExecutingAssembly()
         //     .GetTypes()
         //     .Where(t => t is { IsAbstract: false, IsInterface: false } && t.IsAssignableTo(typeof(TypeSerializer)))
-            
+
         return services
             .Configure<CassandraOptions>(configuration.GetSection("Cassandra"))
             .AddSingleton(x => x.GetRequiredService<IOptions<CassandraOptions>>().Value)

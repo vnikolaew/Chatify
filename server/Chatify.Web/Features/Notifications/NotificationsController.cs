@@ -22,7 +22,7 @@ public class NotificationsController : ApiController
     [ProducesResponseType(typeof(CursorPaged<UserNotification>), ( int )HttpStatusCode.OK)]
     public Task<IActionResult> Paginated(
         [FromQuery] int pageSize,
-        [FromQuery] string pagingCursor,
+        [FromQuery] string? pagingCursor,
         CancellationToken cancellationToken = default)
         => QueryAsync<GetAllNotifications, GetAllNotificationsResult>(
                 new GetAllNotifications(pageSize, pagingCursor),
@@ -37,10 +37,9 @@ public class NotificationsController : ApiController
     [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(List<UserNotification>), ( int )HttpStatusCode.OK)]
     public Task<IActionResult> Unread(
-        [FromBody] GetUnreadNotifications request,
         CancellationToken cancellationToken = default)
         => QueryAsync<GetUnreadNotifications, GetUnreadNotificationsResult>(
-                request,
+                new GetUnreadNotifications(),
                 cancellationToken)
             .MatchAsync(
                 err => BadRequest(),

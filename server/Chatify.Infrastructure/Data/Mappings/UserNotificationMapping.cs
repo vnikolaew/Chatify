@@ -14,6 +14,7 @@ public sealed class UserNotificationMapping : Cassandra.Mapping.Mappings
             .ClusteringKey(n => n.CreatedAt, SortOrder.Descending)
             .UnderscoreColumn(n => n.UserId)
             .UnderscoreColumn(n => n.Metadata)
+            .UnderscoreColumn(n => n.CreatedAt)
             .UnderscoreColumn(n => n.UpdatedAt)
             .UnderscoreColumn(n => n.Type)
             .UnderscoreColumn(n => n.Read)

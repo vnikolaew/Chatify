@@ -1,4 +1,5 @@
-﻿using Chatify.Application.Common.Mappings;
+﻿using AutoMapper;
+using Chatify.Application.Common.Mappings;
 
 namespace Chatify.Infrastructure.Data.Models;
 
@@ -19,6 +20,11 @@ public class UserNotification : IMapFrom<Domain.Entities.UserNotification>
     public Metadata Metadata { get; set; } = new();
 
     public string? Summary { get; set; }
-    
+
     public bool Read { get; set; }
+
+    public void Mapping(Profile profile)
+        => profile
+            .CreateMap<UserNotification, Domain.Entities.UserNotification>()
+            .ReverseMap();
 }

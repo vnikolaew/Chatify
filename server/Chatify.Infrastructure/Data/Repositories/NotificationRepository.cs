@@ -23,7 +23,7 @@ public sealed class NotificationRepository(
     public async Task<CursorPaged<UserNotification>> GetPaginatedForUserAsync(
         Guid userId,
         int pageSize,
-        string pagingCursor,
+        string? pagingCursor,
         CancellationToken cancellationToken = default)
     {
         var notificationsPage = await DbMapper.FetchPageAsync<Models.UserNotification>(

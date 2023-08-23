@@ -23,13 +23,13 @@ public class CassandraPagingCursorHelper : IPagingCursorHelper
             currIdx += psLength;
         }
 
-        return ToPagingCursor(buffer);
+        return ToPagingCursor(buffer)!;
     }
 
     public string CombineCursors(string pagingCursorOne, string pagingCursorTwo)
     {
-        var pagingStateOne = ToPagingState(pagingCursorOne);
-        var pagingStateTwo = ToPagingState(pagingCursorTwo);
+        var pagingStateOne = ToPagingState(pagingCursorOne)!;
+        var pagingStateTwo = ToPagingState(pagingCursorTwo)!;
 
         int psOneLength = pagingStateOne.Length;
         var psOneLengthBytes = BitConverter.GetBytes(psOneLength);
@@ -45,14 +45,14 @@ public class CassandraPagingCursorHelper : IPagingCursorHelper
         Array.Copy(psTwoLengthBytes, 0, buffer, psOneLength + 4, 4);
         Array.Copy(pagingStateTwo, 0, buffer, 4, psOneLength + 8);
 
-        return ToPagingCursor(buffer);
+        return ToPagingCursor(buffer)!;
     }
 
-    public string ToPagingCursor(byte[] pagingState)
-        => Convert.ToBase64String(pagingState);
+    public string? ToPagingCursor(byte[]? pagingState)
+        => pagingState is null ? null : Convert.ToBase64String(pagingState);
 
-    public byte[] ToPagingState(string pagingCursor)
-        => Convert.FromBase64String(pagingCursor);
+    public byte[]? ToPagingState(string? pagingCursor)
+        => pagingCursor is null ? null : Convert.FromBase64String(pagingCursor);
 
     public IEnumerable<string> ToPagingCursors(string pagingCursor)
     {
@@ -65,7 +65,7 @@ public class CassandraPagingCursorHelper : IPagingCursorHelper
             currIdx += 4;
             var pagingState = pagingStates[currIdx..( currIdx + psLength )];
             
-            yield return ToPagingCursor(pagingState);
+            yield return ToPagingCursor(pagingState)!;
         }
     }
 }

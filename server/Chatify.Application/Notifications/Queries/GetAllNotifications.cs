@@ -12,7 +12,7 @@ using GetAllNotificationsResult = OneOf<Error, CursorPaged<UserNotification>>;
 
 public record GetAllNotifications(
     [Required] int PageSize,
-    [Required] string PagingCursor
+    [Required] string? PagingCursor
 ) : IQuery<GetAllNotificationsResult>;
 
 internal sealed class GetAllNotificationsHandler
