@@ -5,7 +5,7 @@ export interface PlusIconProps extends SVGProps<SVGSVGElement> {
    size: string | number;
 }
 
-const PlusIcon = ({ size, fill, ...rest }: PlusIconProps) => {
+export const PlusIcon = ({ size, fill, ...rest }: PlusIconProps) => {
    return (
       <svg
          width={size}
@@ -20,5 +20,3 @@ const PlusIcon = ({ size, fill, ...rest }: PlusIconProps) => {
       </svg>
    );
 };
-
-export default PlusIcon;

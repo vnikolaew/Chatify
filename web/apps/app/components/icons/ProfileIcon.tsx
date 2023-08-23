@@ -4,8 +4,7 @@ import React, { SVGProps } from "react";
 export interface ProfileIconProps extends SVGProps<SVGSVGElement> {
    size: string | number;
 }
-
-const ProfileIcon = ({ size, fill, ...rest }: ProfileIconProps) => {
+export const ProfileIcon = ({ size, fill, ...rest }: ProfileIconProps) => {
    return (
       <svg
          xmlns="http://www.w3.org/2000/svg"
@@ -24,5 +23,3 @@ const ProfileIcon = ({ size, fill, ...rest }: ProfileIconProps) => {
       </svg>
    );
 };
-
-export default ProfileIcon;

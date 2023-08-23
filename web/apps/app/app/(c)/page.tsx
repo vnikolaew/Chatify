@@ -16,11 +16,10 @@ import {
    Skeleton,
    useDisclosure,
 } from "@nextui-org/react";
-import PinIcon from "../../components/icons/PinIcon";
-import AddUserIcon from "../../components/icons/AddUserIcon";
 import TooltipButton from "../../components/TooltipButton";
 import { useCurrentChatGroup } from "../../hooks/chat-groups/useCurrentChatGroup";
-import { UserStatus } from "@openapi/models/UserStatus";
+import { UserStatus } from "@openapi/index";
+import { AddUserIcon, PinIcon } from "@icons";
 
 export const revalidate = 0;
 

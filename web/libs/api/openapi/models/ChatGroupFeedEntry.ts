@@ -9,6 +9,6 @@ import type { User } from './User';
 
 export type ChatGroupFeedEntry = {
     chatGroup?: ChatGroup;
-    user?: User;
-    chatMessage?: ChatMessage;
+    latestMessage?: ChatMessage;
+    messageSender?: User;
 };
