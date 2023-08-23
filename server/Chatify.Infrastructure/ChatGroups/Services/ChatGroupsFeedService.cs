@@ -17,13 +17,13 @@ internal sealed class ChatGroupsFeedService(
 {
     private static readonly Faker<ChatGroupFeedEntry> FeedEntryFaker
         = new Faker<ChatGroupFeedEntry>()
-            .RuleFor(e => e.ChatMessage, f => new ChatMessage
+            .RuleFor(e => e.LatestMessage, f => new ChatMessage
             {
                 Id = Guid.NewGuid(),
                 Content = f.Lorem.Sentence(8),
                 CreatedAt = f.Date.Past(1),
             })
-            .RuleFor(e => e.User, f => new Domain.Entities.User
+            .RuleFor(e => e.MessageSender, f => new Domain.Entities.User
             {
                 Id = Guid.NewGuid(),
                 CreatedAt = f.Date.Past(1),
@@ -39,7 +39,7 @@ internal sealed class ChatGroupsFeedService(
                 Name = f.Internet.DomainName(),
                 About = f.Lorem.Sentence(10),
                 Picture = new Media { Id = Guid.NewGuid(), MediaUrl = f.Internet.Avatar() },
-                AdminIds = new HashSet<Guid> { e.User.Id },
+                AdminIds = new HashSet<Guid> { e.MessageSender.Id },
             });
 
     private static RedisKey GetUserFeedCacheKey(Guid userId)
@@ -84,16 +84,12 @@ internal sealed class ChatGroupsFeedService(
                 feedGroups,
                 m => m.ChatGroupId,
                 g => g.Id,
-                (message, group) => new ChatGroupFeedEntry
-                {
-                    ChatMessage = message,
-                    ChatGroup = group
-                })
+                (message, group) => new ChatGroupFeedEntry(group, message))
             .ZipOn(
                 userInfos!,
-                e => e.ChatMessage.UserId,
+                e => e.LatestMessage.UserId,
                 u => u.Id,
-                (e, user) => e with { User = user })
+                (e, user) => e with { MessageSender = user })
             .ToList();
     }
 }

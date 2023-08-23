@@ -3,7 +3,7 @@ import React, { PropsWithChildren } from "react";
 import { Metadata } from "next";
 import { Inter, Roboto } from "next/font/google";
 import Providers from "./providers";
-import MainNavbar from "../components/Navbar";
+import MainNavbar from "@components/navbar/Navbar";
 import process from "process";
 import { getImagesBaseUrl } from "@web/api";
 

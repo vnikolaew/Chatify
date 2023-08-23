@@ -5,7 +5,7 @@ export interface RightArrowProps extends SVGProps<SVGSVGElement> {
    size: string | number;
 }
 
-const RightArrow = ({ size, fill, ...rest }: RightArrowProps) => {
+export const RightArrow = ({ size, fill, ...rest }: RightArrowProps) => {
    return (
       <div>
          <svg
@@ -21,5 +21,3 @@ const RightArrow = ({ size, fill, ...rest }: RightArrowProps) => {
       </div>
    );
 };
-
-export default RightArrow;

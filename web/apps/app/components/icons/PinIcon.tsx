@@ -5,7 +5,7 @@ export interface PinIconProps extends SVGProps<SVGSVGElement> {
    size: string | number;
 }
 
-const PinIcon = ({ size, fill, ...rest }: PinIconProps) => {
+export const PinIcon = ({ size, fill, ...rest }: PinIconProps) => {
    return (
       <svg
          width={size}
@@ -20,5 +20,3 @@ const PinIcon = ({ size, fill, ...rest }: PinIconProps) => {
       </svg>
    );
 };
-
-export default PinIcon;

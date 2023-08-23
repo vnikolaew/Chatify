@@ -5,7 +5,11 @@ export interface HamburgerMenuIconProps extends SVGProps<SVGSVGElement> {
    size: number | string;
 }
 
-const HamburgerMenuIcon = ({ size, fill, ...rest }: HamburgerMenuIconProps) => {
+export const HamburgerMenuIcon = ({
+   size,
+   fill,
+   ...rest
+}: HamburgerMenuIconProps) => {
    return (
       <svg
          xmlns="http://www.w3.org/2000/svg"
@@ -24,5 +28,3 @@ const HamburgerMenuIcon = ({ size, fill, ...rest }: HamburgerMenuIconProps) => {
       </svg>
    );
 };
-
-export default HamburgerMenuIcon;

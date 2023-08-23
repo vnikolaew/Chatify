@@ -12,13 +12,11 @@ import {
    ScrollShadow,
    Skeleton,
 } from "@nextui-org/react";
-import HamburgerMenuIcon from "../icons/HamburgerMenuIcon";
-import SearchIcon from "../icons/SearchIcon";
 import ChatGroupFeedEntry from "./ChatGroupFeedEntry";
 import { useIsUserLoggedIn } from "../../hooks/useIsUserLoggedIn";
 import { useDebounce } from "../../hooks/useDebounce";
 import { useSearchChatGroupsByName } from "@web/api";
-import NotSentIcon from "../icons/NotSentIcon";
+import { HamburgerMenuIcon, NotSentIcon, SearchIcon } from "@icons";
 
 export interface ChatGroupsFeedProps {}
 

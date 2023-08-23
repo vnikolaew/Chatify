@@ -7,14 +7,16 @@ using Chatify.Web.Common;
 using Chatify.Web.Extensions;
 using LanguageExt;
 using Microsoft.AspNetCore.Mvc;
+using OneOf;
 
 namespace Chatify.Web.Features.Profile;
 
-using ChangeUserStatusResult = OneOf.OneOf<UserNotFound, Unit>;
-using GetUserDetailsResult = OneOf.OneOf<UserNotFound, NotFriendsError, UserDetailsEntry>;
+
+using ChangeUserStatusResult = OneOf<UserNotFound, Unit>;
+using GetUserDetailsResult = OneOf<UserNotFound, NotFriendsError, UserDetailsEntry>;
 using EditUserDetailsResult =
-    OneOf.OneOf<UserNotFound, FileUploadError, PasswordChangeError, Unit>;
-using SearchUsersByNameResult = OneOf.OneOf<UserNotFound, List<Domain.Entities.User>>;
+    OneOf<UserNotFound, FileUploadError, PasswordChangeError, Unit>;
+using SearchUsersByNameResult = OneOf<UserNotFound, List<User>>;
 
 public class ProfileController : ApiController
 {

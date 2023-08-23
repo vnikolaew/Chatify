@@ -5,9 +5,8 @@ using AspNetCore.Identity.Cassandra.Extensions;
 using AspNetCore.Identity.Cassandra.Models;
 using Cassandra;
 using Cassandra.Mapping;
-using Cassandra.Mapping.TypeConversion;
 using Cassandra.Serialization;
-using Chatify.Infrastructure.Data.Mappings;
+using Chatify.Infrastructure.Data.Mappings.Serialization;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Data.Seeding;
 using Chatify.Infrastructure.Data.Services;
@@ -39,7 +38,14 @@ public static class DependencyInjection
     public static IServiceCollection AddCassandra(
         this IServiceCollection services,
         IConfiguration configuration)
-        => services
+    {
+        // TODO: Figure out auto-registration of serializers:
+        // var typeSerializers = Assembly
+        //     .GetExecutingAssembly()
+        //     .GetTypes()
+        //     .Where(t => t is { IsAbstract: false, IsInterface: false } && t.IsAssignableTo(typeof(TypeSerializer)))
+            
+        return services
             .Configure<CassandraOptions>(configuration.GetSection("Cassandra"))
             .AddSingleton(x => x.GetRequiredService<IOptions<CassandraOptions>>().Value)
             .AddTransient<IMapper>(sp =>
@@ -62,7 +68,10 @@ public static class DependencyInjection
                         .WithCredentials(
                             requiredService.Credentials.UserName,
                             requiredService.Credentials.Password)
-                        .WithTypeSerializers(new TypeSerializerDefinitions().Define(new UserStatusTypeSerializer()))
+                        .WithTypeSerializers(
+                            new TypeSerializerDefinitions()
+                                .Define(new UserStatusTypeSerializer())
+                                .Define(new UserNotificationTypeSerializer()))
                         .WithQueryOptions(options).Build();
 
                     ISession session = null!;
@@ -74,6 +83,7 @@ public static class DependencyInjection
                     logger.LogInformation("Cassandra session created");
                     return session;
                 });
+    }
 
     private static RetryPolicy RetryPolicy(
         int retryCount,

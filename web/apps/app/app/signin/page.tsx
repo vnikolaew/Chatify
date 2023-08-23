@@ -22,12 +22,10 @@ import {
    Divider,
 } from "@nextui-org/react";
 import * as yup from "yup";
-import { Field, Form, Formik } from "formik";
+import { Form, Formik } from "formik";
 import PasswordInput from "./PasswordInput";
-import { GoogleIcon } from "../../components/icons/GoogleIcon";
-import { GithubIcon } from "../../components/icons/GithubIcon";
-import { FacebookIcon } from "../../components/icons/FacebookIcon";
-import { useGoogleSignIn } from "../../hooks/auth/useGoogleSignIn";
+import { GoogleIcon, GithubIcon, FacebookIcon } from "@icons";
+import { useGoogleSignIn } from "@hooks";
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 const PASSWORD_REGEX =

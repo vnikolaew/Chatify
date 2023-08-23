@@ -1,13 +1,13 @@
 "use client";
-import { Chip, Tooltip } from "@nextui-org/react";
+import { Chip, Tooltip, TooltipProps } from "@nextui-org/react";
 import React from "react";
 
-export interface TooltipButtonProps {
+export interface TooltipButtonProps extends TooltipProps {
    icon: React.ReactNode;
    content: string;
 }
 
-const TooltipButton = ({ icon, content }: TooltipButtonProps) => {
+const TooltipButton = ({ icon, content, ...rest }: TooltipButtonProps) => {
    return (
       <Tooltip
          shadow={"md"}
@@ -22,6 +22,7 @@ const TooltipButton = ({ icon, content }: TooltipButtonProps) => {
          offset={2}
          size={"md"}
          content={content}
+         {...rest}
       >
          <Chip
             radius={"full"}

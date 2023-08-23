@@ -7,7 +7,6 @@ using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Data.Services;
 using Chatify.Shared.Abstractions.Serialization;
 using Humanizer;
-using LanguageExt;
 using StackExchange.Redis;
 using FriendsRelation = Chatify.Domain.Entities.FriendsRelation;
 using Mapper = Cassandra.Mapping.Mapper;
@@ -82,7 +81,7 @@ public sealed class FriendshipsRepository(IMapper mapper, Mapper dbMapper,
         }
 
         return friendsStrings
-            .Select(f => serializer.Deserialize<ChatifyUser>(f))
+            .Select(serializer.Deserialize<ChatifyUser>)
             .AsQueryable()
             .To<Domain.Entities.User>(Mapper)
             .ToList();

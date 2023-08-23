@@ -5,7 +5,7 @@ export interface SearchIconProps extends SVGProps<SVGSVGElement> {
    size: string | number;
 }
 
-const SearchIcon = ({ size, fill, ...rest }: SearchIconProps) => {
+export const SearchIcon = ({ size, fill, ...rest }: SearchIconProps) => {
    return (
       <svg
          xmlns="http://www.w3.org/2000/svg"
@@ -25,5 +25,3 @@ const SearchIcon = ({ size, fill, ...rest }: SearchIconProps) => {
       </svg>
    );
 };
-
-export default SearchIcon;

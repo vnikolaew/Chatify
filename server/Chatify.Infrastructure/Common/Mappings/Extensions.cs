@@ -45,6 +45,28 @@ public static class Extensions
             .AsQueryable()
             .ProjectTo<T>(mapper.ConfigurationProvider);
 
+    public static async Task<IQueryable<R>> ToAsync<T, R>(
+        this Task<IEnumerable<T>> task,
+        IMapper mapper)
+        => ( await task )
+            .AsQueryable()
+            .ProjectTo<R>(mapper.ConfigurationProvider);
+
+    public static async Task<IQueryable<R>> ToAsync<T, R>(
+        this Task<List<T>> task,
+        IMapper mapper)
+        => ( await task )
+            .AsQueryable()
+            .ProjectTo<R>(mapper.ConfigurationProvider);
+
+    public static async Task<List<R>> ToAsyncList<T, R>(
+        this Task<List<T>> task,
+        IMapper mapper)
+        => ( await task )
+            .AsQueryable()
+            .ProjectTo<R>(mapper.ConfigurationProvider)
+            .ToList();
+
     public static T To<T>(this object value, IMapper mapper)
         => mapper.Map<T>(value);
 
