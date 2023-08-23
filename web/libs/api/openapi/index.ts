@@ -20,7 +20,6 @@ export type { FacebookSignUp } from './models/FacebookSignUp';
 export type { FriendInvitation } from './models/FriendInvitation';
 export { FriendInvitationStatus } from './models/FriendInvitationStatus';
 export type { FriendsRelation } from './models/FriendsRelation';
-export type { GetAllNotifications } from './models/GetAllNotifications';
 export type { GetChatGroupSharedAttachmentsRequest } from './models/GetChatGroupSharedAttachmentsRequest';
 export type { GetMessagesByChatGroupRequest } from './models/GetMessagesByChatGroupRequest';
 export type { GetRepliesByForMessageRequest } from './models/GetRepliesByForMessageRequest';

@@ -9,7 +9,7 @@ public interface INotificationRepository : IDomainRepository<UserNotification, G
     Task<CursorPaged<UserNotification>> GetPaginatedForUserAsync(
         Guid userId,
         int pageSize,
-        string pagingCursor,
+        string? pagingCursor,
         CancellationToken cancellationToken = default);
     
     Task<List<UserNotification>> AllForUserAsync(

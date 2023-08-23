@@ -8,7 +8,7 @@ import { HttpStatusCode } from "axios";
 // @ts-ignore
 // @ts-ignore
 import { useMemo } from "react";
-import { ChatGroup, User, UserStatus } from "../../../../../openapi";
+import { ChatGroup, User, UserStatus } from "@openapi/index";
 
 export interface GetChatGroupDetailsModel {
    chatGroupId: string;

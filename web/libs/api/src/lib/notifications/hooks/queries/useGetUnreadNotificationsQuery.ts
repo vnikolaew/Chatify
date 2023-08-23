@@ -1,9 +1,14 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+   useQuery,
+   useQueryClient,
+   UseQueryOptions,
+} from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { notificationsClient } from "../../client";
 import { DEFAULT_CACHE_TIME, DEFAULT_STALE_TIME } from "../../../constants";
+import { User, UserNotification } from "@openapi";
 
-const getUnreadNotifications = async () => {
+const getUnreadNotifications = async (): Promise<UserNotification[]> => {
    const { status, data } = await notificationsClient.get(`unread`, {
       headers: {},
    });
@@ -15,7 +20,14 @@ const getUnreadNotifications = async () => {
    return data;
 };
 
-export const useGetUnreadNotificationsQuery = () => {
+export const useGetUnreadNotificationsQuery = (
+   options?: Omit<
+      UseQueryOptions<UserNotification[], Error, UserNotification[], string[]>,
+      "initialData"
+   > & {
+      initialData?: (() => undefined) | undefined;
+   }
+) => {
    const client = useQueryClient();
 
    return useQuery({
@@ -23,5 +35,6 @@ export const useGetUnreadNotificationsQuery = () => {
       queryFn: () => getUnreadNotifications(),
       cacheTime: DEFAULT_CACHE_TIME,
       staleTime: DEFAULT_STALE_TIME,
+      ...options,
    });
 };

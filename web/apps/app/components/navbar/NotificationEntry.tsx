@@ -21,7 +21,7 @@ const NotificationEntry = ({
    ...rest
 }: NotificationEntryProps) => {
    return (
-      <div className={`flex items-center gap-4`}>
+      <div className={`flex px-2 items-center justify-between gap-4`}>
          <Badge
             placement={"bottom-right"}
             classNames={{
@@ -34,13 +34,15 @@ const NotificationEntry = ({
             {startContent}
          </Badge>
 
-         <div className={`flex flex-col justify-evenly items-start gap-2`}>
+         <div
+            className={`flex h-full grow-[1] flex-col justify-center items-start gap-1`}
+         >
             <p className={`text-small`}>{message}</p>
             <time className={`text-xs text-primary-400`}>
                {moment(date).fromNow()}
             </time>
          </div>
-         <div className={`w-2 h-2 ml-6 rounded-full bg-primary`} />
+         <div className={`w-2 h-2 rounded-full bg-primary`} />
       </div>
    );
 };
