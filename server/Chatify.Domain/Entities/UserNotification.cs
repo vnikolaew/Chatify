@@ -19,7 +19,7 @@ public class UserNotification
 
     public string? Summary { get; set; }
 
-    public bool Read { get; set; }
+    public bool Read { get; set; } = false;
 }
 
 public enum UserNotificationType : sbyte

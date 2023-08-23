@@ -1150,6 +1150,66 @@ paths:
           content:
             application/json:
               schema: { }
+  /api/Notifications:
+    get:
+      tags:
+        - Notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetAllNotifications'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/GetAllNotifications'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/GetAllNotifications'
+      responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserNotification'
+  /api/Notifications/unread:
+    get:
+      tags:
+        - Notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetUnreadNotifications'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/GetUnreadNotifications'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/GetUnreadNotifications'
+      responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserNotification'
   /api/Profile/status:
     put:
       tags:
@@ -1421,6 +1481,7 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
+        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1451,7 +1512,6 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
-        - Unknown
       type: string
     ChangeUserStatus:
       type: object
@@ -1520,10 +1580,10 @@ components:
       properties:
         chatGroup:
           $ref: '#/components/schemas/ChatGroup'
-        user:
-          $ref: '#/components/schemas/User'
-        chatMessage:
+        latestMessage:
           $ref: '#/components/schemas/ChatMessage'
+        messageSender:
+          $ref: '#/components/schemas/User'
       additionalProperties: false
     ChatGroupMember:
       type: object
@@ -1698,6 +1758,16 @@ components:
           type: string
           format: date-time
       additionalProperties: false
+    GetAllNotifications:
+      type: object
+      properties:
+        pageSize:
+          type: integer
+          format: int32
+        pagingCursor:
+          type: string
+          nullable: true
+      additionalProperties: false
     GetChatGroupSharedAttachmentsRequest:
       type: object
       properties:
@@ -1736,6 +1806,9 @@ components:
         pagingCursor:
           type: string
           nullable: true
+      additionalProperties: false
+    GetUnreadNotifications:
+      type: object
       additionalProperties: false
     GoogleSignUp:
       type: object
@@ -2050,6 +2123,46 @@ components:
         friendInvitation:
           $ref: '#/components/schemas/FriendInvitation'
       additionalProperties: false
+    UserNotification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/User'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        type:
+          $ref: '#/components/schemas/UserNotificationType'
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+            nullable: true
+          nullable: true
+        summary:
+          type: string
+          nullable: true
+        read:
+          type: boolean
+      additionalProperties: false
+    UserNotificationType:
+      enum:
+        - Unspecified
+        - IncomingFriendInvite
+        - AcceptedFriendInvite
+        - DeclinedFriendInvite
+        - UserMention
+      type: string
     UserStatus:
       enum:
         - Online

@@ -7,4 +7,5 @@ export * from "./hubs";
 export * from "./messages";
 export * from "./utils";
 export * from "./common/createClient";
+export * from "./notifications";
 export * from "./queryClient";

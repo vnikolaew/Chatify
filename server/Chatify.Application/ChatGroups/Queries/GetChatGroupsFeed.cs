@@ -10,14 +10,10 @@ namespace Chatify.Application.ChatGroups.Queries;
 
 using GetChatGroupsFeedResult = OneOf<Error, List<ChatGroupFeedEntry>>;
 
-public record ChatGroupFeedEntry
-{
-    public ChatGroup ChatGroup { get; set; }
-
-    public Domain.Entities.User User { get; set; }
-
-    public ChatMessage ChatMessage { get; set; }
-}
+public record ChatGroupFeedEntry(
+    ChatGroup ChatGroup,
+    ChatMessage LatestMessage,
+    Domain.Entities.User MessageSender = default!);
 
 [Timed]
 public record GetChatGroupsFeed

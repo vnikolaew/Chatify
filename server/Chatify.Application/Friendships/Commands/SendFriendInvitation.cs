@@ -73,6 +73,7 @@ internal sealed class SendFriendInvitationHandler
             InviterId = friendInvite.InviterId,
             InviteeId = friendInvite.InviteeId,
             Timestamp = _clock.Now,
+            InviterUsername = _identityContext.Username
         }, cancellationToken);
         return invite.Id;
     }
