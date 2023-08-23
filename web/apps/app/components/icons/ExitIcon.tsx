@@ -5,7 +5,7 @@ export interface ExitIconProps extends SVGProps<SVGSVGElement> {
    size: string | number;
 }
 
-const ExitIcon = (props: ExitIconProps) => {
+export const ExitIcon = (props: ExitIconProps) => {
    const { size, fill, ...rest } = props;
 
    return (
@@ -28,5 +28,3 @@ const ExitIcon = (props: ExitIconProps) => {
       </svg>
    );
 };
-
-export default ExitIcon;

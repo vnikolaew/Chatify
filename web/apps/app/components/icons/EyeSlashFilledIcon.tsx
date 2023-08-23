@@ -1,7 +1,7 @@
 "use client";
 import React, { SVGProps } from "react";
 
-const EyeSlashFilledIcon = (props: SVGProps<SVGSVGElement>) => {
+export const EyeSlashFilledIcon = (props: SVGProps<SVGSVGElement>) => {
    return (
       <svg
          aria-hidden="true"
@@ -36,5 +36,3 @@ const EyeSlashFilledIcon = (props: SVGProps<SVGSVGElement>) => {
       </svg>
    );
 };
-
-export default EyeSlashFilledIcon;

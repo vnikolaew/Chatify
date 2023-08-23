@@ -16,6 +16,9 @@
       "baseUrl": ".",
       "paths": {
          "@web/api": ["libs/api/src/index.ts"],
+         "@icons": ["apps/app/components/icons/index.ts"],
+         "@hooks": ["apps/app/hooks/index.ts"],
+         "@components/*": ["apps/app/components/*"],
          "@openapi/*": ["libs/api/openapi/*"]
       }
    },

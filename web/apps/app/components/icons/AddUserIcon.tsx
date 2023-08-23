@@ -5,7 +5,7 @@ export interface AddUserIconProps extends SVGProps<SVGSVGElement> {
    size: string | number;
 }
 
-const AddUserIcon = ({ size, fill, ...rest }: AddUserIconProps) => {
+export const AddUserIcon = ({ size, fill, ...rest }: AddUserIconProps) => {
    return (
       <div>
          <svg
@@ -22,5 +22,3 @@ const AddUserIcon = ({ size, fill, ...rest }: AddUserIconProps) => {
       </div>
    );
 };
-
-export default AddUserIcon;

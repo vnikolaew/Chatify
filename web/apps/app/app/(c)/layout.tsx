@@ -1,6 +1,6 @@
 import React, { PropsWithChildren } from "react";
-import ChatGroupMembersSection from "../../components/feed/ChatGroupMembersSection";
-import ChatGroupsFeed from "../../components/feed/ChatGroupsFeed";
+import ChatGroupMembersSection from "@components/members/ChatGroupMembersSection";
+import ChatGroupsFeed from "@components/feed/ChatGroupsFeed";
 
 export interface LayoutProps extends PropsWithChildren {}
 

@@ -22,6 +22,7 @@ function formatDate(dateTime: string) {
 
 const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
    const client = useQueryClient();
+
    const handlePrefetchGroupDetails = async () => {
       await client.prefetchQuery(["chat-group", feedEntry.chatGroup.id], {
          queryFn: ({ queryKey: [_, id] }) =>
@@ -29,6 +30,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
          staleTime: 30 * 60 * 1000,
       });
    };
+
    return (
       <Button
          onMouseEnter={async (_) => await handlePrefetchGroupDetails()}
@@ -57,7 +59,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
                   {feedEntry.chatGroup.name}
                </span>
                <time className={`text-xs text-default-500`}>
-                  {formatDate(feedEntry.chatMessage.createdAt)}
+                  {formatDate(feedEntry.latestMessage.createdAt)}
                   {}
                </time>
             </div>
@@ -65,7 +67,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
                <p
                   className={`text-small w-full truncate leading-3 text-default-500`}
                >
-                  {feedEntry.chatMessage.content.substring(0, 40)}...
+                  {feedEntry.latestMessage.content.substring(0, 40)}...
                </p>
             </div>
          </div>

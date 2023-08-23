@@ -5,7 +5,7 @@ export interface NotSentIconProps extends SVGProps<SVGSVGElement> {
    size: string | number;
 }
 
-const NotSentIcon = ({ size, fill, ...rest }: NotSentIconProps) => {
+export const NotSentIcon = ({ size, fill, ...rest }: NotSentIconProps) => {
    return (
       <svg
          width={size}
@@ -21,5 +21,3 @@ const NotSentIcon = ({ size, fill, ...rest }: NotSentIconProps) => {
       </svg>
    );
 };
-
-export default NotSentIcon;

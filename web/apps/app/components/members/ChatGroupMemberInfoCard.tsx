@@ -17,8 +17,8 @@ import {
    Spinner,
 } from "@nextui-org/react";
 import { FriendInvitationStatus, UserStatus } from "@openapi/index";
-import PlusIcon from "../icons/PlusIcon";
-import { useCurrentChatGroup } from "../../hooks/chat-groups/useCurrentChatGroup";
+import { PlusIcon } from "@icons";
+import { useCurrentChatGroup } from "@hooks";
 import moment from "moment";
 
 export interface ChatGroupMemberInfoCardProps {

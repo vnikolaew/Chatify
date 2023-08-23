@@ -5,7 +5,6 @@ import {
    useGetChatGroupDetailsQuery,
    useMembersByCategory,
    USER_DETAILS_KEY,
-   useSendFriendInviteMutation,
 } from "@web/api";
 import { useSearchParams } from "next/navigation";
 import { Avatar, Badge, Skeleton, Tooltip } from "@nextui-org/react";
