@@ -223,3 +223,19 @@ CREATE TABLE IF NOT EXISTS chat_group_join_requests
     PRIMARY KEY ( (chat_group_id), created_at, user_id )
 ) WITH CLUSTERING ORDER BY (created_at DESC, user_id ASC)
    AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
+
+CREATE TABLE IF NOT EXISTS user_notifications
+(
+    id         uuid,
+    user_id    uuid,
+    type       tinyint,
+    metadata   map<text, text>,
+    summary    text,
+    read       boolean,
+    created_at timestamp,
+    updated_at timestamp,
+    PRIMARY KEY ( (user_id), created_at )
+) WITH CLUSTERING ORDER BY (created_at DESC)
+   AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
+
+CREATE INDEX IF NOT EXISTS user_notifications_id_idx on user_notifications (id);
