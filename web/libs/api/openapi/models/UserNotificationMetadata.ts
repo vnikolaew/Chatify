@@ -3,7 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type GetAllNotifications = {
-    pageSize?: number;
-    pagingCursor?: string | null;
+import type { Media } from './Media';
+
+export type UserNotificationMetadata = {
+    userMedia?: Media;
 };

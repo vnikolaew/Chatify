@@ -1471,6 +1471,7 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
+        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1501,7 +1502,6 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
-        - Unknown
       type: string
     ChangeUserStatus:
       type: object
@@ -2121,16 +2121,18 @@ components:
         type:
           $ref: '#/components/schemas/UserNotificationType'
         metadata:
-          type: object
-          additionalProperties:
-            type: string
-            nullable: true
-          nullable: true
+          $ref: '#/components/schemas/UserNotificationMetadata'
         summary:
           type: string
           nullable: true
         read:
           type: boolean
+      additionalProperties: false
+    UserNotificationMetadata:
+      type: object
+      properties:
+        userMedia:
+          $ref: '#/components/schemas/Media'
       additionalProperties: false
     UserNotificationType:
       enum:

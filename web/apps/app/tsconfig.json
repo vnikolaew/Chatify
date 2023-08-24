@@ -15,7 +15,7 @@
       "jest",
       "node"
     ],
-    "plugins": [
+     "plugins": [
       {
         "name": "next"
       }

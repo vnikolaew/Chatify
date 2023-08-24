@@ -20,7 +20,6 @@ import {
    useGetPaginatedNotificationsQuery,
    useGetUnreadNotificationsQuery,
 } from "@web/api";
-import moment from "moment/moment";
 
 export interface NotificationsDropdownProps {}
 
@@ -55,7 +54,7 @@ const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
       enabled: selectedTab === NotificationTab.UNREAD,
    });
 
-   console.log(JSON.parse(notifications?.[0]?.metadata.user_media ?? null));
+   console.log(notifications?.[0]?.metadata?.userMedia ?? null);
 
    return (
       <Popover
@@ -108,7 +107,7 @@ const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
             >
                <Tab title={"All"} key={NotificationTab.ALL}>
                   {isLoading ? (
-                     <LoadingNotifications count={10} />
+                     <LoadingNotifications count={4} />
                   ) : (
                      <Listbox
                         onAction={(key) => {
@@ -126,13 +125,13 @@ const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
                               key={i}
                            >
                               <NotificationEntry
+                                 type={notification.type}
                                  message={notification.summary}
                                  startContent={
                                     <Avatar
                                        src={
-                                          JSON.parse(
-                                             notification?.metadata?.user_media
-                                          )?.MediaUrl
+                                          notification?.metadata?.userMedia
+                                             ?.mediaUrl
                                        }
                                        isBordered
                                        size={"sm"}
@@ -155,7 +154,7 @@ const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
                </Tab>
                <Tab title={"Unread"} key={NotificationTab.UNREAD}>
                   {unreadLoading ? (
-                     <LoadingNotifications count={10} />
+                     <LoadingNotifications count={4} />
                   ) : (
                      <Listbox
                         onAction={(key) => {
@@ -173,13 +172,13 @@ const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
                               key={i}
                            >
                               <NotificationEntry
+                                 type={notification.type}
                                  message={notification.summary}
                                  startContent={
                                     <Avatar
                                        src={
-                                          JSON.parse(
-                                             notification?.metadata?.user_media
-                                          )?.MediaUrl
+                                          notification?.metadata?.userMedia
+                                             ?.mediaUrl
                                        }
                                        isBordered
                                        size={"sm"}

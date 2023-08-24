@@ -23,7 +23,6 @@ export type { FriendsRelation } from './models/FriendsRelation';
 export type { GetChatGroupSharedAttachmentsRequest } from './models/GetChatGroupSharedAttachmentsRequest';
 export type { GetMessagesByChatGroupRequest } from './models/GetMessagesByChatGroupRequest';
 export type { GetRepliesByForMessageRequest } from './models/GetRepliesByForMessageRequest';
-export type { GetUnreadNotifications } from './models/GetUnreadNotifications';
 export type { GoogleSignUp } from './models/GoogleSignUp';
 export type { InputFile } from './models/InputFile';
 export type { IPAddress } from './models/IPAddress';
@@ -45,5 +44,6 @@ export type { UnreactToChatMessageRequest } from './models/UnreactToChatMessageR
 export type { User } from './models/User';
 export type { UserDetailsEntry } from './models/UserDetailsEntry';
 export type { UserNotification } from './models/UserNotification';
+export type { UserNotificationMetadata } from './models/UserNotificationMetadata';
 export { UserNotificationType } from './models/UserNotificationType';
 export { UserStatus } from './models/UserStatus';

@@ -1154,17 +1154,18 @@ paths:
     get:
       tags:
         - Notifications
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetAllNotifications'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/GetAllNotifications'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/GetAllNotifications'
+      parameters:
+        - name: pageSize
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int32
+        - name: pagingCursor
+          in: query
+          style: form
+          schema:
+            type: string
       responses:
         '400':
           description: Bad Request
@@ -1184,17 +1185,6 @@ paths:
     get:
       tags:
         - Notifications
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetUnreadNotifications'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/GetUnreadNotifications'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/GetUnreadNotifications'
       responses:
         '400':
           description: Bad Request
@@ -1758,16 +1748,6 @@ components:
           type: string
           format: date-time
       additionalProperties: false
-    GetAllNotifications:
-      type: object
-      properties:
-        pageSize:
-          type: integer
-          format: int32
-        pagingCursor:
-          type: string
-          nullable: true
-      additionalProperties: false
     GetChatGroupSharedAttachmentsRequest:
       type: object
       properties:
@@ -1806,9 +1786,6 @@ components:
         pagingCursor:
           type: string
           nullable: true
-      additionalProperties: false
-    GetUnreadNotifications:
-      type: object
       additionalProperties: false
     GoogleSignUp:
       type: object
@@ -2144,16 +2121,18 @@ components:
         type:
           $ref: '#/components/schemas/UserNotificationType'
         metadata:
-          type: object
-          additionalProperties:
-            type: string
-            nullable: true
-          nullable: true
+          $ref: '#/components/schemas/UserNotificationMetadata'
         summary:
           type: string
           nullable: true
         read:
           type: boolean
+      additionalProperties: false
+    UserNotificationMetadata:
+      type: object
+      properties:
+        userMedia:
+          $ref: '#/components/schemas/Media'
       additionalProperties: false
     UserNotificationType:
       enum:

@@ -1,9 +1,9 @@
 "use client";
 import React, { Fragment, useState } from "react";
 import Link from "next/link";
-import SignOut from "../../components/SignOut";
+import SignOut from "@components/SignOut";
 import { useGetChatGroupDetailsQuery, useGetMyClaimsQuery } from "@web/api";
-import { useIsUserLoggedIn } from "../../hooks/useIsUserLoggedIn";
+import { useIsUserLoggedIn } from "@hooks";
 import {
    Avatar,
    AvatarGroup,
@@ -17,7 +17,7 @@ import {
    useDisclosure,
 } from "@nextui-org/react";
 import TooltipButton from "../../components/TooltipButton";
-import { useCurrentChatGroup } from "../../hooks/chat-groups/useCurrentChatGroup";
+import { useCurrentChatGroup } from "@hooks";
 import { UserStatus } from "@openapi/index";
 import { AddUserIcon, PinIcon } from "@icons";
 

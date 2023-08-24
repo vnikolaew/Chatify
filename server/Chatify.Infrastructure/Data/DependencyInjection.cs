@@ -5,6 +5,7 @@ using AspNetCore.Identity.Cassandra.Extensions;
 using AspNetCore.Identity.Cassandra.Models;
 using Cassandra;
 using Cassandra.Mapping;
+using Cassandra.Mapping.TypeConversion;
 using Cassandra.Serialization;
 using Chatify.Infrastructure.Data.Mappings.Serialization;
 using Chatify.Infrastructure.Data.Models;
@@ -40,10 +41,7 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         // TODO: Figure out auto-registration of serializers:
-        // var typeSerializers = Assembly
-        //     .GetExecutingAssembly()
-        //     .GetTypes()
-        //     .Where(t => t is { IsAbstract: false, IsInterface: false } && t.IsAssignableTo(typeof(TypeSerializer)))
+        var definitions = GetTypeSerializerDefinitions();
 
         return services
             .Configure<CassandraOptions>(configuration.GetSection("Cassandra"))
@@ -68,10 +66,7 @@ public static class DependencyInjection
                         .WithCredentials(
                             requiredService.Credentials.UserName,
                             requiredService.Credentials.Password)
-                        .WithTypeSerializers(
-                            new TypeSerializerDefinitions()
-                                .Define(new UserStatusTypeSerializer())
-                                .Define(new UserNotificationTypeSerializer()))
+                        .WithTypeSerializers(definitions)
                         .WithQueryOptions(options).Build();
 
                     ISession session = null!;
@@ -83,6 +78,31 @@ public static class DependencyInjection
                     logger.LogInformation("Cassandra session created");
                     return session;
                 });
+    }
+
+    private static TypeSerializerDefinitions? GetTypeSerializerDefinitions()
+    {
+        var typeSerializers = Assembly
+            .GetExecutingAssembly()
+            .GetTypes()
+            .Where(t => t is { IsAbstract: false, IsInterface: false, IsGenericType: false } &&
+                        ( t.BaseType?.IsGenericType ?? false ) &&
+                        t.IsAssignableTo(typeof(TypeSerializer)))
+            .Select(t => ( Activator.CreateInstance(t) as TypeSerializer, t.BaseType!.GetGenericArguments()[0] ))
+            .Where(t => t.Item1 is not null)
+            .ToList();
+
+        var defs = new TypeSerializerDefinitions();
+        foreach ( var (typeSerializer, type) in typeSerializers.Where(_ =>
+                     _.Item1 is not UserNotificationMetadataTypeSerializer) )
+        {
+            defs = ( TypeSerializerDefinitions )defs.GetType()
+                .GetMethod(nameof(TypeSerializerDefinitions.Define))!
+                .MakeGenericMethod(type)
+                .Invoke(defs, new[] { typeSerializer });
+        }
+
+        return defs;
     }
 
     private static RetryPolicy RetryPolicy(
@@ -111,6 +131,8 @@ public static class DependencyInjection
             .Where(m => m is not null)
             .ToList();
 
+        MappingConfiguration.Global.ConvertTypesUsing(new CustomTypeConverter());
+
         foreach ( var mapping in mappingsList )
             MappingConfiguration.Global.Define(mapping);
 
@@ -135,24 +157,14 @@ public static class DependencyInjection
             {
                 opts.Cookie.SameSite = SameSiteMode.None;
                 opts.Events.OnRedirectToAccessDenied = ctx => { return Task.CompletedTask; };
-                opts.Events.OnValidatePrincipal = ctx =>
-                {
-                    var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<IAssemblyMarker>>();
-                    logger.LogInformation("Validating principal ...");
-                    return Task.CompletedTask;
-                };
+                opts.Events.OnValidatePrincipal = ctx => Task.CompletedTask;
                 opts.Cookie.HttpOnly = false;
             })
             .ConfigureApplicationCookie(opts =>
             {
                 opts.Cookie.SameSite = SameSiteMode.None;
                 opts.Events.OnRedirectToAccessDenied = ctx => { return Task.CompletedTask; };
-                opts.Events.OnValidatePrincipal = ctx =>
-                {
-                    var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<IAssemblyMarker>>();
-                    logger.LogInformation("Validating principal ...");
-                    return Task.CompletedTask;
-                };
+                opts.Events.OnValidatePrincipal = ctx => { return Task.CompletedTask; };
                 opts.Cookie.HttpOnly = false;
             });
 

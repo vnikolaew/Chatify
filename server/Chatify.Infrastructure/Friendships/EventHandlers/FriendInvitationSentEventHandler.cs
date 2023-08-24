@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Chatify.Application.Common.Contracts;
+﻿using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Friendships;
@@ -27,19 +26,18 @@ internal sealed class FriendInvitationSentEventHandler
         var inviter = await users.GetAsync(@event.InviterId, cancellationToken);
 
         // Save a new notification for Invitee:
-        var notification = new UserNotification
+        var notification = new IncomingFriendInvitationNotification 
         {
             Id = guidGenerator.New(),
             CreatedAt = clock.Now,
             UserId = @event.InviteeId,
             Type = UserNotificationType.IncomingFriendInvite,
             Summary = $"{@event.InviterUsername} sent you a friend invitation.",
-            Metadata = new Dictionary<string, string>
+            Metadata = new UserNotificationMetadata
             {
-                {
-                    "user_media", JsonSerializer.Serialize(inviter!.ProfilePicture)
-                }
-            }
+                UserMedia = inviter.ProfilePicture
+            },
+            InviteId = @event.Id
         };
         await notifications.SaveAsync(notification, cancellationToken);
 
