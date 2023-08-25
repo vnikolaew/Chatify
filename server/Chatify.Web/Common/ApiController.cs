@@ -36,4 +36,6 @@ public abstract class ApiController : ControllerBase
     protected IActionResult NoContent(Unit _) => NoContent();
     
     protected IActionResult Ok(Unit _) => Ok();
+
+    protected static object AsObject<T>(T value) => value!;
 }

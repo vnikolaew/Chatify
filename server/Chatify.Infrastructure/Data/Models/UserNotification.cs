@@ -70,13 +70,13 @@ public class UserNotification
             .IncludeBase<UserNotification, Domain.Entities.UserNotification>()
             .AfterMap((un, fi) =>
             {
-                fi.InviteId = un.Metadata!.TryGetValue("invite_id", out var inviteId)
+                fi.InviteId = un.Metadata!.TryGetValue(nameof(AcceptedFriendInvitationNotification.InviteId).Underscore(), out var inviteId)
                     ? Guid.Parse(inviteId)
                     : default;
-                fi.InviterId = un.Metadata!.TryGetValue("inviter_id", out var inviterId)
+                fi.InviterId = un.Metadata!.TryGetValue(nameof(AcceptedFriendInvitationNotification.InviterId).Underscore(), out var inviterId)
                     ? Guid.Parse(inviterId)
                     : default;
-                fi.ChatGroupId = un.Metadata!.TryGetValue("group_id", out var groupId)
+                fi.ChatGroupId = un.Metadata!.TryGetValue(nameof(AcceptedFriendInvitationNotification.ChatGroupId).Underscore(), out var groupId)
                     ? Guid.Parse(groupId)
                     : default;
             })

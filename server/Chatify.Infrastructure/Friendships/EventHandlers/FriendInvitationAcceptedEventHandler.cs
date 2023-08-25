@@ -56,17 +56,17 @@ internal sealed class FriendInvitationAcceptedEventHandler(
         FriendInvitationAcceptedEvent @event,
         CancellationToken cancellationToken)
     {
-        var inviter = await users.GetAsync(@event.InviterId, cancellationToken);
+        var invitee = await users.GetAsync(@event.InviteeId, cancellationToken);
         var notification = new AcceptedFriendInvitationNotification
         {
             Id = guidGenerator.New(),
-            UserId = @event.InviteeId,
+            UserId = @event.InviterId,
             Type = UserNotificationType.AcceptedFriendInvite,
-            Summary = $"{inviter.Username} accepted your friend request.",
+            Summary = $"{invitee!.Username} accepted your friend request.",
             CreatedAt = clock.Now,
             Metadata = new UserNotificationMetadata
             {
-                UserMedia = inviter.ProfilePicture
+                UserMedia = invitee.ProfilePicture
             },
             InviteId = @event.InviteId,
             InviterId = @event.InviterId,

@@ -63,7 +63,7 @@ internal sealed class SendFriendInvitationHandler
             Id = friendInviteId,
             Status = (sbyte)FriendInvitationStatus.Pending,
             CreatedAt = _clock.Now,
-            InviterId = _identityContext.Id,
+            InviterId = _identityContext.Id
         };
 
         var invite = await _friendInvites.SaveAsync(friendInvite, cancellationToken);

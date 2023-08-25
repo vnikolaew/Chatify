@@ -38,10 +38,13 @@ public sealed class NotificationRepository(
             newCursor);
     }
 
-    public Task<List<UserNotification>> AllForUserAsync(
+    public async Task<List<UserNotification>> AllForUserAsync(
         Guid userId,
         CancellationToken cancellationToken = default)
-        => DbMapper
-            .FetchListAsync<Models.UserNotification>(" WHERE user_id = ?", userId)
-            .ToAsyncList<Models.UserNotification, UserNotification>(Mapper);
+    {
+        var notifications = await DbMapper
+            .FetchListAsync<Models.UserNotification>(" WHERE user_id = ?", userId);
+
+        return notifications.Select(_ => _.To<UserNotification>(Mapper)).ToList();
+    }
 }

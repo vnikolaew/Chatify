@@ -32,7 +32,7 @@ public class NotificationsController : ApiController
         
         return result.Match(err => BadRequest(),
                 notifications => (IActionResult)
-                    Ok(notifications.Map(n => (object) n)));
+                    Ok(notifications.Map(AsObject)));
     }
 
     [HttpGet]
@@ -47,5 +47,5 @@ public class NotificationsController : ApiController
             .MatchAsync(
                 err => BadRequest(),
                 notifications => ( IActionResult )
-                    Ok(notifications));
+                    Ok(notifications.Map(AsObject)));
 }

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import GithubLogin from "react-github-login";
 import { NextPage } from "next";
 import {
@@ -25,7 +25,7 @@ import * as yup from "yup";
 import { Form, Formik } from "formik";
 import PasswordInput from "./PasswordInput";
 import { GoogleIcon, GithubIcon, FacebookIcon } from "@icons";
-import { useGoogleSignIn } from "@hooks";
+import { useGoogleSignIn, useIsUserLoggedIn } from "@hooks";
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 const PASSWORD_REGEX =
@@ -49,6 +49,10 @@ const signInSchema = yup.object({
 const SignInPage: NextPage = () => {
    const router = useRouter();
    const { data, mutateAsync: signIn, error } = useRegularSignInMutation();
+   const { isUserLoggedIn } = useIsUserLoggedIn();
+   useEffect(() => {
+      if (isUserLoggedIn) router.push(`/`);
+   }, []);
 
    const {
       error: googleError,

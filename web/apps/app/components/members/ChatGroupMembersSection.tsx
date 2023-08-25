@@ -3,6 +3,7 @@ import React, { Fragment } from "react";
 import {
    getUserDetails,
    useGetChatGroupDetailsQuery,
+   useGetMyClaimsQuery,
    useMembersByCategory,
    USER_DETAILS_KEY,
 } from "@web/api";
@@ -20,6 +21,7 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
    const { data, error, isLoading } = useGetChatGroupDetailsQuery(chatGroupId, {
       enabled: !!chatGroupId,
    });
+   const { data: me } = useGetMyClaimsQuery();
    const membersByCategory = useMembersByCategory(
       data?.members,
       data?.chatGroup?.adminIds
@@ -89,9 +91,12 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
                                     placement={"left"}
                                     key={member.id}
                                     content={
-                                       <ChatGroupMemberInfoCard
-                                          userId={member.id}
-                                       />
+                                       member.id !==
+                                          me.claims.nameidentifier && (
+                                          <ChatGroupMemberInfoCard
+                                             userId={member.id}
+                                          />
+                                       )
                                     }
                                  >
                                     <div
@@ -146,7 +151,9 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
                                           />
                                        </Badge>
                                        <span className={`text-medium`}>
-                                          {member.username}
+                                          {me.claims.name === member.username
+                                             ? `${member.username} (you)`
+                                             : member.username}
                                        </span>
                                     </div>
                                  </Tooltip>
