@@ -1,8 +1,8 @@
-﻿using System.Text.Json;
-using AutoMapper;
+﻿using AutoMapper;
 using Chatify.Application.Common.Mappings;
 using Chatify.Domain.Entities;
 using Chatify.Infrastructure.Data.Conversions;
+using Chatify.Infrastructure.Data.Extensions;
 using Humanizer;
 
 namespace Chatify.Infrastructure.Data.Models;
@@ -11,7 +11,9 @@ using Metadata = Dictionary<string, string>;
 
 public class UserNotification
     : IMapFrom<Domain.Entities.UserNotification>,
-        IMapFrom<IncomingFriendInvitationNotification>
+        IMapFrom<IncomingFriendInvitationNotification>,
+        IMapFrom<AcceptedFriendInvitationNotification>,
+        IMapFrom<DeclinedFriendInvitationNotification>
 {
     public Guid Id { get; set; }
 
@@ -33,17 +35,13 @@ public class UserNotification
     {
         profile
             .CreateMap<UserNotification, Domain.Entities.UserNotification>()
-            .ConvertUsing<UserNotificationTypeConverter>();
+            .ConvertUsing(new UserNotificationTypeConverter());
         profile
             .CreateMap<Domain.Entities.UserNotification, UserNotification>();
 
         profile
-            .CreateMap<Dictionary<string, string>?, UserNotificationMetadata?>()
-            .ConvertUsing<UserMediaTypeConverter>();
-
-        profile
-            .CreateMap<UserNotificationMetadata?, Dictionary<string, string>?>()
-            .ConvertUsing<UserMediaTypeConverter>();
+            .CreateFor<UserNotificationType, sbyte, UserNotificationTypeEnumConverter>()
+            .CreateFor<Dictionary<string, string>?, UserNotificationMetadata?, UserMediaTypeConverter>();
     }
 
     void IMapFrom<IncomingFriendInvitationNotification>.Mapping(Profile profile)
@@ -52,8 +50,10 @@ public class UserNotification
             .IncludeBase<UserNotification, Domain.Entities.UserNotification>()
             .AfterMap((un, fi) =>
             {
-                fi ??= new IncomingFriendInvitationNotification();
-                fi.InviteId = Guid.Parse(un.Metadata!["invite_id"]);
+                fi.InviteId = un.Metadata!.TryGetValue("invite_id", out var inviteId)
+                    ? Guid.Parse(inviteId)
+                    : default;
+                fi.Type = UserNotificationType.IncomingFriendInvite;
             })
             .ReverseMap()
             .IncludeBase<Domain.Entities.UserNotification, UserNotification>()
@@ -63,4 +63,40 @@ public class UserNotification
                 un.Metadata![nameof(IncomingFriendInvitationNotification.InviteId).Underscore()] =
                     fi.InviteId.ToString();
             });
+
+    void IMapFrom<AcceptedFriendInvitationNotification>.Mapping(Profile profile)
+        => profile
+            .CreateMap<UserNotification, AcceptedFriendInvitationNotification>()
+            .IncludeBase<UserNotification, Domain.Entities.UserNotification>()
+            .AfterMap((un, fi) =>
+            {
+                fi.InviteId = un.Metadata!.TryGetValue("invite_id", out var inviteId)
+                    ? Guid.Parse(inviteId)
+                    : default;
+                fi.InviterId = un.Metadata!.TryGetValue("inviter_id", out var inviterId)
+                    ? Guid.Parse(inviterId)
+                    : default;
+                fi.ChatGroupId = un.Metadata!.TryGetValue("group_id", out var groupId)
+                    ? Guid.Parse(groupId)
+                    : default;
+            })
+            .ReverseMap()
+            .IncludeBase<Domain.Entities.UserNotification, UserNotification>()
+            .AfterMap((fi, un) =>
+            {
+                un ??= new UserNotification();
+                un.Metadata![nameof(AcceptedFriendInvitationNotification.InviteId).Underscore()] =
+                    fi.InviteId.ToString();
+                un.Metadata![nameof(AcceptedFriendInvitationNotification.InviterId).Underscore()] =
+                    fi.InviterId.ToString();
+                un.Metadata![nameof(AcceptedFriendInvitationNotification.ChatGroupId).Underscore()] =
+                    fi.ChatGroupId.ToString();
+            });
+
+    void IMapFrom<DeclinedFriendInvitationNotification>.Mapping(Profile profile)
+        => profile
+            .CreateMap<UserNotification, DeclinedFriendInvitationNotification>()
+            .IncludeBase<UserNotification, AcceptedFriendInvitationNotification>()
+            .ReverseMap()
+            .IncludeBase<AcceptedFriendInvitationNotification, UserNotification>();
 }

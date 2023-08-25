@@ -1,32 +1,30 @@
 "use client";
 import React from "react";
-import { Badge, Button, ListboxItemProps } from "@nextui-org/react";
+import { Badge, Button, Link, ListboxItemProps } from "@nextui-org/react";
 import moment from "moment";
-import { UserNotificationType } from "@openapi/index";
+import { UserNotification, UserNotificationType } from "@openapi/index";
 import {
    useAcceptFriendInviteMutation,
    useDeclineFriendInviteMutation,
 } from "@web/api";
+import { useQueryClient } from "@tanstack/react-query";
 
 export interface NotificationEntryProps extends ListboxItemProps {
    startContent?: React.ReactNode;
    message?: React.ReactNode;
    notificationTypeIcon?: React.ReactNode;
-   id?: string;
-   type: UserNotificationType;
-   date?: Date;
+   notification?: UserNotification;
 }
 
 const NotificationEntry = ({
    notificationTypeIcon,
    id,
-   date,
    startContent,
+   notification,
    message,
-   key,
-   type,
    ...rest
 }: NotificationEntryProps) => {
+   const client = useQueryClient();
    const {
       mutateAsync: acceptFriendInvite,
       isLoading,
@@ -57,32 +55,88 @@ const NotificationEntry = ({
          >
             <p className={`text-small`}>{message}</p>
             <time className={`text-xs text-primary-400`}>
-               {moment(date).fromNow()}
+               {moment(new Date(notification.createdAt)).fromNow()}
             </time>
-            {type === UserNotificationType.INCOMING_FRIEND_INVITE && (
-               <div className={`w-full flex items-center justify-evenly`}>
+            {notification.type ===
+               UserNotificationType.INCOMING_FRIEND_INVITE && (
+               <div className={`w-full mt-1 flex items-center justify-evenly`}>
                   <Button
-                     className={`px-8`}
+                     className={`px-8 py-1`}
+                     onPress={async () => {
+                        await acceptFriendInvite(
+                           {
+                              inviteId: (notification as any).inviteId,
+                           },
+                           {
+                              onSuccess: async (_, { inviteId }) => {
+                                 client.setQueriesData<UserNotification[]>(
+                                    {
+                                       exact: false,
+                                       queryKey: [`notifications`],
+                                    },
+                                    (old) =>
+                                       old.filter(
+                                          (n) =>
+                                             (n as any).inviteId !== inviteId
+                                       )
+                                 );
+                              },
+                           }
+                        );
+                     }}
                      isLoading={isLoading}
                      radius={"full"}
                      size={"sm"}
-                     variant={"shadow"}
+                     variant={"light"}
                      color={"success"}
                   >
                      Accept
                   </Button>
                   <Button
-                     className={`px-8`}
+                     className={`px-8 py-0 text-xs`}
                      onPress={async (_) => {
-                        return await declineInviteError();
+                        await declineFriendInvite(
+                           {
+                              inviteId: (notification as any).inviteId,
+                           },
+                           {
+                              onSuccess: async (_, { inviteId }) => {
+                                 client.setQueriesData<UserNotification[]>(
+                                    {
+                                       exact: false,
+                                       queryKey: [`notifications`],
+                                    },
+                                    (old) =>
+                                       old.filter(
+                                          (n) =>
+                                             (n as any).inviteId !== inviteId
+                                       )
+                                 );
+                              },
+                           }
+                        );
                      }}
                      isLoading={declineLoading}
                      radius={"full"}
                      size={"sm"}
-                     variant={"shadow"}
+                     variant={"ghost"}
                      color={"danger"}
                   >
                      Decline
+                  </Button>
+               </div>
+            )}
+            {notification.type ===
+               UserNotificationType.ACCEPTED_FRIEND_INVITE && (
+               <div className={`w-full mt-1 flex items-center justify-center`}>
+                  <Button
+                     href={`?c=${(notification as any).chatGroupId}`}
+                     as={Link}
+                     size={"sm"}
+                     variant={"shadow"}
+                     color={"primary"}
+                  >
+                     Go to new chat group
                   </Button>
                </div>
             )}

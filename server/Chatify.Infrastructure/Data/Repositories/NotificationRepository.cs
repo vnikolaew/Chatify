@@ -33,7 +33,7 @@ public sealed class NotificationRepository(
         var newCursor = pagingCursorHelper.ToPagingCursor(notificationsPage.PagingState);
         return new CursorPaged<UserNotification>(
             notificationsPage
-                .To<UserNotification>(Mapper)
+                .Select(_ => _.To<UserNotification>(Mapper))
                 .ToList(),
             newCursor);
     }

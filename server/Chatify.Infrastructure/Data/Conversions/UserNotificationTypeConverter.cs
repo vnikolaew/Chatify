@@ -16,6 +16,10 @@ public class UserNotificationTypeConverter
         {
             UserNotificationType.IncomingFriendInvite =>
                 context.Mapper.Map<IncomingFriendInvitationNotification>(source),
+            UserNotificationType.AcceptedFriendInvite =>
+                context.Mapper.Map<AcceptedFriendInvitationNotification>(source),
+            UserNotificationType.DeclinedFriendInvite =>
+                context.Mapper.Map<DeclinedFriendInvitationNotification>(source),
             _ => default!
         };
     }

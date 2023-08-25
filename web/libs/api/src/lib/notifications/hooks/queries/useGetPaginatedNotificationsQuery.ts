@@ -33,6 +33,8 @@ const getPaginatedNotifications = async ({
    return data;
 };
 
+export const NOTIFICATIONS_KEY = `notifications`;
+
 export const useGetPaginatedNotificationsQuery = (
    model: GetPaginatedNotificationsModel,
    options?: Omit<
@@ -48,7 +50,7 @@ export const useGetPaginatedNotificationsQuery = (
    const client = useQueryClient();
 
    return useQuery({
-      queryKey: [`notifications`, model.pageSize, model.pagingCursor],
+      queryKey: [NOTIFICATIONS_KEY, model.pageSize, model.pagingCursor],
       queryFn: () => getPaginatedNotifications(model),
       cacheTime: DEFAULT_CACHE_TIME,
       staleTime: DEFAULT_STALE_TIME,

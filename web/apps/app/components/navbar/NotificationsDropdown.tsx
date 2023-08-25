@@ -1,25 +1,21 @@
 "use client";
 import {
-   Avatar,
    Badge,
    Button,
-   Listbox,
-   ListboxItem,
    Popover,
    PopoverContent,
    PopoverTrigger,
-   Skeleton,
    Tab,
    Tabs,
    useDisclosure,
 } from "@nextui-org/react";
 import React, { useState } from "react";
-import { AddUserIcon, BellIcon } from "@icons";
-import NotificationEntry from "@components/navbar/NotificationEntry";
+import { BellIcon } from "@icons";
 import {
    useGetPaginatedNotificationsQuery,
    useGetUnreadNotificationsQuery,
 } from "@web/api";
+import NotificationsTab from "@components/navbar/NotificationsTab";
 
 export interface NotificationsDropdownProps {}
 
@@ -54,7 +50,7 @@ const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
       enabled: selectedTab === NotificationTab.UNREAD,
    });
 
-   console.log(notifications?.[0]?.metadata?.userMedia ?? null);
+   console.log(notifications);
 
    return (
       <Popover
@@ -106,98 +102,17 @@ const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
                aria-label={`Notifications type`}
             >
                <Tab title={"All"} key={NotificationTab.ALL}>
-                  {isLoading ? (
-                     <LoadingNotifications count={4} />
-                  ) : (
-                     <Listbox
-                        onAction={(key) => {
-                           console.log(key);
-                           setTimeout(onClose, 500);
-                        }}
-                        variant={"shadow"}
-                        className={`px-1`}
-                     >
-                        {notifications?.map((notification, i) => (
-                           <ListboxItem
-                              className={`px-0`}
-                              variant={"faded"}
-                              color={"default"}
-                              key={i}
-                           >
-                              <NotificationEntry
-                                 type={notification.type}
-                                 message={notification.summary}
-                                 startContent={
-                                    <Avatar
-                                       src={
-                                          notification?.metadata?.userMedia
-                                             ?.mediaUrl
-                                       }
-                                       isBordered
-                                       size={"sm"}
-                                       radius={"full"}
-                                       color={"primary"}
-                                    />
-                                 }
-                                 notificationTypeIcon={
-                                    <AddUserIcon
-                                       className={`fill-foreground`}
-                                       size={10}
-                                    />
-                                 }
-                                 key={notification.id}
-                              />
-                           </ListboxItem>
-                        ))}
-                     </Listbox>
-                  )}
+                  <NotificationsTab
+                     notifications={notifications}
+                     loading={isLoading}
+                  />
                </Tab>
                <Tab title={"Unread"} key={NotificationTab.UNREAD}>
-                  {unreadLoading ? (
-                     <LoadingNotifications count={4} />
-                  ) : (
-                     <Listbox
-                        onAction={(key) => {
-                           console.log(key);
-                           setTimeout(onClose, 500);
-                        }}
-                        variant={"shadow"}
-                        className={`px-1`}
-                     >
-                        {unreadNotifications?.map((notification, i) => (
-                           <ListboxItem
-                              className={`px-0`}
-                              variant={"faded"}
-                              color={"default"}
-                              key={i}
-                           >
-                              <NotificationEntry
-                                 type={notification.type}
-                                 message={notification.summary}
-                                 startContent={
-                                    <Avatar
-                                       src={
-                                          notification?.metadata?.userMedia
-                                             ?.mediaUrl
-                                       }
-                                       isBordered
-                                       size={"sm"}
-                                       radius={"full"}
-                                       color={"primary"}
-                                    />
-                                 }
-                                 notificationTypeIcon={
-                                    <AddUserIcon
-                                       className={`fill-foreground`}
-                                       size={10}
-                                    />
-                                 }
-                                 key={notification.id}
-                              />
-                           </ListboxItem>
-                        ))}
-                     </Listbox>
-                  )}
+                  <NotificationsTab
+                     noNotificationsMessage={"No new unread notifications."}
+                     notifications={unreadNotifications}
+                     loading={unreadLoading}
+                  />
                </Tab>
             </Tabs>
          </PopoverContent>
@@ -205,26 +120,4 @@ const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
    );
 };
 
-const LoadingNotifications = ({ count }: { count: number }) => {
-   return (
-      <div className={`flex flex-col gap-2`}>
-         {Array.from({ length: count }).map((_, i) => (
-            <div
-               key={i}
-               className={`flex px-2 items-center justify-between gap-4`}
-            >
-               <Skeleton className={`w-10 h-10 rounded-full`} />
-               <div
-                  className={`flex  h-full grow-[1] flex-col justify-center items-start gap-1`}
-               >
-                  <Skeleton className={`text-small rounded-full h-3 w-3/4`} />
-                  <Skeleton
-                     className={`text-xs h-2 w-1/3 rounded-full text-primary-400`}
-                  />
-               </div>
-            </div>
-         ))}
-      </div>
-   );
-};
 export default NotificationsDropdown;

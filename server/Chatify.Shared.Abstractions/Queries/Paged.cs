@@ -49,5 +49,8 @@ public sealed class CursorPaged<T> : List<T>
         AddRange(items);
         PagingCursor = pagingCursor;
     }
+
+    public CursorPaged<TResult> Map<TResult>(Func<T, TResult> map)
+        => new(this.Select(map), PagingCursor);
 }
 

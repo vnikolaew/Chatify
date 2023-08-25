@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using AutoMapper;
 using Chatify.Application.Common.Mappings;
-using Chatify.Infrastructure.Data.Models;
 
 namespace Chatify.Infrastructure.Common.Mappings;
 
@@ -9,9 +8,6 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
         => ApplyMappingsFromAssembly(Assembly.GetExecutingAssembly());
-
-    public MappingProfile(Assembly assembly)
-        => ApplyMappingsFromAssembly(assembly);
 
     private void ApplyMappingsFromAssembly(Assembly assembly)
     {

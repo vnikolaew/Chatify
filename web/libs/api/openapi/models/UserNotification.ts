@@ -3,17 +3,18 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { User } from "./User";
-import type { UserNotificationType } from "./UserNotificationType";
+import type { User } from './User';
+import type { UserNotificationMetadata } from './UserNotificationMetadata';
+import type { UserNotificationType } from './UserNotificationType';
 
 export type UserNotification = {
-   id?: string;
-   userId?: string;
-   user?: User;
-   createdAt?: string;
-   updatedAt?: string | null;
-   type?: UserNotificationType;
-   metadata?: Record<string, string | null | any> | null;
-   summary?: string | null;
-   read?: boolean;
+    id?: string;
+    userId?: string;
+    user?: User;
+    createdAt?: string;
+    updatedAt?: string | null;
+    type?: UserNotificationType;
+    metadata?: UserNotificationMetadata;
+    summary?: string | null;
+    read?: boolean;
 };

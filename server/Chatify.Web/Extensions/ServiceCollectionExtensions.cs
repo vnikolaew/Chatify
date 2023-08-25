@@ -1,8 +1,12 @@
-﻿using System.Reflection;
+﻿using System.Collections.Immutable;
+using System.Reflection;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+using Chatify.Domain.Entities;
 using Chatify.Infrastructure;
 using Chatify.Web.Middleware;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.OpenApi.Models;
 
 namespace Chatify.Web.Extensions;
@@ -25,9 +29,14 @@ public static class ServiceCollectionExtensions
             .AddCors()
             .AddProblemDetails(opts => { opts.CustomizeProblemDetails = _ => { }; })
             .AddConfiguredSwagger()
-            .AddControllers(opts => opts.Filters.Add<GlobalExceptionFilter>())
+            .Configure<KestrelServerOptions>(opts => opts.AllowSynchronousIO = true)
+            .AddControllers(opts =>
+            {
+                opts.Filters.Add<GlobalExceptionFilter>();
+            })
             .AddJsonOptions(opts =>
             {
+                opts.JsonSerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
                 opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 opts.JsonSerializerOptions.Converters.Add(new IPAddressConverter());
             })
@@ -46,6 +55,19 @@ public static class ServiceCollectionExtensions
                 {
                     Version = "v1",
                     Title = "Chatify Server",
+                });
+                opts.SelectSubTypesUsing(baseType =>
+                {
+                    if ( baseType == typeof(UserNotification) )
+                    {
+                        return new[]
+                        {
+                            typeof(UserNotification),
+                            typeof(IncomingFriendInvitationNotification),
+                        };
+                    }
+
+                    return ImmutableArray<Type>.Empty;
                 });
                 opts.SwaggerGeneratorOptions.Servers = new List<OpenApiServer>()
                 {

@@ -2,7 +2,7 @@
 
 using Metadata = Dictionary<string, string>;
 
-public abstract class UserNotification
+public class UserNotification
 {
     public Guid Id { get; set; }
 
@@ -14,11 +14,11 @@ public abstract class UserNotification
 
     public DateTimeOffset? UpdatedAt { get; set; }
 
-    public abstract UserNotificationType Type { get; set; }
+    public virtual UserNotificationType Type { get; set; }
 
     public UserNotificationMetadata? Metadata { get; set; }
 
-    public string? Summary { get; set; }
+    public virtual string? Summary { get; set; }
 
     public bool Read { get; set; } = false;
 }
@@ -30,6 +30,30 @@ public class IncomingFriendInvitationNotification : UserNotification
     public override UserNotificationType Type
     {
         get => UserNotificationType.IncomingFriendInvite;
+        set { }
+    }
+}
+
+public class AcceptedFriendInvitationNotification : UserNotification
+{
+    public Guid InviteId { get; set; }
+
+    public Guid ChatGroupId { get; set; }
+    public Guid InviterId { get; set; }
+    
+    public override UserNotificationType Type
+    {
+        get => UserNotificationType.AcceptedFriendInvite;
+        set { }
+    }
+}
+
+public class DeclinedFriendInvitationNotification
+    : AcceptedFriendInvitationNotification
+{
+    public override UserNotificationType Type
+    {
+        get => UserNotificationType.DeclinedFriendInvite;
         set { }
     }
 }
