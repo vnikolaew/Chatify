@@ -35,17 +35,13 @@ public sealed class ChatGroupMembersRepository(
 
         // Add new user to both database and cache set:
         var dbSaveTask = base.SaveAsync(entity, cancellationToken);
+        
+        // Update materialized view:
         var groupMemberByUserIdSaveTask = DbMapper
-            .InsertAsync(new ChatGroupMemberByUser
-            {
-                UserId = entity.UserId,
-                CreatedAt = entity.CreatedAt,
-                ChatGroupId = entity.ChatGroupId,
-                Id = entity.Id
-            });
+            .InsertAsync(ChatGroupMemberByUser.From(entity));
+        
         var cacheSaveTask = cache.BloomFilterAddAsync(groupKey, userKey);
 
-        // (dbSaveTask, cacheSaveTask, groupMemberByUserIdSaveTask).when
         var saveTasks = new[] { dbSaveTask, cacheSaveTask, groupMemberByUserIdSaveTask };
 
         await Task.WhenAll(saveTasks).ConfigureAwait(false);

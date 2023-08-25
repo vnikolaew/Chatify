@@ -19,7 +19,7 @@ public sealed class FriendshipsRepository(IMapper mapper, Mapper dbMapper,
         ISerializer serializer)
     : BaseCassandraRepository<FriendsRelation, Models.FriendsRelation, Guid>(mapper, dbMapper,
             changeTracker,
-            nameof(FriendsRelation.FriendOneId).Underscore()),
+            nameof(FriendsRelation.Id).Underscore()),
         IFriendshipsRepository
 {
     private static RedisKey GetUserFriendsCacheKey(Guid userId)
@@ -35,6 +35,7 @@ public sealed class FriendshipsRepository(IMapper mapper, Mapper dbMapper,
         // Make a duplicate DB entry with friend Ids swapped (for better querying):
         var swappedFriendRelation = new FriendsRelation
         {
+            GroupId = entity.GroupId,
             Id = entity.Id,
             FriendTwoId = entity.FriendOneId,
             FriendOneId = entity.FriendTwoId,
@@ -45,24 +46,6 @@ public sealed class FriendshipsRepository(IMapper mapper, Mapper dbMapper,
         var saveTwo = base.SaveAsync(swappedFriendRelation, cancellationToken);
         await Task.WhenAll(saveOne, saveTwo);
 
-        // Store each user as a friend in the other user's sorted set of friends:
-        var storeTasks = new[]
-        {
-            cache.SortedSetAddAsync(
-                new RedisKey(GetUserFriendsCacheKey(entity.FriendOneId)),
-                new RedisValue(entity.FriendTwoId.ToString()),
-                entity.CreatedAt.Ticks,
-                SortedSetWhen.NotExists),
-            cache.SortedSetAddAsync(
-                new RedisKey(GetUserFriendsCacheKey(entity.FriendTwoId)),
-                new RedisValue(entity.FriendOneId.ToString()),
-                entity.CreatedAt.Ticks,
-                SortedSetWhen.NotExists),
-            // _cache.SetAsync($"user:{entity.FriendOneId}", users[0]),
-            // _cache.SetAsync($"user:{entity.FriendTwoId}", users[1]),
-        };
-
-        var results = await Task.WhenAll(storeTasks);
         return saveOne.Result;
     }
 

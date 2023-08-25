@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.InteropServices.JavaScript;
 using Cassandra;
 using Cassandra.Mapping;
 using Chatify.Domain.Common;
@@ -11,7 +12,7 @@ using Mapper = Cassandra.Mapping.Mapper;
 namespace Chatify.Infrastructure.Data.Repositories;
 
 public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
-    IDomainRepository<TEntity, TId> where TEntity : class
+    IDomainRepository<TEntity, TId> where TEntity : class where TDataEntity : notnull
 {
     protected readonly IMapper Mapper;
     protected readonly Mapper DbMapper;
@@ -54,7 +55,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         TId id, Action<TEntity> updateAction,
         CancellationToken cancellationToken = default)
     {
-        var dataEntity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {_idColumn} = ?", id);
+        var dataEntity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {_idColumn} = ? ALLOW FILTERING;", id);
         if ( dataEntity is null ) return default;
 
         var entity = dataEntity.To<TEntity>(Mapper);
@@ -62,14 +63,14 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         var changedProps = _changeTracker.Track(entity, updateAction);
         Mapper.Map(entity, dataEntity);
 
-        var cql = GetUpdateCqlStatement(id, changedProps);
+        var cql = GetUpdateCqlStatement(dataEntity, changedProps);
         await DbMapper.ExecuteAsync(cql);
 
         return entity;
     }
 
     private static Cql GetUpdateCqlStatement(
-        TId id,
+        TDataEntity entity,
         Dictionary<string, object?> changedProps)
     {
         if ( changedProps.Count == 0 ) return new Cql("SELECT 1 + 1 ;");
@@ -80,10 +81,28 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
             .Select(pi => MappingDefinition.GetColumnDefinition(pi).ColumnName ?? pi.Name.Underscore())
             .ToList();
 
+        var primaryKeys = MappingDefinition
+            .PartitionKeys
+            .ToHashSet();
+        var clusteringKeys =  MappingDefinition
+            .ClusteringKeys
+            .Select(_ => _.Item1)
+            .ToHashSet();
+        primaryKeys.UnionWith(clusteringKeys);
+        
+        var partitionKeyValues = entity
+            .GetType()
+            .GetProperties()
+            .OrderBy(pi => MappingDefinition.GetColumnDefinition(pi).ColumnName)
+            .Where(pi => primaryKeys.Contains(MappingDefinition.GetColumnDefinition(pi).ColumnName))
+            .Select(pi => pi.GetValue(entity))
+            .ToList();
+
+        var filterStatement = string.Join(" AND ", primaryKeys.OrderBy(_ => _).Select(key => $"{key} = ?"));
         var cql = new Cql($" UPDATE {MappingDefinition.TableName} SET {string.Join(
             ", ",
             tableColumnNames
-                .Select(c => $"{c} = ?").ToList())} WHERE {MappingDefinition.PartitionKeys[0].ToLower()} = ?;")
+                .Select(c => $"{c} = ?").ToList())} WHERE {filterStatement};")
             .WithOptions(opts =>
                 opts.SetConsistencyLevel(ConsistencyLevel.Quorum)
                     .SetRetryPolicy(new DefaultRetryPolicy()));
@@ -93,7 +112,8 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
             .SetValue(cql, changedProps
                 .Select(_ => _.Value)
-                .Append(id).ToArray());
+                .Append(partitionKeyValues)
+                .ToArray());
 
         return cql;
     }
@@ -103,7 +123,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         Func<TEntity, Task> updateAction,
         CancellationToken cancellationToken = default)
     {
-        var dataEntity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {_idColumn} = ?", id);
+        var dataEntity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {_idColumn} = ? ALLOW FILTERING;", id);
         if ( dataEntity is null ) return default;
 
         var entity = dataEntity.To<TEntity>(Mapper);
@@ -111,7 +131,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         var changedProps = await _changeTracker.TrackAsync(entity, updateAction);
         Mapper.Map(entity, dataEntity);
 
-        var cql = GetUpdateCqlStatement(id, changedProps);
+        var cql = GetUpdateCqlStatement(dataEntity, changedProps);
         await DbMapper.ExecuteAsync(cql);
 
         return entity;
@@ -130,8 +150,8 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         }
     }
 
-    public Task<TEntity?> GetAsync(TId id, CancellationToken cancellationToken = default)
+    public virtual Task<TEntity?> GetAsync(TId id, CancellationToken cancellationToken = default)
         => DbMapper
-            .FirstOrDefaultAsync<TDataEntity>($"WHERE {_idColumn} = ?", id)
-            .ToAsync<TDataEntity, TEntity>(Mapper);
+            .FirstOrDefaultAsync<TDataEntity>($"WHERE {_idColumn} = ? ALLOW FILTERING;", id)
+            .ToAsync<TDataEntity, TEntity>(Mapper)!;
 }

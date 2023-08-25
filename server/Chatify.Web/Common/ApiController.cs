@@ -13,7 +13,7 @@ namespace Chatify.Web.Common;
 public abstract class ApiController : ControllerBase
 {
     private IDispatcher? _dispatcher;
-
+    
     protected IDispatcher Dispatcher
         => _dispatcher ??= HttpContext.RequestServices.GetRequiredService<IDispatcher>();
 

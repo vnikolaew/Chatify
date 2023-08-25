@@ -1,7 +1,6 @@
 ﻿using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Friendships;
-using Chatify.Domain.Events.Groups;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Server;
@@ -12,16 +11,19 @@ using StackExchange.Redis;
 
 namespace Chatify.Infrastructure.Friendships.EventHandlers;
 
-internal sealed class FriendInvitationAcceptedEventHandler(IHubContext<ChatifyHub, IChatifyHubClient> hubContext,
+internal sealed class FriendInvitationAcceptedEventHandler(
+        IHubContext<ChatifyHub, IChatifyHubClient> hubContext,
+        INotificationRepository notifications,
+        IUserRepository users,
         IDatabase cache,
-        IChatGroupRepository groups, IGuidGenerator guidGenerator, IClock clock, IEventDispatcher eventDispatcher)
+        IGuidGenerator guidGenerator,
+        IClock clock)
     : IEventHandler<FriendInvitationAcceptedEvent>
 {
-    private readonly IEventDispatcher _eventDispatcher = eventDispatcher;
-    private readonly IGuidGenerator _guidGenerator = guidGenerator;
-    private readonly IChatGroupRepository _groups = groups;
-    private readonly IClock _clock = clock;
-
+    
+    private static RedisKey GetUserFriendsCacheKey(Guid userId)
+        => $"user:{userId}:friends";
+    
     public async Task HandleAsync(
         FriendInvitationAcceptedEvent @event,
         CancellationToken cancellationToken = default)
@@ -29,24 +31,47 @@ internal sealed class FriendInvitationAcceptedEventHandler(IHubContext<ChatifyHu
         var cacheSaveTasks = new Task[]
         {
             cache.SortedSetAddAsync(
-                new RedisKey($"user:{@event.InviterId}:friends"),
+                GetUserFriendsCacheKey(@event.InviterId),
                 new RedisValue(@event.InviteeId.ToString()),
                 @event.Timestamp.Ticks,
                 SortedSetWhen.NotExists),
             cache.SortedSetAddAsync(
-                new RedisKey($"user:{@event.InviteeId}:friends"),
+                GetUserFriendsCacheKey(@event.InviteeId),
                 new RedisValue(@event.InviterId.ToString()),
                 @event.Timestamp.Ticks,
                 SortedSetWhen.NotExists),
         };
         await Task.WhenAll(cacheSaveTasks);
 
-        
+        await CreateAndSaveNotification(@event, cancellationToken);
         await hubContext
             .Clients
             .User(@event.InviterId.ToString())
             .FriendInvitationAccepted(new FriendInvitationAccepted(
                 @event.InviteeId,
                 @event.Timestamp));
+    }
+
+    private async Task CreateAndSaveNotification(
+        FriendInvitationAcceptedEvent @event,
+        CancellationToken cancellationToken)
+    {
+        var inviter = await users.GetAsync(@event.InviterId, cancellationToken);
+        var notification = new AcceptedFriendInvitationNotification
+        {
+            Id = guidGenerator.New(),
+            UserId = @event.InviteeId,
+            Type = UserNotificationType.AcceptedFriendInvite,
+            Summary = $"{inviter.Username} accepted your friend request.",
+            CreatedAt = clock.Now,
+            Metadata = new UserNotificationMetadata
+            {
+                UserMedia = inviter.ProfilePicture
+            },
+            InviteId = @event.InviteId,
+            InviterId = @event.InviterId,
+            ChatGroupId = @event.NewGroupId
+        };
+        await notifications.SaveAsync(notification, cancellationToken);
     }
 }

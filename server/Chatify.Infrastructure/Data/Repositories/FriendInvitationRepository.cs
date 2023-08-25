@@ -3,14 +3,18 @@ using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Services;
-using Microsoft.Extensions.FileProviders;
+using Humanizer;
 using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
 public sealed class FriendInvitationRepository(IMapper mapper, Mapper dbMapper, IEntityChangeTracker changeTracker)
     :
-        BaseCassandraRepository<FriendInvitation, Models.FriendInvitation, Guid>(mapper, dbMapper, changeTracker),
+        BaseCassandraRepository<FriendInvitation, Models.FriendInvitation, Guid>(
+            mapper,
+            dbMapper,
+            changeTracker,
+            nameof(FriendInvitation.Id).Underscore()),
         IFriendInvitationRepository
 {
     public async Task<List<FriendInvitation>> AllSentByUserAsync(
@@ -24,6 +28,13 @@ public sealed class FriendInvitationRepository(IMapper mapper, Mapper dbMapper, 
                    .ToList<FriendInvitation>(Mapper) ??
                new List<FriendInvitation>();
     }
+
+    public override Task<FriendInvitation?> GetAsync(
+        Guid id, CancellationToken cancellationToken = default)
+        => DbMapper
+            .FirstOrDefaultAsync<Models.FriendInvitation>(
+                "WHERE id = ? ALLOW FILTERING;", id)
+            .ToAsync<Models.FriendInvitation, FriendInvitation>(Mapper)!;
 
     public async Task<FriendInvitation?> ForUsersAsync(
         Guid userOneId,

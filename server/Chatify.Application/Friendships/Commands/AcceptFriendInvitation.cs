@@ -27,7 +27,9 @@ internal sealed class AcceptFriendInvitationHandler :
     private readonly IIdentityContext _identityContext;
     private readonly IDomainRepository<FriendInvitation, Guid> _friendInvites;
     private readonly IChatGroupRepository _groups;
+    private readonly IUserRepository _users;
     private readonly IClock _clock;
+    private readonly IChatGroupMemberRepository _members;
     private readonly IEventDispatcher _eventDispatcher;
     private readonly IGuidGenerator _guidGenerator;
     private readonly IFriendshipsRepository _friends;
@@ -37,7 +39,10 @@ internal sealed class AcceptFriendInvitationHandler :
         IDomainRepository<FriendInvitation, Guid> friendInvites,
         IFriendshipsRepository friends,
         IClock clock, IEventDispatcher eventDispatcher,
-        IGuidGenerator guidGenerator, IChatGroupRepository groups)
+        IGuidGenerator guidGenerator,
+        IChatGroupRepository groups,
+        IChatGroupMemberRepository members,
+        IUserRepository users)
     {
         _identityContext = identityContext;
         _friendInvites = friendInvites;
@@ -46,6 +51,8 @@ internal sealed class AcceptFriendInvitationHandler :
         _eventDispatcher = eventDispatcher;
         _guidGenerator = guidGenerator;
         _groups = groups;
+        _members = members;
+        _users = users;
     }
 
     public async Task<AcceptFriendInvitationResult> HandleAsync(
@@ -67,7 +74,7 @@ internal sealed class AcceptFriendInvitationHandler :
         {
             Id = friendsRelationId,
             FriendOneId = _identityContext.Id,
-            FriendTwoId = friendInvite.InviteeId,
+            FriendTwoId = friendInvite.InviterId,
             GroupId = groupId,
             CreatedAt = _clock.Now
         };
@@ -75,7 +82,7 @@ internal sealed class AcceptFriendInvitationHandler :
         // Save new friendship:
         await _friends.SaveAsync(friendsRelation, cancellationToken);
 
-        // Create new DM group between the two users: 
+        // Create new DM group between the two users and add them as group members: 
         var group = new ChatGroup
         {
             Id = groupId,
@@ -84,6 +91,33 @@ internal sealed class AcceptFriendInvitationHandler :
             CreatorId = friendInvite.InviterId,
         };
         await _groups.SaveAsync(group, cancellationToken);
+
+        var inviter = await _users.GetAsync(friendInvite.InviterId, cancellationToken);
+        var groupMembers = new ChatGroupMember[]
+        {
+            new()
+            {
+                Id = _guidGenerator.New(),
+                CreatedAt = _clock.Now,
+                ChatGroupId = group.Id,
+                UserId = _identityContext.Id,
+                Username = _identityContext.Username,
+                MembershipType = 0
+            },
+            new()
+            {
+                Id = _guidGenerator.New(),
+                CreatedAt = _clock.Now,
+                ChatGroupId = group.Id,
+                UserId = friendInvite.InviterId,
+                Username = inviter!.Username,
+                MembershipType = 0,
+            }
+        };
+        
+        await Task.WhenAll(groupMembers
+            .Select(m =>
+                _members.SaveAsync(m, cancellationToken)));
 
         // Update friend invite:
         await _friendInvites.UpdateAsync(
@@ -110,6 +144,7 @@ internal sealed class AcceptFriendInvitationHandler :
                 InviterId = friendInvite.InviterId,
                 InviteeId = friendInvite.InviteeId,
                 InviteId = friendInvite.Id,
+                NewGroupId = group.Id,
                 Timestamp = _clock.Now
             }
         };

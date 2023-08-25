@@ -107,7 +107,7 @@ public static class DependencyInjection
             .AddTransient<IEmailSender, NullEmailSender>()
             .AddSingleton<IClock, UtcClock>()
             .AddTransient<IFileUploadService, LocalFileSystemUploadService>()
-            .AddTransient<IGuidGenerator, SnowflakeUuidGenerator>()
+            .AddTransient<IGuidGenerator, TimeUuidGenerator>()
             .AddTransient<IPasswordHasher, PasswordHasher>()
             .AddTransient<IPagingCursorHelper, CassandraPagingCursorHelper>()
             .AddTransient<ISerializer, SystemTextJsonSerializer>()
