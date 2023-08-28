@@ -54,7 +54,7 @@ internal sealed class DeclineFriendInvitationHandler :
 
         // Update friend invite:
         await _friendInvites.UpdateAsync(
-            friendInvite.Id,
+            friendInvite,
             invite =>
             {
                 invite.Status = FriendInvitationStatus.Declined;

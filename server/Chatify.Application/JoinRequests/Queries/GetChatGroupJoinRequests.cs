@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Domain.Entities;
@@ -10,7 +11,8 @@ using OneOf;
 
 namespace Chatify.Application.JoinRequests.Queries;
 
-using GetChatGroupJoinRequestsResult = OneOf<Error, List<GroupJoinRequestEntry>>;
+using GetChatGroupJoinRequestsResult =
+    OneOf<ChatGroupNotFoundError, UserIsNotGroupAdminError, List<GroupJoinRequestEntry>>;
 
 public record GroupJoinRequestEntry(
     ChatGroupJoinRequest JoinRequest,
@@ -47,10 +49,10 @@ internal sealed class GetChatGroupJoinRequestsHandler
         CancellationToken cancellationToken = default)
     {
         var group = await _groups.GetAsync(query.GroupId, cancellationToken);
-        if ( group is null ) return Error.New("");
+        if ( group is null ) return new ChatGroupNotFoundError();
 
         var isCurrentUserAdmin = group.AdminIds.Any(_ => _ == _identityContext.Id);
-        if ( !isCurrentUserAdmin ) return Error.New("");
+        if ( !isCurrentUserAdmin ) return new UserIsNotGroupAdminError(_identityContext.Id, group.Id);
 
         var requests = await _joinRequests
             .ByGroup(group.Id, cancellationToken);

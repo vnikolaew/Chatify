@@ -3,7 +3,8 @@
    "version": "0.0.0",
    "license": "MIT",
    "scripts": {
-      "openapi codegen": "openapi --input ./libs/api/openapi/swagger.yaml --output ./libs/api/openapi -c axios --exportCore false --exportServices false",
+      "openapi codegen": "openapi --input ./libs/api/openapi/swagger.yaml --output libs/api/openapi/index.ts -c axios --exportCore false --exportServices false",
+      "openapi codegen 2": "npx openapi-typescript ./libs/api/openapi/swagger.yaml -o ./libs/api/openapi/schema.d.ts",
       "restore": "npm install --force"
    },
    "private": true,
@@ -62,6 +63,7 @@
       "jest": "^29.4.1",
       "jest-environment-jsdom": "^29.4.1",
       "nx": "16.6.0",
+      "openapi-typescript": "^6.5.3",
       "openapi-typescript-codegen": "^0.25.0",
       "postcss": "^8.4.27",
       "prettier": "^2.6.2",

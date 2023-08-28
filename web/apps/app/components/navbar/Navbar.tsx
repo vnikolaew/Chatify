@@ -3,6 +3,7 @@ import React, { Fragment } from "react";
 import {
    Image,
    Link,
+   LinkProps,
    Navbar,
    NavbarBrand,
    NavbarContent,
@@ -12,10 +13,9 @@ import { usePathname } from "next/navigation";
 import NextLink from "next/link";
 import { useGetMyClaimsQuery } from "@web/api";
 import { useIsUserLoggedIn } from "@hooks";
-import UserDropdown from "@components/navbar/UserDropdown";
-import NotificationsDropdown from "@components/navbar/NotificationsDropdown";
+import { NotificationsDropdown, UserDropdown } from "@components/navbar";
 
-const NAV_LINKS = [
+const NAV_LINKS: (LinkProps & { label: string })[] = [
    {
       href: `/_playgrounds`,
       label: "Playgrounds",
@@ -23,11 +23,14 @@ const NAV_LINKS = [
    },
    {
       href: `/signup`,
-      label: "Sign Up",
+      color: `foreground`,
+      underline: "none",
+      label: "Create an account",
    },
    {
       href: `/signin`,
-      label: "Sign In",
+      color: `primary`,
+      label: "Sign in",
    },
 ];
 
@@ -70,15 +73,17 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
                   </NavbarItem>
                </Fragment>
             ) : (
-               NAV_LINKS.map((link, i) => (
-                  <NavbarItem isActive={pathname === link.href} key={i}>
+               NAV_LINKS.map(({ href, color, label, ...rest }, i) => (
+                  <NavbarItem isActive={pathname === href} key={i}>
                      <Link
                         size={"lg"}
-                        color={(link.color as any) ?? "foreground"}
-                        className={`text-foreground group-[data-active=true]:text-primary`}
-                        href={link.href}
+                        color={(color as any) ?? "foreground"}
+                        underline={"hover"}
+                        // className={`text-foreground group-[data-active=true]:text-primary`}
+                        href={href}
+                        {...rest}
                      >
-                        {link.label}
+                        {label}
                      </Link>
                   </NavbarItem>
                ))

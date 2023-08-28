@@ -120,7 +120,7 @@ internal sealed class EditUserDetailsHandler
             if ( result.Value is PasswordChangeError passwordChangeError ) return passwordChangeError;
         }
 
-        await _users.UpdateAsync(user.Id, user =>
+        await _users.UpdateAsync(user, user =>
         {
             if ( command.PhoneNumbers?.Any() ?? false )
             {

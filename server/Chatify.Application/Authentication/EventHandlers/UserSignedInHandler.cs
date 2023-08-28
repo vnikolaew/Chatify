@@ -6,34 +6,23 @@ using Microsoft.Extensions.Logging;
 
 namespace Chatify.Application.Authentication.EventHandlers;
 
-public sealed class UserSignedInHandler
-    : IEventHandler<UserSignedInEvent>
-{
-    private readonly ILogger<UserSignedInHandler> _logger;
-    private readonly IUserRepository _users;
-    private readonly IClock _clock;
-
-    public UserSignedInHandler(
+public sealed class UserSignedInHandler(
         ILogger<UserSignedInHandler> logger,
         IClock clock,
         IUserRepository userRepo)
-    {
-        _logger = logger;
-        _clock = clock;
-        _users = userRepo;
-    }
-
+    : IEventHandler<UserSignedInEvent>
+{
     public async Task HandleAsync(
         UserSignedInEvent @event,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("User with Id '{Id}' signed in at {DateTime:u}",
-            @event.UserId, _clock.Now);
+        logger.LogInformation("User with Id '{Id}' signed in at {DateTime:u}",
+            @event.UserId, clock.Now);
 
-        await _users.UpdateAsync(@event.UserId, user =>
+        await userRepo.UpdateAsync(@event.UserId, user =>
         {
-            user.LastLogin = _clock.Now;
-            user.UpdatedAt = _clock.Now;
+            user.LastLogin = clock.Now;
+            user.UpdatedAt = clock.Now;
         }, cancellationToken);
     }
 }

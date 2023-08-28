@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 // @ts-ignore
-import { ChatGroupMember } from "../../../../../openapi";
+import { ChatGroupMember, ChatGroupMemberApiResponse } from "@openapi";
 
 export interface GetUserMembershipDetailsModel {
    chatGroupId: string;
@@ -16,12 +16,13 @@ export interface GetUserMembershipDetailsModel {
 const getUserMembershipDetails = async (
    model: GetUserMembershipDetailsModel
 ): Promise<ChatGroupMember> => {
-   const { status, data } = await chatGroupsClient.get(
-      `members/${model.chatGroupId}/${model.userId}`,
-      {
-         headers: {},
-      }
-   );
+   const { status, data } =
+      await chatGroupsClient.get<ChatGroupMemberApiResponse>(
+         `members/${model.chatGroupId}/${model.userId}`,
+         {
+            headers: {},
+         }
+      );
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
@@ -30,7 +31,7 @@ const getUserMembershipDetails = async (
       throw new Error("Not found");
    }
 
-   return data;
+   return data.data!;
 };
 
 export const useGetUserMembershipDetailsQuery = (

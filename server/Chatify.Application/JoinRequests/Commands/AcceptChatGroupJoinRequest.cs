@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
@@ -13,7 +14,7 @@ using OneOf;
 
 namespace Chatify.Application.JoinRequests.Commands;
 
-using AcceptChatGroupJoinRequestResult = OneOf<Error, Guid>;
+using AcceptChatGroupJoinRequestResult = OneOf<ChatGroupNotFoundError, UserIsNotGroupAdminError, Error, Guid>;
 
 public record AcceptChatGroupJoinRequest(
     [Required] Guid RequestId
@@ -59,12 +60,12 @@ internal sealed class AcceptChatGroupJoinRequestHandler
         if ( request is null ) return Error.New("");
 
         var group = await _groups.GetAsync(request.ChatGroupId, cancellationToken);
-        if ( group is null ) return Error.New("");
+        if ( group is null ) return new ChatGroupNotFoundError();
 
         var isCurrentUserGroupAdmin = group
             .AdminIds
             .Any(_ => _ == _identityContext.Id);
-        if ( !isCurrentUserGroupAdmin ) return Error.New("");
+        if ( !isCurrentUserGroupAdmin ) return new UserIsNotGroupAdminError(_identityContext.Id, group.Id);
 
         var user = await _users.GetAsync(request.UserId, cancellationToken);
 

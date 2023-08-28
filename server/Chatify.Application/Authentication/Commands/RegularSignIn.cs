@@ -15,30 +15,21 @@ public sealed record RegularSignIn(
     [Required] bool RememberMe
     ) : ICommand<RegularSignInResult>;
 
-internal sealed class RegularSignInHandler
-    : ICommandHandler<RegularSignIn, RegularSignInResult>
-{
-    private readonly IAuthenticationService _authService;
-    private readonly IEventDispatcher _eventDispatcher;
-
-    public RegularSignInHandler(
+internal sealed class RegularSignInHandler(
         IAuthenticationService authService,
         IEventDispatcher eventDispatcher)
-    {
-        _authService = authService;
-        _eventDispatcher = eventDispatcher;
-    }
-
+    : ICommandHandler<RegularSignIn, RegularSignInResult>
+{
     public async Task<RegularSignInResult> HandleAsync(
         RegularSignIn command,
         CancellationToken cancellationToken = default)
     {
-        var result = await _authService
+        var result = await authService
             .RegularSignInAsync(command, cancellationToken);
         if ( result.IsT0 ) return new SignInError(result.AsT0.Message);
 
         var res = result.AsT1!;
-        await _eventDispatcher.PublishAsync(new UserSignedInEvent
+        await eventDispatcher.PublishAsync(new UserSignedInEvent
         {
             Timestamp = DateTime.Now,
             UserId = res.UserId,

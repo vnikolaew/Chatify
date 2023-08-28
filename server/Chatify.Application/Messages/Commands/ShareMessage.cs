@@ -23,61 +23,47 @@ public record ShareMessage(
     string Content
 ) : ICommand<ShareMessageResult>;
 
-internal sealed class ShareMessageHandler : ICommandHandler<ShareMessage, ShareMessageResult>
-{
-    private readonly IIdentityContext _identityContext;
-    private readonly IGuidGenerator _guidGenerator;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IClock _clock;
-    private readonly IChatGroupRepository _groups;
-    private readonly IChatMessageRepository _messages;
-    private readonly IChatGroupMemberRepository _members;
-    
-    public const string SharedMessageIdKey = "shared-message-id";
-
-    public ShareMessageHandler(IIdentityContext identityContext, IClock clock, IChatGroupRepository groups,
-        IChatGroupMemberRepository members, IChatMessageRepository messages, IGuidGenerator guidGenerator,
+internal sealed class ShareMessageHandler(IIdentityContext identityContext,
+        IClock clock,
+        IChatGroupRepository groups,
+        IChatGroupMemberRepository members,
+        IChatMessageRepository messages,
+        IGuidGenerator guidGenerator,
         IEventDispatcher eventDispatcher)
-    {
-        _identityContext = identityContext;
-        _clock = clock;
-        _groups = groups;
-        _members = members;
-        _messages = messages;
-        _guidGenerator = guidGenerator;
-        _eventDispatcher = eventDispatcher;
-    }
+    : ICommandHandler<ShareMessage, ShareMessageResult>
+{
+    public const string SharedMessageIdKey = "shared-message-id";
 
     public async Task<ShareMessageResult> HandleAsync(
         ShareMessage command,
         CancellationToken cancellationToken = default)
     {
-        var message = await _messages.GetAsync(command.MessageId, cancellationToken);
+        var message = await messages.GetAsync(command.MessageId, cancellationToken);
         if ( message is null ) return new MessageNotFoundError(command.MessageId);
 
-        if ( message.UserId != _identityContext.Id )
-            return new UserIsNotMessageSenderError(message.Id, _identityContext.Id);
+        if ( message.UserId != identityContext.Id )
+            return new UserIsNotMessageSenderError(message.Id, identityContext.Id);
 
-        var forwardToGroup = await _groups.GetAsync(command.GroupId, cancellationToken);
+        var forwardToGroup = await groups.GetAsync(command.GroupId, cancellationToken);
         if ( forwardToGroup is null ) return new ChatGroupNotFoundError();
 
-        var isMember = await _members.Exists(forwardToGroup.Id, _identityContext.Id, cancellationToken);
-        if ( !isMember ) return new UserIsNotMemberError(_identityContext.Id, forwardToGroup.Id);
+        var isMember = await members.Exists(forwardToGroup.Id, identityContext.Id, cancellationToken);
+        if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, forwardToGroup.Id);
 
-        var messageId = _guidGenerator.New();
+        var messageId = guidGenerator.New();
         var forwardedMessage = new ChatMessage
         {
             Id = messageId,
-            UserId = _identityContext.Id,
+            UserId = identityContext.Id,
             ChatGroup = forwardToGroup,
             Content = command.Content,
-            CreatedAt = _clock.Now,
+            CreatedAt = clock.Now,
             Metadata = new Dictionary<string, string> { { SharedMessageIdKey, message.Id.ToString() } },
             ChatGroupId = forwardToGroup.Id
         };
 
-        await _messages.SaveAsync(forwardedMessage, cancellationToken);
-        await _eventDispatcher.PublishAsync(new ChatMessageSentEvent
+        await messages.SaveAsync(forwardedMessage, cancellationToken);
+        await eventDispatcher.PublishAsync(new ChatMessageSentEvent
         {
             UserId = forwardedMessage.UserId,
             Content = forwardedMessage.Content,

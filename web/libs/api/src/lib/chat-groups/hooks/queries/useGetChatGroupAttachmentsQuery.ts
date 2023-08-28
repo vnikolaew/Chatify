@@ -1,6 +1,7 @@
 import { chatGroupsClient } from "../../client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
+import { ChatGroupAttachmentCursorPagedApiResponse } from "@openapi";
 
 export interface GetChatGroupAttachmentsModel {
    groupId: string;
@@ -10,19 +11,20 @@ export interface GetChatGroupAttachmentsModel {
 
 const getChatGroupAttachments = async (model: GetChatGroupAttachmentsModel) => {
    const { groupId, ...request } = model;
-   const { status, data } = await chatGroupsClient.get(
-      `${groupId}/attachments`,
-      {
-         headers: {},
-         data: request,
-      }
-   );
+   const { status, data } =
+      await chatGroupsClient.get<ChatGroupAttachmentCursorPagedApiResponse>(
+         `${groupId}/attachments`,
+         {
+            headers: {},
+            data: request,
+         }
+      );
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
    }
 
-   return data;
+   return data.data!;
 };
 
 export const useGetChatGroupAttachmentsQuery = (

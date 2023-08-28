@@ -11,6 +11,14 @@ export interface ProvidersProps extends PropsWithChildren {
    isDevelopment: boolean;
 }
 
+export const OAuthProvider = ({ children }: PropsWithChildren) => {
+   return (
+      <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
+         {children}
+      </GoogleOAuthProvider>
+   );
+};
+
 const Providers = ({ children, isDevelopment }: ProvidersProps) => {
    useEffect(() => {
       window.navigator.geolocation.getCurrentPosition((position) => {
@@ -26,11 +34,7 @@ const Providers = ({ children, isDevelopment }: ProvidersProps) => {
       <QueryClientProvider client={queryClient}>
          <NextUIProvider>
             <NextThemesProvider defaultTheme={"dark"} attribute={"class"}>
-               <GoogleOAuthProvider
-                  clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
-               >
-                  {children}
-               </GoogleOAuthProvider>
+               <OAuthProvider>{children}</OAuthProvider>
             </NextThemesProvider>
          </NextUIProvider>
          {isDevelopment && (

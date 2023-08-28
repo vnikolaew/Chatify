@@ -13,7 +13,7 @@ namespace Chatify.Web.Common;
 public abstract class ApiController : ControllerBase
 {
     private IDispatcher? _dispatcher;
-    
+
     protected IDispatcher Dispatcher
         => _dispatcher ??= HttpContext.RequestServices.GetRequiredService<IDispatcher>();
 
@@ -32,10 +32,17 @@ public abstract class ApiController : ControllerBase
         => Dispatcher.QueryAsync(query, cancellationToken);
 
     protected IActionResult Accepted(Unit _) => Accepted();
-    
+
+    protected new IActionResult Accepted(string? message = default)
+        => Accepted(ApiResponse<Unit>.Success(Unit.Default, message));
+
     protected IActionResult NoContent(Unit _) => NoContent();
-    
+
     protected IActionResult Ok(Unit _) => Ok();
+
+    protected static IActionResult Ok<T>(T data)
+        where T : notnull
+        => new OkObjectResult(ApiResponse<T>.Success(data));
 
     protected static object AsObject<T>(T value) => value!;
 }

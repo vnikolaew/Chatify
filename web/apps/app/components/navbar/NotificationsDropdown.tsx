@@ -2,20 +2,24 @@
 import {
    Badge,
    Button,
-   Popover,
-   PopoverContent,
-   PopoverTrigger,
+   Spinner,
    Tab,
    Tabs,
+   Tooltip,
    useDisclosure,
 } from "@nextui-org/react";
 import React, { useState } from "react";
 import { BellIcon } from "@icons";
 import {
+   sleep,
    useGetPaginatedNotificationsQuery,
    useGetUnreadNotificationsQuery,
+   useMarkNotificationsAsReadMutation,
 } from "@web/api";
-import NotificationsTab from "@components/navbar/NotificationsTab";
+import { NotificationsTab } from "@components/navbar";
+import TooltipButton from "@components/TooltipButton";
+import CheckIcon from "@components/icons/CheckIcon";
+import TooltipWithPopoverActionButton from "@components/TooltipWithPopoverActionButton";
 
 export interface NotificationsDropdownProps {}
 
@@ -24,8 +28,8 @@ export enum NotificationTab {
    UNREAD = "unread",
 }
 
-const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
-   const { isOpen, onOpenChange, onClose } = useDisclosure({
+export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
+   const { isOpen, onOpenChange } = useDisclosure({
       defaultOpen: false,
    });
    const [selectedTab, setSelectedTab] = useState<NotificationTab>(
@@ -47,77 +51,131 @@ const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
       isLoading: unreadLoading,
       error: unreadNotificationsError,
    } = useGetUnreadNotificationsQuery({
-      enabled: selectedTab === NotificationTab.UNREAD,
+      enabled: selectedTab === NotificationTab.UNREAD && isOpen,
    });
+   const {
+      mutateAsync: markAsRead,
+      isLoading: markLoading,
+      error: markError,
+   } = useMarkNotificationsAsReadMutation();
 
    console.log(notifications);
 
+   const handleMarkNotificationsAsRead = async () => {
+      // await markAsRead({}, {});
+      await sleep(2000);
+   };
+
    return (
-      <Popover
-         size={"md"}
-         color={"default"}
-         showArrow
-         offset={10}
-         // backdrop={"blur"}
-         isOpen={true}
-         onOpenChange={onOpenChange}
-         placement={"bottom"}
-      >
-         <PopoverTrigger onClick={console.log}>
-            <Button
-               className={`bg-transparent overflow-visible border-none hover:bg-default-200`}
-               variant={"faded"}
-               size={"md"}
-               radius={"full"}
-               color={"default"}
-               isIconOnly
-            >
-               <Badge
-                  content={5}
-                  size={"sm"}
-                  classNames={{
-                     badge: "text-xs p-2 flex items-center justify-center",
-                     base: "text-[.5rem]",
-                  }}
-                  variant={"solid"}
-                  color={"danger"}
-                  placement={"top-right"}
-               >
+      <div className={`flex items-center gap-4`}>
+         <TooltipWithPopoverActionButton
+            isOpen={isOpen}
+            onOpenChange={onOpenChange}
+            popoverContent={
+               <div className={`flex flex-col items-start`}>
+                  <div
+                     className={`w-full p-2 flex items-center justify-between`}
+                  >
+                     <h2 className={`text-medium text-foreground`}>
+                        Notifications
+                     </h2>
+                     <TooltipButton
+                        chipProps={{
+                           classNames: {
+                              base: `w-8 h-8`,
+                           },
+                        }}
+                        classNames={{
+                           base: "text-xs px-2 py-0",
+                        }}
+                        size={"sm"}
+                        icon={
+                           <CheckIcon className={`fill-foreground`} size={14} />
+                        }
+                        content={"Mark all as read"}
+                     />
+                     <Tooltip
+                        color={"default"}
+                        classNames={{
+                           base: "bg-default-200",
+                        }}
+                        size={"sm"}
+                        placement={"top"}
+                        showArrow
+                        content={
+                           <span className={`bg-default-200 px-1 py-0 text-xs`}>
+                              Mark all as read
+                           </span>
+                        }
+                        offset={2}
+                        radius={"sm"}
+                     >
+                        <Button
+                           className={`bg-transparent self-end mr-4 overflow-visible border-none hover:bg-default-200`}
+                           onPress={handleMarkNotificationsAsRead}
+                           isLoading={markLoading}
+                           variant={"faded"}
+                           spinner={<Spinner size={"sm"} color={"danger"} />}
+                           size={"sm"}
+                           radius={"full"}
+                           color={"default"}
+                           isIconOnly
+                        >
+                           <CheckIcon className={`fill-foreground`} size={18} />
+                        </Button>
+                     </Tooltip>
+                  </div>
+                  <Tabs
+                     selectedKey={selectedTab}
+                     onSelectionChange={setSelectedTab as any}
+                     variant={"light"}
+                     classNames={{
+                        // tabContent: "w-[500px]",
+                        panel: "w-[400px] mr-auto self-start",
+                     }}
+                     color={"primary"}
+                     radius={"full"}
+                     aria-label={`Notifications type`}
+                  >
+                     <Tab title={"All"} key={NotificationTab.ALL}>
+                        <NotificationsTab
+                           notifications={notifications}
+                           loading={isLoading}
+                        />
+                     </Tab>
+                     <Tab title={"Unread"} key={NotificationTab.UNREAD}>
+                        <NotificationsTab
+                           noNotificationsMessage={
+                              "No new unread notifications."
+                           }
+                           notifications={unreadNotifications}
+                           loading={unreadLoading}
+                        />
+                     </Tab>
+                  </Tabs>
+               </div>
+            }
+            tooltipContent={"Notifications"}
+            icon={
+               notifications?.length + 1 > 0 ? (
+                  <Badge
+                     content={1}
+                     size={"sm"}
+                     classNames={{
+                        badge: "text-xs p-2 flex items-center justify-center",
+                        base: "text-[.5rem]",
+                     }}
+                     variant={"solid"}
+                     color={"danger"}
+                     placement={"top-right"}
+                  >
+                     <BellIcon className={`fill-foreground`} size={24} />
+                  </Badge>
+               ) : (
                   <BellIcon className={`fill-foreground`} size={24} />
-               </Badge>
-            </Button>
-         </PopoverTrigger>
-         <PopoverContent className={`p-4 flex items-start flex-col gap-2`}>
-            <h2 className={`text-medium text-foreground`}>Notifications</h2>
-            <Tabs
-               selectedKey={selectedTab}
-               onSelectionChange={setSelectedTab as any}
-               variant={"light"}
-               classNames={{
-                  // tabContent: "w-[500px]",
-                  panel: "w-[400px]",
-               }}
-               color={"primary"}
-               radius={"full"}
-               aria-label={`Notifications type`}
-            >
-               <Tab title={"All"} key={NotificationTab.ALL}>
-                  <NotificationsTab
-                     notifications={notifications}
-                     loading={isLoading}
-                  />
-               </Tab>
-               <Tab title={"Unread"} key={NotificationTab.UNREAD}>
-                  <NotificationsTab
-                     noNotificationsMessage={"No new unread notifications."}
-                     notifications={unreadNotifications}
-                     loading={unreadLoading}
-                  />
-               </Tab>
-            </Tabs>
-         </PopoverContent>
-      </Popover>
+               )
+            }
+         />
+      </div>
    );
 };
-
-export default NotificationsDropdown;

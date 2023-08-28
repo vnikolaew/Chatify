@@ -12,29 +12,20 @@ namespace Chatify.Application.Authentication.Commands;
 // Note that Access Token is expected to come from Front-End Sign-Up flow
 public sealed record GoogleSignUp([Required] string AccessToken) : ICommand<GoogleSignUpResult>;
 
-internal sealed class GoogleSignUpHandler
-    : ICommandHandler<GoogleSignUp, GoogleSignUpResult>
-{
-    private readonly IAuthenticationService _authService;
-    private readonly IEventDispatcher _eventDispatcher;
-
-    public GoogleSignUpHandler(
+internal sealed class GoogleSignUpHandler(
         IAuthenticationService authService,
         IEventDispatcher eventDispatcher)
-    {
-        _authService = authService;
-        _eventDispatcher = eventDispatcher;
-    }
-
+    : ICommandHandler<GoogleSignUp, GoogleSignUpResult>
+{
     public async Task<GoogleSignUpResult> HandleAsync(GoogleSignUp command,
         CancellationToken cancellationToken = default)
     {
-        var result = await _authService
+        var result = await authService
             .GoogleSignUpAsync(command, cancellationToken);
         if ( result.IsT0 ) return new SignUpError(result.AsT0.Message);
 
         var res = result.AsT1!;
-        await _eventDispatcher.PublishAsync(new UserSignedUpEvent
+        await eventDispatcher.PublishAsync(new UserSignedUpEvent
         {
             Timestamp = DateTime.Now,
             UserId = res.UserId,

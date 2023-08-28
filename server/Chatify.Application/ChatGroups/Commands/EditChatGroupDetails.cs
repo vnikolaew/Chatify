@@ -24,58 +24,43 @@ public record EditChatGroupDetails(
     InputFile? Picture
 ) : ICommand<EditChatGroupDetailsResult>;
 
-internal sealed class EditChatGroupDetailsHandler : ICommandHandler<EditChatGroupDetails, EditChatGroupDetailsResult>
-{
-    private readonly IDomainRepository<ChatGroup, Guid> _groups;
-    private readonly IChatGroupMemberRepository _members;
-    private readonly IClock _clock;
-    private readonly IFileUploadService _fileUploadService;
-    private readonly IIdentityContext _identityContext;
-
-    public EditChatGroupDetailsHandler(
-        IDomainRepository<ChatGroup, Guid> groups,
+internal sealed class EditChatGroupDetailsHandler(IDomainRepository<ChatGroup, Guid> groups,
         IChatGroupMemberRepository members,
         IIdentityContext identityContext, IClock clock,
         IFileUploadService fileUploadService)
-    {
-        _groups = groups;
-        _members = members;
-        _identityContext = identityContext;
-        _clock = clock;
-        _fileUploadService = fileUploadService;
-    }
-
+    : ICommandHandler<EditChatGroupDetails, EditChatGroupDetailsResult>
+{
     public async Task<EditChatGroupDetailsResult> HandleAsync(
         EditChatGroupDetails command,
         CancellationToken cancellationToken = default)
     {
-        var group = await _groups.GetAsync(command.ChatGroupId, cancellationToken);
+        var group = await groups.GetAsync(command.ChatGroupId, cancellationToken);
         if ( group is null ) return new ChatGroupNotFoundError();
 
-        var isMember = await _members.Exists(group.Id, _identityContext.Id, cancellationToken);
-        if ( !isMember ) return new UserIsNotMemberError(_identityContext.Id, group.Id);
-        if ( !group.AdminIds.Contains(_identityContext.Id) )
-            return new UserIsNotGroupAdminError(_identityContext.Id, group.Id);
+        var isMember = await members.Exists(group.Id, identityContext.Id, cancellationToken);
+        if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, group.Id);
+        if ( !group.AdminIds.Contains(identityContext.Id) )
+            return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
 
         Media? groupPicture = default;
         if ( command.Picture is not null )
         {
             if ( group.Picture is not null )
             {
-                var deleteResult = await _fileUploadService.DeleteAsync(
+                var deleteResult = await fileUploadService.DeleteAsync(
                     new SingleFileDeleteRequest
                     {
-                        UserId = _identityContext.Id,
+                        UserId = identityContext.Id,
                         FileUrl = group.Picture.MediaUrl
                     }, cancellationToken);
 
                 if ( deleteResult.Value is Error error ) return new FileUploadError(error.Message);
             }
 
-            var result = await _fileUploadService.UploadAsync(
+            var result = await fileUploadService.UploadAsync(
                 new SingleFileUploadRequest
                 {
-                    UserId = _identityContext.Id,
+                    UserId = identityContext.Id,
                     File = command.Picture
                 }, cancellationToken);
             if ( result.Value is Error uploadError ) return new FileUploadError(uploadError.Message);
@@ -92,12 +77,12 @@ internal sealed class EditChatGroupDetailsHandler : ICommandHandler<EditChatGrou
             }
         }
 
-        await _groups.UpdateAsync(group.Id, group =>
+        await groups.UpdateAsync(group, group =>
         {
             group.Name = command.Name ?? group.Name;
             group.About = command.About ?? group.About;
             group.Picture = groupPicture;
-            group.UpdatedAt = _clock.Now;
+            group.UpdatedAt = clock.Now;
         }, cancellationToken);
 
         return Unit.Default;

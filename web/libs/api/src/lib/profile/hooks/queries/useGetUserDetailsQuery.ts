@@ -5,7 +5,8 @@ import {
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { profileClient } from "../../client";
-import { UserDetailsEntry } from "../../../../../openapi";
+import { UserDetailsEntry, UserDetailsEntryApiResponse } from "@openapi/index";
+
 // @ts-ignore
 
 export interface GetUserDetailsModel {
@@ -15,15 +16,19 @@ export interface GetUserDetailsModel {
 export const getUserDetails = async (
    model: GetUserDetailsModel
 ): Promise<UserDetailsEntry> => {
-   const { status, data } = await profileClient.get(`${model.userId}/details`, {
-      headers: {},
-   });
+   const { status, data } =
+      await profileClient.get<UserDetailsEntryApiResponse>(
+         `${model.userId}/details`,
+         {
+            headers: {},
+         }
+      );
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
    }
 
-   return data;
+   return data.data!;
 };
 
 export const USER_DETAILS_KEY = "user-details";

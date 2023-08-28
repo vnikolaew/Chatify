@@ -1,4 +1,4 @@
-import { authClient } from "../client";
+import { authClient } from "../../client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 

@@ -24,51 +24,28 @@ public record SendGroupChatMessage(
     [Required] IEnumerable<InputFile>? Attachments = default
 ) : ICommand<SendGroupChatMessageResult>;
 
-internal sealed class SendGroupChatMessageHandler
-    : ICommandHandler<SendGroupChatMessage, SendGroupChatMessageResult>
-{
-    private readonly IDomainRepository<ChatGroup, Guid> _groups;
-    private readonly IFileUploadService _fileUploadService;
-    private readonly IChatGroupMemberRepository _members;
-    private readonly IIdentityContext _identityContext;
-    private readonly IChatMessageRepository _messages;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IClock _clock;
-    private readonly IGuidGenerator _guidGenerator;
-
-    public SendGroupChatMessageHandler(
-        IDomainRepository<ChatGroup, Guid> groups,
+internal sealed class SendGroupChatMessageHandler(IDomainRepository<ChatGroup, Guid> groups,
         IIdentityContext identityContext,
         IClock clock,
         IChatGroupMemberRepository members,
         IChatMessageRepository messages,
         IGuidGenerator guidGenerator,
         IEventDispatcher eventDispatcher,
-        IFileUploadService fileUploadService
-    )
-    {
-        _groups = groups;
-        _identityContext = identityContext;
-        _clock = clock;
-        _members = members;
-        _messages = messages;
-        _guidGenerator = guidGenerator;
-        _eventDispatcher = eventDispatcher;
-        _fileUploadService = fileUploadService;
-    }
-
+        IFileUploadService fileUploadService)
+    : ICommandHandler<SendGroupChatMessage, SendGroupChatMessageResult>
+{
     public async Task<SendGroupChatMessageResult> HandleAsync(
         SendGroupChatMessage command,
         CancellationToken cancellationToken = default)
     {
-        var chatGroup = await _groups.GetAsync(command.GroupId, cancellationToken);
+        var chatGroup = await groups.GetAsync(command.GroupId, cancellationToken);
         if ( chatGroup is null ) return new ChatGroupNotFoundError();
 
-        var userIsGroupMember = await _members.Exists(
+        var userIsGroupMember = await members.Exists(
             command.GroupId,
-            _identityContext.Id,
+            identityContext.Id,
             cancellationToken);
-        if ( !userIsGroupMember ) return new UserIsNotMemberError(_identityContext.Id, command.GroupId);
+        if ( !userIsGroupMember ) return new UserIsNotMemberError(identityContext.Id, command.GroupId);
 
         // TODO: Handle file uploads:
         var uploadedFileResults = await HandleFileUploads(
@@ -89,24 +66,24 @@ internal sealed class SendGroupChatMessageHandler
                 FileName = r.FileName
             }).ToList();
 
-        var messageId = _guidGenerator.New();
+        var messageId = guidGenerator.New();
         var message = new ChatMessage
         {
-            UserId = _identityContext.Id,
+            UserId = identityContext.Id,
             ChatGroup = chatGroup,
             Id = messageId,
-            CreatedAt = _clock.Now,
+            CreatedAt = clock.Now,
             Attachments = attachments,
             Content = command.Content
         };
 
-        await _messages.SaveAsync(message, cancellationToken);
-        await _eventDispatcher.PublishAsync(new ChatMessageSentEvent
+        await messages.SaveAsync(message, cancellationToken);
+        await eventDispatcher.PublishAsync(new ChatMessageSentEvent
         {
             UserId = message.UserId,
             Content = message.Content,
             GroupId = message.ChatGroupId,
-            Timestamp = _clock.Now,
+            Timestamp = clock.Now,
             MessageId = message.Id
         }, cancellationToken);
 
@@ -122,9 +99,9 @@ internal sealed class SendGroupChatMessageHandler
         var uploadRequest = new MultipleFileUploadRequest
         {
             Files = inputFiles,
-            UserId = _identityContext.Id
+            UserId = identityContext.Id
         };
 
-        return await _fileUploadService.UploadManyAsync(uploadRequest, cancellationToken);
+        return await fileUploadService.UploadManyAsync(uploadRequest, cancellationToken);
     }
 }

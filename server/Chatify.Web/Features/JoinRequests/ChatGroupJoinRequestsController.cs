@@ -3,6 +3,7 @@ using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.JoinRequests.Commands;
 using Chatify.Application.JoinRequests.Queries;
 using Chatify.Web.Common;
+using Chatify.Web.Common.Attributes;
 using Chatify.Web.Extensions;
 using LanguageExt;
 using LanguageExt.Common;
@@ -11,17 +12,19 @@ using Microsoft.AspNetCore.Mvc;
 namespace Chatify.Web.Features.JoinRequests;
 
 using JoinChatGroupResult = OneOf.OneOf<ChatGroupNotFoundError, UserIsAlreadyGroupMemberError, Guid>;
-using AcceptChatGroupJoinRequestResult = OneOf.OneOf<Error, Guid>;
-using DeclineChatGroupJoinRequestResult = OneOf.OneOf<Error, Unit>;
-using GetChatGroupJoinRequestsResult = OneOf.OneOf<Error, List<GroupJoinRequestEntry>>;
+using AcceptChatGroupJoinRequestResult = OneOf.OneOf<ChatGroupNotFoundError, UserIsNotGroupAdminError, Error, Guid>;
+using DeclineChatGroupJoinRequestResult = OneOf.OneOf<ChatGroupNotFoundError, UserIsNotGroupAdminError, Error, Unit>;
+using GetChatGroupJoinRequestsResult =
+    OneOf.OneOf<ChatGroupNotFoundError, UserIsNotGroupAdminError, List<GroupJoinRequestEntry>>;
+
 
 [Route("api/chatgroups")]
 public class ChatGroupJoinRequestsController : ApiController
 {
     [HttpPost]
     [Route("join/{groupId:guid}")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(Guid), ( int )HttpStatusCode.Accepted)]
+    [ProducesBadRequestApiResponse]
+    [ProducesAcceptedApiResponse<ApiResponse<object>>]
     public async Task<IActionResult> JoinChatGroup(
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
@@ -31,14 +34,15 @@ public class ChatGroupJoinRequestsController : ApiController
 
         return result.Match<IActionResult>(
             _ => BadRequest(),
-            _ => BadRequest(),
-            id => Accepted(id));
+            _ => _.ToBadRequest(),
+            id => Accepted(ApiResponse<object>.Success(new { id }, "Chat group successfully joined.")));
     }
 
     [HttpPost]
     [Route("accept/{requestId:guid}")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(Guid), ( int )HttpStatusCode.Accepted)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse<ApiResponse<object>>]
     public async Task<IActionResult> AcceptJoinRequest(
         [FromRoute] Guid requestId,
         CancellationToken cancellationToken = default)
@@ -47,14 +51,17 @@ public class ChatGroupJoinRequestsController : ApiController
             new AcceptChatGroupJoinRequest(requestId), cancellationToken);
 
         return result.Match<IActionResult>(
+            _ => NotFound(),
             err => err.ToBadRequest(),
-            id => Accepted(id));
+            err => err.ToBadRequest(),
+            id => Accepted(ApiResponse<object>.Success(new { id }, "Join request successfully accepted.")));
     }
 
     [HttpPost]
     [Route("decline/{requestId:guid}")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(Unit), ( int )HttpStatusCode.Accepted)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse<ApiResponse<object>>]
     public async Task<IActionResult> DeclineJoinRequest(
         [FromRoute] Guid requestId,
         CancellationToken cancellationToken = default)
@@ -63,14 +70,17 @@ public class ChatGroupJoinRequestsController : ApiController
             new DeclineChatGroupJoinRequest(requestId), cancellationToken);
 
         return result.Match<IActionResult>(
+            _ => NotFound(),
             err => err.ToBadRequest(),
-            Accepted);
+            err => err.ToBadRequest(),
+            id => Accepted(ApiResponse<object>.Success(new { id }, "Join request successfully declined.")));
     }
 
     [HttpGet]
     [Route("requests/{groupId:guid}")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.OK)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesOkApiResponse<List<GroupJoinRequestEntry>>]
     public async Task<IActionResult> GetForChatGroup(
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
@@ -79,7 +89,8 @@ public class ChatGroupJoinRequestsController : ApiController
             new GetChatGroupJoinRequests(groupId), cancellationToken);
 
         return result.Match<IActionResult>(
+            _ => NotFound(),
             err => err.ToBadRequest(),
-            requests => Ok(new { Data = requests }));
+            Ok);
     }
 }

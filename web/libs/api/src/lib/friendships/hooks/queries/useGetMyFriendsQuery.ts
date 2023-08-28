@@ -1,26 +1,35 @@
 import { friendshipsClient } from "../../client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
+import { DEFAULT_CACHE_TIME, DEFAULT_STALE_TIME } from "../../../constants";
+import { UserListApiResponse, User } from "@openapi";
 
-const getMyFriends = async () => {
-   const { status, data } = await friendshipsClient.get(``, {
-      headers: {},
-   });
+const getMyFriends = async (): Promise<User[]> => {
+   const { status, data } = await friendshipsClient.get<UserListApiResponse>(
+      ``,
+      {
+         headers: {},
+      }
+   );
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
    }
 
-   return data;
+   return data.data!;
 };
+
+export const FRIENDS_KEY = `friends`;
+type GetMyFriendsResult = Awaited<ReturnType<typeof getMyFriends>>;
 
 export const useGetMyFriendsQuery = () => {
    const client = useQueryClient();
    // Get current User Id somehow:
 
-   return useQuery({
-      queryKey: [`friends`],
+   return useQuery<User[], Error, User[], string[]>({
+      queryKey: [FRIENDS_KEY],
       queryFn: () => getMyFriends(),
-      cacheTime: 60 * 60 * 1000,
+      cacheTime: DEFAULT_CACHE_TIME,
+      staleTime: DEFAULT_STALE_TIME,
    });
 };

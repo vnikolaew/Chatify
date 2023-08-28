@@ -9,8 +9,9 @@ using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Entities;
 using Chatify.Shared.Abstractions.Queries;
 using Chatify.Web.Common;
+using Chatify.Web.Common.Attributes;
+using Chatify.Web.Extensions;
 using LanguageExt;
-using LanguageExt.Common;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
 using static Chatify.Web.Features.Messages.Models.Models;
@@ -28,7 +29,7 @@ using EditChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMessageS
 using DeleteGroupChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
 using DeleteChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
 using GetMessagesForChatGroupResult = OneOf<UserIsNotMemberError, CursorPaged<ChatGroupMessageEntry>>;
-using PinChatGroupMessageResult = OneOf<Error, ChatGroupNotFoundError, UserIsNotGroupAdminError, Unit>;
+using PinChatGroupMessageResult = OneOf<MessageNotFoundError, ChatGroupNotFoundError, UserIsNotGroupAdminError, Unit>;
 using GetMessageRepliesForChatGroupMessageResult =
     OneOf<MessageNotFoundError, UserIsNotMemberError, CursorPaged<ChatMessageReply>>;
 
@@ -36,8 +37,8 @@ public class MessagesController : ApiController
 {
     [HttpGet]
     [Route("{groupId:guid}")]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
+    [ProducesBadRequestApiResponse]
+    [ProducesOkApiResponse<CursorPaged<ChatGroupMessageEntry>>]
     public async Task<IActionResult> GetPaginatedMessagesByGroup(
         [FromBody] GetMessagesByChatGroupRequest request,
         [FromRoute] Guid groupId,
@@ -46,15 +47,14 @@ public class MessagesController : ApiController
         var result = await QueryAsync<GetMessagesForChatGroup, GetMessagesForChatGroupResult>(
             ( request with { GroupId = groupId } ).ToCommand(), cancellationToken);
 
-        return result.Match<IActionResult>(
-            BadRequest,
-            messages => Ok(new { Data = messages }));
+        return result.Match( BadRequest, Ok);
     }
 
     [HttpGet]
     [Route("{messageId:guid}/replies")]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesOkApiResponse<CursorPaged<ChatMessageReply>>]
     public async Task<IActionResult> GetPaginatedRepliesByMessage(
         [FromBody] GetRepliesByForMessageRequest request,
         [FromRoute] Guid messageId,
@@ -64,13 +64,16 @@ public class MessagesController : ApiController
             ( request with { MessageId = messageId } ).ToCommand(), cancellationToken);
 
         return result.Match<IActionResult>(
+            _ => NotFound(),
             _ => BadRequest(),
-            _ => BadRequest(),
-            replies => Ok(new { Data = replies }));
+            Ok);
     }
 
     [HttpPost]
     [Route("{groupId:guid}")]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse<ApiResponse<object>>]
     [ProducesResponseType(typeof(object), ( int )HttpStatusCode.Accepted)]
     [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
     public async Task<IActionResult> SendGroupChatMessage(
@@ -81,15 +84,16 @@ public class MessagesController : ApiController
         var result = await SendAsync<SendGroupChatMessage, SendGroupChatMessageResult>(
             ( request with { ChatGroupId = groupId } ).ToCommand(), cancellationToken);
         return result.Match<IActionResult>(
+            _ => NotFound(),
             _ => BadRequest(),
-            _ => BadRequest(),
-            id => Accepted(new { MessageId = id }));
+            id => Accepted(ApiResponse<object>.Success(new { id }, "Chat message successfully sent.")));
     }
 
     [HttpDelete]
     [Route("replies/{messageId:guid}")]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.NoContent)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesNoContentApiResponse]
     public async Task<IActionResult> DeleteGroupChatMessageReply(
         [FromBody] DeleteGroupChatMessageRequest request,
         [FromRoute] Guid messageId,
@@ -99,14 +103,15 @@ public class MessagesController : ApiController
             ( request with { MessageId = messageId } ).ToReplyCommand(), cancellationToken);
         return result.Match(
             _ => NotFound(),
-            _ => BadRequest(),
+            _ => _.ToBadRequest(),
             NoContent);
     }
 
     [HttpPost]
     [Route("{messageId:guid}/replies")]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.Accepted)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse<ApiResponse<object>>]
     public async Task<IActionResult> SendGroupChatMessageReply(
         [FromBody] SendGroupChatMessageReplyRequest request,
         [FromRoute] Guid messageId,
@@ -114,16 +119,18 @@ public class MessagesController : ApiController
     {
         var result = await SendAsync<ReplyToChatMessage, ReplyToChatMessageResult>(
             ( request with { ReplyToId = messageId } ).ToCommand(), cancellationToken);
+
         return result.Match<IActionResult>(
-            _ => BadRequest(),
+            _ => _.ToBadRequest(),
             _ => NotFound(),
-            id => Accepted(new { MessageId = id }));
+            id => Accepted(ApiResponse<object>.Success(new { id }, "Chat message reply successfully sent.")));
     }
 
     [HttpPut]
     [Route("{messageId:guid}")]
-    [ProducesResponseType(typeof(void), ( int )HttpStatusCode.Accepted)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse]
     public async Task<IActionResult> EditGroupChatMessage(
         [FromBody] EditGroupChatMessageRequest request,
         [FromRoute] Guid messageId,
@@ -133,16 +140,16 @@ public class MessagesController : ApiController
             ( request with { MessageId = messageId } ).ToCommand(), cancellationToken);
 
         return result.Match<IActionResult>(
-            _ => BadRequest(),
-            _ => BadRequest(),
-            _ => Accepted());
+            _ => NotFound(),
+            _ => _.ToBadRequest(),
+            Accepted);
     }
 
     [HttpPut]
     [Route("replies/{messageId:guid}")]
-    [ProducesResponseType(typeof(void), ( int )HttpStatusCode.Accepted)]
-    [ProducesResponseType(typeof(void), ( int )HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse]
     public async Task<IActionResult> EditGroupChatMessageReply(
         [FromBody] EditGroupChatMessageRequest request,
         [FromRoute] Guid messageId,
@@ -152,16 +159,16 @@ public class MessagesController : ApiController
             ( request with { MessageId = messageId } ).ToReplyCommand(), cancellationToken);
         return result.Match(
             _ => NotFound(),
-            _ => BadRequest(),
+            _ => _.ToBadRequest(),
             Accepted);
     }
 
 
     [HttpDelete]
     [Route("{messageId:guid}")]
-    [ProducesResponseType(typeof(void), ( int )HttpStatusCode.NoContent)]
-    [ProducesResponseType(typeof(void), ( int )HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesNoContentApiResponse]
     public async Task<IActionResult> DeleteGroupChatMessage(
         [FromBody] DeleteGroupChatMessageRequest request,
         [FromRoute] Guid messageId,
@@ -172,15 +179,15 @@ public class MessagesController : ApiController
 
         return result.Match<IActionResult>(
             _ => NotFound(),
-            _ => BadRequest(),
+            _ => _.ToBadRequest(),
             _ => NoContent());
     }
 
     [HttpPost]
     [Route("/pins/{messageId:guid}")]
-    [ProducesResponseType(typeof(void), ( int )HttpStatusCode.NoContent)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.NotFound)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesNoContentApiResponse]
     public async Task<IActionResult> PinGroupChatMessage(
         [FromBody] PinChatGroupMessage request,
         [FromRoute] Guid messageId,
@@ -189,18 +196,18 @@ public class MessagesController : ApiController
         var result = await SendAsync<PinChatGroupMessage, PinChatGroupMessageResult>(
             new PinChatGroupMessage(messageId), cancellationToken);
         return result.Match<IActionResult>(
-            _ => BadRequest(),
             _ => NotFound(),
-            _ => BadRequest(),
+            _ => NotFound(),
+            _ => _.ToBadRequest(),
             _ => NoContent()
         );
     }
 
     [HttpPost]
     [Route("/share/{messageId:guid}")]
-    [ProducesResponseType(typeof(void), ( int )HttpStatusCode.Accepted)]
-    [ProducesResponseType(typeof(void), ( int )HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse]
     public async Task<IActionResult> ShareChatMessage(
         [FromBody] ShareMessage request,
         [FromRoute] Guid messageId,
@@ -210,10 +217,10 @@ public class MessagesController : ApiController
             request, cancellationToken);
         return result.Match<IActionResult>(
             _ => NotFound(),
-            _ => BadRequest(),
+            _ => _.ToBadRequest(),
             _ => NotFound(),
-            _ => BadRequest(),
-            _ => Accepted()
+            _ => _.ToBadRequest(),
+            Accepted
         );
     }
 }

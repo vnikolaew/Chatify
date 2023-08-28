@@ -7,17 +7,20 @@ export interface RightArrowProps extends SVGProps<SVGSVGElement> {
 
 export const RightArrow = ({ size, fill, ...rest }: RightArrowProps) => {
    return (
-      <div>
-         <svg
-            width={size}
-            height={size}
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            id="right-arrow"
-            {...rest}
-         >
-            <path d="M14.83,11.29,10.59,7.05a1,1,0,0,0-1.42,0,1,1,0,0,0,0,1.41L12.71,12,9.17,15.54a1,1,0,0,0,0,1.41,1,1,0,0,0,.71.29,1,1,0,0,0,.71-.29l4.24-4.24A1,1,0,0,0,14.83,11.29Z"></path>
-         </svg>
-      </div>
+      <svg
+         width={size}
+         height={size}
+         xmlns="http://www.w3.org/2000/svg"
+         enableBackground="new 0 0 24 24"
+         viewBox="0 0 24 24"
+         id="right-arrow"
+         {...rest}
+      >
+         <path
+            fill={fill}
+            d="M9.9,17.2c-0.6,0-1-0.4-1-1c0-0.3,0.1-0.5,0.3-0.7l3.5-3.5L9.2,8.5c-0.4-0.4-0.4-1,0-1.4c0.4-0.4,1-0.4,1.4,0l4.2,4.2
+	c0.4,0.4,0.4,1,0,1.4c0,0,0,0,0,0l-4.2,4.2C10.4,17.1,10.1,17.2,9.9,17.2z"
+         ></path>
+      </svg>
    );
 };

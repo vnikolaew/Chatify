@@ -19,53 +19,37 @@ public record RemoveChatGroupMember(
     [Required] Guid MemberId
 ) : ICommand<RemoveChatGroupMemberResult>;
 
-internal sealed class RemoveChatGroupMemberHandler
-    : ICommandHandler<RemoveChatGroupMember, RemoveChatGroupMemberResult>
-{
-    private readonly IDomainRepository<ChatGroup, Guid> _groups;
-    private readonly IChatGroupMemberRepository _members;
-    private readonly IIdentityContext _identityContext;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IClock _clock;
-
-    public RemoveChatGroupMemberHandler(
-        IDomainRepository<ChatGroup, Guid> groups,
+internal sealed class RemoveChatGroupMemberHandler(IDomainRepository<ChatGroup, Guid> groups,
         IChatGroupMemberRepository members,
         IIdentityContext identityContext,
         IEventDispatcher eventDispatcher,
         IClock clock)
-    {
-        _groups = groups;
-        _members = members;
-        _identityContext = identityContext;
-        _eventDispatcher = eventDispatcher;
-        _clock = clock;
-    }
-
+    : ICommandHandler<RemoveChatGroupMember, RemoveChatGroupMemberResult>
+{
     public async Task<RemoveChatGroupMemberResult> HandleAsync(
         RemoveChatGroupMember command,
         CancellationToken cancellationToken = default)
     {
-        var chatGroup = await _groups.GetAsync(command.GroupId, cancellationToken);
+        var chatGroup = await groups.GetAsync(command.GroupId, cancellationToken);
         if ( chatGroup is null ) return new ChatGroupNotFoundError();
 
-        if ( chatGroup.AdminIds.All(id => id != _identityContext.Id) )
+        if ( chatGroup.AdminIds.All(id => id != identityContext.Id) )
         {
-            return new UserIsNotGroupAdminError(_identityContext.Id, chatGroup.Id);
+            return new UserIsNotGroupAdminError(identityContext.Id, chatGroup.Id);
         }
 
-        var memberExists = await _members.Exists(
+        var memberExists = await members.Exists(
             command.GroupId, command.MemberId,
             cancellationToken);
-        if ( !memberExists ) return new UserIsNotMemberError(_identityContext.Id, chatGroup.Id);
+        if ( !memberExists ) return new UserIsNotMemberError(identityContext.Id, chatGroup.Id);
 
-        await _members.DeleteAsync(_identityContext.Id, cancellationToken);
-        await _eventDispatcher.PublishAsync(new ChatGroupMemberRemovedEvent
+        await members.DeleteAsync(identityContext.Id, cancellationToken);
+        await eventDispatcher.PublishAsync(new ChatGroupMemberRemovedEvent
         {
             GroupId = chatGroup.Id,
-            Timestamp = _clock.Now,
-            MemberId = _identityContext.Id,
-            RemovedById = _identityContext.Id,
+            Timestamp = clock.Now,
+            MemberId = identityContext.Id,
+            RemovedById = identityContext.Id,
         }, cancellationToken);
 
         return Unit.Default;

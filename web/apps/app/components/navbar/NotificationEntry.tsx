@@ -2,7 +2,7 @@
 import React from "react";
 import { Badge, Button, Link, ListboxItemProps } from "@nextui-org/react";
 import moment from "moment";
-import { UserNotification, UserNotificationType } from "@openapi/index";
+import { UserNotification, UserNotificationType } from "@openapi";
 import {
    useAcceptFriendInviteMutation,
    useDeclineFriendInviteMutation,
@@ -16,7 +16,7 @@ export interface NotificationEntryProps extends ListboxItemProps {
    notification?: UserNotification;
 }
 
-const NotificationEntry = ({
+export const NotificationEntry = ({
    notificationTypeIcon,
    id,
    startContent,
@@ -145,5 +145,3 @@ const NotificationEntry = ({
       </div>
    );
 };
-
-export default NotificationEntry;

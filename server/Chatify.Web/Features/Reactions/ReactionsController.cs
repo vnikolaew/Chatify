@@ -1,7 +1,8 @@
-﻿using System.Net;
-using Chatify.Application.Messages.Common;
+﻿using Chatify.Application.Messages.Common;
 using Chatify.Application.Messages.Reactions.Commands;
 using Chatify.Web.Common;
+using Chatify.Web.Common.Attributes;
+using Chatify.Web.Extensions;
 using LanguageExt;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
@@ -26,8 +27,9 @@ public class ReactionsController : ApiController
 {
     [HttpPost]
     [Route("{messageId:guid}")]
-    [ProducesResponseType((int) HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(object), (int) HttpStatusCode.Accepted)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse<ApiResponse<object>>]
     public async Task<IActionResult> ReactToGroupChatMessage(
         [FromBody] ReactToChatMessageRequest request,
         [FromRoute] Guid messageId,
@@ -37,15 +39,16 @@ public class ReactionsController : ApiController
             ( request with { MessageId = messageId } ).ToCommand(), cancellationToken);
 
         return result.Match<IActionResult>(
-            _ => BadRequest(),
-            _ => BadRequest(),
-            id => Accepted(new { ReactionId = id }));
+            _ => NotFound(),
+            _ => _.ToBadRequest(),
+            id => Accepted(ApiResponse<object>.Success(new { id }, "Successfully reacted to chat message.")));
     }
 
     [HttpPost]
     [Route("replies/{messageId:guid}")]
-    [ProducesResponseType((int) HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(object), (int) HttpStatusCode.Accepted)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse<ApiResponse<object>>]
     public async Task<IActionResult> ReactToGroupChatMessageReply(
         [FromBody] ReactToChatMessageRequest request,
         [FromRoute] Guid messageId,
@@ -54,16 +57,16 @@ public class ReactionsController : ApiController
         var result = await SendAsync<ReactToChatMessageReply, ReactToChatMessageReplyResult>(
             ( request with { MessageId = messageId } ).ToReplyCommand(), cancellationToken);
         return result.Match<IActionResult>(
-            _ => BadRequest(),
-            _ => BadRequest(),
-            id => Accepted(new { ReactionId = id }));
+            _ => NotFound(),
+            _ => _.ToBadRequest(),
+            id => Accepted(ApiResponse<object>.Success(new { id }, "Successfully reacted to chat message reply.")));
     }
 
     [HttpDelete]
     [Route("{messageReactionId:guid}")]
-    [ProducesResponseType((int) HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int) HttpStatusCode.NotFound)]
-    [ProducesResponseType((int) HttpStatusCode.NoContent)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse]
     public async Task<IActionResult> UnreactToGroupChatMessage(
         [FromBody] UnreactToChatMessageRequest request,
         [FromRoute] Guid messageReactionId,
@@ -75,14 +78,14 @@ public class ReactionsController : ApiController
             _ => NotFound(),
             _ => NotFound(),
             _ => BadRequest(),
-            _ => NoContent());
+            Accepted);
     }
 
     [HttpDelete]
     [Route("replies/{messageReactionId:guid}")]
-    [ProducesResponseType((int) HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int) HttpStatusCode.NotFound)]
-    [ProducesResponseType((int) HttpStatusCode.NoContent)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse]
     public async Task<IActionResult> UnreactToGroupChatMessageReply(
         [FromBody] UnreactToChatMessageRequest request,
         [FromRoute] Guid messageReactionId,
@@ -94,6 +97,6 @@ public class ReactionsController : ApiController
             _ => NotFound(),
             _ => NotFound(),
             _ => BadRequest(),
-            _ => NoContent());
+            Accepted);
     }
 }

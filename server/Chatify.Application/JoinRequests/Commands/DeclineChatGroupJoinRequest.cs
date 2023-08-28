@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.ChatGroups.Commands;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.JoinRequests;
@@ -13,7 +14,7 @@ using OneOf;
 
 namespace Chatify.Application.JoinRequests.Commands;
 
-using DeclineChatGroupJoinRequestResult = OneOf<Error, Unit>;
+using DeclineChatGroupJoinRequestResult = OneOf<ChatGroupNotFoundError, UserIsNotGroupAdminError, Error, Unit>;
 
 public record DeclineChatGroupJoinRequest(
     [Required] Guid RequestId

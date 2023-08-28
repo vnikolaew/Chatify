@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
-import { UserNotification } from "@openapi/models/UserNotification";
+import { UserNotification } from "@openapi";
 import { Avatar, Listbox, ListboxItem, Skeleton } from "@nextui-org/react";
-import NotificationEntry from "@components/navbar/NotificationEntry";
 import { AddUserIcon } from "@icons";
+import { NotificationEntry } from "@components/navbar";
 
 export interface NotificationsTabProps {
    notifications: UserNotification[];
@@ -14,7 +14,7 @@ export interface NotificationsTabProps {
    onAction?: (key: React.Key) => void;
 }
 
-const NotificationsTab = ({
+export const NotificationsTab = ({
    notifications,
    onAction,
    key,
@@ -99,5 +99,3 @@ const LoadingNotifications = ({ count }: { count: number }) => {
       </div>
    );
 };
-
-export default NotificationsTab;

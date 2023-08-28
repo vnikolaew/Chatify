@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Reflection;
+using Chatify.Infrastructure.Common.Mappings;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Chatify.Infrastructure.Data.Services;
 
@@ -37,11 +39,28 @@ internal sealed class EntityChangeTracker : IEntityChangeTracker
                 p =>
                 {
                     var value = p.GetValue(entity);
+
+                    // Handle collections separately:
+                    if ( value is IEnumerable enumerable and not string )
+                    {
+                        if ( value is List<object> list ) return new List<object>(list);
+                        if ( value is Dictionary<string, string> dictionary )
+                        {
+                            return new Dictionary<string, string>(dictionary);
+                        }
+
+                        if ( value is HashSet<object> set ) return new HashSet<object>(set);
+
+                        if ( value is object[] array )
+                        {
+                            var newArray = new object[array.Length];
+                            
+                            array.CopyTo(newArray, 0);
+                            return newArray;
+                        }
+                    }
                     
-                    // Copy collection items to a new collection:
-                    return value is IEnumerable enumerable
-                        ? enumerable.Cast<object>().ToList()
-                        : value;
+                    return value;
                 });
 
     public async Task<Dictionary<string, object?>> TrackAsync<TEntity>(
@@ -76,6 +95,12 @@ internal sealed class EntityChangeTracker : IEntityChangeTracker
             if ( propValue is IEnumerable enumerable and not string
                  && newProp is IEnumerable enumerableTwo and not string )
             {
+                if ( enumerableTwo is Dictionary<string, string> _ )
+                {
+                    changes.Add(propsName, enumerableTwo);
+                    continue;
+                }
+                
                 var objectEnumerable = enumerable.Cast<object>().ToList();
                 var objectEnumerableTwo = enumerableTwo.Cast<object>().ToList();
 

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common.Models;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
@@ -8,7 +9,7 @@ using OneOf;
 
 namespace Chatify.Application.Notifications.Queries;
 
-using GetAllNotificationsResult = OneOf<Error, CursorPaged<UserNotification>>;
+using GetAllNotificationsResult = OneOf<BaseError, CursorPaged<UserNotification>>;
 
 public record GetAllNotifications(
     [Required] int PageSize,

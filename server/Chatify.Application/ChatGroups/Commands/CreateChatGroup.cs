@@ -24,33 +24,14 @@ public record CreateChatGroup(
     string Name,
     InputFile? InputFile) : ICommand<CreateChatGroupResult>;
 
-internal sealed class CreateChatGroupHandler
-    : ICommandHandler<CreateChatGroup, CreateChatGroupResult>
-{
-    private readonly IDomainRepository<ChatGroup, Guid> _groups;
-    private readonly IChatGroupMemberRepository _members;
-    private readonly IClock _clock;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IIdentityContext _identityContext;
-    private readonly IFileUploadService _fileUploadService;
-    private readonly IGuidGenerator _guidGenerator;
-
-    public CreateChatGroupHandler(
+internal sealed class CreateChatGroupHandler(
         IDomainRepository<ChatGroup, Guid> groups,
         IIdentityContext identityContext,
         IEventDispatcher eventDispatcher,
         IFileUploadService fileUploadService,
         IGuidGenerator guidGenerator, IChatGroupMemberRepository members, IClock clock)
-    {
-        _groups = groups;
-        _identityContext = identityContext;
-        _eventDispatcher = eventDispatcher;
-        _fileUploadService = fileUploadService;
-        _guidGenerator = guidGenerator;
-        _members = members;
-        _clock = clock;
-    }
-
+    : ICommandHandler<CreateChatGroup, CreateChatGroupResult>
+{
     public async Task<CreateChatGroupResult> HandleAsync(
         CreateChatGroup command,
         CancellationToken cancellationToken = default)
@@ -61,10 +42,10 @@ internal sealed class CreateChatGroupHandler
             var fileUploadRequest = new SingleFileUploadRequest
             {
                 File = command.InputFile,
-                UserId = _identityContext.Id
+                UserId = identityContext.Id
             };
 
-            var result = await _fileUploadService.UploadAsync(fileUploadRequest, cancellationToken);
+            var result = await fileUploadService.UploadAsync(fileUploadRequest, cancellationToken);
             if ( result.Value is Error error ) return new FileUploadError(error.Message);
 
             var newMedia = result.AsT1!;
@@ -77,33 +58,33 @@ internal sealed class CreateChatGroupHandler
             };
         }
 
-        var groupId = _guidGenerator.New();
+        var groupId = guidGenerator.New();
         var chatGroup = new ChatGroup
         {
             Id = groupId,
             About = command.About ?? string.Empty,
             Name = command.Name,
-            AdminIds = new HashSet<Guid> { _identityContext.Id },
-            CreatorId = _identityContext.Id,
+            AdminIds = new HashSet<Guid> { identityContext.Id },
+            CreatorId = identityContext.Id,
             Picture = groupPicture,
-            CreatedAt = _clock.Now,
+            CreatedAt = clock.Now,
         };
 
-        await _groups.SaveAsync(chatGroup, cancellationToken);
+        await groups.SaveAsync(chatGroup, cancellationToken);
 
-        var membershipId = _guidGenerator.New();
+        var membershipId = guidGenerator.New();
         var groupMember = new ChatGroupMember
         {
             Id = membershipId,
-            CreatedAt = _clock.Now,
+            CreatedAt = clock.Now,
             ChatGroupId = chatGroup.Id,
-            UserId = _identityContext.Id,
-            Username = _identityContext.Username,
+            UserId = identityContext.Id,
+            Username = identityContext.Username,
             MembershipType = 0
         };
-        await _members.SaveAsync(groupMember, cancellationToken);
+        await members.SaveAsync(groupMember, cancellationToken);
 
-        await _eventDispatcher.PublishAsync(new ChatGroupCreatedEvent
+        await eventDispatcher.PublishAsync(new ChatGroupCreatedEvent
         {
             CreatorId = chatGroup.CreatorId,
             GroupId = chatGroup.Id,

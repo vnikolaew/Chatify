@@ -27,7 +27,7 @@ import {
 } from "@web/api";
 import { useTheme } from "next-themes";
 import { useIsUserLoggedIn } from "@hooks";
-import { UserStatus } from "@openapi/models/UserStatus";
+import { UserStatus } from "@openapi";
 import { ExitIcon, ProfileIcon, RightArrow } from "@icons";
 
 export function isValidURL(url: string | null) {
@@ -53,7 +53,7 @@ export interface UserDropdownProps {
    baseImagesUrl: string;
 }
 
-const UserDropdown = ({ baseImagesUrl }: UserDropdownProps) => {
+export const UserDropdown = ({ baseImagesUrl }: UserDropdownProps) => {
    const { isUserLoggedIn } = useIsUserLoggedIn();
    const { data, isLoading, error } = useGetMyClaimsQuery({
       enabled: isUserLoggedIn,
@@ -183,12 +183,13 @@ const UserDropdown = ({ baseImagesUrl }: UserDropdownProps) => {
                   >
                      <PopoverTrigger className={`px-1`}>
                         <Button
-                           className={`bg-transparent text-small  w-full items-center justify-between`}
+                           className={`bg-transparent text-small w-full items-center justify-between`}
                            size={"sm"}
                            endContent={
                               <RightArrow
-                                 className={`fill:default-100 text-default-300`}
-                                 size={24}
+                                 fill={`white`}
+                                 // className={`fill:white`}
+                                 size={22}
                               />
                            }
                         >
@@ -295,5 +296,3 @@ const UserDropdown = ({ baseImagesUrl }: UserDropdownProps) => {
       </Dropdown>
    );
 };
-
-export default UserDropdown;

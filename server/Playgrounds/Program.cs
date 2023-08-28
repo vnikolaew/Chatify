@@ -1,61 +1,38 @@
-﻿using System.Text;
+﻿using System.Text.Json;
+using AutoMapper;
 using Cassandra;
-using Cassandra.Mapping;
-using Castle.DynamicProxy;
-using Playgrounds;
-
-public class KeyValuePair : Mappings
-{
-    public string Key { get; set; }
-
-    public string Value { get; set; }
-
-    public KeyValuePair()
-        => For<KeyValuePair>()
-            .PartitionKey(_ => _.Key)
-            .Column(_ => _.Value, cm => cm.WithName("value"))
-            .Column(_ => _.Key, cm => cm.WithName("key"));
-}
+using Chatify.Domain.Entities;
+using Chatify.Infrastructure.Common.Mappings;
+using UserNotification = Chatify.Infrastructure.Data.Models.UserNotification;
 
 internal class Program
 {
     public static async Task Main(string[] args)
     {
-        var person = new Person().Test();
-        person.PropertyChanged += (sender, args) =>
+        var media = JsonSerializer.Serialize(new Media()
         {
-            var value = sender!
-                .GetType()
-                .GetProperty(args.PropertyName!)!
-                .GetValue(sender);
-            Console.WriteLine($"{args.PropertyName} => {value}");
+            Id = Guid.NewGuid(),
+            MediaUrl = "dfsfdsfdjA;"
+        });
+        var notification = new UserNotification
+        {
+            Type = ( sbyte )UserNotificationType.IncomingFriendInvite,
+            Summary = "sdewwefsdf",
+            Id = Guid.NewGuid(),
+            UserId = Guid.NewGuid(),
+            CreatedAt = DateTimeOffset.Now,
+            Metadata = new Dictionary<string, string>
+            {
+                { "user_media", media },
+                { "invite_id", Guid.NewGuid().ToString() },
+            },
         };
-        person.FirstName = "sdfsdf";
-        
-        return;
 
-        var cluster = Cluster.Builder()
-            .AddContactPoint("localhost")
-            .WithPort(9043)
-            .WithCompression(CompressionType.LZ4)
-            .WithDefaultKeyspace("chatify")
-            .Build();
+        // var profile = new MappingProfile(typeof(UserNotification).Assembly);
 
-        var session = await cluster.ConnectAsync();
-
-        MappingConfiguration.Global.Define<KeyValuePair>();
-        var mapper = new Mapper(session);
-
-        var kvs = await mapper.FetchPageAsync<KeyValuePair>(
-            10, null!, "SELECT * FROM kv_pairs;", null!);
-        while ( kvs.PagingState != null && kvs.Count > 0 )
-        {
-            kvs = await mapper.FetchPageAsync<KeyValuePair>(
-                10, kvs.PagingState!, "SELECT * FROM kv_pairs;", null!);
-            Console.WriteLine(
-                $"Paging state: {Encoding.UTF8.GetString(kvs.PagingState)}. Length in bytes: {kvs.PagingState.Length}");
-
-            Console.WriteLine($"Fetched next {kvs.Count} records.");
-        }
+        // var mapper = new MapperConfiguration(cfg =>
+        //         cfg.AddProfile(profile))
+        //     .CreateMapper();
+        // var x = mapper.Map<Chatify.Domain.Entities.UserNotification>(notification);
     }
 }

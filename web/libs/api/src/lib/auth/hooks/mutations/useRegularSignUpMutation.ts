@@ -1,13 +1,14 @@
-import { authClient } from "../client";
+import { authClient } from "../../client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 
-export interface FacebookSignUpModel {
-   accessToken: string;
+export interface RegularSignUpModel {
+   email: string;
+   username: string;
+   password: string;
 }
-
-const facebookSignUp = async (model: FacebookSignUpModel) => {
-   const { status, data } = await authClient.post(`/signup/facebook`, model);
+const regularSignUp = async (model: RegularSignUpModel) => {
+   const { status, data, headers } = await authClient.post(`/signup`, model);
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
@@ -16,12 +17,11 @@ const facebookSignUp = async (model: FacebookSignUpModel) => {
    return data;
 };
 
-export const useFacebookSignUpMutation = () => {
+export const useRegularSignUpMutation = () => {
    const client = useQueryClient();
-   return useMutation(facebookSignUp, {
+   return useMutation(regularSignUp, {
       onError: console.error,
       onSuccess: (data) => console.log("Sign up success: " + data),
-      onSettled: (res) => console.log(res),
       cacheTime: 60 * 60 * 1000,
    });
 };

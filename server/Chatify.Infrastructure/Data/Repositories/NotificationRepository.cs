@@ -6,6 +6,7 @@ using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Services;
 using Chatify.Shared.Abstractions.Queries;
+using Humanizer;
 using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
@@ -14,10 +15,10 @@ public sealed class NotificationRepository(
         IMapper mapper,
         Mapper dbMapper,
         IEntityChangeTracker changeTracker,
-        IPagingCursorHelper pagingCursorHelper,
-        string? idColumn = default)
-    : BaseCassandraRepository<UserNotification, Models.UserNotification, Guid>(mapper, dbMapper, changeTracker,
-            idColumn),
+        IPagingCursorHelper pagingCursorHelper)
+    : BaseCassandraRepository<UserNotification, Models.UserNotification, Guid>(
+            mapper, dbMapper, changeTracker,
+            nameof(UserNotification.Id).Underscore()),
         INotificationRepository
 {
     public async Task<CursorPaged<UserNotification>> GetPaginatedForUserAsync(

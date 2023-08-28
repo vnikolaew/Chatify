@@ -8,7 +8,7 @@ import process from "process";
 import { getImagesBaseUrl } from "@web/api";
 
 export const metadata: Metadata = {
-   title: "Welcome to app!",
+   title: "Chatify 2023",
    description: "Chatify - converse with your fellas!",
    icons: [],
 } satisfies Metadata;

@@ -14,26 +14,15 @@ using GithubSignUpResult = OneOf.OneOf<SignUpError, Unit>;
 
 public sealed record GithubSignUp([Required] string Code) : ICommand<GithubSignUpResult>;
 
-internal sealed class GithubSignUpHandler
-    : ICommandHandler<GithubSignUp, GithubSignUpResult>
-{
-    private readonly IAuthenticationService _authenticationService;
-    private readonly IClock _clock;
-    private readonly IEventDispatcher _eventDispatcher;
-
-    public GithubSignUpHandler(
+internal sealed class GithubSignUpHandler(
         IAuthenticationService authenticationService,
         IEventDispatcher eventDispatcher, IClock clock)
-    {
-        _authenticationService = authenticationService;
-        _eventDispatcher = eventDispatcher;
-        _clock = clock;
-    }
-
+    : ICommandHandler<GithubSignUp, GithubSignUpResult>
+{
     public async Task<GithubSignUpResult> HandleAsync(
         GithubSignUp command, CancellationToken cancellationToken = default)
     {
-        var result = await _authenticationService
+        var result = await authenticationService
             .GithubSignUpAsync(command, cancellationToken);
 
         if ( result.IsT0 ) return new SignUpError(result.AsT0.Message);
@@ -42,19 +31,19 @@ internal sealed class GithubSignUpHandler
         {
             new UserSignedUpEvent
             {
-                Timestamp = _clock.Now,
+                Timestamp = clock.Now,
                 UserId = result.AsT1.UserId,
                 AuthenticationProvider = result.AsT1.AuthenticationProvider
             },
             new UserSignedInEvent
             {
-                Timestamp = _clock.Now,
+                Timestamp = clock.Now,
                 AuthenticationProvider = result.AsT1.AuthenticationProvider,
                 UserId = result.AsT1.UserId
             }
         };
-        
-        await _eventDispatcher.PublishAsync(events, cancellationToken);
+
+        await eventDispatcher.PublishAsync(events, cancellationToken);
         return Unit.Default;
     }
 }

@@ -50,6 +50,14 @@ public interface IAuthenticationService
     Task<OneOf<UserNotFound, string>> GenerateEmailConfirmationTokenAsync(
         Guid userId,
         CancellationToken cancellationToken = default);
+    
+    Task<OneOf<Error, Unit>> AcceptCookiePolicy(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+    
+    Task<OneOf<Error, Unit>> DeclineCookiePolicy(
+        Guid userId,
+        CancellationToken cancellationToken = default);
 
     Task<OneOf<UserNotFound, PasswordChangeError, Unit>> ChangePasswordAsync(
         Guid userId,

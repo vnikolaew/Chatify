@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Common.Contracts;
+using Chatify.Application.Common.Models;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Friendships;
@@ -15,9 +16,11 @@ namespace Chatify.Application.Friendships.Commands;
 
 using AcceptFriendInvitationResult = OneOf<FriendInviteNotFoundError, FriendInviteInvalidStateError, Guid>;
 
-public record FriendInviteNotFoundError(Guid InviteId = default, Guid InviteeId = default);
+public record FriendInviteNotFoundError(Guid InviteId = default, Guid InviteeId = default)
+    : BaseError("Friend invitation not found.");
 
-public record FriendInviteInvalidStateError(FriendInvitationStatus Status);
+public record FriendInviteInvalidStateError(FriendInvitationStatus Status)
+    : BaseError("Friend invitation is in an invalid state.");
 
 public record AcceptFriendInvitation([Required] Guid InviteId) : ICommand<AcceptFriendInvitationResult>;
 
@@ -121,7 +124,7 @@ internal sealed class AcceptFriendInvitationHandler :
 
         // Update friend invite:
         await _friendInvites.UpdateAsync(
-            friendInvite.Id,
+            friendInvite,
             invite =>
             {
                 invite.Status = FriendInvitationStatus.Accepted;

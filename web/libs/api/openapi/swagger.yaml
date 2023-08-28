@@ -14,7 +14,8 @@ paths:
           description: Success
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/ObjectApiResponse'
   /api/Auth/signup:
     post:
       tags:
@@ -35,7 +36,8 @@ paths:
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
         '204':
           description: No Content
   /api/Auth/signout:
@@ -47,7 +49,8 @@ paths:
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
         '204':
           description: No Content
   /api/Auth/signin:
@@ -76,7 +79,8 @@ paths:
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
         '204':
           description: No Content
         '302':
@@ -101,7 +105,8 @@ paths:
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
         '204':
           description: No Content
   /api/Auth/signup/facebook:
@@ -124,7 +129,8 @@ paths:
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
         '204':
           description: No Content
   /api/Auth/signup/github:
@@ -142,7 +148,8 @@ paths:
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
         '204':
           description: No Content
   /api/Auth/confirm-email:
@@ -160,7 +167,37 @@ paths:
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+  /api/Auth/cookie-policy:
+    post:
+      tags:
+        - Auth
+      responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '202':
+          description: Accepted
+    delete:
+      tags:
+        - Auth
+      responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
         '202':
           description: Accepted
   '/api/chatgroups/join/{groupId}':
@@ -181,14 +218,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '202':
           description: Accepted
           content:
             application/json:
               schema:
-                type: string
-                format: uuid
+                $ref: '#/components/schemas/ObjectApiResponse'
   '/api/chatgroups/accept/{requestId}':
     post:
       tags:
@@ -207,14 +243,19 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/ProblemDetails'
         '202':
           description: Accepted
           content:
             application/json:
               schema:
-                type: string
-                format: uuid
+                $ref: '#/components/schemas/ObjectApiResponse'
   '/api/chatgroups/decline/{requestId}':
     post:
       tags:
@@ -233,13 +274,19 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/ProblemDetails'
         '202':
           description: Accepted
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Unit'
+                $ref: '#/components/schemas/ObjectApiResponse'
   '/api/chatgroups/requests/{groupId}':
     get:
       tags:
@@ -258,12 +305,19 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/ProblemDetails'
         '200':
           description: Success
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/GroupJoinRequestEntryListApiResponse'
   /api/ChatGroups:
     post:
       tags:
@@ -293,12 +347,14 @@ paths:
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
         '201':
           description: Created
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/ObjectApiResponse'
   '/api/ChatGroups/{groupId}':
     get:
       tags:
@@ -323,7 +379,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChatGroupDetailsEntry'
+                $ref: '#/components/schemas/ChatGroupDetailsEntryApiResponse'
     patch:
       tags:
         - ChatGroups
@@ -366,6 +422,12 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/ProblemDetails'
         '202':
           description: Accepted
@@ -392,15 +454,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '200':
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ChatGroupFeedEntry'
+                $ref: '#/components/schemas/ChatGroupFeedEntryListApiResponse'
   '/api/ChatGroups/{groupId}/members/search':
     get:
       tags:
@@ -424,12 +484,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '200':
           description: Success
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UserListApiResponse'
   /api/ChatGroups/search:
     get:
       tags:
@@ -446,12 +507,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '200':
           description: Success
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/ChatGroupListApiResponse'
   '/api/ChatGroups/{groupId}/attachments':
     get:
       tags:
@@ -481,12 +543,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '200':
           description: Success
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/ChatGroupAttachmentCursorPagedApiResponse'
   '/api/ChatGroups/{groupId}/pins':
     get:
       tags:
@@ -505,7 +568,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '404':
           description: Not Found
           content:
@@ -516,7 +579,8 @@ paths:
           description: Success
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/ChatMessageListApiResponse'
   /api/ChatGroups/members:
     post:
       tags:
@@ -538,9 +602,15 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/ProblemDetails'
-        '200':
-          description: Success
+        '202':
+          description: Accepted
           content:
             application/json:
               schema:
@@ -563,6 +633,12 @@ paths:
       responses:
         '400':
           description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
           content:
             application/json:
               schema:
@@ -594,7 +670,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '404':
           description: Not Found
           content:
@@ -606,7 +682,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChatGroupMember'
+                $ref: '#/components/schemas/ChatGroupMemberApiResponse'
   /api/ChatGroups/leave:
     post:
       tags:
@@ -628,7 +704,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '202':
           description: Accepted
   /api/ChatGroups/admins:
@@ -652,7 +728,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '404':
           description: Not Found
           content:
@@ -666,8 +742,18 @@ paths:
       tags:
         - Friendships
       responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
         '200':
           description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserListApiResponse'
   /api/Friendships/sent:
     get:
       tags:
@@ -678,12 +764,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '200':
           description: Success
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/FriendInvitationListApiResponse'
   /api/Friendships/incoming:
     get:
       tags:
@@ -694,12 +781,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '200':
           description: Success
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/FriendInvitationListApiResponse'
   '/api/Friendships/invite/{userId}':
     post:
       tags:
@@ -713,8 +801,8 @@ paths:
             type: string
             format: uuid
       responses:
-        '400':
-          description: Bad Request
+        '404':
+          description: Not Found
           content:
             application/json:
               schema:
@@ -724,8 +812,7 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                format: uuid
+                $ref: '#/components/schemas/ObjectApiResponse'
   '/api/Friendships/accept/{inviteId}':
     post:
       tags:
@@ -744,14 +831,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '202':
           description: Accepted
           content:
             application/json:
               schema:
-                type: string
-                format: uuid
+                $ref: '#/components/schemas/ObjectApiResponse'
   '/api/Friendships/decline/{inviteId}':
     post:
       tags:
@@ -770,7 +856,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '404':
           description: Not Found
           content:
@@ -797,7 +883,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '204':
           description: No Content
   '/api/Messages/{groupId}':
@@ -824,16 +910,18 @@ paths:
             schema:
               $ref: '#/components/schemas/GetMessagesByChatGroupRequest'
       responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema: { }
         '400':
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatGroupMessageEntryCursorPagedApiResponse'
     post:
       tags:
         - Messages
@@ -875,13 +963,19 @@ paths:
               Metadata:
                 style: form
       responses:
-        '202':
-          description: Accepted
+        '400':
+          description: Bad Request
           content:
             application/json:
               schema: { }
-        '400':
-          description: Bad Request
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '202':
+          description: Accepted
           content:
             application/json:
               schema: { }
@@ -909,16 +1003,24 @@ paths:
             schema:
               $ref: '#/components/schemas/GetRepliesByForMessageRequest'
       responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema: { }
         '400':
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageReplyCursorPagedApiResponse'
     post:
       tags:
         - Messages
@@ -942,16 +1044,24 @@ paths:
             schema:
               $ref: '#/components/schemas/SendGroupChatMessageReplyRequest'
       responses:
-        '202':
-          description: Accepted
-          content:
-            application/json:
-              schema: { }
         '400':
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectApiResponse'
   '/api/Messages/replies/{messageId}':
     delete:
       tags:
@@ -976,16 +1086,20 @@ paths:
             schema:
               $ref: '#/components/schemas/DeleteGroupChatMessageRequest'
       responses:
-        '204':
-          description: No Content
-          content:
-            application/json:
-              schema: { }
         '400':
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '204':
+          description: No Content
     put:
       tags:
         - Messages
@@ -1009,15 +1123,20 @@ paths:
             schema:
               $ref: '#/components/schemas/EditGroupChatMessageRequest'
       responses:
-        '202':
-          description: Accepted
-        '404':
-          description: Not Found
         '400':
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '202':
+          description: Accepted
   '/api/Messages/{messageId}':
     put:
       tags:
@@ -1042,13 +1161,20 @@ paths:
             schema:
               $ref: '#/components/schemas/EditGroupChatMessageRequest'
       responses:
-        '202':
-          description: Accepted
         '400':
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '202':
+          description: Accepted
     delete:
       tags:
         - Messages
@@ -1072,15 +1198,20 @@ paths:
             schema:
               $ref: '#/components/schemas/DeleteGroupChatMessageRequest'
       responses:
-        '204':
-          description: No Content
-        '404':
-          description: Not Found
         '400':
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '204':
+          description: No Content
   '/pins/{messageId}':
     post:
       tags:
@@ -1105,18 +1236,20 @@ paths:
             schema:
               $ref: '#/components/schemas/PinChatGroupMessage'
       responses:
-        '204':
-          description: No Content
         '400':
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
         '404':
           description: Not Found
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '204':
+          description: No Content
   '/share/{messageId}':
     post:
       tags:
@@ -1141,15 +1274,20 @@ paths:
             schema:
               $ref: '#/components/schemas/ShareMessage'
       responses:
-        '202':
-          description: Accepted
-        '404':
-          description: Not Found
         '400':
           description: Bad Request
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '202':
+          description: Accepted
   /api/Notifications:
     get:
       tags:
@@ -1172,15 +1310,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '200':
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserNotification'
+                $ref: '#/components/schemas/UserNotificationCursorPagedApiResponse'
   /api/Notifications/unread:
     get:
       tags:
@@ -1191,15 +1327,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '200':
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserNotification'
+                $ref: '#/components/schemas/UserNotificationCursorPagedApiResponse'
+  /api/Notifications/read:
+    put:
+      tags:
+        - Notifications
+      responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '202':
+          description: Accepted
   /api/Profile/status:
     put:
       tags:
@@ -1221,7 +1368,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '202':
           description: Accepted
   /api/Profile/details:
@@ -1242,6 +1389,12 @@ paths:
       responses:
         '400':
           description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
           content:
             application/json:
               schema:
@@ -1266,13 +1419,19 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/ProblemDetails'
         '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetailsEntry'
+                $ref: '#/components/schemas/UserDetailsEntryApiResponse'
   /api/Profile/search:
     get:
       tags:
@@ -1295,9 +1454,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserListApiResponse'
   '/api/Reactions/{messageId}':
     post:
       tags:
@@ -1327,12 +1484,19 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/ProblemDetails'
         '202':
           description: Accepted
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/ObjectApiResponse'
   '/api/Reactions/replies/{messageId}':
     post:
       tags:
@@ -1362,12 +1526,19 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/ProblemDetails'
         '202':
           description: Accepted
           content:
             application/json:
-              schema: { }
+              schema:
+                $ref: '#/components/schemas/ObjectApiResponse'
   '/api/Reactions/{messageReactionId}':
     delete:
       tags:
@@ -1397,15 +1568,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '404':
           description: Not Found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
-        '204':
-          description: No Content
+        '202':
+          description: Accepted
   '/api/Reactions/replies/{messageReactionId}':
     delete:
       tags:
@@ -1435,15 +1606,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/UnitApiResponse'
         '404':
           description: Not Found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
-        '204':
-          description: No Content
+        '202':
+          description: Accepted
 components:
   schemas:
     AddChatGroupAdmin:
@@ -1503,6 +1674,11 @@ components:
         - Packet
         - ControllerAreaNetwork
       type: string
+    ApiResponseStatus:
+      enum:
+        - Success
+        - Failure
+      type: string
     ChangeUserStatus:
       type: object
       properties:
@@ -1552,6 +1728,53 @@ components:
           type: string
           format: date-time
       additionalProperties: false
+    ChatGroupAttachment:
+      type: object
+      properties:
+        chatGroupId:
+          type: string
+          format: uuid
+        attachmentId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        username:
+          type: string
+          nullable: true
+        mediaInfo:
+          $ref: '#/components/schemas/Media'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+      additionalProperties: false
+    ChatGroupAttachmentCursorPagedApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatGroupAttachment'
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+      additionalProperties: false
     ChatGroupDetailsEntry:
       type: object
       properties:
@@ -1565,6 +1788,25 @@ components:
         creator:
           $ref: '#/components/schemas/User'
       additionalProperties: false
+    ChatGroupDetailsEntryApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          $ref: '#/components/schemas/ChatGroupDetailsEntry'
+        timestamp:
+          type: string
+          format: date-time
+      additionalProperties: false
     ChatGroupFeedEntry:
       type: object
       properties:
@@ -1574,6 +1816,69 @@ components:
           $ref: '#/components/schemas/ChatMessage'
         messageSender:
           $ref: '#/components/schemas/User'
+      additionalProperties: false
+    ChatGroupFeedEntryListApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatGroupFeedEntry'
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ChatGroupJoinRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        chatGroupId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          format: int32
+      additionalProperties: false
+    ChatGroupListApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatGroup'
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
       additionalProperties: false
     ChatGroupMember:
       type: object
@@ -1600,6 +1905,59 @@ components:
         membershipType:
           type: integer
           format: int32
+      additionalProperties: false
+    ChatGroupMemberApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          $ref: '#/components/schemas/ChatGroupMember'
+        timestamp:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ChatGroupMessageEntry:
+      type: object
+      properties:
+        message:
+          $ref: '#/components/schemas/ChatMessage'
+        forwardedMessage:
+          $ref: '#/components/schemas/ChatMessage'
+        senderInfo:
+          $ref: '#/components/schemas/MessageSenderInfoEntry'
+        repliersInfo:
+          $ref: '#/components/schemas/MessageRepliersInfoEntry'
+      additionalProperties: false
+    ChatGroupMessageEntryCursorPagedApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatGroupMessageEntry'
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
       additionalProperties: false
     ChatMessage:
       type: object
@@ -1642,6 +2000,95 @@ components:
           additionalProperties:
             type: string
           nullable: true
+      additionalProperties: false
+    ChatMessageListApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ChatMessageReply:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        chatGroupId:
+          type: string
+          format: uuid
+        chatGroup:
+          $ref: '#/components/schemas/ChatGroup'
+        userId:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/User'
+        content:
+          type: string
+          nullable: true
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Media'
+          nullable: true
+        reactionCounts:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
+        replyToId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    ChatMessageReplyCursorPagedApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessageReply'
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
       additionalProperties: false
     DeleteGroupChatMessageRequest:
       type: object
@@ -1723,6 +2170,28 @@ components:
           format: date-time
           nullable: true
       additionalProperties: false
+    FriendInvitationListApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FriendInvitation'
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+      additionalProperties: false
     FriendInvitationStatus:
       enum:
         - Pending
@@ -1794,6 +2263,36 @@ components:
           type: string
           nullable: true
       additionalProperties: false
+    GroupJoinRequestEntry:
+      type: object
+      properties:
+        joinRequest:
+          $ref: '#/components/schemas/ChatGroupJoinRequest'
+        user:
+          $ref: '#/components/schemas/User'
+      additionalProperties: false
+    GroupJoinRequestEntryListApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupJoinRequestEntry'
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+      additionalProperties: false
     IPAddress:
       type: object
       properties:
@@ -1864,6 +2363,48 @@ components:
           type: string
           nullable: true
       additionalProperties: false
+    MessageReplierInfoEntry:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        username:
+          type: string
+          nullable: true
+        profilePictureUrl:
+          type: string
+          nullable: true
+      additionalProperties: false
+    MessageRepliersInfoEntry:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int64
+        lastUpdatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        replierInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageReplierInfoEntry'
+          nullable: true
+      additionalProperties: false
+    MessageSenderInfoEntry:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        username:
+          type: string
+          nullable: true
+        profilePictureUrl:
+          type: string
+          nullable: true
+      additionalProperties: false
     NewPasswordInput:
       type: object
       properties:
@@ -1873,6 +2414,25 @@ components:
         newPassword:
           type: string
           nullable: true
+      additionalProperties: false
+    ObjectApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
       additionalProperties: false
     PhoneNumber:
       type: object
@@ -2026,6 +2586,25 @@ components:
     Unit:
       type: object
       additionalProperties: false
+    UnitApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          $ref: '#/components/schemas/Unit'
+        timestamp:
+          type: string
+          format: date-time
+      additionalProperties: false
     UnreactToChatMessageRequest:
       type: object
       properties:
@@ -2100,6 +2679,47 @@ components:
         friendInvitation:
           $ref: '#/components/schemas/FriendInvitation'
       additionalProperties: false
+    UserDetailsEntryApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          $ref: '#/components/schemas/UserDetailsEntry'
+        timestamp:
+          type: string
+          format: date-time
+      additionalProperties: false
+    UserListApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+      additionalProperties: false
     UserNotification:
       type: object
       properties:
@@ -2127,6 +2747,28 @@ components:
           nullable: true
         read:
           type: boolean
+      additionalProperties: false
+    UserNotificationCursorPagedApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserNotification'
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
       additionalProperties: false
     UserNotificationMetadata:
       type: object

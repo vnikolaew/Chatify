@@ -12,27 +12,19 @@ namespace Chatify.Application.Authentication.Commands;
 public sealed record FacebookSignUp([Required] string AccessToken)
     : ICommand<FacebookSignUpResult>;
 
-internal sealed class FacebookSignUpHandler : ICommandHandler<FacebookSignUp, FacebookSignUpResult>
-{
-    private readonly IAuthenticationService _authService;
-    private readonly IEventDispatcher _eventDispatcher;
-
-    public FacebookSignUpHandler(
+internal sealed class FacebookSignUpHandler(
         IAuthenticationService authService,
         IEventDispatcher eventDispatcher)
-    {
-        _authService = authService;
-        _eventDispatcher = eventDispatcher;
-    }
-
+    : ICommandHandler<FacebookSignUp, FacebookSignUpResult>
+{
     public async Task<FacebookSignUpResult> HandleAsync(FacebookSignUp command,
         CancellationToken cancellationToken = default)
     {
-        var result = await _authService.FacebookSignUpAsync(command, cancellationToken);
+        var result = await authService.FacebookSignUpAsync(command, cancellationToken);
         if ( result.IsT0 ) return new SignUpError(result.AsT0.Message);
 
         var res = result.AsT1!;
-        await _eventDispatcher.PublishAsync(new UserSignedUpEvent
+        await eventDispatcher.PublishAsync(new UserSignedUpEvent
         {
             Timestamp = DateTime.Now,
             UserId = res.UserId,

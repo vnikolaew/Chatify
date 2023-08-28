@@ -23,12 +23,15 @@
   },
   "include": [
     "**/*.ts",
+    "**/*.d.ts",
     "**/*.tsx",
     "**/*.js",
     "**/*.jsx",
     "next-env.d.ts",
     "index.d.ts",
     "../../apps/app/.next/types/**/*.ts",
+    "../../libs/**/*.ts",
+    "../../libs/**/*.d.ts",
     ".next/types/**/*.ts"
   ],
   "exclude": [

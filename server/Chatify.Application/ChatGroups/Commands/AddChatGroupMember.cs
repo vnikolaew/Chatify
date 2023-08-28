@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common.Models;
 using Chatify.Application.User.Common;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
@@ -15,7 +16,8 @@ namespace Chatify.Application.ChatGroups.Commands;
 using AddChatGroupMemberResult =
     OneOf<UserNotFound, UserIsNotGroupAdminError, ChatGroupNotFoundError, UserIsAlreadyGroupMemberError, Guid>;
 
-public record UserIsAlreadyGroupMemberError(Guid UserId, Guid ChatGroupId);
+public record UserIsAlreadyGroupMemberError(Guid UserId, Guid ChatGroupId)
+    : BaseError("User is already a member of this chat group.");
 
 public record AddChatGroupMember(
     [Required] Guid GroupId,
@@ -24,50 +26,33 @@ public record AddChatGroupMember(
     sbyte MembershipType
 ) : ICommand<AddChatGroupMemberResult>;
 
-internal sealed class AddChatGroupMemberHandler
-    : ICommandHandler<AddChatGroupMember, AddChatGroupMemberResult>
-{
-    private readonly IIdentityContext _identityContext;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IChatGroupMemberRepository _members;
-    private readonly IDomainRepository<ChatGroup, Guid> _groups;
-    private readonly IDomainRepository<Domain.Entities.User, Guid> _users;
-    private readonly IClock _clock;
-
-    public AddChatGroupMemberHandler(
+internal sealed class AddChatGroupMemberHandler(
         IIdentityContext identityContext,
         IChatGroupMemberRepository members,
         IDomainRepository<ChatGroup, Guid> groups,
         IEventDispatcher eventDispatcher,
         IClock clock, IDomainRepository<Domain.Entities.User, Guid> users)
-    {
-        _identityContext = identityContext;
-        _members = members;
-        _groups = groups;
-        _eventDispatcher = eventDispatcher;
-        _clock = clock;
-        _users = users;
-    }
-
+    : ICommandHandler<AddChatGroupMember, AddChatGroupMemberResult>
+{
     public async Task<AddChatGroupMemberResult> HandleAsync(
         AddChatGroupMember command,
         CancellationToken cancellationToken = default)
     {
-        var group = await _groups.GetAsync(command.GroupId, cancellationToken);
+        var group = await groups.GetAsync(command.GroupId, cancellationToken);
 
         if ( group is null ) return new ChatGroupNotFoundError();
-        if ( !group.AdminIds.Contains(_identityContext.Id) )
+        if ( !group.AdminIds.Contains(identityContext.Id) )
         {
-            return new UserIsNotGroupAdminError(_identityContext.Id, group.Id);
+            return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
         }
 
-        var memberUser = await _users.GetAsync(command.NewMemberId, cancellationToken);
+        var memberUser = await users.GetAsync(command.NewMemberId, cancellationToken);
         if ( memberUser is null )
         {
             return new UserNotFound();
         }
 
-        var isMember = await _members.Exists(group.Id, memberUser.Id, cancellationToken);
+        var isMember = await members.Exists(group.Id, memberUser.Id, cancellationToken);
         if ( isMember )
         {
             return new UserIsAlreadyGroupMemberError(memberUser.Id, group.Id);
@@ -83,15 +68,15 @@ internal sealed class AddChatGroupMemberHandler
             MembershipType = command.MembershipType
         };
 
-        await _members.SaveAsync(member, cancellationToken);
-        await _eventDispatcher.PublishAsync(new ChatGroupMemberAddedEvent
+        await members.SaveAsync(member, cancellationToken);
+        await eventDispatcher.PublishAsync(new ChatGroupMemberAddedEvent
         {
             GroupId = group.Id,
-            AddedById = _identityContext.Id,
-            AddedByUsername = _identityContext.Username,
+            AddedById = identityContext.Id,
+            AddedByUsername = identityContext.Username,
             MemberId = member.Id,
             MembershipType = command.MembershipType,
-            Timestamp = _clock.Now
+            Timestamp = clock.Now
         }, cancellationToken);
 
         return member.Id;

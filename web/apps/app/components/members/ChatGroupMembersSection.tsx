@@ -8,10 +8,9 @@ import {
    USER_DETAILS_KEY,
 } from "@web/api";
 import { useSearchParams } from "next/navigation";
-import { Avatar, Badge, Skeleton, Tooltip } from "@nextui-org/react";
-import { UserStatus } from "@openapi/index";
+import { Skeleton } from "@nextui-org/react";
 import { useQueryClient } from "@tanstack/react-query";
-import ChatGroupMemberInfoCard from "./ChatGroupMemberInfoCard";
+import { ChatGroupMemberEntry } from "@components/members";
 
 export interface ChatGroupMembersSectionProps {}
 
@@ -38,10 +37,9 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
    };
 
    console.log(membersByCategory);
-
    return (
       <div
-         className={`flex flex-col items-start py-2 min-h-[80vh] h-full border-l-1 border-l-default-200`}
+         className={`flex flex-col items-start py-2 min-h-[80vh] h-full border-l-1 border-l-default-200 rounded-medium`}
       >
          {!chatGroupId ? (
             <div
@@ -85,78 +83,20 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
                         ) : (
                            <div>
                               {members.map((member) => (
-                                 <Tooltip
-                                    delay={500}
-                                    closeDelay={300}
-                                    placement={"left"}
-                                    key={member.id}
-                                    content={
-                                       member.id !==
-                                          me.claims.nameidentifier && (
-                                          <ChatGroupMemberInfoCard
-                                             userId={member.id}
-                                          />
+                                 <ChatGroupMemberEntry
+                                    onHover={async () =>
+                                       await handlePrefetchUserDetails(
+                                          member.id
                                        )
                                     }
-                                 >
-                                    <div
-                                       onMouseEnter={async (_) =>
-                                          await handlePrefetchUserDetails(
-                                             member.id
-                                          )
-                                       }
-                                       className={`h-fit w-fit px-3 ml-4 mt-4 rounded-md transition-background duration-100 hover:bg-default-100 cursor-pointer flex items-start gap-3`}
-                                    >
-                                       <Badge
-                                          color={
-                                             member.status === UserStatus.ONLINE
-                                                ? "success"
-                                                : member.status ===
-                                                  UserStatus.AWAY
-                                                ? "warning"
-                                                : "default"
-                                          }
-                                          content={""}
-                                          classNames={
-                                             {
-                                                // badge: "h-3 w-3 border-[1px]",
-                                             }
-                                          }
-                                          placement={"bottom-right"}
-                                          size={"sm"}
-                                          variant={"shadow"}
-                                          as={"span"}
-                                       >
-                                          <Avatar
-                                             fallback={
-                                                <Skeleton
-                                                   className={`h-10 w-10 rounded-full`}
-                                                />
-                                             }
-                                             isBordered
-                                             radius={"full"}
-                                             color={
-                                                category === "admins"
-                                                   ? "secondary"
-                                                   : member.status ===
-                                                     UserStatus.ONLINE
-                                                   ? "success"
-                                                   : "default"
-                                             }
-                                             size={"sm"}
-                                             className={`aspect-square outline-1 object-cover`}
-                                             src={
-                                                member.profilePicture.mediaUrl
-                                             }
-                                          />
-                                       </Badge>
-                                       <span className={`text-medium`}>
-                                          {me.claims.name === member.username
-                                             ? `${member.username} (you)`
-                                             : member.username}
-                                       </span>
-                                    </div>
-                                 </Tooltip>
+                                    key={member.id}
+                                    member={member}
+                                    isMe={
+                                       me.claims.nameidentifier === member.id
+                                    }
+                                    myName={me.claims.name}
+                                    category={category}
+                                 />
                               ))}
                            </div>
                         )}

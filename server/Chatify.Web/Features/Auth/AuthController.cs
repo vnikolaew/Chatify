@@ -1,11 +1,13 @@
-﻿using System.Net;
-using Chatify.Application.Authentication.Commands;
+﻿using Chatify.Application.Authentication.Commands;
 using Chatify.Infrastructure.Authentication.External.Github;
 using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
+using Chatify.Web.Common.Attributes;
 using Chatify.Web.Extensions;
+using LanguageExt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using GithubSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
 using SignOutResult = OneOf.OneOf<LanguageExt.Common.Error, LanguageExt.Unit>;
 using RegularSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
@@ -14,6 +16,8 @@ using GoogleSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models
 using FacebookSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
 using ConfirmEmailResult =
     OneOf.OneOf<Chatify.Application.Authentication.Commands.EmailConfirmationError, LanguageExt.Unit>;
+using AcceptCookiePolicyResult = OneOf.OneOf<LanguageExt.Common.Error, LanguageExt.Unit>;
+using DeclineCookiePolicyResult = OneOf.OneOf<LanguageExt.Common.Error, LanguageExt.Unit>;
 
 namespace Chatify.Web.Features.Auth;
 
@@ -29,11 +33,12 @@ public class AuthController : ApiController
     public const string GithubSignUpRoute = $"{RegularSignUpRoute}/github";
 
     public const string ConfirmEmailRoute = "confirm-email";
+    public const string CookiePolicyRoute = "cookie-policy";
 
     [HttpGet]
     [Authorize]
     [Route("me")]
-    [ProducesResponseType(typeof(object), (int) HttpStatusCode.OK)]
+    [ProducesOkApiResponse<object>]
     public IActionResult Info()
         => Ok(new
         {
@@ -48,8 +53,8 @@ public class AuthController : ApiController
 
     [HttpPost]
     [Route(RegularSignUpRoute)]
-    [ProducesResponseType(typeof(object), (int) HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int) HttpStatusCode.NoContent)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNoContentApiResponse]
     public Task<IActionResult> RegularSignUp(
         [FromBody] RegularSignUp signUp,
         CancellationToken cancellationToken = default)
@@ -58,17 +63,17 @@ public class AuthController : ApiController
 
     [HttpPost]
     [Route(SignOutRoute)]
-    [ProducesResponseType(typeof(object), (int) HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int) HttpStatusCode.NoContent)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNoContentApiResponse]
     public Task<IActionResult> SignOut(CancellationToken cancellationToken = default)
         => SendAsync<SignOut, SignOutResult>(new SignOut(), cancellationToken)
             .MatchAsync(err => err.ToBadRequest(), NoContent);
 
     [HttpPost]
     [Route(RegularSignInRoute)]
-    [ProducesResponseType(typeof(object), (int) HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int) HttpStatusCode.NoContent)]
-    [ProducesResponseType((int) HttpStatusCode.Redirect)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNoContentApiResponse]
+    [ProducesRedirectApiResponse]
     public Task<IActionResult> RegularSignIn(
         [FromBody] RegularSignIn signIn,
         [FromQuery] string? returnUrl,
@@ -78,38 +83,38 @@ public class AuthController : ApiController
             .MatchAsync(
                 err => err.ToBadRequest(),
                 _ => returnUrl is not null
-                    ? Redirect(returnUrl)
+                    ? Url.IsLocalUrl(returnUrl) switch
+                    {
+                        true => Redirect($"{Request.Host.Host}/{returnUrl}"),
+                        _ => Redirect(returnUrl)
+                    }
                     : NoContent());
     }
 
     [HttpPost]
     [Route(GoogleSignUpRoute)]
-    [ProducesResponseType(typeof(object), (int) HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int) HttpStatusCode.NoContent)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNoContentApiResponse]
     public Task<IActionResult> GoogleSignUp(
         [FromBody] GoogleSignUp signUp,
         CancellationToken cancellationToken = default)
-    {
-        return SendAsync<GoogleSignUp, GoogleSignUpResult>(signUp, cancellationToken)
+        => SendAsync<GoogleSignUp, GoogleSignUpResult>(signUp, cancellationToken)
             .MatchAsync(err => err.ToBadRequest(), NoContent);
-    }
 
     [HttpPost]
     [Route(FacebookSignUpRoute)]
-    [ProducesResponseType(typeof(object), (int) HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int) HttpStatusCode.NoContent)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNoContentApiResponse]
     public Task<IActionResult> FacebookSignUp(
         [FromBody] FacebookSignUp signUp,
         CancellationToken cancellationToken = default)
-    {
-        return SendAsync<FacebookSignUp, FacebookSignUpResult>(signUp, cancellationToken)
+        => SendAsync<FacebookSignUp, FacebookSignUpResult>(signUp, cancellationToken)
             .MatchAsync(err => err.ToBadRequest(), NoContent);
-    }
 
     [HttpPost]
     [Route(GithubSignUpRoute)]
-    [ProducesResponseType(typeof(object), (int) HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int) HttpStatusCode.NoContent)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNoContentApiResponse]
     public Task<IActionResult> GithubSignUp(
         [FromServices] IGithubOAuthClient githubOAuthClient,
         [FromQuery] string code,
@@ -120,14 +125,38 @@ public class AuthController : ApiController
 
     [HttpPost]
     [Route(ConfirmEmailRoute)]
-    [ProducesResponseType(typeof(object), (int) HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int) HttpStatusCode.Accepted)]
+    [ProducesBadRequestApiResponse]
+    [ProducesAcceptedApiResponse<ApiResponse<Unit>>]
     public Task<IActionResult> ConfirmEmail(
         [FromQuery(Name = "token")] string tokenCode,
         CancellationToken cancellationToken = default)
-    {
-        return SendAsync<ConfirmEmail, ConfirmEmailResult>(
+        => SendAsync<ConfirmEmail, ConfirmEmailResult>(
                 new ConfirmEmail(tokenCode), cancellationToken)
-            .MatchAsync(err => err.ToBadRequest(), Accepted);
-    }
+            .MatchAsync(
+                err => err.ToBadRequest(),
+                _ => Accepted(Application.Authentication.Commands.ConfirmEmail.SuccessMessage));
+
+    [HttpPost]
+    [Route(CookiePolicyRoute)]
+    [ProducesBadRequestApiResponse]
+    [ProducesAcceptedApiResponse]
+    public Task<IActionResult> AcceptCookiePolicy(
+        CancellationToken cancellationToken = default)
+        => SendAsync<AcceptCookiePolicy, AcceptCookiePolicyResult>(
+                new AcceptCookiePolicy(), cancellationToken)
+            .MatchAsync(
+                err => err.ToBadRequest(),
+                Accepted);
+    
+    [HttpDelete]
+    [Route(CookiePolicyRoute)]
+    [ProducesBadRequestApiResponse]
+    [ProducesAcceptedApiResponse]
+    public Task<IActionResult> DeclineCookiePolicy(
+        CancellationToken cancellationToken = default)
+        => SendAsync<DeclineCookiePolicy, DeclineCookiePolicyResult>(
+                new DeclineCookiePolicy(), cancellationToken)
+            .MatchAsync(
+                err => err.ToBadRequest(),
+                Accepted);
 }

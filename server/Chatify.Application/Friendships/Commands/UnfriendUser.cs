@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common.Models;
 using Chatify.Domain.Events.Friendships;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
@@ -13,7 +14,8 @@ namespace Chatify.Application.Friendships.Commands;
 
 using UnfriendUserResult = OneOf<UsersAreNotFriendsError, Error, Unit>;
 
-public record UsersAreNotFriendsError(Guid UserId, Guid FriendId);
+public record UsersAreNotFriendsError(Guid UserId, Guid FriendId)
+    : BaseError("Users are not friends.");
 
 public record UnfriendUser(
     [Required] Guid UserId

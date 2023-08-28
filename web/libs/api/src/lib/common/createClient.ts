@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, HttpStatusCode } from "axios";
-import { isServer } from "../utils";
+import { isServer, sleep } from "../utils";
 
 export const USER_LOCATION_LOCAL_STORAGE_KEY = "user-geolocation";
 
@@ -34,6 +34,11 @@ export const createClient = (
       const [latitude, longitude] = userLocation?.split(";");
       config.headers.set("X-User-Location", `${latitude};${longitude}`);
       return config;
+   });
+
+   client.interceptors.response.use(async (value) => {
+      await sleep(1000);
+      return value;
    });
 
    return client;

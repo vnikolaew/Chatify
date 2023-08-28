@@ -14,32 +14,23 @@ public sealed record RegularSignUp(
     [EmailAddress, Required] string Email,
     [Required] [Password] string Password) : ICommand<RegularSignUpResult>;
 
-internal sealed class RegularSignUpHandler
-    : ICommandHandler<RegularSignUp, RegularSignUpResult>
-{
-    private readonly IAuthenticationService _authService;
-    private readonly IEventDispatcher _eventDispatcher;
-
-    public RegularSignUpHandler(
+internal sealed class RegularSignUpHandler(
         IAuthenticationService authService,
         IEventDispatcher eventDispatcher)
-    {
-        _authService = authService;
-        _eventDispatcher = eventDispatcher;
-    }
-
+    : ICommandHandler<RegularSignUp, RegularSignUpResult>
+{
     public async Task<RegularSignUpResult> HandleAsync(
         RegularSignUp command,
         CancellationToken cancellationToken = default)
     {
         var result =
-            await _authService
+            await authService
                 .RegularSignUpAsync(command, cancellationToken);
 
         if ( result.IsT0 ) return new SignUpError(result.AsT0.Message);
 
         var signUpResult = result.AsT1;
-        await _eventDispatcher.PublishAsync(new UserSignedUpEvent
+        await eventDispatcher.PublishAsync(new UserSignedUpEvent
         {
             Timestamp = DateTime.Now,
             UserId = signUpResult.UserId,

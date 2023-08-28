@@ -19,9 +19,9 @@
          "@icons": ["apps/app/components/icons/index.ts"],
          "@hooks": ["apps/app/hooks/index.ts"],
          "@components/*": ["apps/app/components/*"],
-         "@openapi/*": ["libs/api/openapi/*"]
+         "@openapi": ["libs/api/openapi/index.ts"]
       }
    },
-   "include": [ "apps", "libs", "openapi"],
+   "include": [ "apps/**/*", "libs/**/*"],
    "exclude": ["node_modules", "tmp"]
 }

@@ -16,6 +16,7 @@ public class UserMapping : Cassandra.Mapping.Mappings
             .Column(u => u.Metadata, cm => cm.WithDbType<Dictionary<string, string>>())
             .UnderscoreColumn(u => u.DisplayName)
             .UnderscoreColumn(u => u.Metadata)
+            .UnderscoreColumn(u => u.Id)
             .UnderscoreColumn(u => u.Status, cm => cm.WithDbType<sbyte>())
             .UnderscoreColumn(u => u.PhoneNumbers)
             .UnderscoreColumn(u => u.ProfilePicture)

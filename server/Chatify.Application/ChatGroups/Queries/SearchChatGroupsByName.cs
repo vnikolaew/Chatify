@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common.Models;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
@@ -8,7 +9,7 @@ using OneOf;
 
 namespace Chatify.Application.ChatGroups.Queries;
 
-using SearchChatGroupsByNameResult = OneOf<Error, List<ChatGroup>>;
+using SearchChatGroupsByNameResult = OneOf<BaseError, List<ChatGroup>>;
 
 public record SearchChatGroupsByName(
     [Required] string NameSearchQuery

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import GithubLogin from "react-github-login";
 import { NextPage } from "next";
 import {
@@ -49,10 +49,6 @@ const signInSchema = yup.object({
 const SignInPage: NextPage = () => {
    const router = useRouter();
    const { data, mutateAsync: signIn, error } = useRegularSignInMutation();
-   const { isUserLoggedIn } = useIsUserLoggedIn();
-   useEffect(() => {
-      if (isUserLoggedIn) router.push(`/`);
-   }, []);
 
    const {
       error: googleError,

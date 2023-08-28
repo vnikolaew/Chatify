@@ -16,16 +16,18 @@ import {
    Skeleton,
    Spinner,
 } from "@nextui-org/react";
-import { FriendInvitationStatus, UserStatus } from "@openapi/index";
 import { PlusIcon } from "@icons";
 import { useCurrentChatGroup } from "@hooks";
 import moment from "moment";
+import { FriendInvitationStatus, UserStatus } from "@openapi";
 
 export interface ChatGroupMemberInfoCardProps {
    userId: string;
 }
 
-const ChatGroupMemberInfoCard = ({ userId }: ChatGroupMemberInfoCardProps) => {
+export const ChatGroupMemberInfoCard = ({
+   userId,
+}: ChatGroupMemberInfoCardProps) => {
    const chatGroupId = useCurrentChatGroup();
    const {
       data: membership,
@@ -218,5 +220,3 @@ const ChatGroupMemberInfoCard = ({ userId }: ChatGroupMemberInfoCardProps) => {
       </Card>
    );
 };
-
-export default ChatGroupMemberInfoCard;

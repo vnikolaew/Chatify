@@ -12,7 +12,9 @@ using Mapper = Cassandra.Mapping.Mapper;
 namespace Chatify.Infrastructure.Data.Repositories;
 
 public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
-    IDomainRepository<TEntity, TId> where TEntity : class where TDataEntity : notnull
+    IDomainRepository<TEntity, TId>
+    where TEntity : class
+    where TDataEntity : notnull
 {
     protected readonly IMapper Mapper;
     protected readonly Mapper DbMapper;
@@ -62,6 +64,20 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
 
         var changedProps = _changeTracker.Track(entity, updateAction);
         Mapper.Map(entity, dataEntity);
+
+        var cql = GetUpdateCqlStatement(dataEntity, changedProps);
+        await DbMapper.ExecuteAsync(cql);
+
+        return entity;
+    }
+
+    public async Task<TEntity?> UpdateAsync(
+        TEntity entity,
+        Action<TEntity> updateAction,
+        CancellationToken cancellationToken = default)
+    {
+        var changedProps = _changeTracker.Track(entity, updateAction);
+        var dataEntity = Mapper.Map<TDataEntity>(entity);
 
         var cql = GetUpdateCqlStatement(dataEntity, changedProps);
         await DbMapper.ExecuteAsync(cql);

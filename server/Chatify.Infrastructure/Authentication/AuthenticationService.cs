@@ -14,6 +14,8 @@ using Chatify.Shared.Abstractions.Contexts;
 using Humanizer;
 using LanguageExt;
 using LanguageExt.Common;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using OneOf;
 using static Chatify.Infrastructure.Authentication.External.Constants.AuthProviders;
@@ -29,6 +31,7 @@ public sealed class AuthenticationService(
         SignInManager<ChatifyUser> signInManager,
         IGoogleOAuthClient googleOAuthClient,
         IFacebookOAuthClient facebookOAuthClient,
+        IHttpContextAccessor contextAccessor,
         IContext context,
         IUserRepository users,
         IIdentityContext identityContext,
@@ -41,7 +44,6 @@ public sealed class AuthenticationService(
     private static Error UserNotFoundError => Error.New("User not found.");
     private static Error InvalidOrUnconfirmedEmailError => Error.New("Email address is invalid or not confirmed.");
     private static Error UserLoginInfoNotFoundError => Error.New("Uer login information was not found.");
-
 
     public async Task<OneOf<Error, UserSignedUpResult>> RegularSignUpAsync(
         RegularSignUp request,
@@ -379,6 +381,35 @@ public sealed class AuthenticationService(
 
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
         return token;
+    }
+
+    public async Task<OneOf<Error, Unit>> AcceptCookiePolicy(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var context = contextAccessor.HttpContext;
+        var consentFeature = context!.Features.Get<ITrackingConsentFeature>()!;
+
+        consentFeature.GrantConsent();
+        await users.UpdateAsync(userId,
+            user => user.Metadata["Cookie-Consent"] = true.ToString(),
+            cancellationToken);
+        return Unit.Default;
+    }
+
+    public async Task<OneOf<Error, Unit>> DeclineCookiePolicy(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var context = contextAccessor.HttpContext;
+        var consentFeature = context!.Features.Get<ITrackingConsentFeature>()!;
+        consentFeature.WithdrawConsent();
+
+        await users.UpdateAsync(userId,
+            user => user.Metadata["Cookie-Consent"] = false.ToString(),
+            cancellationToken);
+
+        return Unit.Default;
     }
 
     public async Task<OneOf<UserNotFound, PasswordChangeError, Unit>> ChangePasswordAsync(

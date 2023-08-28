@@ -1,23 +1,25 @@
-import { authClient } from "../client";
+import { authClient } from "../../client";
 import {
    useQuery,
    useQueryClient,
    UseQueryOptions,
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
+// @ts-ignore
+import { ObjectApiResponse } from "@openapi/index";
 
 export interface GetMyClaimsResponse {
    claims: Record<string, any>;
 }
 
 export const getMyClaims = async (): Promise<GetMyClaimsResponse> => {
-   const { status, data } = await authClient.get(`/me`);
+   const { status, data } = await authClient.get<ObjectApiResponse>(`/me`);
 
    if (status !== HttpStatusCode.Ok) {
       throw new Error("error");
    }
 
-   return data;
+   return data.data;
 };
 
 export const useGetMyClaimsQuery = (

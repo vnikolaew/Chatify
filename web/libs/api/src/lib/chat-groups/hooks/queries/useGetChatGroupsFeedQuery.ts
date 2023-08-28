@@ -6,7 +6,10 @@ import {
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 // @ts-ignore
-import { ChatGroupFeedEntry } from "@openapi/models/ChatGroupFeedEntry";
+import {
+   ChatGroupFeedEntryListApiResponse,
+   ChatGroupFeedEntry,
+} from "@openapi";
 import { sleep } from "../../../utils";
 
 export interface GetChatGroupsFeedModel {
@@ -22,19 +25,21 @@ const getChatGroupsFeed = async (
       offset: model.offset.toString(),
    });
 
-   const { status, data } = await chatGroupsClient.get(`feed`, {
-      headers: {},
-      data: model,
-      params,
-   });
+   const { status, data } =
+      await chatGroupsClient.get<ChatGroupFeedEntryListApiResponse>(`feed`, {
+         headers: {},
+         data: model,
+         params,
+      });
    await sleep(2000);
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
    }
 
-   return data;
+   return data.data!;
 };
+
 export const useGetChatGroupsFeedQuery = (
    model: GetChatGroupsFeedModel = { limit: 10, offset: 0 },
    options?: Omit<

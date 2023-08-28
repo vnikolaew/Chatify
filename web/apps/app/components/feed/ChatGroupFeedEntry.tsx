@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { ChatGroupFeedEntry } from "@openapi/index";
+import { ChatGroupFeedEntry } from "@openapi";
 import { Avatar, Button, Skeleton } from "@nextui-org/react";
 import moment from "moment";
 import Link from "next/link";
@@ -40,7 +40,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
          size={"lg"}
          variant={"light"}
          radius={"md"}
-         className={`flex transition-background duration-100 hover:bg-default-300 h-fit bg-transparent items-center cursor-pointer w-full gap-4 p-3`}
+         className={`flex h-fit transition-background duration-100 hover:bg-default-300 bg-transparent items-center cursor-pointer w-full gap-4 p-3`}
       >
          <Avatar
             fallback={<Skeleton className={`h-12 w-12 rounded-full`} />}

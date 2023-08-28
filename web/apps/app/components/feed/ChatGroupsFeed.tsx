@@ -9,12 +9,10 @@ import {
    DropdownTrigger,
    Input,
    Link,
-   ScrollShadow,
    Skeleton,
 } from "@nextui-org/react";
 import ChatGroupFeedEntry from "./ChatGroupFeedEntry";
-import { useIsUserLoggedIn } from "../../hooks/useIsUserLoggedIn";
-import { useDebounce } from "../../hooks/useDebounce";
+import { useIsUserLoggedIn, useDebounce } from "@hooks";
 import { useSearchChatGroupsByName } from "@web/api";
 import { HamburgerMenuIcon, NotSentIcon, SearchIcon } from "@icons";
 
@@ -50,7 +48,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
    const filteredEntries = useMemo(() => {
       if (!debouncedSearch || !searchEntries) return feedEntries;
 
-      const searchEntryIds = new Set(searchEntries?.data.map((_) => _.id));
+      const searchEntryIds = new Set(searchEntries?.map((_) => _.id));
       return feedEntries?.filter((e) => searchEntryIds.has(e.chatGroup.id));
    }, [debouncedSearch, searchEntries, feedEntries]);
 
@@ -59,9 +57,11 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
 
    return (
       <aside
-         className={`border-r-1 border-r-default-200 flex w-full flex-col items-center gap-2`}
+         className={`border-r-1 rounded-medium border-r-default-200 flex w-full flex-col items-center gap-2`}
       >
-         <div className={`flex w-full items-center p-2 gap-2`}>
+         <section
+            className={`flex h-fit w-full items-center p-2 gap-2 rounded-medium `}
+         >
             <Dropdown offset={10} showArrow>
                <DropdownTrigger>
                   <Button
@@ -107,11 +107,8 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                   placeholder={"Search"}
                />
             </div>
-         </div>
-         <ScrollShadow
-            size={50}
-            className={`w-full pr-4 flex flex-col gap-2 p-2 items-center`}
-         >
+         </section>
+         <div className={`w-full  pr-4 flex flex-col gap-2 p-2 items-center`}>
             {(isLoading || searchLoading) && (isFetching || searchFetching) && (
                <Fragment>
                   {Array.from({ length: 10 }).map((_, i) => (
@@ -137,7 +134,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
             )}
             {!!filteredEntries && filteredEntries.length === 0 ? (
                <div
-                  className={`mt-12 flex-col flex items-center justify-center gap-2 text-default-300 text-large`}
+                  className={`mt-12 h-auto flex-col flex items-center justify-center gap-2 text-default-300 text-large`}
                >
                   <NotSentIcon className={`fill-default-200`} size={50} />
                   <span>No chat groups found.</span>
@@ -153,11 +150,13 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                   </Button>
                </div>
             ) : (
-               (filteredEntries ?? feedEntries)?.map((e, i) => (
-                  <ChatGroupFeedEntry key={i} feedEntry={e} />
-               ))
+               <Fragment>
+                  {(filteredEntries ?? feedEntries)?.map((e, i) => (
+                     <ChatGroupFeedEntry key={i} feedEntry={e} />
+                  ))}
+               </Fragment>
             )}
-         </ScrollShadow>
+         </div>
       </aside>
    );
 };

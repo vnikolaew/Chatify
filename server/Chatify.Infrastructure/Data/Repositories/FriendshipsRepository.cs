@@ -7,15 +7,20 @@ using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Data.Services;
 using Chatify.Shared.Abstractions.Serialization;
 using Humanizer;
+using Redis.OM.Contracts;
+using Redis.OM.Searching;
 using StackExchange.Redis;
 using FriendsRelation = Chatify.Domain.Entities.FriendsRelation;
 using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
-public sealed class FriendshipsRepository(IMapper mapper, Mapper dbMapper,
+public sealed class FriendshipsRepository(
+        IMapper mapper,
+        Mapper dbMapper,
         IEntityChangeTracker changeTracker,
         IDatabase cache,
+        IRedisConnectionProvider connectionProvider,
         ISerializer serializer)
     : BaseCassandraRepository<FriendsRelation, Models.FriendsRelation, Guid>(mapper, dbMapper,
             changeTracker,
@@ -27,6 +32,9 @@ public sealed class FriendshipsRepository(IMapper mapper, Mapper dbMapper,
 
     private static RedisKey GetUserCacheKey(Guid userId)
         => $"user:{userId}";
+
+    private readonly IRedisCollection<ChatifyUser> _cacheUsers
+        = connectionProvider.RedisCollection<ChatifyUser>();
 
     public new async Task<FriendsRelation> SaveAsync(
         FriendsRelation entity,
@@ -55,19 +63,15 @@ public sealed class FriendshipsRepository(IMapper mapper, Mapper dbMapper,
         var friendsIds = await cache.SortedSetRangeByScoreAsync(
             GetUserFriendsCacheKey(userId), order: Order.Descending);
 
-        // Potentially chunk Ids to ease cache server processing:
-        var friendsStrings = new List<string>();
+        // Chunk Ids to ease cache server processing:
+        var users = new System.Collections.Generic.List<ChatifyUser>();
         foreach ( var idsChunk in friendsIds.Chunk(10) )
         {
-            var chunkStrings = await cache.GetAsync<string>(idsChunk.Select(id => $"user:{id.ToString()}"));
-            friendsStrings.AddRange(chunkStrings!);
+            var usersChunk = await _cacheUsers.FindByIdsAsync(idsChunk.Select(_ => _.ToString()));
+            users.AddRange(( usersChunk?.Values ?? new List<ChatifyUser>()! )!);
         }
 
-        return friendsStrings
-            .Select(serializer.Deserialize<ChatifyUser>)
-            .AsQueryable()
-            .To<Domain.Entities.User>(Mapper)
-            .ToList();
+        return users.ToList<Domain.Entities.User>(Mapper);
     }
 
     public async Task<bool> DeleteForUsers(

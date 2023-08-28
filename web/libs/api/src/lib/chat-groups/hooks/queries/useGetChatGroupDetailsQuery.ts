@@ -5,33 +5,35 @@ import {
    useQueryClient,
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
-// @ts-ignore
-// @ts-ignore
 import { useMemo } from "react";
-import { ChatGroup, User, UserStatus } from "@openapi/index";
+// @ts-ignore
+import {
+   ChatGroupDetailsEntry,
+   ChatGroupDetailsEntryApiResponse,
+   User,
+   UserStatus,
+} from "@openapi";
 
 export interface GetChatGroupDetailsModel {
    chatGroupId: string;
 }
 
-export interface GetChatGroupDetailsResponse {
-   chatGroup: ChatGroup;
-   creator: User;
-   members: User[];
-}
-
 export const getChatGroupDetails = async (
    model: GetChatGroupDetailsModel
-): Promise<GetChatGroupDetailsResponse> => {
-   const { status, data } = await chatGroupsClient.get(`${model.chatGroupId}`, {
-      headers: {},
-   });
+): Promise<ChatGroupDetailsEntry> => {
+   const { status, data } =
+      await chatGroupsClient.get<ChatGroupDetailsEntryApiResponse>(
+         `${model.chatGroupId}`,
+         {
+            headers: {},
+         }
+      );
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
    }
 
-   return data;
+   return data.data!;
 };
 
 export const useMembersByCategory = (members?: User[], adminIds?: string[]) =>

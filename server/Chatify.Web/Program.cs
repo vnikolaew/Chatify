@@ -1,3 +1,5 @@
+// global using FastEndpoints;
+
 using Chatify.Application;
 using Chatify.Infrastructure;
 using Chatify.Shared.Infrastructure.Contexts;
@@ -29,6 +31,23 @@ var app = builder.Build();
         .UseCachedStaticFiles(app.Environment, "/static")
         .UseDevelopmentSwagger(app.Environment)
         .UseRouting()
+        .UseCookiePolicy(new CookiePolicyOptions
+        {
+            Secure = CookieSecurePolicy.Always,
+            MinimumSameSitePolicy = SameSiteMode.None,
+            ConsentCookieValue = true.ToString(),
+            CheckConsentNeeded = _ => true,
+            ConsentCookie = new CookieBuilder
+            {
+                Name = "Cookie-Consent",
+                Expiration = TimeSpan.FromHours(24 * 30 * 6),
+                MaxAge = TimeSpan.FromHours(24 * 30 * 6),
+                HttpOnly = false,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                SecurePolicy = CookieSecurePolicy.Always
+            }
+        })
         .UseAuthentication()
         .UseAuthorization()
         .UseContext()

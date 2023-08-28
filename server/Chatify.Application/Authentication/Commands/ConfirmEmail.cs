@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Shared.Abstractions.Commands;
@@ -12,28 +13,23 @@ using ConfirmEmailResult = OneOf<EmailConfirmationError, Unit>;
 
 public record EmailConfirmationError(string Message) : BaseError(Message);
 
-public record ConfirmEmail([Required] string Token) : ICommand<ConfirmEmailResult>;
-
-internal sealed class ConfirmEmailHandler : ICommandHandler<ConfirmEmail, ConfirmEmailResult>
+public record ConfirmEmail([Required] string Token) : ICommand<ConfirmEmailResult>
 {
-    private readonly IEmailConfirmationService _emailConfirmationService;
-    private readonly IIdentityContext _identityContext;
+    public const string SuccessMessage = "Email address successfully confirmed.";
+};
 
-    private Guid UserId => _identityContext.Id;
-
-    public ConfirmEmailHandler(
+internal sealed class ConfirmEmailHandler(
         IEmailConfirmationService emailConfirmationService,
         IIdentityContext identityContext)
-    {
-        _emailConfirmationService = emailConfirmationService;
-        _identityContext = identityContext;
-    }
+    : ICommandHandler<ConfirmEmail, ConfirmEmailResult>
+{
+    private Guid UserId => identityContext.Id;
 
     public async Task<ConfirmEmailResult> HandleAsync(
         ConfirmEmail command,
         CancellationToken cancellationToken = default)
     {
-        var result = await _emailConfirmationService
+        var result = await emailConfirmationService
             .ConfirmEmailForUserAsync(command.Token, UserId, cancellationToken);
         
         return result.Match<ConfirmEmailResult>(

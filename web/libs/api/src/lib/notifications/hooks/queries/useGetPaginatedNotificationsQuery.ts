@@ -6,7 +6,7 @@ import {
 import { HttpStatusCode } from "axios";
 import { notificationsClient } from "../../client";
 import { DEFAULT_CACHE_TIME, DEFAULT_STALE_TIME } from "../../../constants";
-import { UserNotification } from "../../../../../openapi";
+import { UserNotification } from "@openapi/index";
 import { URLSearchParams } from "next/dist/compiled/@edge-runtime/primitives/url";
 
 export interface GetPaginatedNotificationsModel {

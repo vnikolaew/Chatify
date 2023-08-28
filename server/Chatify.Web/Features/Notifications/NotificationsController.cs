@@ -1,16 +1,19 @@
-﻿using System.Net;
+﻿using Chatify.Application.Notifications.Commands;
 using Chatify.Application.Notifications.Queries;
 using Chatify.Domain.Entities;
 using Chatify.Shared.Abstractions.Queries;
-using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
+using Chatify.Web.Common.Attributes;
+using Chatify.Web.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GetAllNotificationsResult =
-    OneOf.OneOf<LanguageExt.Common.Error,
+    OneOf.OneOf<Chatify.Application.Common.Models.BaseError,
         Chatify.Shared.Abstractions.Queries.CursorPaged<Chatify.Domain.Entities.UserNotification>>;
 using GetUnreadNotificationsResult =
-    OneOf.OneOf<LanguageExt.Common.Error, System.Collections.Generic.List<Chatify.Domain.Entities.UserNotification>>;
+    OneOf.OneOf<Chatify.Application.Common.Models.BaseError,
+        System.Collections.Generic.List<Chatify.Domain.Entities.UserNotification>>;
+using MarkAllAsReadResult = OneOf.OneOf<Chatify.Application.Common.Models.BaseError, LanguageExt.Unit>;
 
 namespace Chatify.Web.Features.Notifications;
 
@@ -18,9 +21,8 @@ namespace Chatify.Web.Features.Notifications;
 public class NotificationsController : ApiController
 {
     [HttpGet]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(CursorPaged<UserNotification>), ( int )HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(List<UserNotification>), ( int )HttpStatusCode.OK)]
+    [ProducesBadRequestApiResponse]
+    [ProducesOkApiResponse<CursorPaged<UserNotification>>]
     public async Task<IActionResult> Paginated(
         [FromQuery] int pageSize,
         [FromQuery] string? pagingCursor,
@@ -29,23 +31,40 @@ public class NotificationsController : ApiController
         var result = await QueryAsync<GetAllNotifications, GetAllNotificationsResult>(
             new GetAllNotifications(pageSize, pagingCursor),
             cancellationToken);
-        
-        return result.Match(err => BadRequest(),
-                notifications => (IActionResult)
-                    Ok(notifications.Map(AsObject)));
+
+        return result.Match(
+            err => err.ToBadRequest(),
+            notifications => ( IActionResult )
+                Ok(notifications.Map(AsObject)));
     }
 
     [HttpGet]
     [Route("unread")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(List<UserNotification>), ( int )HttpStatusCode.OK)]
-    public Task<IActionResult> Unread(
+    [ProducesBadRequestApiResponse]
+    [ProducesOkApiResponse<CursorPaged<UserNotification>>]
+    public async Task<IActionResult> Unread(
         CancellationToken cancellationToken = default)
-        => QueryAsync<GetUnreadNotifications, GetUnreadNotificationsResult>(
-                new GetUnreadNotifications(),
-                cancellationToken)
-            .MatchAsync(
-                err => BadRequest(),
-                notifications => ( IActionResult )
-                    Ok(notifications.Map(AsObject)));
+    {
+        var result = await QueryAsync<GetUnreadNotifications, GetUnreadNotificationsResult>(
+            new GetUnreadNotifications(),
+            cancellationToken);
+        return result
+            .Match(
+                err => err.ToBadRequest(),
+                notifications => Ok(notifications.Map(AsObject)));
+    }
+
+    [HttpPut]
+    [Route("read")]
+    [ProducesBadRequestApiResponse]
+    [ProducesAcceptedApiResponse]
+    public async Task<IActionResult> MarkAsRead(
+        CancellationToken cancellationToken = default)
+    {
+        var result = await SendAsync<MarkAllAsRead, MarkAllAsReadResult>(
+            new MarkAllAsRead(),
+            cancellationToken);
+        
+        return result.Match(err => err.ToBadRequest(), Accepted);
+    }
 }

@@ -41,7 +41,7 @@ public static class ServiceCollectionExtensions
                 opts.JsonSerializerOptions.Converters.Add(new IPAddressConverter());
             })
             .ConfigureApiBehaviorOptions(opts => opts.SuppressModelStateInvalidFilter = true);
-
+        
         services.AddControllersWithViews();
         return services;
     }

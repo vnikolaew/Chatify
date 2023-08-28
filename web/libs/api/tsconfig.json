@@ -15,12 +15,12 @@
       "baseUrl": ".",
       "paths": {
          "@utils/*": ["src/lib/utils/*"],
-//         "@openapi/*": ["openapi/*"]
+         "@openapi": ["openapi/index.ts"]
       }
    },
 
    "files": [],
-   "include": ["src", "openapi"],
+   "include": ["src/**/*", "openapi/**/*"],
    "references": [
       {
          "path": "./tsconfig.lib.json"

@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { useGetMyClaimsQuery } from "../../../auth";
 import { useGetUserDetailsQuery, USER_DETAILS_KEY } from "../queries";
-import { UserDetailsEntry, UserStatus } from "../../../../../openapi";
+import { UserDetailsEntry, UserStatus } from "@openapi/index";
 
 export interface ChangeUserStatusModel {
    newStatus: string;

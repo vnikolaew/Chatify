@@ -19,48 +19,33 @@ public record LeaveChatGroup(
     [MinLength(3), MaxLength(200)] string? Reason
 ) : ICommand<LeaveChatGroupResult>;
 
-internal sealed class LeaveChatGroupHandler : ICommandHandler<LeaveChatGroup, LeaveChatGroupResult>
-{
-    private readonly IChatGroupMemberRepository _members;
-    private readonly IDomainRepository<ChatGroup, Guid> _groups;
-    private readonly IIdentityContext _identityContext;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IClock _clock;
-
-    public LeaveChatGroupHandler(
-        IChatGroupMemberRepository members,
+internal sealed class LeaveChatGroupHandler(IChatGroupMemberRepository members,
         IClock clock, IDomainRepository<ChatGroup, Guid> groups,
         IIdentityContext identityContext,
         IEventDispatcher eventDispatcher)
-    {
-        _members = members;
-        _clock = clock;
-        _groups = groups;
-        _identityContext = identityContext;
-        _eventDispatcher = eventDispatcher;
-    }
-
+    : ICommandHandler<LeaveChatGroup, LeaveChatGroupResult>
+{
     public async Task<LeaveChatGroupResult> HandleAsync(
         LeaveChatGroup command,
         CancellationToken cancellationToken = default)
     {
-        var group = await _groups.GetAsync(command.GroupId, cancellationToken);
+        var group = await groups.GetAsync(command.GroupId, cancellationToken);
         if ( group is null ) return new ChatGroupNotFoundError();
 
-        var memberExists = await _members.Exists(
+        var memberExists = await members.Exists(
             command.GroupId,
-            _identityContext.Id, cancellationToken);
-        if ( !memberExists ) return new UserIsNotMemberError(_identityContext.Id, group.Id);
+            identityContext.Id, cancellationToken);
+        if ( !memberExists ) return new UserIsNotMemberError(identityContext.Id, group.Id);
 
-        var success = await _members.DeleteAsync(
-            _identityContext.Id, cancellationToken);
+        var success = await members.DeleteAsync(
+            identityContext.Id, cancellationToken);
 
         // TODO: Fire an event:
-        await _eventDispatcher.PublishAsync(new ChatGroupMemberLeftEvent
+        await eventDispatcher.PublishAsync(new ChatGroupMemberLeftEvent
         {
-            UserId = _identityContext.Id,
+            UserId = identityContext.Id,
             GroupId = group.Id,
-            Timestamp = _clock.Now,
+            Timestamp = clock.Now,
             Reason = command.Reason
         }, cancellationToken);
 

@@ -7,47 +7,39 @@ import {
 import { HttpStatusCode } from "axios";
 import { sleep } from "../../../utils";
 // @ts-ignore
-import { ChatGroup } from "@openapi/models/ChatGroup";
+import { ChatGroupListApiResponse, ChatGroup } from "@openapi";
 
 export interface SearchChatGroupsByName {
    query: string;
 }
 
-export interface SearchChatGroupsByNameResponse {
-   data: ChatGroup[];
-}
-
 const searchChatGroupsByName = async (
    model: SearchChatGroupsByName
-): Promise<SearchChatGroupsByNameResponse> => {
+): Promise<ChatGroup[]> => {
    const params = new URLSearchParams({
       q: model.query,
    });
 
-   const { status, data } = await chatGroupsClient.get(`search`, {
-      headers: {},
-      data: model,
-      params,
-   });
+   const { status, data } =
+      await chatGroupsClient.get<ChatGroupListApiResponse>(`search`, {
+         headers: {},
+         data: model,
+         params,
+      });
    await sleep(1000);
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
    }
 
-   return data;
+   return data.data!;
 };
 
 export const useSearchChatGroupsByName = (
    model: SearchChatGroupsByName,
    options?:
       | (Omit<
-           UseQueryOptions<
-              unknown,
-              unknown,
-              SearchChatGroupsByNameResponse,
-              any
-           >,
+           UseQueryOptions<unknown, unknown, ChatGroup[], any>,
            "initialData" | "queryKey"
         > & {
            initialData?: (() => undefined) | undefined;

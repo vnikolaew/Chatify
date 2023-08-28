@@ -4,6 +4,7 @@ using Chatify.Application.User.Common;
 using Chatify.Application.User.Queries;
 using Chatify.Domain.Entities;
 using Chatify.Web.Common;
+using Chatify.Web.Common.Attributes;
 using Chatify.Web.Extensions;
 using LanguageExt;
 using Microsoft.AspNetCore.Mvc;
@@ -22,8 +23,8 @@ public class ProfileController : ApiController
 {
     [HttpPut]
     [Route("status")]
-    [ProducesResponseType((int) HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int) HttpStatusCode.Accepted)]
+    [ProducesBadRequestApiResponse]
+    [ProducesAcceptedApiResponse]
     public async Task<IActionResult> ChangeUserStatus(
         [FromBody] ChangeUserStatus request,
         CancellationToken cancellationToken = default
@@ -31,14 +32,15 @@ public class ProfileController : ApiController
     {
         var result = await SendAsync<ChangeUserStatus, ChangeUserStatusResult>(request, cancellationToken);
         return result.Match<IActionResult>(
-            _ => BadRequest(),
-            _ => Accepted());
+            _ => NotFound(),
+            Accepted);
     }
 
     [HttpPatch]
     [Route("details")]
-    [ProducesResponseType((int) HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int) HttpStatusCode.Accepted)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse]
     public async Task<IActionResult> ChangeUserDetails(
         [FromBody] EditUserDetails request,
         CancellationToken cancellationToken = default)
@@ -46,16 +48,17 @@ public class ProfileController : ApiController
         var result = await SendAsync<EditUserDetails, EditUserDetailsResult>(request, cancellationToken);
 
         return result.Match<IActionResult>(
-            _ => BadRequest(),
+            _ => NotFound(),
             _ => _.ToBadRequest(),
             _ => _.ToBadRequest(),
-            _ => Accepted());
+            Accepted);
     }
 
     [HttpGet]
     [Route("{userId:guid}/details")]
-    [ProducesResponseType((int) HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(UserDetailsEntry), (int) HttpStatusCode.OK)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesOkApiResponse<UserDetailsEntry>]
     public async Task<IActionResult> GetUserDetails(
         [FromRoute] Guid userId,
         CancellationToken cancellationToken = default)
@@ -63,15 +66,15 @@ public class ProfileController : ApiController
         var result = await QueryAsync<GetUserDetails, GetUserDetailsResult>(
             new GetUserDetails(userId), cancellationToken);
         return result.Match<IActionResult>(
-            _ => BadRequest(),
+            _ => NotFound(),
             _ => _.ToBadRequest(),
             Ok);
     }
 
     [HttpGet]
     [Route("search")]
-    [ProducesResponseType((int) HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(List<User>), (int) HttpStatusCode.OK)]
+    [ProducesNotFoundApiResponse]
+    [ProducesOkApiResponse<List<User>>]
     public async Task<IActionResult> SearchUsersByName(
         [FromQuery] string usernameQuery,
         CancellationToken cancellationToken = default)

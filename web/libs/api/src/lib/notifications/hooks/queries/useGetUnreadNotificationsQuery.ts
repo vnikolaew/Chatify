@@ -6,7 +6,8 @@ import {
 import { HttpStatusCode } from "axios";
 import { notificationsClient } from "../../client";
 import { DEFAULT_CACHE_TIME, DEFAULT_STALE_TIME } from "../../../constants";
-import { User, UserNotification } from "@openapi";
+import { UserNotification } from "@openapi";
+import { NOTIFICATIONS_KEY } from "./useGetPaginatedNotificationsQuery";
 
 const getUnreadNotifications = async (): Promise<UserNotification[]> => {
    const { status, data } = await notificationsClient.get(`unread`, {
@@ -31,7 +32,7 @@ export const useGetUnreadNotificationsQuery = (
    const client = useQueryClient();
 
    return useQuery({
-      queryKey: [`notifications`, `unread`],
+      queryKey: [NOTIFICATIONS_KEY, `unread`],
       queryFn: () => getUnreadNotifications(),
       cacheTime: DEFAULT_CACHE_TIME,
       staleTime: DEFAULT_STALE_TIME,

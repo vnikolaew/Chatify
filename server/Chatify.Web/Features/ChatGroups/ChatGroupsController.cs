@@ -3,14 +3,17 @@ using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.ChatGroups.Queries;
 using Chatify.Application.Messages.Queries;
 using Chatify.Domain.Entities;
+using Chatify.Shared.Abstractions.Queries;
 using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
+using Chatify.Web.Common.Attributes;
 using Chatify.Web.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Guid = System.Guid;
 using CreateChatGroupResult = OneOf.OneOf<Chatify.Application.User.Commands.FileUploadError, System.Guid>;
 using SearchChatGroupsByNameResult =
-    OneOf.OneOf<LanguageExt.Common.Error, System.Collections.Generic.List<Chatify.Domain.Entities.ChatGroup>>;
+    OneOf.OneOf<Chatify.Application.Common.Models.BaseError,
+        System.Collections.Generic.List<Chatify.Domain.Entities.ChatGroup>>;
 using GetChatGroupMembershipDetailsResult =
     OneOf.OneOf<Chatify.Application.ChatGroups.Commands.UserIsNotMemberError, LanguageExt.Common.Error,
         Chatify.Domain.Entities.ChatGroupMember>;
@@ -19,7 +22,7 @@ using SearchChatGroupMembersByNameResult =
         System.Collections.Generic.List<Chatify.Domain.Entities.User>>;
 using GetChatGroupPinnedMessagesResult =
     OneOf.OneOf<Chatify.Application.Messages.Common.ChatGroupNotFoundError,
-        Chatify.Application.Messages.Common.UserIsNotMemberError,
+        Chatify.Application.ChatGroups.Commands.UserIsNotMemberError,
         System.Collections.Generic.List<Chatify.Domain.Entities.ChatMessage>>;
 using GetChatGroupDetailsResult =
     OneOf.OneOf<Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
@@ -46,7 +49,7 @@ using LeaveChatGroupResult =
     OneOf.OneOf<Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
         Chatify.Application.ChatGroups.Commands.UserIsNotMemberError, LanguageExt.Unit>;
 using GetChatGroupsFeedResult =
-    OneOf.OneOf<LanguageExt.Common.Error,
+    OneOf.OneOf<Chatify.Application.Common.Models.BaseError,
         System.Collections.Generic.List<Chatify.Application.ChatGroups.Queries.ChatGroupFeedEntry>>;
 using GetChatGroupSharedAttachmentsResult =
     OneOf.OneOf<Chatify.Application.ChatGroups.Commands.UserIsNotMemberError, Chatify.Shared.Abstractions.Queries.
@@ -58,8 +61,8 @@ namespace Chatify.Web.Features.ChatGroups;
 public class ChatGroupsController : ApiController
 {
     [HttpPost]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.Created)]
+    [ProducesBadRequestApiResponse]
+    [ProducesCreatedAtApiResponse]
     public async Task<IActionResult> Create(
         [FromForm] CreateChatGroupRequest request,
         CancellationToken cancellationToken = default)
@@ -69,26 +72,29 @@ public class ChatGroupsController : ApiController
         return result.Match(
             err => err.ToBadRequest(),
             id => CreatedAtAction(nameof(Details), "ChatGroups",
-                new { groupId = id }, new { groupId = id }));
+                new { groupId = id },
+                ApiResponse<object>.Success(new { groupId = id },
+                    "Chat group successfully created.")));
     }
 
     [HttpGet]
     [Route("{groupId:guid}")]
-    [ProducesResponseType(( int )HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(ChatGroupDetailsEntry), ( int )HttpStatusCode.OK)]
+    [ProducesNotFoundApiResponse]
+    [ProducesOkApiResponse<ChatGroupDetailsEntry>]
     public Task<IActionResult> Details(
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
         => QueryAsync<GetChatGroupDetails, GetChatGroupDetailsResult>(
                 new GetChatGroupDetails(groupId),
                 cancellationToken)
-            .MatchAsync<ChatGroupNotFoundError, UserIsNotMemberError, ChatGroupDetailsEntry, IActionResult>(
-                _ => NotFound(), _ => BadRequest(), Ok);
+            .MatchAsync(_ => NotFound(),
+                _ => _.ToBadRequest(),
+                Ok);
 
     [HttpGet]
     [Route("feed")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(List<ChatGroupFeedEntry>), ( int )HttpStatusCode.OK)]
+    [ProducesBadRequestApiResponse]
+    [ProducesOkApiResponse<List<ChatGroupFeedEntry>>]
     public async Task<IActionResult> Feed(
         [FromQuery] int limit,
         [FromQuery] int offset,
@@ -103,8 +109,8 @@ public class ChatGroupsController : ApiController
 
     [HttpGet]
     [Route("{groupId:guid}/members/search")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.OK)]
+    [ProducesBadRequestApiResponse]
+    [ProducesOkApiResponse<List<User>>]
     public async Task<IActionResult> SearchMembers(
         [FromQuery(Name = "q")] string usernameQuery,
         [FromRoute] Guid groupId,
@@ -114,14 +120,14 @@ public class ChatGroupsController : ApiController
             new SearchChatGroupMembersByName(groupId, usernameQuery), cancellationToken);
 
         return result.Match(
-            err => ( IActionResult )BadRequest(),
-            entries => Ok(new { Data = entries }));
+            err => err.ToBadRequest(),
+            Ok);
     }
 
     [HttpGet]
     [Route("search")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.OK)]
+    [ProducesBadRequestApiResponse]
+    [ProducesOkApiResponse<List<ChatGroup>>]
     public async Task<IActionResult> Search(
         [FromQuery(Name = "q")] string nameQuery,
         CancellationToken cancellationToken = default)
@@ -130,14 +136,14 @@ public class ChatGroupsController : ApiController
             new SearchChatGroupsByName(nameQuery), cancellationToken);
 
         return result.Match(
-            err => ( IActionResult )BadRequest(),
-            entries => Ok(new { Data = entries }));
+            err => err.ToBadRequest(),
+            Ok);
     }
 
     [HttpGet]
     [Route("{groupId:guid}/attachments")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.OK)]
+    [ProducesBadRequestApiResponse]
+    [ProducesOkApiResponse<CursorPaged<ChatGroupAttachment>>]
     public async Task<IActionResult> Attachments(
         [FromBody] GetChatGroupSharedAttachmentsRequest request,
         [FromRoute] Guid groupId,
@@ -146,15 +152,15 @@ public class ChatGroupsController : ApiController
         var result = await QueryAsync<GetChatGroupSharedAttachments, GetChatGroupSharedAttachmentsResult>(
             ( request with { GroupId = groupId } ).ToCommand(), cancellationToken);
         return result.Match<IActionResult>(
-            _ => BadRequest(),
-            attachments => Ok(new { Data = attachments }));
+            _ => _.ToBadRequest(),
+            Ok);
     }
 
     [HttpGet]
     [Route("{groupId:guid}/pins")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(( int )HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(object), ( int )HttpStatusCode.OK)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesOkApiResponse<List<ChatMessage>>]
     public async Task<IActionResult> PinnedMessages(
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
@@ -164,14 +170,15 @@ public class ChatGroupsController : ApiController
 
         return result.Match<IActionResult>(
             _ => NotFound(),
-            _ => BadRequest(),
-            messages => Ok(new { Data = messages }));
+            _ => _.ToBadRequest(),
+            Ok);
     }
 
     [HttpPatch]
     [Route("{groupId:guid}")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(( int )HttpStatusCode.Accepted)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse]
     public Task<IActionResult> Edit(
         [FromForm] EditChatGroupDetailsRequest request,
         [FromRoute] Guid groupId,
@@ -180,16 +187,17 @@ public class ChatGroupsController : ApiController
                 ( request with { ChatGroupId = groupId } ).ToCommand(),
                 cancellationToken)
             .MatchAsync(
-                _ => BadRequest(),
+                _ => NotFound(),
                 err => err.ToBadRequest(),
-                _ => BadRequest(),
-                _ => BadRequest(),
+                _ => _.ToBadRequest(),
+                _ => _.ToBadRequest(),
                 Accepted);
 
     [HttpPost]
     [Route("members")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(Guid), ( int )HttpStatusCode.OK)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse<Guid>]
     public Task<IActionResult> AddMember(
         [FromBody] AddChatGroupMember addChatGroupMember,
         CancellationToken cancellationToken = default)
@@ -197,17 +205,17 @@ public class ChatGroupsController : ApiController
                 addChatGroupMember,
                 cancellationToken)
             .MatchAsync(
-                _ => BadRequest(),
-                _ => BadRequest(),
-                _ => BadRequest(),
-                _ => BadRequest(),
-                id => ( IActionResult )Ok(id));
+                _ => NotFound(),
+                _ => _.ToBadRequest(),
+                _ => NotFound(),
+                _ => _.ToBadRequest(),
+                id => Accepted(id));
 
     [HttpGet]
     [Route("members/{groupId:guid}/{memberId:guid}")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(( int )HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(ChatGroupMember), ( int )HttpStatusCode.OK)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesOkApiResponse<ChatGroupMember>]
     public Task<IActionResult> MembershipDetails(
         Guid groupId,
         Guid memberId,
@@ -216,14 +224,16 @@ public class ChatGroupsController : ApiController
                 new GetChatGroupMembershipDetails(groupId, memberId),
                 cancellationToken)
             .MatchAsync(
-                _ => BadRequest(),
+                _ => _.ToBadRequest(),
                 _ => NotFound(),
-                member => ( IActionResult )Ok(member));
+                Ok);
 
 
     [HttpDelete]
     [Route("members")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesNoContentApiResponse]
     [ProducesResponseType(( int )HttpStatusCode.NoContent)]
     public async Task<IActionResult> RemoveMember(
         [FromBody] RemoveChatGroupMember removeChatGroupMember,
@@ -235,16 +245,16 @@ public class ChatGroupsController : ApiController
 
         return result
             .Match(
-                _ => BadRequest(),
-                _ => BadRequest(),
-                _ => BadRequest(),
-                _ => ( IActionResult )NoContent());
+                _ => NotFound(),
+                _ => _.ToBadRequest(),
+                _ => _.ToBadRequest(),
+                _ => NoContent());
     }
 
     [HttpPost]
     [Route("leave")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(( int )HttpStatusCode.Accepted)]
+    [ProducesBadRequestApiResponse]
+    [ProducesAcceptedApiResponse]
     public async Task<IActionResult> LeaveChatGroup(
         [FromBody] LeaveChatGroup leaveChatGroup,
         CancellationToken cancellationToken = default)
@@ -254,16 +264,16 @@ public class ChatGroupsController : ApiController
             cancellationToken);
         return result.Match(
             _ => BadRequest(),
-            _ => BadRequest(),
+            _ => _.ToBadRequest(),
             Accepted);
     }
 
 
     [HttpPost]
     [Route("admins")]
-    [ProducesResponseType(( int )HttpStatusCode.BadRequest)]
-    [ProducesResponseType(( int )HttpStatusCode.NotFound)]
-    [ProducesResponseType(( int )HttpStatusCode.Accepted)]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse]
     public async Task<IActionResult> AddAdmin(
         [FromBody] AddChatGroupAdmin addChatGroupAdmin,
         CancellationToken cancellationToken = default)
@@ -274,8 +284,8 @@ public class ChatGroupsController : ApiController
         return result
             .Match(
                 _ => NotFound(),
-                _ => BadRequest(),
-                _ => BadRequest(),
-                _ => ( IActionResult )Accepted());
+                _ => _.ToBadRequest(),
+                _ => _.ToBadRequest(),
+                _ => Accepted());
     }
 }
