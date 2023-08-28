@@ -16,32 +16,21 @@ public record SearchChatGroupsByName(
 ) : IQuery<SearchChatGroupsByNameResult>;
 
 internal sealed class
-    SearchChatGroupsByNameHandler : IQueryHandler<SearchChatGroupsByName, SearchChatGroupsByNameResult>
-{
-    private readonly IChatGroupMemberRepository _members;
-    private readonly IChatGroupRepository _groups;
-    private readonly IIdentityContext _identityContext;
-
-    public SearchChatGroupsByNameHandler(
-        IChatGroupMemberRepository members,
+    SearchChatGroupsByNameHandler(IChatGroupMemberRepository members,
         IIdentityContext identityContext,
         IChatGroupRepository groups)
-    {
-        _members = members;
-        _identityContext = identityContext;
-        _groups = groups;
-    }
-
+    : IQueryHandler<SearchChatGroupsByName, SearchChatGroupsByNameResult>
+{
     public async Task<SearchChatGroupsByNameResult> HandleAsync(
         SearchChatGroupsByName query,
         CancellationToken cancellationToken = default)
     {
-        var groupIds = ( await _members
-                .GroupsIdsByUser(_identityContext.Id, cancellationToken) )
+        var groupIds = ( await members
+                .GroupsIdsByUser(identityContext.Id, cancellationToken) )
             .ToHashSet();
         
         // Do an in-memory search (at least for now) as RedisSearch supports FT of full words only:
-        return ( await _groups.GetByIds(groupIds, cancellationToken) )
+        return ( await groups.GetByIds(groupIds, cancellationToken) )
             .Where(g => g.Name.Contains(query.NameSearchQuery, StringComparison.InvariantCultureIgnoreCase))
             .ToList();
     }

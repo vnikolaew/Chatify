@@ -52,7 +52,7 @@ public sealed class ChatMessageRepository(
             pagingCursorHelper.ToPagingCursor(replierInfoes.PagingState));
     }
 
-    public async Task<IDictionary<Guid, ChatMessage>> GetLatestForGroups(
+    public async Task<IDictionary<Guid, ChatMessage?>> GetLatestForGroups(
         IEnumerable<Guid> groupIds,
         CancellationToken cancellationToken = default)
     {
@@ -67,9 +67,11 @@ public sealed class ChatMessageRepository(
         var messages = await DbMapper
             .FetchListAsync<Models.ChatMessage>(cql);
 
-        return messages
-            .To<ChatMessage>(Mapper)
-            .ToDictionary(m => m.ChatGroupId);
+        return groupIds
+            .ToDictionary(id => id, id =>
+                messages
+                    .FirstOrDefault(m => m.ChatGroupId == id)?
+                    .To<ChatMessage>(Mapper));
     }
 
     public async Task<List<ChatMessage>?> GetByIds(

@@ -5,7 +5,7 @@ import { Avatar, Button, Skeleton } from "@nextui-org/react";
 import moment from "moment";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
-import { getChatGroupDetails } from "@web/api";
+import { getChatGroupDetails, getMediaUrl } from "@web/api";
 
 export interface ChatGroupFeedEntryProps {
    feedEntry: ChatGroupFeedEntry;
@@ -49,7 +49,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
             color={"primary"}
             size={"lg"}
             className={`aspect-square object-cover`}
-            src={feedEntry.chatGroup.picture.mediaUrl}
+            src={getMediaUrl(feedEntry.chatGroup.picture.mediaUrl)}
          />
          <div
             className={`flex flex-1 flex-col justify-evenly items-center gap-2`}
@@ -59,15 +59,18 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
                   {feedEntry.chatGroup.name}
                </span>
                <time className={`text-xs text-default-500`}>
-                  {formatDate(feedEntry.latestMessage.createdAt)}
-                  {}
+                  {feedEntry.latestMessage?.createdAt
+                     ? formatDate(feedEntry.latestMessage.createdAt)
+                     : "-"}
                </time>
             </div>
             <div className={`w-full h-4 rounded-full`}>
                <p
                   className={`text-small w-full truncate leading-3 text-default-500`}
                >
-                  {feedEntry.latestMessage.content.substring(0, 40)}...
+                  {feedEntry.latestMessage?.content
+                     ? `${feedEntry.latestMessage.content.substring(0, 40)}...`
+                     : "No messages yet."}
                </p>
             </div>
          </div>

@@ -16,37 +16,23 @@ public record GetChatGroupSharedAttachments(
     [Required] string PagingCursor
 ) : IQuery<GetChatGroupSharedAttachmentsResult>;
 
-internal sealed class GetChatGroupSharedAttachmentsHandler
-    : IQueryHandler<GetChatGroupSharedAttachments, GetChatGroupSharedAttachmentsResult>
-{
-    private readonly IIdentityContext _identityContext;
-    private readonly IChatGroupAttachmentRepository _attachments;
-    private readonly IChatGroupMemberRepository _members;
-
-    public GetChatGroupSharedAttachmentsHandler(
-        IIdentityContext identityContext,
+internal sealed class GetChatGroupSharedAttachmentsHandler(IIdentityContext identityContext,
         IChatGroupMemberRepository members,
         IChatGroupAttachmentRepository attachments)
-    {
-        _identityContext = identityContext;
-        _members = members;
-        _attachments = attachments;
-    }
-
+    : IQueryHandler<GetChatGroupSharedAttachments, GetChatGroupSharedAttachmentsResult>
+{
     public async Task<GetChatGroupSharedAttachmentsResult> HandleAsync(
         GetChatGroupSharedAttachments query,
         CancellationToken cancellationToken = default)
     {
-        var isGroupMember = await _members.Exists(
+        var isGroupMember = await members.Exists(
             query.GroupId,
-            _identityContext.Id, cancellationToken);
-        if ( !isGroupMember ) return new UserIsNotMemberError(_identityContext.Id, query.GroupId);
+            identityContext.Id, cancellationToken);
+        if ( !isGroupMember ) return new UserIsNotMemberError(identityContext.Id, query.GroupId);
 
-        var attachments = await _attachments.GetPaginatedAttachmentsByGroupAsync(
+        return await attachments.GetPaginatedAttachmentsByGroupAsync(
             query.GroupId,
             query.PageSize,
             query.PagingCursor, cancellationToken);
-
-        return attachments;
     }
 }

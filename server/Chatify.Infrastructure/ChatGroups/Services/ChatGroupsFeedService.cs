@@ -69,27 +69,26 @@ internal sealed class ChatGroupsFeedService(
         var feedMessages = ( await messages
                 .GetLatestForGroups(groupIds, cancellationToken) )
             .Values
-            .OrderByDescending(_ => _.CreatedAt)
             .ToList();
 
         // Query cache for Message Sender info:
         var messageSenderIds = feedMessages
-            .Select(m => m.UserId)
+            .Where(m => m is not null)
+            .Select(m => m!.UserId)
             .Distinct()
             .ToList();
         var userInfos = await users.GetByIds(messageSenderIds, cancellationToken);
 
-        return feedMessages
-            .ZipOn(
-                feedGroups,
-                m => m.ChatGroupId,
-                g => g.Id,
-                (message, group) => new ChatGroupFeedEntry(group, message))
-            .ZipOn(
-                userInfos!,
-                e => e.LatestMessage.UserId,
+        return feedGroups
+            .ZipOn(feedMessages,
+                gr => gr.Id,
+                m => m?.ChatGroupId,
+                (group, message) => new ChatGroupFeedEntry(group, message))
+            .ZipOn(userInfos,
+                e => e.LatestMessage?.UserId,
                 u => u.Id,
                 (e, user) => e with { MessageSender = user })
+            .OrderByDescending(e => e.LatestMessage?.CreatedAt)
             .ToList();
     }
 }

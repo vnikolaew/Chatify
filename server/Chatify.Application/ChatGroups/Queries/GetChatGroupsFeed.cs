@@ -19,24 +19,14 @@ public record ChatGroupFeedEntry(
 public record GetChatGroupsFeed
     (int Limit, int Offset) : IQuery<GetChatGroupsFeedResult>;
 
-internal sealed class GetChatGroupsFeedHandler
+internal sealed class GetChatGroupsFeedHandler(IIdentityContext identityContext,
+        IChatGroupsFeedService feedService)
     : IQueryHandler<GetChatGroupsFeed, GetChatGroupsFeedResult>
 {
-    private readonly IIdentityContext _identityContext;
-    private readonly IChatGroupsFeedService _feedService;
-
-    public GetChatGroupsFeedHandler(
-        IIdentityContext identityContext,
-        IChatGroupsFeedService feedService)
-    {
-        _identityContext = identityContext;
-        _feedService = feedService;
-    }
-
     public async Task<GetChatGroupsFeedResult> HandleAsync(
         GetChatGroupsFeed query, CancellationToken cancellationToken = default)
-        => await _feedService.GetFeedEntriesForUserAsync(
-            _identityContext.Id,
+        => await feedService.GetFeedEntriesForUserAsync(
+            identityContext.Id,
             query.Limit,
             query.Offset,
             cancellationToken);

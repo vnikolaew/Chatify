@@ -3,11 +3,13 @@ using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Dispatchers;
 using Chatify.Shared.Abstractions.Queries;
 using LanguageExt;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chatify.Web.Common;
 
 [ApiController]
+[Authorize]
 [Produces(MediaTypeNames.Application.Json)]
 [Route("api/[controller]")]
 public abstract class ApiController : ControllerBase

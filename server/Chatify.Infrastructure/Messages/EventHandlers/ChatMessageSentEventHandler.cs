@@ -68,7 +68,7 @@ internal sealed class ChatMessageSentEventHandler(
                 Username = identityContext.Username,
                 CreatedAt = message.CreatedAt.DateTime,
                 AttachmentId = media.Id,
-                MediaInfo = media,
+                MediaInfo = media
             });
         await attachments.SaveManyAsync(groupAttachments, cancellationToken);
 

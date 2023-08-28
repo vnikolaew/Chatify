@@ -19,42 +19,30 @@ public record SearchChatGroupMembersByName(
     ) : IQuery<SearchChatGroupMembersByNameResult>;
 
 [Timed]
-internal sealed class SearchChatGroupMembersByNameHandler
+internal sealed class SearchChatGroupMembersByNameHandler(IChatGroupMemberRepository members,
+        IIdentityContext identityContext, IUserRepository users)
     : IQueryHandler<SearchChatGroupMembersByName, SearchChatGroupMembersByNameResult>
 {
-    private readonly IChatGroupMemberRepository _members;
-    private readonly IUserRepository _users;
-    private readonly IIdentityContext _identityContext;
-
-    public SearchChatGroupMembersByNameHandler(
-        IChatGroupMemberRepository members,
-        IIdentityContext identityContext, IUserRepository users)
-    {
-        _members = members;
-        _identityContext = identityContext;
-        _users = users;
-    }
-
     public async Task<SearchChatGroupMembersByNameResult> HandleAsync(
         SearchChatGroupMembersByName query,
         CancellationToken cancellationToken = default)
     {
-        var isMember = await _members
-            .Exists(query.GroupId, _identityContext.Id, cancellationToken);
-        if ( !isMember ) return new UserIsNotMemberError(_identityContext.Id, query.GroupId);
+        var isMember = await members
+            .Exists(query.GroupId, identityContext.Id, cancellationToken);
+        if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, query.GroupId);
 
-        var members = await _members.ByGroup(query.GroupId, cancellationToken);
-        if ( members is null ) return default;
+        var groupMembers = await members.ByGroup(query.GroupId, cancellationToken);
+        if ( groupMembers is null ) return default;
         
         // Execute an in-memory search:
-        var userIds = members
+        var userIds = groupMembers
             .Where(m => m.Username.Contains(
                 query.SearchQuery ?? string.Empty,
                 StringComparison.InvariantCultureIgnoreCase))
             .Select(m => m.UserId)
             .ToList();
         
-        return await _users.GetByIds(userIds, cancellationToken)
+        return await users.GetByIds(userIds, cancellationToken)
                ?? new List<Domain.Entities.User>();
     }
 }

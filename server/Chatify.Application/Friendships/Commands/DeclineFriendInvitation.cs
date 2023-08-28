@@ -15,58 +15,45 @@ using DeclineFriendInvitationResult = OneOf<FriendInviteNotFoundError, FriendInv
 
 public record DeclineFriendInvitation([Required] Guid InviteId) : ICommand<DeclineFriendInvitationResult>;
 
-internal sealed class DeclineFriendInvitationHandler :
-    ICommandHandler<DeclineFriendInvitation, DeclineFriendInvitationResult>
-{
-    private readonly IIdentityContext _identityContext;
-    private readonly IDomainRepository<FriendInvitation, Guid> _friendInvites;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IClock _clock;
-
-    public DeclineFriendInvitationHandler(
-        IIdentityContext identityContext,
+internal sealed class DeclineFriendInvitationHandler(IIdentityContext identityContext,
         IDomainRepository<FriendInvitation, Guid> friendInvites,
         IEventDispatcher eventDispatcher,
         IClock clock)
-    {
-        _identityContext = identityContext;
-        _friendInvites = friendInvites;
-        _eventDispatcher = eventDispatcher;
-        _clock = clock;
-    }
-
+    :
+        ICommandHandler<DeclineFriendInvitation, DeclineFriendInvitationResult>
+{
     public async Task<DeclineFriendInvitationResult> HandleAsync(
         DeclineFriendInvitation command,
         CancellationToken cancellationToken = default)
     {
         // Check if friend invite exists and is in a 'Pending' state:
-        var friendInvite = await _friendInvites.GetAsync(command.InviteId, cancellationToken: cancellationToken);
+        var friendInvite = await friendInvites.GetAsync(command.InviteId, cancellationToken: cancellationToken);
         if ( friendInvite is null ) return new FriendInviteNotFoundError(command.InviteId);
         
         if (friendInvite.Status != FriendInvitationStatus.Pending)
         {
             return new FriendInviteInvalidStateError(friendInvite.Status);
         }
-        if (friendInvite.InviteeId != _identityContext.Id)
+        if (friendInvite.InviteeId != identityContext.Id)
         {
             return new FriendInviteInvalidStateError(friendInvite.Status);
         }
 
         // Update friend invite:
-        await _friendInvites.UpdateAsync(
+        await friendInvites.UpdateAsync(
             friendInvite,
             invite =>
             {
                 invite.Status = FriendInvitationStatus.Declined;
-                invite.UpdatedAt = _clock.Now;
+                invite.UpdatedAt = clock.Now;
             },
             cancellationToken);
 
-        await _eventDispatcher.PublishAsync(new FriendInvitationDeclinedEvent
+        await eventDispatcher.PublishAsync(new FriendInvitationDeclinedEvent
         {
             InviterId = friendInvite.InviterId,
             InviteeId = friendInvite.InviteeId,
-            Timestamp = _clock.Now,
+            Timestamp = clock.Now,
             InviteId = friendInvite.Id
         }, cancellationToken);
         

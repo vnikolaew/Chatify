@@ -38,6 +38,14 @@ export const createClient = (
 
    client.interceptors.response.use(async (value) => {
       await sleep(1000);
+
+      if (value.status === HttpStatusCode.Unauthorized) {
+         const currentPath = window.location.pathname;
+         const returnUrl = encodeURIComponent(currentPath);
+
+         window.location.replace(`/signin?returnUrl=${returnUrl}`);
+         return value;
+      }
       return value;
    });
 

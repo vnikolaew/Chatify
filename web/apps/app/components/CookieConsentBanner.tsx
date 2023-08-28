@@ -8,16 +8,24 @@ import {
    ModalFooter,
    ModalHeader,
    Spinner,
+   useDisclosure,
 } from "@nextui-org/react";
 import React from "react";
 import CrossIcon from "@components/icons/CrossIcon";
-import { useAcceptCookiePolicyMutation } from "../../../libs/api/src/lib/auth/hooks/mutations/useAcceptCookiePolicyMutation";
-import { useDeclineCookiePolicyMutation } from "../../../libs/api/src/lib/auth/hooks/mutations/useDeclineCookiePolicyMutation";
+import {
+   useAcceptCookiePolicyMutation,
+   useDeclineCookiePolicyMutation,
+} from "@web/api";
 
 export interface CookieConsentBannerProps {
    isOpen: boolean;
    onOpenChange: () => void;
 }
+
+export const CookieConsentBannerWrapper = () => {
+   const { isOpen, onOpenChange } = useDisclosure({ defaultOpen: false });
+   return <CookieConsentBanner isOpen={isOpen} onOpenChange={onOpenChange} />;
+};
 
 const CookieConsentBanner = ({
    isOpen,

@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Chatify.Application.User.Commands;
+﻿using Chatify.Application.User.Commands;
 using Chatify.Application.User.Common;
 using Chatify.Application.User.Queries;
 using Chatify.Domain.Entities;

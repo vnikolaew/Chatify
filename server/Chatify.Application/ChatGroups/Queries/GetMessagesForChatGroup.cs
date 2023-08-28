@@ -23,57 +23,41 @@ public record GetMessagesForChatGroup(
 ) : IQuery<GetMessagesForChatGroupResult>;
 
 [Timed]
-internal sealed class GetMessagesByChatGroupHandler
-    : IQueryHandler<GetMessagesForChatGroup, GetMessagesForChatGroupResult>
-{
-    private readonly IChatMessageRepository _messages;
-    private readonly IIdentityContext _identityContext;
-    private readonly IChatGroupMemberRepository _members;
-    private readonly IUserRepository _users;
-    private readonly IPagingCursorHelper _pagingCursorHelper;
-
-    public GetMessagesByChatGroupHandler(
-        IChatMessageRepository messages,
+internal sealed class GetMessagesByChatGroupHandler(IChatMessageRepository messages,
         IIdentityContext identityContext,
         IChatGroupMemberRepository members,
         IPagingCursorHelper pagingCursorHelper,
         IUserRepository users)
-    {
-        _messages = messages;
-        _identityContext = identityContext;
-        _members = members;
-        _pagingCursorHelper = pagingCursorHelper;
-        _users = users;
-    }
-
+    : IQueryHandler<GetMessagesForChatGroup, GetMessagesForChatGroupResult>
+{
     public async Task<GetMessagesForChatGroupResult> HandleAsync(
         GetMessagesForChatGroup command,
         CancellationToken cancellationToken = default)
     {
-        var isGroupMember = await _members.Exists(
+        var isGroupMember = await members.Exists(
             command.GroupId,
-            _identityContext.Id, cancellationToken);
-        if ( !isGroupMember ) return new UserIsNotMemberError(_identityContext.Id, command.GroupId);
+            identityContext.Id, cancellationToken);
+        if ( !isGroupMember ) return new UserIsNotMemberError(identityContext.Id, command.GroupId);
 
-        var pagingCursors = _pagingCursorHelper
+        var pagingCursors = pagingCursorHelper
             .ToPagingCursors(command.PagingCursor)
             .ToList();
 
-        var messagesTask = _messages.GetPaginatedByGroupAsync(
+        var messagesTask = messages.GetPaginatedByGroupAsync(
             command.GroupId,
             command.PageSize,
             pagingCursors[0],
             cancellationToken);
-        var messageReplierInfosTask = _messages.GetPaginatedReplierInfosByGroupAsync(
+        var messageReplierInfosTask = messages.GetPaginatedReplierInfosByGroupAsync(
             command.GroupId,
             command.PageSize,
             pagingCursors[1],
             cancellationToken);
 
-        var (messages, messageReplySummaries) =
+        var (groupMessages, messageReplySummaries) =
             await ( messagesTask, messageReplierInfosTask ).WhenAll();
 
-        var forwardedMessages = messages
+        var forwardedMessages = groupMessages
             .Where(m => m.Metadata.ContainsKey(ShareMessageHandler.SharedMessageIdKey))
             .ToList();
 
@@ -84,19 +68,19 @@ internal sealed class GetMessagesByChatGroupHandler
                 .Select(m => m.Metadata[ShareMessageHandler.SharedMessageIdKey])
                 .Select(Guid.Parse);
 
-            originMessages =( await _messages.GetByIds(forwardedMessagesIds, cancellationToken) )
+            originMessages =( await messages.GetByIds(forwardedMessagesIds, cancellationToken) )
                 !.ToDictionary(m => m.Id);
         }
 
-        var userInfos = ( await _users
-                .GetByIds(messages.Select(m => m.UserId).ToHashSet(), cancellationToken) )!
+        var userInfos = ( await users
+                .GetByIds(groupMessages.Select(m => m.UserId).ToHashSet(), cancellationToken) )!
             .ToImmutableDictionary(u => u.Id);
 
-        var combinedCursor = _pagingCursorHelper.CombineCursors(
-            messages.PagingCursor,
+        var combinedCursor = pagingCursorHelper.CombineCursors(
+            groupMessages.PagingCursor,
             messageReplySummaries.PagingCursor);
 
-        return messages
+        return groupMessages
             .Zip(messageReplySummaries,
                 (message, repliersSummary) =>
                 {

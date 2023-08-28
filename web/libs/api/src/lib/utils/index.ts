@@ -13,3 +13,18 @@ export function getImagesBaseUrl() {
    const imagesBaseUrl = `${url.protocol}//${url.hostname}:${url.port}/static`;
    return imagesBaseUrl;
 }
+
+export function isLocalUrl(url: string) {
+   const currentHostname = window.location.hostname;
+   try {
+      const urlToCheck = new URL(url);
+      return urlToCheck.hostname === currentHostname;
+   } catch (err) {
+      return true;
+   }
+}
+
+export function getMediaUrl(url: string) {
+   const mediaUrl = isLocalUrl(url) ? `${getImagesBaseUrl()}/${url}` : url;
+   return mediaUrl;
+}

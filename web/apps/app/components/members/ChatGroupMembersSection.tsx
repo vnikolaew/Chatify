@@ -92,9 +92,9 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
                                     key={member.id}
                                     member={member}
                                     isMe={
-                                       me.claims.nameidentifier === member.id
+                                       me?.claims?.nameidentifier === member.id
                                     }
-                                    myName={me.claims.name}
+                                    myName={me?.claims?.name}
                                     category={category}
                                  />
                               ))}

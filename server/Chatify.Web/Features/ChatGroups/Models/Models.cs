@@ -9,10 +9,11 @@ public static class Models
     public record CreateChatGroupRequest(
         string? About,
         string Name,
-        IFormFile? File)
+        IFormFile? File,
+        IEnumerable<Guid>? MemberIds)
     {
         public CreateChatGroup ToCommand()
-            => new(About, Name, File is not null
+            => new(About, Name, MemberIds, File is not null
                 ? new InputFile { Data = File.OpenReadStream(), FileName = File.FileName }
                 : default);
     }

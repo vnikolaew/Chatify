@@ -18,7 +18,7 @@ public interface IChatMessageRepository : IDomainRepository<ChatMessage, Guid>
       string pagingCursor,
       CancellationToken cancellationToken = default);
 
-   Task<IDictionary<Guid, ChatMessage>> GetLatestForGroups(
+   Task<IDictionary<Guid, ChatMessage?>> GetLatestForGroups(
       IEnumerable<Guid> groupIds,
       CancellationToken cancellationToken = default);
    

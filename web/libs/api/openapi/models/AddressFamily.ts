@@ -4,7 +4,6 @@
 /* eslint-disable */
 
 export enum AddressFamily {
-    UNKNOWN = 'Unknown',
     UNSPECIFIED = 'Unspecified',
     UNIX = 'Unix',
     INTER_NETWORK = 'InterNetwork',
@@ -35,4 +34,5 @@ export enum AddressFamily {
     MAX = 'Max',
     PACKET = 'Packet',
     CONTROLLER_AREA_NETWORK = 'ControllerAreaNetwork',
+    UNKNOWN = 'Unknown',
 }

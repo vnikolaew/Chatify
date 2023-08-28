@@ -9,6 +9,7 @@ import {
    DropdownMenu,
    DropdownSection,
    DropdownTrigger,
+   Link,
    Listbox,
    ListboxItem,
    Popover,
@@ -28,7 +29,9 @@ import {
 import { useTheme } from "next-themes";
 import { useIsUserLoggedIn } from "@hooks";
 import { UserStatus } from "@openapi";
-import { ExitIcon, ProfileIcon, RightArrow } from "@icons";
+import { ExitIcon, PlusIcon, ProfileIcon, RightArrow } from "@icons";
+import ChatBubbleIcon from "@components/icons/ChatBubbleIcon";
+import { useRouter } from "next/navigation";
 
 export function isValidURL(url: string | null) {
    // Regular expression pattern to match a valid absolute URL
@@ -74,6 +77,7 @@ export const UserDropdown = ({ baseImagesUrl }: UserDropdownProps) => {
    } = useChangeUserStatusMutation();
 
    const { theme, setTheme } = useTheme();
+   const router = useRouter();
    const [loadingAction, setLoadingAction] = useState<string>(null!);
    const [isStatusPopoverOpen, setIsStatusPopoverOpen] = useState(false);
    const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
@@ -155,6 +159,10 @@ export const UserDropdown = ({ baseImagesUrl }: UserDropdownProps) => {
                if (key === "status") {
                   console.log("im here");
                }
+               if (key === "create-chat-group") {
+                  router.push(`/create`);
+                  setIsDropdownMenuOpen(false);
+               }
             }}
             aria-label={"User actions"}
          >
@@ -170,6 +178,23 @@ export const UserDropdown = ({ baseImagesUrl }: UserDropdownProps) => {
                   key={"profile"}
                >
                   <span className={`text-sm`}>Profile</span>
+               </DropdownItem>
+               <DropdownItem
+                  textValue={"create-chat-group"}
+                  endContent={
+                     <PlusIcon className={`fill-foreground ml-3`} size={20} />
+                  }
+                  classNames={{
+                     description: "text-[.75rem] text-default-300",
+                  }}
+                  description={"Create a new chat group"}
+                  startContent={
+                     <ChatBubbleIcon className={`fill-foreground`} size={20} />
+                  }
+                  className={`px-3 py-2`}
+                  key={"create-chat-group"}
+               >
+                  <span className={`text-small`}>Create chat group</span>
                </DropdownItem>
                <DropdownItem textValue={"rsdff"} key={"status-2"}>
                   <Popover

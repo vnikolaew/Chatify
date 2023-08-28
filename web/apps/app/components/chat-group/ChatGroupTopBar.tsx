@@ -1,7 +1,11 @@
 "use client";
 import React, { Fragment, useMemo } from "react";
 import { useCurrentChatGroup, useIsUserLoggedIn } from "@hooks";
-import { useGetChatGroupDetailsQuery, useGetMyClaimsQuery } from "@web/api";
+import {
+   getMediaUrl,
+   useGetChatGroupDetailsQuery,
+   useGetMyClaimsQuery,
+} from "@web/api";
 import { Avatar, AvatarGroup, Skeleton } from "@nextui-org/react";
 import { UserStatus } from "@openapi";
 import AddNewMemberActionButton, {
@@ -26,9 +30,9 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
 
    const isUserGroupAdmin = useMemo(() => {
       return chatGroupDetails?.chatGroup?.adminIds?.some(
-         (id) => id === me.claims.nameidentifier
+         (id) => id === me?.claims?.nameidentifier
       );
-   }, [chatGroupDetails, me]);
+   }, [chatGroupDetails?.chatGroup?.adminIds, me?.claims?.nameidentifier]);
 
    return (
       <div
@@ -46,7 +50,9 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                      color={"danger"}
                      size={"md"}
                      className={`aspect-square object-cover`}
-                     src={chatGroupDetails?.chatGroup?.picture?.mediaUrl}
+                     src={getMediaUrl(
+                        chatGroupDetails?.chatGroup?.picture?.mediaUrl
+                     )}
                   />
                   <div
                      className={`flex flex-col items-start justify-around h-full`}
@@ -77,7 +83,8 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                            </span>
                            <div className={`flex items-center gap-3`}>
                               <span className={`text-xs text-default-400`}>
-                                 {chatGroupDetails.members.length} members
+                                 {chatGroupDetails.members.length} member
+                                 {chatGroupDetails.members.length > 1 && `s`}
                               </span>
 
                               <div
@@ -87,7 +94,7 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                                  <AvatarGroup
                                     renderCount={(count) => (
                                        <div
-                                          className={`w-5 flex items-end text-[.5rem] h-5 rounded-full bg-default-300 justify-center`}
+                                          className={`w-5 flex items-center text-[.5rem] h-5 rounded-full bg-default-300 justify-center`}
                                        >
                                           +{count}
                                        </div>

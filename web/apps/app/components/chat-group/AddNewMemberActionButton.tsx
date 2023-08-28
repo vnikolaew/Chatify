@@ -1,9 +1,22 @@
 "use client";
-import React, { Fragment } from "react";
-import { Button, Skeleton, useDisclosure, User } from "@nextui-org/react";
+import React, { Fragment, useCallback, useMemo } from "react";
+import {
+   Button,
+   CircularProgress,
+   Skeleton,
+   useDisclosure,
+   User,
+} from "@nextui-org/react";
 import { AddUserIcon, PinIcon, PlusIcon } from "@icons";
-import { useGetMyFriendsQuery } from "@web/api";
+import {
+   useAddChatGroupMember,
+   useGetChatGroupDetailsQuery,
+   useGetMyFriendsQuery,
+} from "@web/api";
 import TooltipWithPopoverActionButton from "@components/TooltipWithPopoverActionButton";
+import { useCurrentChatGroup } from "@hooks";
+import SadFaceIcon from "@components/icons/SadFaceIcon";
+import { useGetNewMemberSuggestions } from "../../hooks/chat-groups/useGetNewMemberSuggestions";
 
 export interface AddNewMemberActionButtonProps {}
 
@@ -36,7 +49,27 @@ const AddNewMemberActionButton = ({}: AddNewMemberActionButtonProps) => {
 
 const AddNewMemberPopover = () => {
    const { data: friends, isLoading, error } = useGetMyFriendsQuery();
-   console.log(friends);
+   const groupId = useCurrentChatGroup();
+   const {
+      mutateAsync: addNewMember,
+      error: addMemberError,
+      isLoading: addMemberLoading,
+   } = useAddChatGroupMember();
+
+   // Count only users that are friends but not group members:
+   const addMemberSuggestedUsers = useGetNewMemberSuggestions(groupId);
+
+   const handleAddNewMember = useCallback(
+      async (friendId: string) => {
+         console.log("click");
+         await addNewMember({
+            newMemberId: friendId,
+            chatGroupId: groupId,
+            membershipType: 0,
+         });
+      },
+      [addNewMember, groupId]
+   );
 
    return (
       <div className={`flex py-4 flex-col items-start gap-3`}>
@@ -61,7 +94,15 @@ const AddNewMemberPopover = () => {
                ))}
             </Fragment>
          )}
-         {friends?.map((friend, i) => (
+         {addMemberSuggestedUsers?.length === 0 && (
+            <div
+               className={`text-default-300 my-2 gap-1 flex-col flex items-center w-full`}
+            >
+               <SadFaceIcon className={`fill-default-300`} size={20} />
+               <span>You have no suggestions for new members </span>
+            </div>
+         )}
+         {addMemberSuggestedUsers?.map((friend, i) => (
             <div
                className={`flex w-full items-center justify-between gap-4`}
                key={friend.id}
@@ -78,10 +119,22 @@ const AddNewMemberPopover = () => {
                />
                <Button
                   radius={"full"}
+                  onPress={() => handleAddNewMember(friend.id)}
                   size={"sm"}
                   className={`bg-transparent hover:bg-default-300 duration-300 transition-background`}
                   startContent={
-                     <PlusIcon className={`fill-default-500`} size={12} />
+                     addMemberLoading ? (
+                        <CircularProgress
+                           classNames={{
+                              base: `w-3 h-3`,
+                              svg: `w-5 h-5`,
+                              track: `w-3 h-3`,
+                           }}
+                           color={"danger"}
+                        />
+                     ) : (
+                        <PlusIcon className={`fill-default-500`} size={12} />
+                     )
                   }
                   isIconOnly
                />

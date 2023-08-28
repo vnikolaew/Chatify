@@ -22,20 +22,24 @@ public static class EnumerableExtensions
         }
     }
 
-    public static IEnumerable<TResult> ZipOn<T1, T2, TKey, TResult>(
+    public static List<TResult?> ZipOn<T1, T2, TKey, TResult>(
         this IEnumerable<T1> enumerable,
         IEnumerable<T2> enumerableTwo,
-        Func<T1, TKey> enumerableKeySelector,
-        Func<T2, TKey> enumerableTwoKeySelector,
+        Func<T1, TKey?> enumerableKeySelector,
+        Func<T2, TKey?> enumerableTwoKeySelector,
         Func<T1, T2, TResult> zipper)
         where TKey : notnull
     {
-        var dictOne = enumerable
-            .GroupBy(enumerableKeySelector)
-            .ToDictionary(gr => gr.Key, gr => gr.ToList());
+        var listOne = enumerable.ToList();
 
-        var dictTwo = enumerableTwo.ToDictionary(
-            enumerableTwoKeySelector);
+        var dictOne = listOne
+            .Where(_ => enumerableKeySelector(_) is not null && _ is not null)
+            .GroupBy(enumerableKeySelector)
+            .ToDictionary(gr => gr.Key!, gr => gr.ToList());
+
+        var dictTwo = enumerableTwo
+            .Where(_ => _ is not null && enumerableTwoKeySelector(_) is not null)
+            .ToDictionary(enumerableTwoKeySelector);
 
         var kvs = dictOne
             .Select(kv => kv.Value
@@ -43,15 +47,15 @@ public static class EnumerableExtensions
             .SelectMany(_ => _)
             .ToList();
 
-        return kvs
-            .Select(kv =>
-            {
-                var itemOne = kv.Value!;
-                var itemTwo = dictTwo.TryGetValue(kv.Key, out var value)
-                    ? value
-                    : default;
-                return zipper(itemOne, itemTwo!);
-            })
+        return listOne.Select(
+                item =>
+                {
+                    if ( item is null ) return zipper(default, default);
+                    var key = enumerableKeySelector(item);
+                    return key is not null && dictTwo.TryGetValue(key, out var value)
+                        ? zipper(item, value!)
+                        : zipper(item, default!);
+                })
             .ToList();
     }
 }

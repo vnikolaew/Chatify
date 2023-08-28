@@ -5,12 +5,13 @@ import { CreateChatGroupModel, useCreateChatGroupMutation } from "@web/api";
 import { Button, Chip, Image, Input, Spinner } from "@nextui-org/react";
 import UploadIcon from "@components/icons/UploadIcon";
 import TooltipButton from "@components/TooltipButton";
-import { resolveAppleWebApp } from "next/dist/lib/metadata/resolvers/resolve-basics";
+import { useRouter } from "next/navigation";
 
 export interface CreateChatGroupFormProps {}
 
 const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
    const fileInputRef = useRef<HTMLInputElement>();
+   const router = useRouter();
    const [selectedFile, setSelectedFile] = useState<File | null>();
    const fileUrl = useMemo(() => {
       if (!selectedFile) return "";
@@ -31,7 +32,12 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
    } = useCreateChatGroupMutation();
 
    const handleSubmit = async (model: CreateChatGroupModel) => {
-      // await createChatGroup(model);
+      await createChatGroup(model, {
+         onSuccess: (data) => {
+            console.log(data);
+            router.push(`/?c=${data.data.groupId}&new=true`);
+         },
+      });
       console.log(model);
       console.log("form submitted");
    };
@@ -99,7 +105,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                   validationState={
                      touched.about && errors.about ? "invalid" : "valid"
                   }
-                  placeholder={"Think of a cool description."}
+                  placeholder={"The best community."}
                   size={"md"}
                   className={`py-1 text-md rounded-lg`}
                   type={"text"}
@@ -115,7 +121,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                      icon={
                         <UploadIcon
                            fill={`white`}
-                           className={`fill:white`}
+                           className={`fill-white`}
                            size={24}
                         />
                      }

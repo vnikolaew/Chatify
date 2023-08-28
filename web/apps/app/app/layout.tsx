@@ -6,6 +6,7 @@ import Providers from "./providers";
 import MainNavbar from "@components/navbar/Navbar";
 import process from "process";
 import { getImagesBaseUrl } from "@web/api";
+import CookieConsentBannerModal from "@components/CookieConsentBannerModal";
 
 export const metadata: Metadata = {
    title: "Chatify 2023",
@@ -34,6 +35,7 @@ async function ChatifyLayout({ children, ...rest }: PropsWithChildren) {
             <Providers isDevelopment={__IS_DEV__()}>
                <MainNavbar baseImagesUrl={getImagesBaseUrl()} />
                <main className="app">{children}</main>
+               <CookieConsentBannerModal />
                <footer
                   className={`w-full text-center mt-20 p-12 text-large border-t border-t-gray-700`}
                >

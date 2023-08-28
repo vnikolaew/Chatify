@@ -79,21 +79,6 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
                      <h2 className={`text-medium text-foreground`}>
                         Notifications
                      </h2>
-                     <TooltipButton
-                        chipProps={{
-                           classNames: {
-                              base: `w-8 h-8`,
-                           },
-                        }}
-                        classNames={{
-                           base: "text-xs px-2 py-0",
-                        }}
-                        size={"sm"}
-                        icon={
-                           <CheckIcon className={`fill-foreground`} size={14} />
-                        }
-                        content={"Mark all as read"}
-                     />
                      <Tooltip
                         color={"default"}
                         classNames={{
@@ -131,7 +116,7 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
                      variant={"light"}
                      classNames={{
                         // tabContent: "w-[500px]",
-                        panel: "w-[400px] mr-auto self-start",
+                        panel: "w-[400px] mr-auto mb-4 self-start",
                      }}
                      color={"primary"}
                      radius={"full"}

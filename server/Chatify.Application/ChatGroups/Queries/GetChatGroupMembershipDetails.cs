@@ -19,29 +19,19 @@ public record GetChatGroupMembershipDetails(
 ) : IQuery<GetChatGroupMembershipDetailsResult>;
 
 internal sealed class
-    GetChatGroupMembershipDetailsHandler : IQueryHandler<GetChatGroupMembershipDetails,
+    GetChatGroupMembershipDetailsHandler(IIdentityContext identityContext,
+        IChatGroupMemberRepository members)
+    : IQueryHandler<GetChatGroupMembershipDetails,
         GetChatGroupMembershipDetailsResult>
 {
-    private readonly IIdentityContext _identityContext;
-    private readonly IChatGroupMemberRepository _members;
-
-    public GetChatGroupMembershipDetailsHandler(
-        IIdentityContext identityContext,
-        IChatGroupMemberRepository members
-        )
-    {
-        _identityContext = identityContext;
-        _members = members;
-    }
-
     public async Task<GetChatGroupMembershipDetailsResult> HandleAsync(
         GetChatGroupMembershipDetails query,
         CancellationToken cancellationToken = default)
     {
-        var isMember = await _members.Exists(query.GroupId, _identityContext.Id, cancellationToken);
-        if ( !isMember ) return new UserIsNotMemberError(_identityContext.Id, query.GroupId);
+        var isMember = await members.Exists(query.GroupId, identityContext.Id, cancellationToken);
+        if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, query.GroupId);
 
-        var membership = await _members
+        var membership = await members
             .ByGroupAndUser(query.GroupId, query.UserId, cancellationToken);
 
         return membership is not null ? membership : Error.New("");

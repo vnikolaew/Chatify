@@ -8,6 +8,7 @@ using OneOf;
 namespace Chatify.Application.Authentication.Commands;
 
 using AcceptCookiePolicyResult = OneOf<Error, Unit>;
+
 public record AcceptCookiePolicy : ICommand<AcceptCookiePolicyResult>;
 
 internal sealed class AcceptCookiePolicyHandler(

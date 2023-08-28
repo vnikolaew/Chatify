@@ -25,38 +25,24 @@ public record GetChatGroupDetails(
 ) : IQuery<GetChatGroupDetailsResult>;
 
 [Timed]
-internal sealed class GetChatGroupDetailsHandler
+internal sealed class GetChatGroupDetailsHandler(IIdentityContext identityContext, IChatGroupMemberRepository members,
+        IChatGroupRepository groups, IUserRepository users)
     : IQueryHandler<GetChatGroupDetails, GetChatGroupDetailsResult>
 {
-    private readonly IIdentityContext _identityContext;
-    private readonly IUserRepository _users;
-    private readonly IChatGroupRepository _groups;
-    private readonly IChatGroupMemberRepository _members;
-
-    public GetChatGroupDetailsHandler(IIdentityContext identityContext, IChatGroupMemberRepository members,
-        IChatGroupRepository groups, IUserRepository users)
-    {
-        _identityContext = identityContext;
-        _members = members;
-        _groups = groups;
-        _users = users;
-    }
-
     public async Task<GetChatGroupDetailsResult> HandleAsync(
         GetChatGroupDetails query, CancellationToken cancellationToken = default)
     {
-        var group = await _groups.GetAsync(query.GroupId, cancellationToken);
+        var group = await groups.GetAsync(query.GroupId, cancellationToken);
         if ( group is null ) return new ChatGroupNotFoundError();
 
+        var isMember = await members.Exists(query.GroupId, identityContext.Id, cancellationToken);
+        if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, group.Id);
 
-        var isMember = await _members.Exists(query.GroupId, _identityContext.Id, cancellationToken);
-        if ( !isMember ) return new UserIsNotMemberError(_identityContext.Id, group.Id);
-        
-        var adminTask = _users.GetAsync(group.CreatorId, cancellationToken);
-        var groupMembersTask = _members.ByGroup(group.Id, cancellationToken);
-        var (admin, groupMembers ) = await ( adminTask, groupMembersTask ).WhenAll();
-            
-        var members = await _users.GetByIds(groupMembers!.Select(_ => _.UserId), cancellationToken);
-        return new ChatGroupDetailsEntry(group, members!, admin!);
+        var adminTask = users.GetAsync(group.CreatorId, cancellationToken);
+        var groupMembersTask = members.ByGroup(group.Id, cancellationToken);
+        var (admin, groupMembers) = await ( adminTask, groupMembersTask ).WhenAll();
+
+        var membersUsers = await users.GetByIds(groupMembers!.Select(_ => _.UserId), cancellationToken);
+        return new ChatGroupDetailsEntry(group, membersUsers!, admin!);
     }
 }
