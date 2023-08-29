@@ -12,6 +12,7 @@ import {
    CursorPaged,
    // @ts-ignore
 } from "@openapi";
+import { sleep } from "../../utils";
 
 export interface GetPaginatedGroupMessagesModel {
    groupId: string;
@@ -40,6 +41,7 @@ const getPaginatedGroupMessages = async (
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
    }
+   await sleep(2000);
 
    return data.data as CursorPaged<ChatGroupMessageEntry>;
 };

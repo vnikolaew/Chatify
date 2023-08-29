@@ -35,7 +35,8 @@ public static class Extensions
         this IEnumerable enumerable,
         IMapper mapper)
         => enumerable
-            .To<T>(mapper)
+            .AsQueryable()
+            .ProjectTo<T>(mapper.ConfigurationProvider)
             .ToList();
 
     public static async Task<IQueryable<T>> ToAsync<T>(

@@ -76,7 +76,7 @@ export const ChatGroupMemberInfoCard = ({
 
    console.log(membership);
    if (isLoading && isFetching) {
-      return <Spinner size={"md"} color={"danger"} />;
+      return <Spinner size={"sm"} color={"danger"} />;
    }
 
    const handleSendFriendInvite = async () => {

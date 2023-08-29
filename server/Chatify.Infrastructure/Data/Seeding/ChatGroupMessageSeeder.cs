@@ -41,16 +41,23 @@ internal sealed class ChatGroupMessageSeeder(IServiceScopeFactory scopeFactory)
 
         var members = await mapper
             .FetchListAsync<ChatGroupMember>("SELECT * FROM chat_group_members;");
-
-        var messages = MessageFaker.Generate(100);
-        foreach ( var message in messages )
+        var groupIds = await mapper.FetchListAsync<Guid>("SELECT id FROM chat_groups;");
+        
+        foreach ( var groupId in groupIds )
         {
-            var member = members[Random.Shared.Next(0, members.Count)];
-            message.UserId = member.UserId;
-            message.ChatGroupId = member.ChatGroupId;
+            var groupMembers = members.Where(m => m.ChatGroupId == groupId).ToList();
+            foreach ( var groupMember in groupMembers )
+            {
+                var messages = MessageFaker.Generate(3);
+                foreach ( var message in messages )
+                {
+                    message.ChatGroupId = groupId;
+                    message.UserId = groupMember.UserId;
 
-            await mapper.InsertAsync(message, insertNulls: true);
-            if ( message.Attachments.Any() ) await InsertAttachments(message, mapper);
+                    await mapper.InsertAsync(message, insertNulls: true);
+                    if ( message.Attachments.Any() ) await InsertAttachments(message, mapper);
+                }
+            }
         }
 
         await UpdateUserFeedCaches(mapper, cache);
@@ -89,7 +96,7 @@ internal sealed class ChatGroupMessageSeeder(IServiceScopeFactory scopeFactory)
         {
             // Fetch all group members for each message:
             var groupMembers = await mapper.FetchListAsync<ChatGroupMember>(
-                    " WHERE chat_group_id = ?", latestMessage.ChatGroupId);
+                " WHERE chat_group_id = ?", latestMessage.ChatGroupId);
 
             // Update User Feed for each group members (Sorted Set):
             foreach ( var groupMember in groupMembers )

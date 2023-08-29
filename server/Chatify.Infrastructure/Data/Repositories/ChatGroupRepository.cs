@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-using Cassandra.Mapping;
-using Chatify.Domain.Entities;
+﻿using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Services;
@@ -26,9 +24,11 @@ public sealed class ChatGroupRepository(
     public async Task<List<ChatGroup>> GetByIds(
         IEnumerable<Guid> groupIds,
         CancellationToken cancellationToken = default)
-        => ( await _cacheGroups.FindByIdsAsync(groupIds.Select(_ => _.ToString())) )
-            .Values
-            .ToList<ChatGroup>(Mapper);
+        => ( await _cacheGroups
+            .FindByIdsAsync(groupIds.Select(_ => _.ToString())) )
+        .Values
+        .Where(_ => _ is not null)
+        .ToList<ChatGroup>(Mapper);
 
     public async Task<List<ChatGroup>> SearchByName(
         string nameQuery, CancellationToken cancellationToken = default)

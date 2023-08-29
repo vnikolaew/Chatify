@@ -66,3 +66,24 @@ pre {
 }
 
 
+/* Select the scrollbar element */
+::-webkit-scrollbar {
+   width: 10px; /* Width of the scrollbar */
+   border-radius: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+   background: #6f6f6f; /* Color of the track */
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+   background: #282828; /* Color of the handle */
+   border-radius: 6px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+   background: #555; /* Color of the handle on hover */
+}
