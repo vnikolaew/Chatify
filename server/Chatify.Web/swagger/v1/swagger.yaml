@@ -89,6 +89,12 @@ paths:
     post:
       tags:
         - Auth
+      parameters:
+        - name: returnUrl
+          in: query
+          style: form
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -139,6 +145,11 @@ paths:
         - Auth
       parameters:
         - name: code
+          in: query
+          style: form
+          schema:
+            type: string
+        - name: returnUrl
           in: query
           style: form
           schema:
@@ -335,12 +346,19 @@ paths:
                 File:
                   type: string
                   format: binary
+                MemberIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
             encoding:
               About:
                 style: form
               Name:
                 style: form
               File:
+                style: form
+              MemberIds:
                 style: form
       responses:
         '400':
@@ -891,6 +909,23 @@ paths:
       tags:
         - Messages
       parameters:
+        - name: GroupId
+          in: query
+          style: form
+          schema:
+            type: string
+            format: uuid
+        - name: PageSize
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int32
+        - name: PagingCursor
+          in: query
+          style: form
+          schema:
+            type: string
         - name: groupId
           in: path
           required: true
@@ -898,17 +933,6 @@ paths:
           schema:
             type: string
             format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetMessagesByChatGroupRequest'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/GetMessagesByChatGroupRequest'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/GetMessagesByChatGroupRequest'
       responses:
         '400':
           description: Bad Request
@@ -1642,6 +1666,7 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
+        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1672,7 +1697,6 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
-        - Unknown
       type: string
     ApiResponseStatus:
       enum:
@@ -2218,19 +2242,6 @@ components:
           format: date-time
       additionalProperties: false
     GetChatGroupSharedAttachmentsRequest:
-      type: object
-      properties:
-        groupId:
-          type: string
-          format: uuid
-        pageSize:
-          type: integer
-          format: int32
-        pagingCursor:
-          type: string
-          nullable: true
-      additionalProperties: false
-    GetMessagesByChatGroupRequest:
       type: object
       properties:
         groupId:

@@ -6,9 +6,17 @@ export interface RegularSignInModel {
    email: string;
    password: string;
    rememberMe: boolean;
+   returnUrl?: string;
 }
+
 const regularSignIn = async (model: RegularSignInModel) => {
-   const { status, data } = await authClient.post(`/signin`, model);
+   const params = new URLSearchParams(
+      model.returnUrl ? { returnUrl: model.returnUrl } : {}
+   )!;
+
+   const { status, data } = await authClient.post(`/signin`, model, {
+      params,
+   });
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
@@ -19,7 +27,7 @@ const regularSignIn = async (model: RegularSignInModel) => {
 
 export const useRegularSignInMutation = () => {
    const client = useQueryClient();
-   return useMutation(regularSignIn, {
+   return useMutation<any, Error, RegularSignInModel, any>(regularSignIn, {
       onError: console.error,
       onSuccess: (data) => console.log("Sign in success: " + data),
       onSettled: (res) => console.log(res),

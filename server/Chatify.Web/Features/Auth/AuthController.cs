@@ -7,7 +7,6 @@ using Chatify.Web.Extensions;
 using LanguageExt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 using GithubSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
 using SignOutResult = OneOf.OneOf<LanguageExt.Common.Error, LanguageExt.Unit>;
 using RegularSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
@@ -97,9 +96,17 @@ public class AuthController : ApiController
     [ProducesNoContentApiResponse]
     public Task<IActionResult> GoogleSignUp(
         [FromBody] GoogleSignUp signUp,
+        [FromQuery] string? returnUrl,
         CancellationToken cancellationToken = default)
         => SendAsync<GoogleSignUp, GoogleSignUpResult>(signUp, cancellationToken)
-            .MatchAsync(err => err.ToBadRequest(), NoContent);
+            .MatchAsync(err => err.ToBadRequest(),
+                _ => returnUrl is not null
+                    ? Url.IsLocalUrl(returnUrl) switch
+                    {
+                        true => Redirect($"{Request.Host.Host}/${returnUrl}"),
+                        _ => Redirect(returnUrl)
+                    }
+                    : NoContent());
 
     [HttpPost]
     [Route(FacebookSignUpRoute)]
@@ -118,10 +125,19 @@ public class AuthController : ApiController
     public Task<IActionResult> GithubSignUp(
         [FromServices] IGithubOAuthClient githubOAuthClient,
         [FromQuery] string code,
+        [FromQuery] string? returnUrl,
         CancellationToken cancellationToken = default)
         => SendAsync<GithubSignUp, GithubSignUpResult>(
                 new GithubSignUp(code), cancellationToken)
-            .MatchAsync(err => err.ToBadRequest(), _ => NoContent());
+            .MatchAsync(
+                err => err.ToBadRequest(),
+                _ => returnUrl is not null
+                    ? Url.IsLocalUrl(returnUrl) switch
+                    {
+                        true => Redirect($"{Request.Host.Host}/${returnUrl}"),
+                        _ => Redirect(returnUrl)
+                    }
+                    : NoContent());
 
     [HttpPost]
     [Route(ConfirmEmailRoute)]
@@ -147,7 +163,7 @@ public class AuthController : ApiController
             .MatchAsync(
                 err => err.ToBadRequest(),
                 Accepted);
-    
+
     [HttpDelete]
     [Route(CookiePolicyRoute)]
     [ProducesBadRequestApiResponse]

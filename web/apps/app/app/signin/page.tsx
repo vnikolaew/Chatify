@@ -9,7 +9,7 @@ import {
    useRegularSignInMutation,
 } from "@web/api";
 import NextLink from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
    Button,
    Card,
@@ -49,6 +49,7 @@ const signInSchema = yup.object({
 const SignInPage: NextPage = () => {
    const router = useRouter();
    const { data, mutateAsync: signIn, error } = useRegularSignInMutation();
+   const returnUrl = useSearchParams().get("returnUrl");
 
    const {
       error: googleError,
@@ -68,7 +69,7 @@ const SignInPage: NextPage = () => {
 
    async function handleFormSubmit(data: RegularSignInModel) {
       try {
-         await signIn(data);
+         await signIn({ ...data, returnUrl });
          await sleep(2000);
          router.push(`/`, { forceOptimisticNavigation: false });
       } catch (e) {

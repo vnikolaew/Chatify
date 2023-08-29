@@ -94,7 +94,7 @@ const AddNewMemberPopover = () => {
                ))}
             </Fragment>
          )}
-         {addMemberSuggestedUsers?.length === 0 && (
+         {addMemberSuggestedUsers?.length === 0 && !isLoading && (
             <div
                className={`text-default-300 my-2 gap-1 flex-col flex items-center w-full`}
             >

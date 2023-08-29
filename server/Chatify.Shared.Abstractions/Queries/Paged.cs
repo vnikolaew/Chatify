@@ -1,4 +1,7 @@
-﻿namespace Chatify.Shared.Abstractions.Queries;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace Chatify.Shared.Abstractions.Queries;
 
 public class Paged<T> : PagedBase
 {
@@ -38,9 +41,15 @@ public class Paged<T> : PagedBase
 
 public sealed class CursorPaged<T> : List<T>
 {
+    [JsonPropertyName(nameof(PagingCursor))]
     public string PagingCursor { get; set; }
     
+    [JsonPropertyName(nameof(PageSize))]
     public int PageSize { get; set; }
+
+    public long Total { get; set; }
+    
+    public bool HasMore { get; set; }
     
     public IReadOnlyCollection<T> Items => AsReadOnly();
 
@@ -48,9 +57,25 @@ public sealed class CursorPaged<T> : List<T>
     {
         AddRange(items);
         PagingCursor = pagingCursor;
+        PageSize = Count;
+    }
+    
+    public CursorPaged(IEnumerable<T> items, string pagingCursor, int pageSize)
+        : this(items, pagingCursor) =>
+        PageSize = pageSize;
+        
+    public CursorPaged(
+        IEnumerable<T> items,
+        string pagingCursor,
+        int pageSize,
+        long total,
+        bool hasMore)
+        : this(items, pagingCursor, pageSize)
+    {
+        Total = total;
+        HasMore = hasMore;
     }
 
     public CursorPaged<TResult> Map<TResult>(Func<T, TResult> map)
         => new(this.Select(map), PagingCursor);
 }
-

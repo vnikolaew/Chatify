@@ -14,13 +14,15 @@ internal sealed class CompositeSeeder(IServiceScopeFactory scopeFactory) : ISeed
 
         var seeders = scope.ServiceProvider
             .GetServices<ISeeder>()
-            .Where(s => s is not CompositeSeeder)
+            .Where(s => s is ChatGroupMessageSeeder
+                or ChatMessageReactionsSeeder
+                or ChatMessageRepliesSeeder)
             .OrderBy(s => s.Priority)
             .ToList();
 
         logger.LogInformation("Starting database seeding ... Using {Seeders}",
             string.Join(", ", seeders.Select(s => s.GetType().Name)));
-        foreach (var seeder in seeders)
+        foreach ( var seeder in seeders )
         {
             await seeder.SeedAsync(cancellationToken);
         }

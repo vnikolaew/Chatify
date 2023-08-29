@@ -28,7 +28,7 @@ const SignOut = () => {
          spinner={<Spinner className={`mr-2`} color={"default"} size={"sm"} />}
          variant={"flat"}
          disabled={isLoading}
-         className={`hover:underline px-6`}
+         className={`hover:underline mt-4 self-center px-6`}
       >
          {isLoading ? "Loading ..." : "Sign Out"}
       </Button>

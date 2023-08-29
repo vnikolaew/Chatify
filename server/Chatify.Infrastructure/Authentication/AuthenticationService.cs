@@ -11,6 +11,7 @@ using Chatify.Infrastructure.Authentication.External.Github;
 using Chatify.Infrastructure.Authentication.External.Google;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Shared.Abstractions.Contexts;
+using Chatify.Shared.Abstractions.Time;
 using Humanizer;
 using LanguageExt;
 using LanguageExt.Common;
@@ -29,6 +30,7 @@ namespace Chatify.Infrastructure.Authentication;
 public sealed class AuthenticationService(
         UserManager<ChatifyUser> userManager,
         SignInManager<ChatifyUser> signInManager,
+        IClock clock,
         IGoogleOAuthClient googleOAuthClient,
         IFacebookOAuthClient facebookOAuthClient,
         IHttpContextAccessor contextAccessor,
@@ -134,6 +136,11 @@ public sealed class AuthenticationService(
         CancellationToken cancellationToken = default)
     {
         await signInManager.SignOutAsync();
+        await users.UpdateAsync(identityContext.Id, user =>
+        {
+            user.LastLogin = clock.Now;
+            user.UpdatedAt = clock.Now;
+        }, cancellationToken);
         return Unit.Default;
     }
 

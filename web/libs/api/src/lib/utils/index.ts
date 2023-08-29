@@ -10,8 +10,7 @@ export function sleep(ms: number): Promise<void> {
 
 export function getImagesBaseUrl() {
    const url = new URL(process.env["NEXT_PUBLIC_BACKEND_API_URL"]!);
-   const imagesBaseUrl = `${url.protocol}//${url.hostname}:${url.port}/static`;
-   return imagesBaseUrl;
+   return `${url.protocol}//${url.hostname}:${url.port}/static`;
 }
 
 export function isLocalUrl(url: string) {
@@ -25,6 +24,12 @@ export function isLocalUrl(url: string) {
 }
 
 export function getMediaUrl(url: string) {
-   const mediaUrl = isLocalUrl(url) ? `${getImagesBaseUrl()}/${url}` : url;
-   return mediaUrl;
+   return isLocalUrl(url) ? `${getImagesBaseUrl()}/${url}` : url;
+}
+
+const URL_PATTERN_REGEX = /^(https?|ftp):\/\/[^\s/$.?#].\S*$/i;
+
+export function isValidURL(url: string | null) {
+   // Regular expression pattern to match a valid absolute URL
+   return URL_PATTERN_REGEX.test(url ?? "");
 }

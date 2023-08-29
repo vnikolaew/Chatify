@@ -3,6 +3,7 @@ using Cassandra;
 using Cassandra.Mapping.Attributes;
 using Chatify.Application.Common.Mappings;
 using Chatify.Domain.Entities;
+using Chatify.Infrastructure.Common.Mappings;
 using Humanizer;
 
 namespace Chatify.Infrastructure.Data.Models;
@@ -40,12 +41,16 @@ public class ChatMessageRepliesSummary : IMapFrom<MessageRepliersInfo>
         init => _replierInfos = value;
     }
 
+    private static DateTime MapDateTime(DateTimeOffset? dateTimeOffset)
+        => dateTimeOffset?.Date ?? default;
+
     public void Mapping(Profile profile)
         => profile
             .CreateMap<ChatMessageRepliesSummary, MessageRepliersInfo>()
             .ForMember(ri => ri.LastUpdatedAt,
                 cfg =>
-                    cfg.MapFrom(rs => rs.UpdatedAt));
+                    cfg.MapFrom(rs => MapDateTime(rs.UpdatedAt)))
+            .ReverseMap();
 }
 
 public class MessageReplierInfo : IMapFrom<Chatify.Domain.Entities.MessageReplierInfo>
@@ -55,6 +60,14 @@ public class MessageReplierInfo : IMapFrom<Chatify.Domain.Entities.MessageReplie
     public string Username { get; set; } = default!;
 
     public string ProfilePictureUrl { get; set; } = default!;
+
+    public void Mapping(Profile profile)
+        => profile
+            .CreateMap<MessageReplierInfo, Domain.Entities.MessageReplierInfo>()
+            .MapRecordMember(i => i.Username, i => i.Username)
+            .MapRecordMember(i => i.UserId, i => i.UserId)
+            .MapRecordMember(i => i.ProfilePictureUrl, i => i.ProfilePictureUrl)
+            .ReverseMap();
 
     public static readonly UdtMap<MessageReplierInfo> UdtMap = Cassandra.UdtMap
         .For<MessageReplierInfo>(nameof(MessageReplierInfo).Underscore())

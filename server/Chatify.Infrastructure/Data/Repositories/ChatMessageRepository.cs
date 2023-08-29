@@ -15,12 +15,18 @@ using Mapper = Cassandra.Mapping.Mapper;
 namespace Chatify.Infrastructure.Data.Repositories;
 
 public sealed class ChatMessageRepository(
-        IMapper mapper, Mapper dbMapper, IEntityChangeTracker changeTracker,
+        IMapper mapper,
+        Mapper dbMapper,
+        IEntityChangeTracker changeTracker,
         IPagingCursorHelper pagingCursorHelper)
     :
         BaseCassandraRepository<ChatMessage, Models.ChatMessage, Guid>(mapper, dbMapper, changeTracker),
         IChatMessageRepository
 {
+    private Task<long> GetTotalMessagesCount(Guid groupId)
+        => DbMapper.FirstOrDefaultAsync<long>(
+            "SELECT COUNT(*) FROM chat_messages WHERE chat_group_id = ?", groupId);
+
     public async Task<CursorPaged<ChatMessage>> GetPaginatedByGroupAsync(
         Guid groupId,
         int pageSize,
@@ -31,25 +37,36 @@ public sealed class ChatMessageRepository(
             pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?",
             new object[] { groupId });
 
+        var total = await GetTotalMessagesCount(groupId);
         return new CursorPaged<ChatMessage>(
             messagesPage.To<ChatMessage>(Mapper).ToList(),
-            pagingCursorHelper.ToPagingCursor(messagesPage.PagingState)
+            pagingCursorHelper.ToPagingCursor(messagesPage.PagingState)!,
+            messagesPage.Count,
+            total,
+            messagesPage.PagingState is not null
         );
     }
 
     public async Task<CursorPaged<MessageRepliersInfo>> GetPaginatedReplierInfosByGroupAsync(
-        Guid groupId, int pageSize, string pagingCursor,
+        Guid groupId,
+        int pageSize,
+        string pagingCursor,
         CancellationToken cancellationToken = default)
     {
         var replierInfoes = await DbMapper.FetchPageAsync<ChatMessageRepliesSummary>(
             pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?;",
             new object[] { groupId });
 
+        var total = await GetTotalMessagesCount(groupId);
         return new CursorPaged<MessageRepliersInfo>(
             replierInfoes
-                .To<MessageRepliersInfo>(Mapper)
+                .Select(ri => ri.To<MessageRepliersInfo>(Mapper))
                 .ToList(),
-            pagingCursorHelper.ToPagingCursor(replierInfoes.PagingState));
+            pagingCursorHelper.ToPagingCursor(replierInfoes.PagingState)!,
+            replierInfoes.Count,
+            total,
+            replierInfoes.PagingState is not null
+            );
     }
 
     public async Task<IDictionary<Guid, ChatMessage?>> GetLatestForGroups(

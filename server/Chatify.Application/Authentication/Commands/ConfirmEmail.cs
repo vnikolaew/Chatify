@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Shared.Abstractions.Commands;

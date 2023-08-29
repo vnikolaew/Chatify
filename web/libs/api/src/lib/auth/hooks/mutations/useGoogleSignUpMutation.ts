@@ -4,10 +4,19 @@ import { HttpStatusCode } from "axios";
 
 export interface GoogleSignUpModel {
    accessToken: string;
+   returnUrl?: string;
 }
 
-const googleSignUp = async (model: GoogleSignUpModel) => {
-   const { status, data } = await authClient.post(`/signup/google`, model);
+const googleSignUp = async ({ returnUrl, accessToken }: GoogleSignUpModel) => {
+   const params = new URLSearchParams(returnUrl ? { returnUrl } : {})!;
+
+   const { status, data } = await authClient.post(
+      `/signup/google`,
+      { accessToken },
+      {
+         params,
+      }
+   );
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error(data.error ?? "Error");
@@ -15,7 +24,6 @@ const googleSignUp = async (model: GoogleSignUpModel) => {
 
    return data;
 };
-
 export const useGoogleSignUpMutation = () => {
    const client = useQueryClient();
    return useMutation(googleSignUp, {

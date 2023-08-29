@@ -8,14 +8,19 @@ import { HttpStatusCode } from "axios";
 
 export interface GithubSignUpModel {
    code: string;
+   returnUrl?: string;
 }
 
-const githubSignUp = async ({ code }: GithubSignUpModel) => {
+const githubSignUp = async ({ code, returnUrl }: GithubSignUpModel) => {
+   const params = new URLSearchParams(
+      returnUrl ? { returnUrl, code } : { code }
+   )!;
+
    const { status, data } = await authClient.post(
       `/signup/github`,
       {},
       {
-         params: new URLSearchParams({ code }),
+         params,
       }
    );
 

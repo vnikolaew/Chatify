@@ -1,6 +1,8 @@
 import React from "react";
 import { Metadata } from "next";
 import CreateChatGroupForm from "./CreateChatGroupForm";
+import { Divider } from "@nextui-org/react";
+import CreateChatGroupHeading from "./CreateChatGroupHeading";
 
 export interface PageProps {}
 
@@ -12,10 +14,12 @@ export const metadata: Metadata = {
 const CreateChatGroupPage = async ({}: PageProps) => {
    return (
       <section
-         className={`min-h-[60vh] flex flex-col mt-8 items-center w-full`}
+         className={`min-h-[60vh] flex flex-col mt-12 items-center w-full`}
       >
-         <h2 className={`text-default-700 text-xl`}>Create a chat group</h2>
-         <CreateChatGroupForm />
+         <div className={` flex flex-col items-start`}>
+            <CreateChatGroupHeading className={`mb-2`} />
+            <CreateChatGroupForm />
+         </div>
       </section>
    );
 };

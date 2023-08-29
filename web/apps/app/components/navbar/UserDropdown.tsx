@@ -21,6 +21,7 @@ import {
 import React, { useEffect, useState } from "react";
 import {
    ChangeUserStatusModel,
+   getMediaUrl,
    useChangeUserStatusMutation,
    useGetMyClaimsQuery,
    useGetUserDetailsQuery,
@@ -32,13 +33,6 @@ import { UserStatus } from "@openapi";
 import { ExitIcon, PlusIcon, ProfileIcon, RightArrow } from "@icons";
 import ChatBubbleIcon from "@components/icons/ChatBubbleIcon";
 import { useRouter } from "next/navigation";
-
-export function isValidURL(url: string | null) {
-   // Regular expression pattern to match a valid absolute URL
-   const urlPattern = /^(https?|ftp):\/\/[^\s/$.?#].\S*$/i;
-
-   return urlPattern.test(url);
-}
 
 const USER_STATUSES = new Set<{
    status: UserStatus;
@@ -129,11 +123,7 @@ export const UserDropdown = ({ baseImagesUrl }: UserDropdownProps) => {
                      placement={"bottom-right"}
                   >
                      <Avatar
-                        src={
-                           isValidURL(data?.claims.picture)
-                              ? data?.claims.picture
-                              : `${baseImagesUrl}/${data.claims.picture}`
-                        }
+                        src={getMediaUrl(data?.claims?.picture)}
                         size={"md"}
                         alt={"profile-picture"}
                         radius={"full"}
@@ -160,7 +150,6 @@ export const UserDropdown = ({ baseImagesUrl }: UserDropdownProps) => {
                   console.log("im here");
                }
                if (key === "create-chat-group") {
-                  router.push(`/create`);
                   setIsDropdownMenuOpen(false);
                }
             }}
@@ -180,18 +169,23 @@ export const UserDropdown = ({ baseImagesUrl }: UserDropdownProps) => {
                   <span className={`text-sm`}>Profile</span>
                </DropdownItem>
                <DropdownItem
+                  as={Link}
+                  href={`/create`}
+                  // @ts-ignore
+                  color={"foreground"}
                   textValue={"create-chat-group"}
                   endContent={
                      <PlusIcon className={`fill-foreground ml-3`} size={20} />
                   }
                   classNames={{
-                     description: "text-[.75rem] text-default-300",
+                     description:
+                        "text-[.75rem] text-default-300 hover:text-default-300",
                   }}
                   description={"Create a new chat group"}
                   startContent={
                      <ChatBubbleIcon className={`fill-foreground`} size={20} />
                   }
-                  className={`px-3 py-2`}
+                  className={`px-3 py-2 text-foreground `}
                   key={"create-chat-group"}
                >
                   <span className={`text-small`}>Create chat group</span>

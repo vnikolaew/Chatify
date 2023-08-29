@@ -45,8 +45,9 @@ internal sealed class ChatGroupMessageSeeder(IServiceScopeFactory scopeFactory)
         var messages = MessageFaker.Generate(100);
         foreach ( var message in messages )
         {
-            message.UserId = members[Random.Shared.Next(0, members.Count)].UserId;
-            message.ChatGroupId = members[Random.Shared.Next(0, members.Count)].ChatGroupId;
+            var member = members[Random.Shared.Next(0, members.Count)];
+            message.UserId = member.UserId;
+            message.ChatGroupId = member.ChatGroupId;
 
             await mapper.InsertAsync(message, insertNulls: true);
             if ( message.Attachments.Any() ) await InsertAttachments(message, mapper);

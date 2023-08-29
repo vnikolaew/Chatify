@@ -19,7 +19,7 @@ using GetMessagesForChatGroupResult = OneOf<UserIsNotMemberError, CursorPaged<Ch
 public record GetMessagesForChatGroup(
     [Required] Guid GroupId,
     [Required] int PageSize,
-    [Required] string PagingCursor
+    string? PagingCursor
 ) : IQuery<GetMessagesForChatGroupResult>;
 
 [Timed]
@@ -39,9 +39,11 @@ internal sealed class GetMessagesByChatGroupHandler(IChatMessageRepository messa
             identityContext.Id, cancellationToken);
         if ( !isGroupMember ) return new UserIsNotMemberError(identityContext.Id, command.GroupId);
 
-        var pagingCursors = pagingCursorHelper
-            .ToPagingCursors(command.PagingCursor)
-            .ToList();
+        var pagingCursors = string.IsNullOrEmpty(command.PagingCursor)
+            ? new List<string> { default!, default! }
+            : pagingCursorHelper
+                .ToPagingCursors(command.PagingCursor)
+                .ToList();
 
         var messagesTask = messages.GetPaginatedByGroupAsync(
             command.GroupId,
@@ -68,7 +70,7 @@ internal sealed class GetMessagesByChatGroupHandler(IChatMessageRepository messa
                 .Select(m => m.Metadata[ShareMessageHandler.SharedMessageIdKey])
                 .Select(Guid.Parse);
 
-            originMessages =( await messages.GetByIds(forwardedMessagesIds, cancellationToken) )
+            originMessages = ( await messages.GetByIds(forwardedMessagesIds, cancellationToken) )
                 !.ToDictionary(m => m.Id);
         }
 
@@ -82,15 +84,17 @@ internal sealed class GetMessagesByChatGroupHandler(IChatMessageRepository messa
 
         return groupMessages
             .Zip(messageReplySummaries,
-                (message, repliersSummary) =>
+                (message,
+                    repliersSummary) =>
                 {
                     var user = userInfos[message.UserId];
                     return new ChatGroupMessageEntry
                     {
                         Message = message,
-                        ForwardedMessage = message.Metadata.TryGetValue(ShareMessageHandler.SharedMessageIdKey, out var messageId)
-                            ? originMessages[Guid.Parse(messageId)]
-                            : default,
+                        ForwardedMessage =
+                            message.Metadata.TryGetValue(ShareMessageHandler.SharedMessageIdKey, out var messageId)
+                                ? originMessages[Guid.Parse(messageId)]
+                                : default,
                         RepliersInfo = new MessageRepliersInfoEntry(
                             repliersSummary.Total,
                             repliersSummary.LastUpdatedAt,

@@ -40,7 +40,7 @@ public class MessagesController : ApiController
     [ProducesBadRequestApiResponse]
     [ProducesOkApiResponse<CursorPaged<ChatGroupMessageEntry>>]
     public async Task<IActionResult> GetPaginatedMessagesByGroup(
-        [FromBody] GetMessagesByChatGroupRequest request,
+        [FromQuery] GetMessagesByChatGroupRequest request,
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
     {

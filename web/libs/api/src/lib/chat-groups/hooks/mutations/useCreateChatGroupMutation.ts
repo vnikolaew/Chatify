@@ -2,25 +2,28 @@ import { chatGroupsClient } from "../../client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { DEFAULT_CACHE_TIME } from "../../../constants";
+import { sleep } from "../../../utils";
 
 export interface CreateChatGroupModel {
    about?: string;
    name: string;
    file: Blob;
+   memberIds?: string[];
 }
 
 const createChatGroup = async (model: CreateChatGroupModel) => {
-   const { status, data } = await chatGroupsClient.postForm(`/`, model, {
-      headers: {
-         "Content-Type": "multipart/form-data",
-      },
-   });
+   // const { status, data } = await chatGroupsClient.postForm(`/`, model, {
+   //    headers: {
+   //       "Content-Type": "multipart/form-data",
+   //    },
+   // });
+   //
+   // if (status === HttpStatusCode.BadRequest) {
+   //    throw new Error("error");
+   // }
+   await sleep(2000);
 
-   if (status === HttpStatusCode.BadRequest) {
-      throw new Error("error");
-   }
-
-   return data;
+   return {};
 };
 
 export const useCreateChatGroupMutation = () => {

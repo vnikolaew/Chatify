@@ -2,8 +2,10 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Chatify.Application.ChatGroups.Queries.Models;
 using Chatify.Domain.Entities;
 using Chatify.Infrastructure;
+using Chatify.Shared.Abstractions.Queries;
 using Chatify.Web.Middleware;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -37,11 +39,13 @@ public static class ServiceCollectionExtensions
             .AddJsonOptions(opts =>
             {
                 opts.JsonSerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+                opts.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
                 opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 opts.JsonSerializerOptions.Converters.Add(new IPAddressConverter());
+                opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<ChatGroupMessageEntry>());
             })
             .ConfigureApiBehaviorOptions(opts => opts.SuppressModelStateInvalidFilter = true);
-        
+
         services.AddControllersWithViews();
         return services;
     }

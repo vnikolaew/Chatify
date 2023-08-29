@@ -2,41 +2,27 @@
 import React, { Fragment } from "react";
 import Link from "next/link";
 import SignOut from "@components/SignOut";
-import {
-   getMediaUrl,
-   useGetChatGroupDetailsQuery,
-   useGetMyClaimsQuery,
-} from "@web/api";
+import { useGetChatGroupDetailsQuery, useGetMyClaimsQuery } from "@web/api";
 import { useIsUserLoggedIn } from "@hooks";
 import {
-   Avatar,
    Button,
-   Image,
    Modal,
    ModalBody,
    ModalContent,
-   ModalFooter,
    ModalHeader,
    useDisclosure,
 } from "@nextui-org/react";
 import { useCurrentChatGroup } from "@hooks";
 import ChatGroupTopBar from "@components/chat-group/ChatGroupTopBar";
 import { useSearchParams } from "next/navigation";
-import CookieConsentBanner from "@components/CookieConsentBanner";
 import CrossIcon from "@components/icons/CrossIcon";
-import useCookie from "react-use-cookie";
+import ChatMessagesSection from "@components/chat-group/messages/ChatMessagesSection";
 
 export const revalidate = 0;
 
 function IndexPage(props) {
    const params = useSearchParams();
    const isNew = params.get("new") === "true";
-
-   const {
-      isOpen: isCookieConsentOpen,
-      onOpenChange: onCookieConsentOpenChange,
-   } = useDisclosure({ defaultOpen: true });
-   const isConsentNeeded = !useCookie("Cookie-Consent", null!)[0];
 
    const {
       isOpen: isSuccessModalOpen,
@@ -60,12 +46,9 @@ function IndexPage(props) {
 
    return (
       <div
-         className={`flex min-h-[60vh] text-xl gap-3 flex-col items-center shadow-gray-300 w-full rounded-md mb-6`}
+         className={`flex min-h-[60vh] text-xl flex-col items-center shadow-gray-300 w-full rounded-md mb-6`}
       >
          <ChatGroupTopBar />
-         <h1 className={`text-3xl my-4`}>
-            {chatGroupDetails?.chatGroup?.name}
-         </h1>
          {isNew && chatGroupDetails && (
             <Modal
                backdrop={"transparent"}
@@ -129,31 +112,32 @@ function IndexPage(props) {
             </Modal>
          )}
          {!isUserLoggedIn ? (
-            <Fragment>
-               <h2 className={`font-bold`}>You are currently not logged in.</h2>
-               <div className={`flex items-center gap-8`}>
-                  <Link
-                     className={`hover:underline text-blue-600`}
-                     href={`/signup`}
-                  >
-                     {" "}
-                     Sign Up
-                  </Link>
-                  <Link
-                     className={`hover:underline text-blue-600`}
-                     href={`/signin`}
-                  >
-                     Sign In
-                  </Link>
-               </div>
-            </Fragment>
+            <UserNotLoggedInSection />
          ) : (
-            <div className={`self-center mt-4`}>
+            <div
+               className={`self-center w-full flex flex-col items-center mt-4`}
+            >
+               <ChatMessagesSection groupId={chatGroupId} />
                <SignOut />
             </div>
          )}
       </div>
    );
 }
+
+const UserNotLoggedInSection = () => (
+   <Fragment>
+      <h2 className={`font-bold`}>You are currently not logged in.</h2>
+      <div className={`flex items-center gap-8`}>
+         <Link className={`hover:underline text-blue-600`} href={`/signup`}>
+            {" "}
+            Sign Up
+         </Link>
+         <Link className={`hover:underline text-blue-600`} href={`/signin`}>
+            Sign In
+         </Link>
+      </div>
+   </Fragment>
+);
 
 export default IndexPage;
