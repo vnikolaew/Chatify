@@ -28,7 +28,7 @@ internal sealed class ChatGroupMessageSeeder(IServiceScopeFactory scopeFactory)
                     : Array.Empty<Media>())
             .RuleFor(m => m.CreatedAt, f => f.Date.Past())
             .RuleFor(m => m.Content, f => f.Lorem.Sentences(2))
-            .RuleFor(m => m.ReactionCounts, _ => new Dictionary<short, long>());
+            .RuleFor(m => m.ReactionCounts, _ => new Dictionary<long, long>());
 
     private static bool AddAttachments
         => Random.Shared.NextDouble() > 0.50;

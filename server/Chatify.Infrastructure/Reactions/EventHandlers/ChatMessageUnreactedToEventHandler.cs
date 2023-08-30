@@ -22,7 +22,7 @@ internal sealed class ChatMessageUnreactedToEventHandler
                     @event.MessageId,
                     @event.MessageReactionId,
                     @event.UserId,
-                    @event.ReactionType,
+                    @event.ReactionCode,
                     @event.Timestamp));
     }
 }

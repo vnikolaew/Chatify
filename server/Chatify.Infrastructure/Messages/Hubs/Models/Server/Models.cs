@@ -65,7 +65,7 @@ public sealed record ChatGroupMessageReactedTo(
     Guid MessageId,
     Guid MessageReactionId,
     Guid UserId,
-    sbyte ReactionType,
+    long ReactionType,
     DateTime Timestamp,
     Dictionary<string, string>? Metadata = default
 );
@@ -75,7 +75,7 @@ public sealed record ChatGroupMessageUnReactedTo(
     Guid MessageId,
     Guid MessageReactionId,
     Guid UserId,
-    sbyte ReactionType,
+    long ReactionType,
     DateTime Timestamp,
     Dictionary<string, string>? Metadata = default
 );

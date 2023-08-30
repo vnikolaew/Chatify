@@ -23,7 +23,7 @@ public class ChatMessageReactionMapping :Cassandra.Mapping.Mappings
             .UnderscoreColumn(mr => mr.MessageId)
             .UnderscoreColumn(mr => mr.ChatGroupId)
             .UnderscoreColumn(mr => mr.UserId)
-            .UnderscoreColumn(mr => mr.ReactionType)
+            .UnderscoreColumn(mr => mr.ReactionCode)
             .UnderscoreColumn(mr => mr.Metadata)
             .UnderscoreColumn(mr => mr.CreatedAt)
             .UnderscoreColumn(mr => mr.UpdatedAt)

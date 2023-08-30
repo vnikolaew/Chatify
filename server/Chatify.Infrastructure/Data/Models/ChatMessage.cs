@@ -2,7 +2,7 @@
 using Cassandra.Mapping.Attributes;
 using Chatify.Application.Common.Mappings;
 using Metadata = System.Collections.Generic.IDictionary<string, string>;
-using ReactionCounts = System.Collections.Generic.IDictionary<short, long>;
+using ReactionCounts = System.Collections.Generic.IDictionary<long, long>;
 
 namespace Chatify.Infrastructure.Data.Models;
 
@@ -26,7 +26,7 @@ public class ChatMessage : IMapFrom<Domain.Entities.ChatMessage>
 
     public Metadata Metadata { get; set; } = new Dictionary<string, string>();
 
-    public ReactionCounts ReactionCounts { get; set; } = new Dictionary<short, long>();
+    public ReactionCounts ReactionCounts { get; set; } = new Dictionary<long, long>();
 
     public DateTimeOffset CreatedAt { get; set; }
 

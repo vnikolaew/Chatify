@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS chat_messages
     content         text,
     attachments     set<frozen<media>>,
     metadata        map<text, text>,
-    reaction_counts map<smallint, bigint>,
+    reaction_counts map<bigint, bigint>,
     created_at      timestamp,
     updated_at      timestamp,
     updated         boolean,
@@ -141,11 +141,12 @@ CREATE TABLE IF NOT EXISTS chat_message_reactions
     message_id      uuid,
     chat_group_id   uuid,
     user_id         uuid,
-    reaction_type   tinyint,
+    username        text,
+    reaction_code   bigint,
     metadata        map<text, text>,
     created_at      timestamp,
     updated_at      timestamp,
-    reaction_counts map<smallint, bigint> static,
+    reaction_counts map<bigint, bigint> static,
     updated         boolean,
     PRIMARY KEY ((message_id), created_at, id)
 ) WITH CLUSTERING ORDER BY (created_at DESC, id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };

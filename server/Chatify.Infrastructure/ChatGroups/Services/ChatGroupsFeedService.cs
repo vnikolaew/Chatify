@@ -81,7 +81,7 @@ internal sealed class ChatGroupsFeedService(
 
         return feedGroups
             .ZipOn(feedMessages,
-                gr => gr.Id,
+                r => r.Id,
                 m => m?.ChatGroupId,
                 (group, message) => new ChatGroupFeedEntry(group, message))
             .ZipOn(userInfos,

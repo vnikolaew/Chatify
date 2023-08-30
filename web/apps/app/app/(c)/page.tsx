@@ -38,9 +38,6 @@ function IndexPage(props) {
    } = useGetChatGroupDetailsQuery(chatGroupId, {
       enabled: !!chatGroupId && isUserLoggedIn,
    });
-   const { data: me, error: meError } = useGetMyClaimsQuery({
-      enabled: isUserLoggedIn,
-   });
 
    console.log(chatGroupDetails);
 
@@ -126,9 +123,9 @@ function IndexPage(props) {
 }
 
 const UserNotLoggedInSection = () => (
-   <Fragment>
+   <div className={`mt-12`}>
       <h2 className={`font-bold`}>You are currently not logged in.</h2>
-      <div className={`flex items-center gap-8`}>
+      <div className={`flex justify-center items-center gap-8`}>
          <Link className={`hover:underline text-blue-600`} href={`/signup`}>
             {" "}
             Sign Up
@@ -137,7 +134,7 @@ const UserNotLoggedInSection = () => (
             Sign In
          </Link>
       </div>
-   </Fragment>
+   </div>
 );
 
 export default IndexPage;

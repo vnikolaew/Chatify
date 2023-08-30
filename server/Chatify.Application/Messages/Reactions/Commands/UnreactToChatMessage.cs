@@ -27,54 +27,39 @@ public record UnreactToChatMessage(
     [Required] Guid MessageId,
     [Required] Guid GroupId) : ICommand<UnreactToChatMessageResult>;
 
-internal sealed class UnreactToChatMessageHandler : ICommandHandler<UnreactToChatMessage, UnreactToChatMessageResult>
-{
-    private readonly IIdentityContext _identityContext;
-    private readonly IDomainRepository<ChatMessage, Guid> _messages;
-    private readonly IDomainRepository<ChatMessageReaction, Guid> _messageReactions;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IClock _clock;
-
-    public UnreactToChatMessageHandler(
-        IIdentityContext identityContext,
+internal sealed class UnreactToChatMessageHandler(IIdentityContext identityContext,
         IDomainRepository<ChatMessage, Guid> messages,
         IDomainRepository<ChatMessageReaction, Guid> messageReactions,
         IEventDispatcher eventDispatcher,
         IClock clock)
-    {
-        _identityContext = identityContext;
-        _messages = messages;
-        _messageReactions = messageReactions;
-        _eventDispatcher = eventDispatcher;
-        _clock = clock;
-    }
-
+    : ICommandHandler<UnreactToChatMessage, UnreactToChatMessageResult>
+{
     public async Task<UnreactToChatMessageResult> HandleAsync(
         UnreactToChatMessage command,
         CancellationToken cancellationToken = default)
     {
-        var message = await _messages.GetAsync(command.MessageId, cancellationToken);
+        var message = await messages.GetAsync(command.MessageId, cancellationToken);
         if ( message is null ) return new MessageNotFoundError(command.MessageId);
 
-        var messageReaction = await _messageReactions.GetAsync(command.MessageReactionId, cancellationToken);
+        var messageReaction = await messageReactions.GetAsync(command.MessageReactionId, cancellationToken);
         if ( messageReaction is null ) return new MessageReactionNotFoundError();
-        if ( messageReaction.UserId != _identityContext.Id ) return new UserHasNotReactedError();
+        if ( messageReaction.UserId != identityContext.Id ) return new UserHasNotReactedError();
 
-        await _messageReactions.DeleteAsync(messageReaction.Id, cancellationToken);
-        await _messages.UpdateAsync(message.Id, message =>
+        await messageReactions.DeleteAsync(messageReaction.Id, cancellationToken);
+        await messages.UpdateAsync(message.Id, message =>
         {
-            message.UpdatedAt = _clock.Now;
-            message.DecrementReactionCount(messageReaction.ReactionType);
+            message.UpdatedAt = clock.Now;
+            message.DecrementReactionCount(messageReaction.ReactionCode);
         }, cancellationToken);
 
-        await _eventDispatcher.PublishAsync(new ChatMessageUnreactedToEvent
+        await eventDispatcher.PublishAsync(new ChatMessageUnreactedToEvent
         {
             MessageId = message.Id,
             MessageReactionId = messageReaction.Id,
             GroupId = message.ChatGroupId,
             UserId = messageReaction.UserId,
-            ReactionType = messageReaction.ReactionType,
-            Timestamp = _clock.Now
+            ReactionCode = messageReaction.ReactionCode,
+            Timestamp = clock.Now
         }, cancellationToken);
 
         return Unit.Default;

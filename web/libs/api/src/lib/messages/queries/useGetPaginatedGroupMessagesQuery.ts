@@ -56,7 +56,6 @@ export const useGetPaginatedGroupMessagesQuery = (
    }
 ) => {
    const client = useQueryClient();
-
    return useInfiniteQuery<
       CursorPaged<ChatGroupMessageEntry>,
       Error,
@@ -70,9 +69,11 @@ export const useGetPaginatedGroupMessagesQuery = (
          model.pageSize,
          model.pagingCursor,
       ],
-      getNextPageParam: (lastPage) => lastPage.pagingCursor ?? undefined,
-      getPreviousPageParam: (_, allPages) =>
-         allPages.at(-1)?.pagingCursor ?? undefined,
+      getNextPageParam: (lastPage) => {
+         console.log(lastPage);
+         return lastPage.pagingCursor;
+      },
+      getPreviousPageParam: (_, allPages) => allPages.at(-1)?.pagingCursor,
       queryFn: ({
          queryKey: [_, groupId, __, pageSize, pagingCursor],
          pageParam = null!,
@@ -83,7 +84,7 @@ export const useGetPaginatedGroupMessagesQuery = (
             pageSize: Number(pageSize),
          });
       },
-
+      enabled: !!model.groupId,
       cacheTime: 60 * 60 * 1000,
       // ...options,
    });

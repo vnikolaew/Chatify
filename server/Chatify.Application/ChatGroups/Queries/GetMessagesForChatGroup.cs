@@ -107,6 +107,6 @@ internal sealed class GetMessagesByChatGroupHandler(IChatMessageRepository messa
                             user.ProfilePicture.MediaUrl)
                     };
                 })
-            .ToCursorPaged(combinedCursor);
+            .ToCursorPaged(combinedCursor, groupMessages.HasMore, groupMessages.Total);
     }
 }

@@ -54,7 +54,7 @@ internal sealed class ReplyToChatMessageHandler(IChatGroupMemberRepository membe
             ReplyToId = message.Id,
             Content = command.Content,
             CreatedAt = clock.Now,
-            ReactionCounts = new Dictionary<short, long>()
+            ReactionCounts = new Dictionary<long, long>()
         };
 
         await replies.SaveAsync(messageReply, cancellationToken);

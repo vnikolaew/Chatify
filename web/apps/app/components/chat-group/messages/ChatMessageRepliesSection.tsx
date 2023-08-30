@@ -35,7 +35,7 @@ const ChatMessageRepliesSection = ({
    const meId = useCurrentUserId();
    if (isLoading)
       return (
-         <div className={`flex flex-col gap-2 items-start`}>
+         <div className={`flex mb-4 flex-col gap-2 items-start`}>
             {Array.from({ length: total }).map((_, i) => (
                <div className={`flex items-center gap-2`} key={i}>
                   <Skeleton className={`w-8 h-8 rounded-lg`} />
@@ -54,14 +54,14 @@ const ChatMessageRepliesSection = ({
       );
 
    return (
-      <div className={` flex flex-col items-start w-full gap-1`}>
+      <div className={` flex mb-4 flex-col items-start w-full gap-2`}>
          <div className={`flex w-full items-center gap-2`}>
             <div className={`text-default-300 inline-flex text-center text-xs`}>
                <span>{replies?.length}</span>
                <span className={`ml-1`}>replies</span>
             </div>
             <Divider
-               className={`text-default-300 h-[1px] w-2/3`}
+               className={`text-default-300 h-[1.5px] w-2/3`}
                orientation={"horizontal"}
             />
          </div>

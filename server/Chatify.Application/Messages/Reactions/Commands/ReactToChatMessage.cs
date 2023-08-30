@@ -18,97 +18,77 @@ using ReactToChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMemberErro
 public record ReactToChatMessage(
     [Required] Guid MessageId,
     [Required] Guid GroupId,
-    [Required] sbyte ReactionType
+    [Required] long ReactionCode
 ) : ICommand<ReactToChatMessageResult>;
 
-internal sealed class ReactToChatMessageHandler
-    : ICommandHandler<ReactToChatMessage, ReactToChatMessageResult>
-{
-    private readonly IChatGroupMemberRepository _members;
-    private readonly IIdentityContext _identityContext;
-    private readonly IDomainRepository<ChatMessage, Guid> _messages;
-    private readonly IChatMessageReactionRepository _messageReactions;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IClock _clock;
-    private readonly IGuidGenerator _guidGenerator;
-
-    public ReactToChatMessageHandler(
-        IChatGroupMemberRepository members,
+internal sealed class ReactToChatMessageHandler(IChatGroupMemberRepository members,
         IIdentityContext identityContext,
         IDomainRepository<ChatMessage, Guid> messages, IEventDispatcher eventDispatcher, IClock clock,
         IGuidGenerator guidGenerator,
         IChatMessageReactionRepository messageReactions)
-    {
-        _members = members;
-        _identityContext = identityContext;
-        _messages = messages;
-        _eventDispatcher = eventDispatcher;
-        _clock = clock;
-        _guidGenerator = guidGenerator;
-        _messageReactions = messageReactions;
-    }
-
+    : ICommandHandler<ReactToChatMessage, ReactToChatMessageResult>
+{
     public async Task<ReactToChatMessageResult> HandleAsync(
         ReactToChatMessage command,
         CancellationToken cancellationToken = default)
     {
-        var userIsGroupMember = await _members.Exists(
+        var userIsGroupMember = await members.Exists(
             command.GroupId,
-            _identityContext.Id, cancellationToken);
-        if ( !userIsGroupMember ) return new UserIsNotMemberError(_identityContext.Id, command.GroupId);
+            identityContext.Id, cancellationToken);
+        if ( !userIsGroupMember ) return new UserIsNotMemberError(identityContext.Id, command.GroupId);
 
-        var message = await _messages.GetAsync(command.MessageId, cancellationToken);
+        var message = await messages.GetAsync(command.MessageId, cancellationToken);
         if ( message is null ) return new MessageNotFoundError(command.MessageId);
 
-        var existingReaction = await _messageReactions
+        var existingReaction = await messageReactions
             .ByMessageAndUser(
                 command.MessageId,
-                _identityContext.Id,
+                identityContext.Id,
                 cancellationToken);
         if (existingReaction is not null &&
-            existingReaction.ReactionType != command.ReactionType)
+            existingReaction.ReactionCode != command.ReactionCode)
         {
-            var oldReactionType = existingReaction.ReactionType;
-            await _messageReactions.UpdateAsync(existingReaction.Id, reaction =>
+            var oldReactionType = existingReaction.ReactionCode;
+            await messageReactions.UpdateAsync(existingReaction.Id, reaction =>
             {
-                reaction.ReactionType = command.ReactionType;
-                reaction.UpdatedAt = _clock.Now;
+                reaction.ReactionCode = command.ReactionCode;
+                reaction.UpdatedAt = clock.Now;
             }, cancellationToken);
             
-            await _messages.UpdateAsync(message.Id, message =>
+            await messages.UpdateAsync(message.Id, message =>
             {
-                message.UpdatedAt = _clock.Now;
-                message.ChangeReaction(oldReactionType, command.ReactionType);
+                message.UpdatedAt = clock.Now;
+                message.ChangeReaction(oldReactionType, command.ReactionCode);
             }, cancellationToken);
             return existingReaction.Id;
         }
 
-        var messageReactionId = _guidGenerator.New();
+        var messageReactionId = guidGenerator.New();
         var messageReaction = new ChatMessageReaction
         {
             Id = messageReactionId,
-            CreatedAt = _clock.Now,
-            ReactionType = command.ReactionType,
+            CreatedAt = clock.Now,
+            ReactionCode = command.ReactionCode,
             Message = message,
-            UserId = _identityContext.Id,
-            Username = _identityContext.Username,
+            UserId = identityContext.Id,
+            Username = identityContext.Username,
             ChatGroupId = command.GroupId
         };
 
-        await _messageReactions.SaveAsync(messageReaction, cancellationToken);
-        await _messages.UpdateAsync(message.Id, message =>
+        await messageReactions.SaveAsync(messageReaction, cancellationToken);
+        await messages.UpdateAsync(message.Id, message =>
         {
-            message.UpdatedAt = _clock.Now;
-            message.IncrementReactionCount(command.ReactionType);
+            message.UpdatedAt = clock.Now;
+            message.IncrementReactionCount(command.ReactionCode);
         }, cancellationToken);
-        await _eventDispatcher.PublishAsync(new ChatMessageReactedToEvent
+        await eventDispatcher.PublishAsync(new ChatMessageReactedToEvent
         {
             MessageId = message.Id,
             MessageReactionId = messageReaction.Id,
             GroupId = messageReaction.ChatGroupId,
             UserId = messageReaction.UserId,
-            ReactionType = messageReaction.ReactionType,
-            Timestamp = _clock.Now
+            ReactionCode = messageReaction.ReactionCode,
+            Timestamp = clock.Now
         }, cancellationToken);
 
         return messageReaction.Id;

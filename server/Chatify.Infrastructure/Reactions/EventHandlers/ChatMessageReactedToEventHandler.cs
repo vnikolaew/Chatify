@@ -20,11 +20,11 @@ internal sealed class ChatMessageReactedToEventHandler(IHubContext<ChatifyHub, I
         CancellationToken cancellationToken = default)
     {
         var currentCount = await mapper.FirstOrDefaultAsync<long>(
-                $"SELECT reaction_counts[{@event.ReactionType}] FROM message_reactions WHERE message_id = ?;",
+                $"SELECT reaction_counts[{@event.ReactionCode}] FROM message_reactions WHERE message_id = ?;",
                 @event.MessageId);
 
         await mapper.UpdateAsync<ChatMessageReaction>(
-            $" SET reaction_counts[{@event.ReactionType}] = ? WHERE message_id = ?",
+            $" SET reaction_counts[{@event.ReactionCode}] = ? WHERE message_id = ?",
         currentCount + 1, @event.MessageId);
 
         await hubContext
@@ -36,7 +36,7 @@ internal sealed class ChatMessageReactedToEventHandler(IHubContext<ChatifyHub, I
                     @event.MessageId,
                     @event.MessageReactionId,
                     @event.UserId,
-                    @event.ReactionType,
+                    @event.ReactionCode,
                     @event.Timestamp));
     }
 }

@@ -20,7 +20,7 @@ public class ChatMessageReaction
     
     public User User { get; set; }
     
-    public sbyte ReactionType { get; set; }
+    public long ReactionCode { get; set; }
     
     public DateTimeOffset CreatedAt { get; set; }
     

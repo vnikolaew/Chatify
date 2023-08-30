@@ -14,5 +14,5 @@ public class ChatMessageUnreactedToEvent : IDomainEvent
 
     public DateTime Timestamp { get; set; }
 
-    public sbyte ReactionType { get; set; }
+    public long ReactionCode { get; set; }
 }

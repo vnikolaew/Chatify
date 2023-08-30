@@ -3,7 +3,7 @@
    "version": "0.0.0",
    "license": "MIT",
    "scripts": {
-      "openapi codegen": "openapi --input ./libs/api/openapi/swagger.yaml --output libs/api/openapi/index.ts -c axios --exportCore false --exportServices false",
+      "openapi codegen": "openapi --input ./libs/api/openapi/swagger.yaml --output libs/api/openapi -c axios --exportCore false --exportServices false",
       "openapi codegen 2": "npx openapi-typescript ./libs/api/openapi/swagger.yaml -o ./libs/api/openapi/schema.d.ts",
       "restore": "npm install --force"
    },

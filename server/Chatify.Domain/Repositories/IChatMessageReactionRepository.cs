@@ -7,5 +7,7 @@ public interface IChatMessageReactionRepository : IDomainRepository<ChatMessageR
 {
     Task<bool> Exists(Guid messageId, Guid userId, CancellationToken cancellationToken = default);
     
+    Task<List<ChatMessageReaction>?> AllForMessage(Guid messageId, CancellationToken cancellationToken = default);
+    
     Task<ChatMessageReaction?> ByMessageAndUser(Guid messageId, Guid userId, CancellationToken cancellationToken = default);
 }

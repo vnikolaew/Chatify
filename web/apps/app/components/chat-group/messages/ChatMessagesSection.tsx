@@ -1,9 +1,9 @@
 "use client";
 import React, {
-   Fragment,
    UIEventHandler,
    useCallback,
    useEffect,
+   useMemo,
    useRef,
    useState,
 } from "react";
@@ -12,10 +12,11 @@ import {
    useGetMyClaimsQuery,
    useGetPaginatedGroupMessagesQuery,
 } from "@web/api";
-import { Button, ScrollShadow, Skeleton } from "@nextui-org/react";
-import { twMerge } from "tailwind-merge";
+import { Button, ScrollShadow } from "@nextui-org/react";
 import ChatMessageEntry from "@components/chat-group/messages/ChatMessageEntry";
 import DownArrow from "@components/icons/DownArrow";
+import StartupRocketIcon from "@components/icons/StartupRocketIcon";
+import { LoadingChatMessageEntry } from "@components/chat-group/messages/LoadingChatMessageEntry";
 
 export interface ChatMessagesSectionProps {
    groupId: string;
@@ -43,6 +44,12 @@ const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
       { enabled: !!groupId }
    );
    const { data: me } = useGetMyClaimsQuery();
+   const showConversationBeginningMessage = useMemo(
+      () =>
+         !messages?.pages?.at(-1)?.hasMore && !isLoading && !isFetchingNextPage,
+      [messages?.pages, isLoading, isFetchingNextPage]
+   );
+
    console.log(`Messages: `, messages);
 
    const fetchMoreMessages = async () => {
@@ -50,27 +57,34 @@ const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
    };
 
    const handleMessageSectionScroll: UIEventHandler<HTMLDivElement> =
-      useCallback(async (e) => {
-         if (
-            Math.round(
-               messagesSectionRef.current?.scrollTop +
-                  messagesSectionRef.current?.getBoundingClientRect().height
-            ) >=
-            messagesSectionRef.current?.scrollHeight - 20
-         ) {
-            setIsScrollDownButtonVisible(false);
-         } else {
-            setIsScrollDownButtonVisible(true);
-         }
+      useCallback(
+         async (e) => {
+            if (
+               Math.round(
+                  messagesSectionRef.current?.scrollTop +
+                     messagesSectionRef.current?.getBoundingClientRect().height
+               ) >=
+               messagesSectionRef.current?.scrollHeight - 20
+            ) {
+               setIsScrollDownButtonVisible(false);
+            } else {
+               setIsScrollDownButtonVisible(true);
+            }
 
-         if (messagesSectionRef.current?.scrollTop === 0 && hasNextPage) {
-            console.log("We are at the top. Fetching next page ...");
+            if (
+               messagesSectionRef.current?.scrollTop === 0 &&
+               messages?.pages?.at(-1)?.hasMore
+            ) {
+               console.log("We are at the top. Fetching next page ...");
+               console.log(hasNextPage);
 
-            // Fetch next page of messages:
-            await sleep(500);
-            await fetchNextPage();
-         }
-      }, []);
+               // Fetch next page of messages:
+               await sleep(200);
+               await fetchNextPage();
+            }
+         },
+         [messages?.pages, hasNextPage, fetchNextPage]
+      );
 
    const handleScrollDown = useCallback(() => {
       messagesSectionRef.current?.scrollTo({
@@ -85,7 +99,7 @@ const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
 
    return (
       <section className={`w-full relative`}>
-         {isScrollDownButtonVisible && (
+         {isScrollDownButtonVisible && !isLoading && (
             <Button
                size={"md"}
                radius={"full"}
@@ -107,37 +121,45 @@ const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
             className={`w-full relative`}
             orientation={"vertical"}
          >
+            {showConversationBeginningMessage && (
+               <div
+                  className={`w-full flex justify-center gap-4 text-center items-center my-8`}
+               >
+                  <StartupRocketIcon className={`fill-default-400`} size={24} />
+                  <span className={`text-medium text-default-400`}>
+                     You've scrolled to the beginning of this conversation.
+                  </span>
+               </div>
+            )}
             <div
-               className={`flex relative px-2 my-12 w-full max-h-[70vh] flex-col gap-4`}
+               className={`flex relative px-2 my-12 w-full max-h-[60vh] flex-col gap-4`}
             >
                {!isLoading &&
                   isFetchingNextPage &&
                   Array.from({ length: 5 }).map((_, i) => (
                      <LoadingChatMessageEntry reversed={i % 4 === 0} key={i} />
                   ))}
-               {/*{true &&*/}
-               {/*   Array.from({ length: 5 }).map((_, i) => (*/}
-               {/*      <LoadingChatMessageEntry reversed={i % 4 === 0} key={i} />*/}
-               {/*   ))}*/}
+               {isLoading &&
+                  Array.from({ length: 10 }).map((_, i) => (
+                     <LoadingChatMessageEntry reversed={i % 4 === 0} key={i} />
+                  ))}
                {messages?.pages
                   ?.flatMap((p) => p.items)
                   .reverse()
-                  ?.map((message, i) => {
+                  ?.map((message, i, arr) => {
                      const isMe =
                         message.senderInfo.userId === me.claims.nameidentifier;
+                     const isLatest = i === arr.length - 1;
+                     console.log(`Is latest: ${isLatest}`);
                      return (
-                        <Fragment key={i}>
-                           <ChatMessageEntry
-                              message={message}
-                              isMe={isMe}
-                              {...(i === 0 && { ref: firstMessageRef })}
-                           />
-                           <ChatMessageEntry
-                              {...(i === 0 && { showReplies: true })}
-                              message={message}
-                              isMe={isMe}
-                           />
-                        </Fragment>
+                        <ChatMessageEntry
+                           message={message}
+                           key={i}
+                           isMe={isMe}
+                           {...(isLatest && { className: `mb-12` })}
+                           {...(i === 0 && { ref: firstMessageRef })}
+                           {...(i === 0 && { showReplies: true })}
+                        />
                      );
                   })}
             </div>
@@ -149,46 +171,11 @@ const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                   variant={"light"}
                   color={"primary"}
                >
-                  Fetch more
+                  Fetch more &#127988; &#127462; &#127465; &#127466; &#128514;
                </Button>
             </div>
          )}
       </section>
-   );
-};
-
-const LoadingChatMessageEntry = ({
-   reversed = false,
-}: {
-   reversed?: boolean;
-}) => {
-   return (
-      <div
-         className={twMerge(
-            `flex px-2 py-1 rounded-lg gap-3 items-center`,
-            reversed && `flex-row-reverse`
-         )}
-      >
-         <Skeleton className={`w-12 h-12 rounded-lg`} />
-         <div
-            className={twMerge(
-               `flex my-auto flex-col h-full justify-between self-start items-start gap-2`,
-               reversed && `items-end`
-            )}
-         >
-            <div
-               className={twMerge(
-                  `items-center flex gap-2`,
-                  reversed && `flex-row-reverse`
-               )}
-            >
-               <Skeleton className={`h-3 w-24 rounded-full`} />
-               <Skeleton className={`h-2 w-20 rounded-full`} />
-            </div>
-            <Skeleton className={`h-4 w-96 rounded-full`} />
-            <Skeleton className={`h-2 w-36 rounded-full`} />
-         </div>
-      </div>
    );
 };
 

@@ -1,9 +1,12 @@
 ﻿using Chatify.Application.Messages.Common;
 using Chatify.Application.Messages.Reactions.Commands;
+using Chatify.Application.Messages.Reactions.Queries;
+using Chatify.Domain.Entities;
 using Chatify.Web.Common;
 using Chatify.Web.Common.Attributes;
 using Chatify.Web.Extensions;
 using LanguageExt;
+using LanguageExt.Common;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
 using static Chatify.Web.Features.Reactions.Models.Models;
@@ -22,6 +25,7 @@ using UnreactToChatMessageReplyResult = OneOf<
     MessageReactionNotFoundError,
     UserHasNotReactedError,
     Unit>;
+using GetAllForMessageResult = OneOf<Error, UserIsNotMemberError, List<ChatMessageReaction>>;
 
 public class ReactionsController : ApiController
 {
@@ -43,6 +47,24 @@ public class ReactionsController : ApiController
             _ => _.ToBadRequest(),
             id => Accepted(ApiResponse<object>.Success(new { id }, "Successfully reacted to chat message.")));
     }
+
+    [HttpGet]
+    [Route("{messageId:guid}")]
+    [ProducesBadRequestApiResponse]
+    [ProducesOkApiResponse<List<ChatMessageReaction>>]
+    public async Task<IActionResult> GetMessageReactions(
+        [FromRoute] Guid messageId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await QueryAsync<GetAllReactionsForMessage, GetAllForMessageResult>(
+            new GetAllReactionsForMessage(messageId), cancellationToken);
+
+        return result.Match<IActionResult>(
+            _ => BadRequest(),
+            _ => _.ToBadRequest(),
+            Ok);
+    }
+
 
     [HttpPost]
     [Route("replies/{messageId:guid}")]

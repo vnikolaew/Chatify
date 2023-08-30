@@ -2,19 +2,22 @@
 import { ChatGroupMessageEntry } from "@openapi";
 import {
    Avatar,
-   AvatarGroup,
    Button,
    Chip,
    Link,
+   Spinner,
    Tooltip,
 } from "@nextui-org/react";
 import { getMediaUrl } from "@web/api";
 import { twMerge } from "tailwind-merge";
 import { ChatGroupMemberInfoCard } from "@components/members";
 import moment from "moment/moment";
-import React, { useState } from "react";
-import * as repl from "repl";
+import React, { useMemo, useState } from "react";
 import ChatMessageRepliesSection from "@components/chat-group/messages/ChatMessageRepliesSection";
+import ExpandRepliesLink from "@components/chat-group/messages/ExpandRepliesLink";
+import { AnimatePresence, motion } from "framer-motion";
+import { useGetChatGroupMembers } from "../../../hooks/chat-groups/useGetChatGroupMembers";
+import { useGetAllReactionsForMessage } from "@web/api";
 
 export interface ChatMessageEntryProps
    extends React.DetailedHTMLProps<
@@ -30,22 +33,35 @@ const ChatMessageEntry = ({
    message,
    isMe,
    showReplies = false,
+   className,
    ...rest
 }: ChatMessageEntryProps) => {
    const [repliesExpanded, setRepliesExpanded] = useState(showReplies);
+   const hasReplies = useMemo(
+      () => message.repliersInfo.total > 0,
+      [message.repliersInfo.total]
+   );
+   const [fetchReactions, setFetchReactions] = useState(false);
+   const {
+      data: reactions,
+      isLoading: reactionsLoading,
+      error,
+   } = useGetAllReactionsForMessage(message.message.id, {
+      enabled: fetchReactions,
+   });
+   const hasReactions = useMemo(() => {
+      return Object.entries(message?.message?.reactionCounts ?? {}).length > 0;
+   }, [message?.message?.reactionCounts]);
+   const members = useGetChatGroupMembers(message.message.chatGroupId);
 
    return (
       <div
-         className={`flex flex-col ${
-            isMe ? "items-end" : "items-start"
-         } gap-2 transition-background duration-100 hover:bg-default-100`}
+         className={`flex rounded-lg flex-col gap-2 items-start transition-background duration-100 hover:bg-default-100 ${className}`}
+         {...rest}
       >
          <div
-            className={`flex px-2 py-1 rounded-lg gap-3 items-center transition-background duration-100 hover:bg-default-100 ${
-               isMe && "flex-row-reverse"
-            }`}
+            className={`flex px-2 py-1 rounded-lg gap-3 items-center transition-background duration-100 hover:bg-default-100 `}
             key={message.message.id}
-            {...rest}
          >
             <Avatar
                className={`w-10 h-10`}
@@ -57,16 +73,10 @@ const ChatMessageEntry = ({
             />
             <div
                className={twMerge(
-                  `flex flex-col justify-evenly self-start items-start gap-0`,
-                  isMe && `items-end`
+                  `flex flex-col justify-evenly self-start items-start gap-0`
                )}
             >
-               <div
-                  className={twMerge(
-                     `items-center flex gap-2`,
-                     isMe && `flex-row-reverse`
-                  )}
-               >
+               <div className={twMerge(`items-center flex gap-2`)}>
                   <Tooltip
                      delay={500}
                      closeDelay={300}
@@ -101,76 +111,136 @@ const ChatMessageEntry = ({
                </div>
                <span
                   className={`max-w-[500px] leading-5 text-[0.8rem] text-foreground-500 mt-1 ${
-                     isMe && "text-right"
+                     !hasReplies && `mb-4`
                   }`}
                >
                   {message.message.content}
                </span>
-               <div
-                  className={`max-w-[500px] flex items-center gap-0 text-small text-default-300 ${
-                     isMe && "text-right"
-                  }`}
-               >
-                  <Chip
-                     className={`py-1 mt-1 flex items-center`}
-                     size={"sm"}
-                     variant={"faded"}
-                     color={"default"}
-                  >
-                     <div className={`flex items-center gap-1`}>
-                        {message.repliersInfo.replierInfos
-                           .slice(0, 3)
-                           .map((replier, i) => (
-                              <Avatar
-                                 classNames={{
-                                    base: "w-5 h-5",
-                                 }}
-                                 color={"success"}
-                                 radius={"sm"}
-                                 className={`w-5 h-5`}
-                                 src={replier.profilePictureUrl}
-                                 size={"sm"}
-                                 key={replier.userId}
-                              />
-                           ))}
-                        {message.repliersInfo.total > 3 && (
-                           <div
-                              className={`rounded-md flex items-center justify-center bg-black text-xs w-5 h-5 text-foreground`}
+               {hasReactions && (
+                  <div className={`items-center mt-1 flex gap-1`}>
+                     {Object.entries(message.message.reactionCounts).map(
+                        ([reaction, count], i) => (
+                           <Tooltip
+                              showArrow
+                              delay={100}
+                              closeDelay={100}
+                              offset={2}
+                              size={"sm"}
+                              placement={"top"}
+                              key={i}
+                              content={
+                                 reactionsLoading ? (
+                                    <Spinner size={"sm"} color={"danger"} />
+                                 ) : (
+                                    <div>
+                                       {reactions
+                                          ?.filter(
+                                             (r) =>
+                                                r.reactionCode.toString() ===
+                                                reaction
+                                          )
+                                          .map((r) => r.username)
+                                          .join(", ")}{" "}
+                                       reacted with{" "}
+                                       <span
+                                          dangerouslySetInnerHTML={{
+                                             __html: `&#${reaction};`,
+                                          }}
+                                       ></span>
+                                    </div>
+                                 )
+                              }
                            >
-                              +{message.repliersInfo.total - 3}
-                           </div>
-                        )}
-                     </div>
-                  </Chip>
-                  <div className={`self-end`}>
-                     <Link
-                        className={`text-xs cursor-pointer ml-2`}
-                        onPress={(_) => setRepliesExpanded(!repliesExpanded)}
-                        underline={"hover"}
-                        color={"primary"}
+                              <Button
+                                 className={`px-2 min-w-fit max-w-fit w-fit items-center justify-center h-5 py-0`}
+                                 onMouseEnter={(_) => setFetchReactions(true)}
+                                 size={"sm"}
+                                 color={"default"}
+                                 variant={"bordered"}
+                              >
+                                 <span
+                                    className={`text-xs text-default-500`}
+                                    dangerouslySetInnerHTML={{
+                                       __html: `&#${reaction}; ${count}`,
+                                    }}
+                                 />
+                              </Button>
+                           </Tooltip>
+                        )
+                     )}
+                  </div>
+               )}
+               {hasReplies && (
+                  <div
+                     className={`max-w-[500px] mt-1 flex items-center gap-0 text-small text-default-300`}
+                  >
+                     <Chip
+                        className={`py-1 mt-1 flex items-center`}
+                        size={"sm"}
+                        variant={"faded"}
+                        color={"default"}
                      >
-                        {message.repliersInfo.total}{" "}
-                        {message.repliersInfo.total > 1 ? `replies` : `reply`}
-                     </Link>
+                        <div className={`flex items-center gap-1`}>
+                           {message.repliersInfo.replierInfos
+                              .slice(0, 3)
+                              .map((replier, i) => (
+                                 <Avatar
+                                    classNames={{
+                                       base: "w-5 h-5",
+                                    }}
+                                    color={"success"}
+                                    radius={"sm"}
+                                    className={`w-5 h-5`}
+                                    src={replier.profilePictureUrl}
+                                    size={"sm"}
+                                    key={replier.userId}
+                                 />
+                              ))}
+                           {message.repliersInfo.total > 3 && (
+                              <div
+                                 className={`rounded-md flex items-center justify-center bg-black text-xs w-5 h-5 text-foreground`}
+                              >
+                                 +{message.repliersInfo.total - 3}
+                              </div>
+                           )}
+                        </div>
+                     </Chip>
+                     <div className={`self-end`}>
+                        <ExpandRepliesLink
+                           onPress={(_) => setRepliesExpanded(!repliesExpanded)}
+                           expanded={repliesExpanded}
+                           totalReplies={message.repliersInfo.total}
+                        />
+                     </div>
+                     <div className={`self-end`}>
+                        <span className={`text-xs text-default-400 ml-2`}>
+                           Last reply{" "}
+                           {moment(
+                              new Date(message.repliersInfo.lastUpdatedAt)
+                           ).fromNow()}
+                        </span>
+                     </div>
                   </div>
-                  <div className={`self-end`}>
-                     <span className={`text-xs text-default-400 ml-2`}>
-                        Last reply at{" "}
-                        {moment(
-                           new Date(message.repliersInfo.lastUpdatedAt)
-                        ).fromNow()}
-                     </span>
-                  </div>
-               </div>
+               )}
             </div>
          </div>
-         {repliesExpanded && (
-            <section className={`ml-16`}>
-               <ChatMessageRepliesSection
-                  messageId={message.message.id}
-                  total={message.repliersInfo.total}
-               />
-            </section>
+         {hasReplies && (
+            <AnimatePresence>
+               {repliesExpanded && (
+                  <motion.section
+                     initial={{ opacity: 0, height: 0 }}
+                     exit={{ opacity: 0, height: 0 }}
+                     animate={{ opacity: 1, height: "auto" }}
+                     transition={{ ease: "easeInOut", duration: 0.3 }}
+                     className={`ml-16`}
+                  >
+                     <ChatMessageRepliesSection
+                        messageId={message.message.id}
+                        total={message.repliersInfo.total}
+                     />
+                  </motion.section>
+               )}
+            </AnimatePresence>
          )}
       </div>
    );

@@ -1,5 +1,5 @@
 ﻿using Metadata = System.Collections.Generic.IDictionary<string, string>;
-using ReactionCounts = System.Collections.Generic.IDictionary<short, long>;
+using ReactionCounts = System.Collections.Generic.IDictionary<long, long>;
 
 namespace Chatify.Domain.Entities;
 
@@ -37,14 +37,14 @@ public class ChatMessage
         init => _attachments = value.ToHashSet();
     }
 
-    public ReactionCounts ReactionCounts { get; set; } = new Dictionary<short, long>();
+    public ReactionCounts ReactionCounts { get; set; } = new Dictionary<long, long>();
 
     public void AddAttachment(Media media) => _attachments.Add(media);
 
     public bool DeleteAttachment(Guid attachmentId)
         => _attachments.RemoveWhere(m => m.Id == attachmentId) > 0;
 
-    public void IncrementReactionCount(sbyte reactionType)
+    public void IncrementReactionCount(long reactionType)
     {
         if ( !ReactionCounts.ContainsKey(reactionType) )
         {
@@ -54,7 +54,7 @@ public class ChatMessage
         ReactionCounts[reactionType]++;
     }
 
-    public void DecrementReactionCount(sbyte reactionType)
+    public void DecrementReactionCount(long reactionType)
     {
         if ( ReactionCounts.ContainsKey(reactionType) )
         {
@@ -62,7 +62,7 @@ public class ChatMessage
         }
     }
 
-    public void ChangeReaction(sbyte from, sbyte to)
+    public void ChangeReaction(long from, long to)
     {
         if ( ReactionCounts.ContainsKey(from) )
         {

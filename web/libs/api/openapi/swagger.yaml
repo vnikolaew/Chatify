@@ -1527,6 +1527,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ObjectApiResponse'
+    get:
+      tags:
+        - Reactions
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageReactionListApiResponse'
   '/api/Reactions/replies/{messageId}':
     post:
       tags:
@@ -1672,7 +1696,6 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
-        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1703,6 +1726,7 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
+        - Unknown
       type: string
     ApiResponseStatus:
       enum:
@@ -2048,6 +2072,62 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ChatMessage'
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ChatMessageReaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        messageId:
+          type: string
+          format: uuid
+        message:
+          $ref: '#/components/schemas/ChatMessage'
+        chatGroupId:
+          type: string
+          format: uuid
+        chatGroup:
+          $ref: '#/components/schemas/ChatGroup'
+        userId:
+          type: string
+          format: uuid
+        username:
+          type: string
+          nullable: true
+        user:
+          $ref: '#/components/schemas/User'
+        reactionCode:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ChatMessageReactionListApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessageReaction'
           nullable: true
         timestamp:
           type: string

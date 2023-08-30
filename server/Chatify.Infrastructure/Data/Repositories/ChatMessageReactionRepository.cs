@@ -2,6 +2,7 @@
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Mappings;
+using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Services;
 using StackExchange.Redis;
 using Mapper = Cassandra.Mapping.Mapper;
@@ -57,6 +58,11 @@ public sealed class ChatMessageReactionRepository(IMapper mapper, Mapper dbMappe
 
         return await cache.SetContainsAsync(messageReactionsKey, userIdValue);
     }
+
+    public async Task<List<ChatMessageReaction>?> AllForMessage(
+        Guid messageId, CancellationToken cancellationToken = default)
+        => ( await DbMapper.FetchListAsync<Models.ChatMessageReaction>("WHERE message_id = ?", messageId) )
+            .ToList<ChatMessageReaction>(Mapper);
 
     public Task<ChatMessageReaction?> ByMessageAndUser(Guid messageId, Guid userId,
         CancellationToken cancellationToken = default)
