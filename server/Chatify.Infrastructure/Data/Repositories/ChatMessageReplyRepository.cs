@@ -18,7 +18,8 @@ public sealed class ChatMessageReplyRepository(IMapper mapper,
             nameof(ChatMessageReply.Id).Underscore()),
         IChatMessageReplyRepository
 {
-    public async Task<bool> DeleteAllForMessage(Guid messageId, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAllForMessage(Guid messageId,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -41,12 +42,16 @@ public sealed class ChatMessageReplyRepository(IMapper mapper,
         var messagesPage = await DbMapper.FetchPageAsync<Models.ChatMessageReply>(
             pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE reply_to_id = ?;",
             new object[] { messageId });
+        var total = await DbMapper.FirstOrDefaultAsync<long>(
+            "SELECT COUNT(*) FROM chat_message_replies WHERE reply_to_id = ?;",
+            messageId);
 
         return new CursorPaged<ChatMessageReply>(
             messagesPage
-                .AsQueryable()
                 .To<ChatMessageReply>(Mapper)
                 .ToList(),
-            pagingCursorHelper.ToPagingCursor(messagesPage.PagingState));
+            pagingCursorHelper.ToPagingCursor(messagesPage.PagingState)!,
+            messagesPage.Count, total,
+            messagesPage.PagingState is not null);
     }
 }

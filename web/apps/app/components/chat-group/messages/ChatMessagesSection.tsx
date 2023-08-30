@@ -1,24 +1,21 @@
 "use client";
-import React, { Fragment, UIEventHandler, useEffect, useRef } from "react";
+import React, {
+   Fragment,
+   UIEventHandler,
+   useCallback,
+   useEffect,
+   useRef,
+   useState,
+} from "react";
 import {
-   getMediaUrl,
    sleep,
    useGetMyClaimsQuery,
    useGetPaginatedGroupMessagesQuery,
 } from "@web/api";
-import {
-   Avatar,
-   Button,
-   Link,
-   ScrollShadow,
-   Skeleton,
-   Tooltip,
-} from "@nextui-org/react";
-import moment from "moment";
-import { ChatGroupMemberInfoCard } from "@components/members";
+import { Button, ScrollShadow, Skeleton } from "@nextui-org/react";
 import { twMerge } from "tailwind-merge";
-import { useIntersectionObserver } from "../../../hooks/useIntersectionObserver";
 import ChatMessageEntry from "@components/chat-group/messages/ChatMessageEntry";
+import DownArrow from "@components/icons/DownArrow";
 
 export interface ChatMessagesSectionProps {
    groupId: string;
@@ -27,6 +24,8 @@ export interface ChatMessagesSectionProps {
 const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
    const messagesSectionRef = useRef<HTMLDivElement>(null!);
    const firstMessageRef = useRef<HTMLDivElement>(null!);
+   const [isScrollDownButtonVisible, setIsScrollDownButtonVisible] =
+      useState(true);
 
    const {
       data: messages,
@@ -50,43 +49,76 @@ const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
       await fetchNextPage();
    };
 
-   const handleMessageSectionScroll: UIEventHandler<HTMLDivElement> = async (
-      e
-   ) => {
-      if (messagesSectionRef.current?.scrollTop === 0 && hasNextPage) {
-         console.log("We are at the top ...");
+   const handleMessageSectionScroll: UIEventHandler<HTMLDivElement> =
+      useCallback(async (e) => {
+         if (
+            Math.round(
+               messagesSectionRef.current?.scrollTop +
+                  messagesSectionRef.current?.getBoundingClientRect().height
+            ) >=
+            messagesSectionRef.current?.scrollHeight - 20
+         ) {
+            setIsScrollDownButtonVisible(false);
+         } else {
+            setIsScrollDownButtonVisible(true);
+         }
 
-         // Fetch next page of messages:
-         await sleep(500);
-         await fetchNextPage();
-      }
-   };
+         if (messagesSectionRef.current?.scrollTop === 0 && hasNextPage) {
+            console.log("We are at the top. Fetching next page ...");
+
+            // Fetch next page of messages:
+            await sleep(500);
+            await fetchNextPage();
+         }
+      }, []);
+
+   const handleScrollDown = useCallback(() => {
+      messagesSectionRef.current?.scrollTo({
+         top: messagesSectionRef.current?.scrollHeight,
+         behavior: "smooth",
+      });
+   }, []);
 
    useEffect(() => {
       messagesSectionRef.current?.scroll({ top: 20, behavior: "smooth" });
    }, [messages]);
 
    return (
-      <section className={`w-full`}>
+      <section className={`w-full relative`}>
+         {isScrollDownButtonVisible && (
+            <Button
+               size={"md"}
+               radius={"full"}
+               onPress={handleScrollDown}
+               isIconOnly
+               className={`absolute opacity-80 z-10 cursor-pointer bottom-20 right-10`}
+               startContent={
+                  <DownArrow className={`fill-transparent`} size={30} />
+               }
+               variant={"shadow"}
+               color={"default"}
+            />
+         )}
          <ScrollShadow
             onScroll={handleMessageSectionScroll}
+            size={20}
             style={{}}
             ref={messagesSectionRef}
-            className={`w-full`}
+            className={`w-full relative`}
             orientation={"vertical"}
          >
             <div
-               className={`flex px-4 pt-12 w-full max-h-[70vh] flex-col gap-4`}
+               className={`flex relative px-2 my-12 w-full max-h-[70vh] flex-col gap-4`}
             >
                {!isLoading &&
                   isFetchingNextPage &&
                   Array.from({ length: 5 }).map((_, i) => (
                      <LoadingChatMessageEntry reversed={i % 4 === 0} key={i} />
                   ))}
-               {true &&
-                  Array.from({ length: 5 }).map((_, i) => (
-                     <LoadingChatMessageEntry reversed={i % 4 === 0} key={i} />
-                  ))}
+               {/*{true &&*/}
+               {/*   Array.from({ length: 5 }).map((_, i) => (*/}
+               {/*      <LoadingChatMessageEntry reversed={i % 4 === 0} key={i} />*/}
+               {/*   ))}*/}
                {messages?.pages
                   ?.flatMap((p) => p.items)
                   .reverse()
@@ -100,21 +132,27 @@ const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                               isMe={isMe}
                               {...(i === 0 && { ref: firstMessageRef })}
                            />
-                           <ChatMessageEntry message={message} isMe={isMe} />
+                           <ChatMessageEntry
+                              {...(i === 0 && { showReplies: true })}
+                              message={message}
+                              isMe={isMe}
+                           />
                         </Fragment>
                      );
                   })}
             </div>
          </ScrollShadow>
-         <div className={`mt-4`}>
-            <Button
-               onPress={fetchMoreMessages}
-               variant={"light"}
-               color={"primary"}
-            >
-               Fetch more
-            </Button>
-         </div>
+         {hasNextPage && (
+            <div className={`mt-4`}>
+               <Button
+                  onPress={fetchMoreMessages}
+                  variant={"light"}
+                  color={"primary"}
+               >
+                  Fetch more
+               </Button>
+            </div>
+         )}
       </section>
    );
 };
@@ -127,7 +165,7 @@ const LoadingChatMessageEntry = ({
    return (
       <div
          className={twMerge(
-            `flex px-2 py-1 rounded-lg gap-3 items-center transition-background duration-100 hover:bg-default-200`,
+            `flex px-2 py-1 rounded-lg gap-3 items-center`,
             reversed && `flex-row-reverse`
          )}
       >

@@ -45,7 +45,7 @@ export const useGetUserMembershipDetailsQuery = (
 ) => {
    const client = useQueryClient();
 
-   return useQuery({
+   return useQuery<ChatGroupMember, Error, ChatGroupMember, string[]>({
       queryKey: [`chat-group`, model.chatGroupId, `members`, model.userId],
       queryFn: ({ queryKey: [_, id] }) => getUserMembershipDetails(model),
       cacheTime: 60 * 60 * 1000,

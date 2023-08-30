@@ -1,8 +1,5 @@
 ﻿using System.Text.Json;
-using AutoMapper;
-using Cassandra;
 using Chatify.Domain.Entities;
-using Chatify.Infrastructure.Common.Mappings;
 using UserNotification = Chatify.Infrastructure.Data.Models.UserNotification;
 
 internal class Program

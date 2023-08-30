@@ -42,7 +42,7 @@ internal sealed class ChatGroupMessageSeeder(IServiceScopeFactory scopeFactory)
         var members = await mapper
             .FetchListAsync<ChatGroupMember>("SELECT * FROM chat_group_members;");
         var groupIds = await mapper.FetchListAsync<Guid>("SELECT id FROM chat_groups;");
-        
+
         foreach ( var groupId in groupIds )
         {
             var groupMembers = members.Where(m => m.ChatGroupId == groupId).ToList();
@@ -55,6 +55,7 @@ internal sealed class ChatGroupMessageSeeder(IServiceScopeFactory scopeFactory)
                     message.UserId = groupMember.UserId;
 
                     await mapper.InsertAsync(message, insertNulls: true);
+                    await InsertChatMessageReplySummaries(message, mapper);
                     if ( message.Attachments.Any() ) await InsertAttachments(message, mapper);
                 }
             }
@@ -63,7 +64,24 @@ internal sealed class ChatGroupMessageSeeder(IServiceScopeFactory scopeFactory)
         await UpdateUserFeedCaches(mapper, cache);
     }
 
-    private static async Task InsertAttachments(ChatMessage message, IMapper mapper)
+    private static async Task InsertChatMessageReplySummaries(
+        ChatMessage message,
+        IMapper mapper)
+    {
+        var repliesSummary = new ChatMessageRepliesSummary
+        {
+            Id = Guid.NewGuid(),
+            ChatGroupId = message.ChatGroupId,
+            CreatedAt = message.CreatedAt,
+            Total = 0,
+            MessageId = message.Id,
+            ReplierInfos = new HashSet<MessageReplierInfo>()
+        };
+        await mapper.InsertAsync(repliesSummary, insertNulls: true);
+    }
+
+    private static async Task InsertAttachments(ChatMessage message,
+        IMapper mapper)
     {
         var user = await mapper.FirstOrDefaultAsync<ChatifyUser>("WHERE id = ?", message.UserId);
         var groupAttachments = message

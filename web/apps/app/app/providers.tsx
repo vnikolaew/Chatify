@@ -1,5 +1,5 @@
 "use client";
-import React, { PropsWithChildren, useEffect } from "react";
+import React, { Fragment, PropsWithChildren, useEffect } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { NextUIProvider } from "@nextui-org/react";
@@ -19,7 +19,7 @@ export const OAuthProvider = ({ children }: PropsWithChildren) => {
    );
 };
 
-const Providers = ({ children, isDevelopment }: ProvidersProps) => {
+const RememberUserGeolocation = () => {
    useEffect(() => {
       window.navigator.geolocation.getCurrentPosition((position) => {
          queryClient?.setQueryData(["user-geolocation"], position.coords);
@@ -30,8 +30,13 @@ const Providers = ({ children, isDevelopment }: ProvidersProps) => {
       });
    }, []);
 
+   return <Fragment />;
+};
+
+const Providers = ({ children, isDevelopment }: ProvidersProps) => {
    return (
       <QueryClientProvider client={queryClient}>
+         <RememberUserGeolocation />
          <NextUIProvider>
             <NextThemesProvider defaultTheme={"dark"} attribute={"class"}>
                <OAuthProvider>{children}</OAuthProvider>

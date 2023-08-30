@@ -23,59 +23,43 @@ public record EditChatMessageReply(
         IEnumerable<AttachmentOperation>? AttachmentOperations = default)
     : ICommand<EditChatMessageReplyResult>;
 
-internal sealed class EditChatMessageReplyHandler
-    : ICommandHandler<EditChatMessageReply, EditChatMessageReplyResult>
-{
-    private readonly IChatGroupMemberRepository _members;
-    private readonly IAttachmentOperationHandler _attachmentOperationHandler;
-    private readonly IIdentityContext _identityContext;
-    private readonly IDomainRepository<ChatMessageReply, Guid> _messageReplies;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IClock _clock;
-
-    public EditChatMessageReplyHandler(
-        IChatGroupMemberRepository members,
+internal sealed class EditChatMessageReplyHandler(IChatGroupMemberRepository members,
         IIdentityContext identityContext,
         IDomainRepository<ChatMessageReply, Guid> messageReplies,
         IEventDispatcher eventDispatcher,
         IClock clock,
         IAttachmentOperationHandler attachmentOperationHandler)
-    {
-        _members = members;
-        _identityContext = identityContext;
-        _messageReplies = messageReplies;
-        _eventDispatcher = eventDispatcher;
-        _clock = clock;
-        _attachmentOperationHandler = attachmentOperationHandler;
-    }
+    : ICommandHandler<EditChatMessageReply, EditChatMessageReplyResult>
+{
+    private readonly IChatGroupMemberRepository _members = members;
 
     public async Task<EditChatMessageReplyResult> HandleAsync(
         EditChatMessageReply command,
         CancellationToken cancellationToken = default)
     {
-        var replyMessage = await _messageReplies.GetAsync(command.MessageId, cancellationToken);
+        var replyMessage = await messageReplies.GetAsync(command.MessageId, cancellationToken);
         if ( replyMessage is null ) return new MessageNotFoundError(command.MessageId);
-        if ( replyMessage.UserId != _identityContext.Id )
-            return new UserIsNotMessageSenderError(replyMessage.Id, _identityContext.Id);
+        if ( replyMessage.UserId != identityContext.Id )
+            return new UserIsNotMessageSenderError(replyMessage.Id, identityContext.Id);
 
-        await _messageReplies.UpdateAsync(replyMessage.Id, async chatMessage =>
+        await messageReplies.UpdateAsync(replyMessage.Id, async chatMessage =>
         {
-            chatMessage.UpdatedAt = _clock.Now;
+            chatMessage.UpdatedAt = clock.Now;
             chatMessage.Content = command.NewContent;
             if ( command.AttachmentOperations is not null )
             {
-                await _attachmentOperationHandler
+                await attachmentOperationHandler
                     .HandleAsync(replyMessage, command.AttachmentOperations, cancellationToken);
             }
         }, cancellationToken);
 
-        await _eventDispatcher.PublishAsync(new ChatMessageReplyEditedEvent
+        await eventDispatcher.PublishAsync(new ChatMessageReplyEditedEvent
         {
             MessageId = replyMessage.Id,
             ReplyToId = replyMessage.ReplyToId,
             NewContent = command.NewContent,
-            UserId = _identityContext.Id,
-            Timestamp = _clock.Now,
+            UserId = identityContext.Id,
+            Timestamp = clock.Now,
             GroupId = replyMessage.ChatGroupId,
         }, cancellationToken);
 

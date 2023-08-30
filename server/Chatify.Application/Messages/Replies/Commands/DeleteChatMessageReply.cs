@@ -19,44 +19,30 @@ public record DeleteChatMessageReply(
     [Required] Guid GroupId
 ) : ICommand<DeleteChatMessageReplyResult>;
 
-internal sealed class DeleteChatMessageReplyHandler
-    : ICommandHandler<DeleteChatMessageReply, DeleteChatMessageReplyResult>
-{
-    private readonly IIdentityContext _identityContext;
-    private readonly IDomainRepository<ChatMessageReply, Guid> _messageReplies;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IClock _clock;
-
-    public DeleteChatMessageReplyHandler(
-        IIdentityContext identityContext,
+internal sealed class DeleteChatMessageReplyHandler(IIdentityContext identityContext,
         IDomainRepository<ChatMessageReply, Guid> messageReplies,
         IEventDispatcher eventDispatcher,
         IClock clock)
-    {
-        _identityContext = identityContext;
-        _messageReplies = messageReplies;
-        _eventDispatcher = eventDispatcher;
-        _clock = clock;
-    }
-
+    : ICommandHandler<DeleteChatMessageReply, DeleteChatMessageReplyResult>
+{
     public async Task<DeleteChatMessageReplyResult> HandleAsync(
         DeleteChatMessageReply command,
         CancellationToken cancellationToken = default)
     {
-        var replyMessage = await _messageReplies.GetAsync(command.ReplyMessageId, cancellationToken);
+        var replyMessage = await messageReplies.GetAsync(command.ReplyMessageId, cancellationToken);
         if ( replyMessage is null ) return new MessageNotFoundError(command.ReplyMessageId);
 
-        if ( replyMessage.UserId != _identityContext.Id )
-            return new UserIsNotMessageSenderError(replyMessage.Id, _identityContext.Id);
+        if ( replyMessage.UserId != identityContext.Id )
+            return new UserIsNotMessageSenderError(replyMessage.Id, identityContext.Id);
 
-        var success = await _messageReplies.DeleteAsync(replyMessage.Id, cancellationToken);
-        await _eventDispatcher.PublishAsync(new ChatMessageReplyDeletedEvent
+        var success = await messageReplies.DeleteAsync(replyMessage.Id, cancellationToken);
+        await eventDispatcher.PublishAsync(new ChatMessageReplyDeletedEvent
         {
             MessageId = replyMessage.ReplyToId,
             GroupId = replyMessage.ChatGroupId,
             UserId = replyMessage.UserId,
             ReplyToId = replyMessage.ReplyToId,
-            Timestamp = _clock.Now
+            Timestamp = clock.Now
         }, cancellationToken);
 
         return Unit.Default;

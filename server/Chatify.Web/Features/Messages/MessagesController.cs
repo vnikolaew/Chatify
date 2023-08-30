@@ -56,7 +56,7 @@ public class MessagesController : ApiController
     [ProducesNotFoundApiResponse]
     [ProducesOkApiResponse<CursorPaged<ChatMessageReply>>]
     public async Task<IActionResult> GetPaginatedRepliesByMessage(
-        [FromBody] GetRepliesByForMessageRequest request,
+        [FromQuery] GetRepliesByForMessageRequest request,
         [FromRoute] Guid messageId,
         CancellationToken cancellationToken = default)
     {

@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Cassandra.Mapping;
+﻿using Cassandra.Mapping;
 using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Events.Messages;
 using Chatify.Infrastructure.Common.Extensions;
@@ -30,29 +29,28 @@ internal sealed class ChatMessageRepliedToEventHandler(ICounterService<ChatMessa
 
         // Update Message Reply Summaries "View" table:
         var replierIds = await mapper.FirstOrDefaultAsync<HashSet<Guid>>(
-            "SELECT replier_ids FROM chat_message_reply_summaries WHERE message_id = ? ALLOW FILTERING;",
+            "SELECT replier_ids FROM chat_message_replies_summaries WHERE message_id = ? ALLOW FILTERING;",
             @event.MessageId);
         if ( replierIds is not null )
         {
             if ( !replierIds.Contains(@event.UserId) )
             {
-                var userInfo = await mapper.FirstOrDefaultAsync<ChatifyUser>(
-                    "SELECT id, username, profile_picture_url FROM users WHERE id = ?;", @event.UserId);
+                var user = await mapper.FirstOrDefaultAsync<ChatifyUser>(
+                    "SELECT id, username, profile_picture FROM users WHERE id = ?;", @event.UserId);
 
-                var userInfoDict = new Dictionary<string, string>
+                var userInfo = new MessageReplierInfo
                 {
-                    { "user_id", userInfo.Id.ToString() }, { "username", userInfo.UserName },
-                    { "profile_picture_url", userInfo.ProfilePicture.MediaUrl }
+                    UserId = user.Id,
+                    Username = user.UserName,
+                    ProfilePictureUrl = user.ProfilePicture.MediaUrl
                 };
 
                 await mapper.UpdateAsync<ChatMessageRepliesSummary>(
-                    $" SET replier_ids = replier_ids + ?, updated_at = ?, updated = ?, user_infos = user_infos + {JsonSerializer.Serialize(userInfoDict)}, total = total + 1 WHERE message_id = ?",
-                    userInfo.Id,
+                    " SET replier_ids = replier_ids + ?, updated_at = ?, updated = ?, user_infos = user_infos + ?, total = total + 1 WHERE message_id = ?",
+                    user.Id,
                     @event.Timestamp,
                     true,
-                    userInfo.Id,
-                    userInfo.UserName,
-                    userInfo.ProfilePicture,
+                    userInfo,
                     @event.MessageId
                 );
             }

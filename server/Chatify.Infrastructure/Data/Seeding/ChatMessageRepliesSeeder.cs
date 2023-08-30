@@ -1,9 +1,6 @@
-﻿using System.Text.Json;
-using Cassandra.Mapping;
+﻿using Cassandra.Mapping;
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
-using LanguageExt;
-using LanguageExt.Common;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Chatify.Infrastructure.Data.Seeding;
@@ -21,46 +18,85 @@ internal sealed class ChatMessageRepliesSeeder(IServiceScopeFactory scopeFactory
         var messages = await mapper.FetchListAsync<ChatMessage>();
         var groupMembers = await mapper.FetchListAsync<ChatGroupMember>();
 
-        var replies = ChatGroupMessageSeeder
-            .MessageFaker
-            .Generate(500)
-            .Select(m =>
-            {
-                var message = messages[Random.Shared.Next(0, messages.Count)];
-                var members = groupMembers
-                    .Where(m => m.ChatGroupId == message.ChatGroupId)
-                    .ToList();
-                return new ChatMessageReply
-                {
-                    Id = m.Id,
-                    CreatedAt = message.CreatedAt.Add(TimeSpan.FromDays(Random.Shared.Next(0, 3))),
-                    ChatGroupId = message.ChatGroupId,
-                    UserId = members[Random.Shared.Next(0, members.Count)].UserId,
-                    Content = m.Content,
-                    Metadata = m.Metadata,
-                    ReactionCounts = m.ReactionCounts,
-                    UpdatedAt = m.UpdatedAt,
-                    ReplyToId = message.Id
-                };
-            }).ToList();
-
-        foreach ( var reply in replies )
+        var replyCounters = new Dictionary<Guid, long>();
+        foreach ( var chatMessage in messages )
         {
-            await mapper.InsertAsync(reply, insertNulls: true);
-            await IncrementMessageRepliesCount(mapper, reply.ReplyToId);
-            try
+            var members = groupMembers
+                .Where(m => m.ChatGroupId == chatMessage.ChatGroupId)
+                .ToList();
+
+            var repliesCount = Random.Shared.Next(0, 6);
+            foreach ( var _ in Enumerable.Range(0, repliesCount) )
             {
-                await UpdateReplierSummaries(mapper, reply);
+                var replyMessage = ChatGroupMessageSeeder.MessageFaker.Generate();
+
+                replyCounters.TryAdd(chatMessage.Id, 0);
+                replyCounters[chatMessage.Id]++;
+                var reply = new ChatMessageReply
+                {
+                    Id = replyMessage.Id,
+                    CreatedAt = chatMessage.CreatedAt.Add(TimeSpan.FromDays(Random.Shared.Next(0, 3))),
+                    ChatGroupId = chatMessage.ChatGroupId,
+                    UserId = members[Random.Shared.Next(0, members.Count)].UserId,
+                    Content = replyMessage.Content,
+                    Metadata = replyMessage.Metadata,
+                    ReactionCounts = replyMessage.ReactionCounts,
+                    UpdatedAt = replyMessage.UpdatedAt,
+                    ReplyToId = chatMessage.Id,
+                    RepliesCount = replyCounters[chatMessage.Id]
+                };
+
+                await mapper.InsertAsync(reply, insertNulls: true);
+                await IncrementMessageRepliesCount(mapper, reply.ReplyToId);
+                try
+                {
+                    await UpdateReplierSummaries(mapper, reply);
+                }
+                catch ( Exception )
+                {
+                }
             }
-            catch ( Exception )
-            {
-            }
+        }
+
+        await UpdateChatMessageReplySummariesTotals(mapper);
+    }
+
+    private static async Task UpdateChatMessageReplySummariesTotals(
+        IMapper mapper)
+    {
+        // Get reply counts for all messages:
+        var replyCounts =
+            ( await mapper.FetchListAsync<ChatMessageReplyCount>(
+                "SELECT COUNT(*) as Count, reply_to_id as MessageId FROM chat_message_replies GROUP BY reply_to_id;") )
+            .ToDictionary(_ => _.MessageId, _ => _.Count);
+
+        var replySummaries = await mapper
+            .FetchListAsync<ChatMessageRepliesSummary>();
+        foreach ( var repliesSummary in replySummaries )
+        {
+            repliesSummary.Total = replyCounts.TryGetValue(
+                repliesSummary.MessageId, out var count) ? count : 0;
+            await mapper.UpdateAsync<ChatMessageRepliesSummary>("SET total = ? WHERE chat_group_id = ? AND created_at = ? IF message_id = ?",
+                repliesSummary.Total,
+                repliesSummary.ChatGroupId,
+                repliesSummary.CreatedAt,
+                repliesSummary.MessageId);
         }
     }
 
-    private static async Task<Unit> UpdateReplierSummaries(
-        IMapper mapper, ChatMessageReply reply)
+    private class ChatMessageReplyCount
     {
+        public Guid MessageId { get; set; }
+        public long Count { get; set; }
+    }
+
+    private static async Task UpdateReplierSummaries(IMapper mapper,
+        ChatMessageReply reply)
+    {
+        var message = await mapper.FirstOrDefaultAsync<ChatMessage>(
+            "SELECT id, created_at FROM chat_messages WHERE id = ? ALLOW FILTERING ;",
+            reply.ReplyToId);
+
         // Update `reply_summaries` view table:
         var replierIds = await mapper.FirstOrDefaultAsync<System.Collections.Generic.HashSet<Guid>>(
             "SELECT replier_ids FROM chat_message_replies_summaries WHERE message_id = ? ALLOW FILTERING;",
@@ -68,25 +104,20 @@ internal sealed class ChatMessageRepliesSeeder(IServiceScopeFactory scopeFactory
 
         var userInfo = await mapper.FirstOrDefaultAsync<ChatifyUser>(
             "SELECT id, username, profile_picture FROM users WHERE id = ?;", reply.UserId);
-
         if ( replierIds is not null )
         {
-            var total = await mapper.FirstOrDefaultAsync<long?>(
-                "SELECT total FROM chat_message_replies_summaries WHERE message_id = ?",
-                reply.ReplyToId) ?? 0;
-
             if ( !replierIds.Contains(reply.UserId) )
             {
                 await mapper.UpdateAsync<ChatMessageRepliesSummary>(
                     $" SET replier_ids = replier_ids + ?," +
                     $" updated_at = ?, " +
                     $"updated = ?," +
-                    $" replier_infos = replier_infos + ?," +
-                    $" total = ? WHERE chat_group_id = ? AND created_at = ? IF message_id = ?;",
-                    new System.Collections.Generic.HashSet<Guid> { userInfo.Id },
+                    $" replier_infos = replier_infos + ?" +
+                    $" WHERE chat_group_id = ? AND created_at = ? IF message_id = ?;",
+                    new HashSet<Guid> { userInfo.Id },
                     reply.CreatedAt,
                     true,
-                    new System.Collections.Generic.HashSet<MessageReplierInfo>
+                    new HashSet<MessageReplierInfo>
                     {
                         new()
                         {
@@ -95,65 +126,28 @@ internal sealed class ChatMessageRepliesSeeder(IServiceScopeFactory scopeFactory
                             ProfilePictureUrl = userInfo.ProfilePicture.MediaUrl
                         }
                     },
-                    total + 1,
                     reply.ChatGroupId,
-                    reply.CreatedAt,
-                    reply.ReplyToId
+                    message.CreatedAt,
+                    message.Id
                 );
             }
             else
             {
                 await mapper.UpdateAsync<ChatMessageRepliesSummary>(
-                    """
-                    SET total = ?, updated_at = ?,
-                    updated = ? WHERE created_at = ? AND chat_group_id = ? IF message_id = ?;"
-                    """,
-                    total + 1,
+                    " SET updated_at = ?, updated = ? WHERE created_at = ? AND chat_group_id = ? IF message_id = ?;",
                     reply.CreatedAt,
                     true,
-                    reply.CreatedAt,
+                    message.CreatedAt,
                     reply.ChatGroupId,
-                    reply.ReplyToId
+                    message.Id
                 );
             }
         }
-        else
-        {
-            var messageRepliesSummary = new ChatMessageRepliesSummary
-            {
-                Id = Guid.NewGuid(),
-                ChatGroupId = reply.ChatGroupId,
-                CreatedAt = reply.CreatedAt,
-                Total = 1,
-                MessageId = reply.ReplyToId,
-                ReplierIds = new System.Collections.Generic.HashSet<Guid> { reply.UserId },
-                ReplierInfos = new System.Collections.Generic.HashSet<MessageReplierInfo>
-                {
-                    new()
-                    {
-                        UserId = userInfo.Id,
-                        Username = userInfo.UserName,
-                        ProfilePictureUrl = userInfo.ProfilePicture.MediaUrl
-                    }
-                }
-            };
-            await mapper.InsertAsync(messageRepliesSummary);
-        }
-
-        return Unit.Default;
     }
 
-    private static async Task IncrementMessageRepliesCount(IMapper mapper, Guid messageId)
+    private static async Task IncrementMessageRepliesCount(IMapper mapper,
+        Guid messageId)
     {
-        var replyCount = await mapper.FirstOrDefaultAsync<long>(
-            "SELECT replies_count FROM chat_message_replies WHERE reply_to_id = ?;",
-            messageId);
-
-        await mapper.ExecuteAsync(
-            "UPDATE chat_message_replies SET replies_count = ? WHERE reply_to_id = ?",
-            replyCount + 1,
-            messageId);
-
         // Update `chat_message_replies_count` table:
         await mapper.ExecuteAsync(
             "UPDATE chat_messages_reply_count SET reply_count = reply_count + 1 WHERE message_id = ?",
