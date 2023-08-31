@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { reactionsClient } from "../../client";
-import { ReactToGroupMessageModel } from "./useReactToGroupMessageMutations";
+import { ReactToGroupMessageModel } from "./useReactToGroupMessageMutation";
 
 export interface ReactToGroupMessageReplyModel
    extends ReactToGroupMessageModel {}

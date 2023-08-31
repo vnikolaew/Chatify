@@ -4,7 +4,7 @@
 /* eslint-disable */
 
 export type UnreactToChatMessageRequest = {
-    messageReactionId?: string;
-    messageId?: string;
-    groupId?: string;
+    messageId: string;
+    groupId: string;
+    messageReactionId: string;
 };

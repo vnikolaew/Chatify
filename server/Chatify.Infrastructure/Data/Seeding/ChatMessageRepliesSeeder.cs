@@ -6,11 +6,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Chatify.Infrastructure.Data.Seeding;
 
 internal sealed class ChatMessageRepliesSeeder(IServiceScopeFactory scopeFactory)
-    : ISeeder
+    : BaseSeeder<ChatMessageReply>(scopeFactory)
 {
-    public int Priority => 5;
+    public override int Priority => 5;
 
-    public new async Task SeedAsync(CancellationToken cancellationToken = default)
+    protected override async Task SeedCoreAsync(CancellationToken cancellationToken = default)
     {
         await using var scope = scopeFactory.CreateAsyncScope();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();

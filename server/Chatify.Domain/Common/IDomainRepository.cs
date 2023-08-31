@@ -13,5 +13,7 @@ public interface IDomainRepository<TEntity, in TId>
     
     Task<bool> DeleteAsync(TId id, CancellationToken cancellationToken = default);
     
+    Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
+    
     Task<TEntity?> GetAsync(TId id, CancellationToken cancellationToken = default);
 }

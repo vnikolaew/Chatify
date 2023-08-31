@@ -20,6 +20,8 @@ public record MessageRepliersInfoEntry(
     List<MessageReplierInfoEntry> ReplierInfos
 );
 
+public record UserMessageReaction(long ReactionCode);
+
 public record ChatGroupMessageEntry
 {
     public required ChatMessage Message { get; set; }
@@ -27,6 +29,8 @@ public record ChatGroupMessageEntry
     public ChatMessage? ForwardedMessage { get; set; }
 
     public MessageSenderInfoEntry SenderInfo { get; set; }
+    
+    public UserMessageReaction? UserReaction { get; set; }
 
     public required MessageRepliersInfoEntry RepliersInfo { get; set; }
 };

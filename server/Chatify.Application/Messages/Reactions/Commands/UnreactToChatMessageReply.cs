@@ -11,7 +11,7 @@ using LanguageExt;
 
 namespace Chatify.Application.Messages.Reactions.Commands;
 
-using UnreactToChatMessageReplyResult  = OneOf.OneOf<
+using UnreactToChatMessageReplyResult = OneOf.OneOf<
     MessageNotFoundError,
     MessageReactionNotFoundError,
     UserHasNotReactedError,
@@ -36,7 +36,7 @@ internal sealed class UnreactToChatMessageReplyHandler(IIdentityContext identity
     {
         var replyMessage = await messageReplies.GetAsync(command.MessageId, cancellationToken);
         if ( replyMessage is null ) return new MessageNotFoundError(command.MessageId);
-            
+
         var messageReaction = await messageReactions.GetAsync(command.MessageReactionId, cancellationToken);
 
         if ( messageReaction is null ) return new MessageReactionNotFoundError();
@@ -49,16 +49,17 @@ internal sealed class UnreactToChatMessageReplyHandler(IIdentityContext identity
             message.DecrementReactionCount(messageReaction.ReactionCode);
         }, cancellationToken);
 
-        await eventDispatcher.PublishAsync(new ChatMessageUnreactedToEvent
-        {
-            MessageId = replyMessage.Id,
-            MessageReactionId = messageReaction.Id,
-            GroupId = replyMessage.ChatGroupId,
-            UserId = messageReaction.UserId,
-            ReactionCode = messageReaction.ReactionCode,
-            Timestamp = clock.Now
-        }, cancellationToken);
-        
+        await eventDispatcher.PublishAsync(
+            new ChatMessageUnreactedToEvent
+            {
+                MessageId = replyMessage.Id,
+                MessageReactionId = messageReaction.Id,
+                GroupId = replyMessage.ChatGroupId,
+                UserId = messageReaction.UserId,
+                ReactionCode = messageReaction.ReactionCode,
+                Timestamp = clock.Now
+            }, cancellationToken);
+
         return Unit.Default;
     }
 }

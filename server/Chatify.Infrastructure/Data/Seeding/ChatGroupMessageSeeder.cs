@@ -8,9 +8,9 @@ using StackExchange.Redis;
 namespace Chatify.Infrastructure.Data.Seeding;
 
 internal sealed class ChatGroupMessageSeeder(IServiceScopeFactory scopeFactory)
-    : ISeeder
+    : BaseSeeder<ChatMessage>(scopeFactory)
 {
-    public int Priority => 4;
+    public override int Priority => 4;
 
     public static readonly Faker<ChatMessage> MessageFaker
         = new Faker<ChatMessage>()
@@ -33,9 +33,9 @@ internal sealed class ChatGroupMessageSeeder(IServiceScopeFactory scopeFactory)
     private static bool AddAttachments
         => Random.Shared.NextDouble() > 0.50;
 
-    public async Task SeedAsync(CancellationToken cancellationToken = default)
+    protected override async Task SeedCoreAsync(CancellationToken cancellationToken = default)
     {
-        await using var scope = scopeFactory.CreateAsyncScope();
+        await using var scope = ScopeFactory.CreateAsyncScope();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
         var cache = scope.ServiceProvider.GetRequiredService<IDatabase>();
 

@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
 using AspNetCore.Identity.Cassandra.Extensions;
 using Cassandra;
@@ -55,18 +56,21 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
     }
 
     public async Task<TEntity?> UpdateAsync(
-        TId id, Action<TEntity> updateAction,
+        TId id,
+        Action<TEntity> updateAction,
         CancellationToken cancellationToken = default)
     {
         var dataEntity = await DbMapper.FirstOrDefaultAsync<TDataEntity>($"WHERE {_idColumn} = ? ALLOW FILTERING;", id);
         if ( dataEntity is null ) return default;
 
         var entity = dataEntity.To<TEntity>(Mapper);
+        updateAction(entity);
 
-        var changedProps = _changeTracker.Track(entity, updateAction);
-        Mapper.Map(entity, dataEntity);
+        var newDataEntity = Mapper.Map<TDataEntity>(entity);
+        var dataChangedProps = _changeTracker
+            .GetChangedProperties(dataEntity, newDataEntity);
 
-        var cql = GetUpdateCqlStatement(dataEntity, changedProps);
+        var cql = GetUpdateCqlStatement(dataEntity, dataChangedProps);
         await DbMapper.ExecuteAsync(cql);
 
         return entity;
@@ -77,16 +81,20 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         Action<TEntity> updateAction,
         CancellationToken cancellationToken = default)
     {
-        var changedProps = _changeTracker.Track(entity, updateAction);
         var dataEntity = Mapper.Map<TDataEntity>(entity);
+        updateAction(entity);
 
-        var cql = GetUpdateCqlStatement(dataEntity, changedProps);
+        var newDataEntity = Mapper.Map<TDataEntity>(entity);
+        var dataChangedProps = _changeTracker
+            .GetChangedProperties(dataEntity, newDataEntity);
+
+        var cql = GetUpdateCqlStatement(dataEntity, dataChangedProps);
         await DbMapper.ExecuteAsync(cql);
 
         return entity;
     }
 
-    private static Cql GetUpdateCqlStatement(
+    private Cql GetUpdateCqlStatement(
         TDataEntity entity,
         Dictionary<string, object?> changedProps)
     {
@@ -101,12 +109,12 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         var primaryKeys = MappingDefinition
             .PartitionKeys
             .ToHashSet();
-        var clusteringKeys =  MappingDefinition
+        var clusteringKeys = MappingDefinition
             .ClusteringKeys
             .Select(_ => _.Item1)
             .ToHashSet();
         primaryKeys.UnionWith(clusteringKeys);
-        
+
         var partitionKeyValues = entity
             .GetType()
             .GetProperties()
@@ -144,17 +152,20 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         if ( dataEntity is null ) return default;
 
         var entity = dataEntity.To<TEntity>(Mapper);
+        await updateAction(entity);
 
-        var changedProps = await _changeTracker.TrackAsync(entity, updateAction);
-        Mapper.Map(entity, dataEntity);
+        var newDataEntity = Mapper.Map<TDataEntity>(entity);
+        var dataChangedProps = _changeTracker
+            .GetChangedProperties(dataEntity, newDataEntity);
 
-        var cql = GetUpdateCqlStatement(dataEntity, changedProps);
+        var cql = GetUpdateCqlStatement(dataEntity, dataChangedProps);
         await DbMapper.ExecuteAsync(cql);
 
         return entity;
     }
 
-    public async Task<bool> DeleteAsync(TId id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(TId id,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -167,7 +178,46 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         }
     }
 
-    public virtual Task<TEntity?> GetAsync(TId id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(
+        TEntity entity,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var dataEntity = Mapper.Map<TDataEntity>(entity);
+
+            var pKeys = MappingDefinition.PartitionKeys;
+            var cKeys = MappingDefinition.ClusteringKeys.Select(_ => _.Item1).ToArray();
+
+            var primaryKeys = pKeys.Concat(cKeys).ToHashSet();
+            var primaryColumnValues = MappingDefinition.PocoType
+                .GetProperties()
+                .Where(pi => primaryKeys.Contains(pi.Name.Underscore()))
+                .OrderBy(_ => _.Name)
+                .Select(pi => pi.GetValue(dataEntity))
+                .ToArray();
+
+            var filterStatement = string.Join(" AND ",
+                primaryKeys.OrderBy(_ => _).Select(k => $"{k} = ?"));
+
+            var cql = new Cql($" WHERE {filterStatement}");
+
+            cql.GetType()
+                .GetProperty(nameof(Cql.Arguments),
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
+                .SetValue(cql, primaryColumnValues);
+
+            await DbMapper.DeleteAsync<TDataEntity>(cql);
+            return true;
+        }
+        catch ( Exception )
+        {
+            return false;
+        }
+    }
+
+    public virtual Task<TEntity?> GetAsync(TId id,
+        CancellationToken cancellationToken = default)
         => DbMapper
             .FirstOrDefaultAsync<TDataEntity>($"WHERE {_idColumn} = ? ALLOW FILTERING;", id)
             .ToAsync<TDataEntity, TEntity>(Mapper)!;

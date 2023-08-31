@@ -1,25 +1,19 @@
 "use client";
 import React from "react";
 import { getMediaUrl, useGetPaginatedMessageRepliesQuery } from "@web/api";
-import {
-   Avatar,
-   Divider,
-   Link,
-   Skeleton,
-   Spinner,
-   Tooltip,
-} from "@nextui-org/react";
+import { Avatar, Divider, Link, Skeleton, Tooltip } from "@nextui-org/react";
 import { twMerge } from "tailwind-merge";
 import { ChatGroupMemberInfoCard } from "@components/members";
 import moment from "moment";
 import { useCurrentUserId } from "@hooks";
+import ChatMessageReactionSection from "./ChatMessageReactionSection";
 
 export interface ChatMessageRepliesSectionProps {
    messageId: string;
    total: number;
 }
 
-const ChatMessageRepliesSection = ({
+export const ChatMessageRepliesSection = ({
    messageId,
    total,
 }: ChatMessageRepliesSectionProps) => {
@@ -33,6 +27,7 @@ const ChatMessageRepliesSection = ({
       pageSize: 5,
    });
    const meId = useCurrentUserId();
+
    if (isLoading)
       return (
          <div className={`flex mb-4 flex-col gap-2 items-start`}>
@@ -58,7 +53,9 @@ const ChatMessageRepliesSection = ({
          <div className={`flex w-full items-center gap-2`}>
             <div className={`text-default-300 inline-flex text-center text-xs`}>
                <span>{replies?.length}</span>
-               <span className={`ml-1`}>replies</span>
+               <span className={`ml-1`}>
+                  {replies?.length > 1 ? "replies" : "reply"}
+               </span>
             </div>
             <Divider
                className={`text-default-300 h-[1.5px] w-2/3`}
@@ -121,11 +118,14 @@ const ChatMessageRepliesSection = ({
                   >
                      {reply.content}
                   </span>
+                  <ChatMessageReactionSection
+                     messageId={reply.id}
+                     reactionCounts={reply.reactionCounts}
+                     userReaction={null!}
+                  />
                </div>
             </div>
          ))}
       </div>
    );
 };
-
-export default ChatMessageRepliesSection;

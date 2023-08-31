@@ -8,27 +8,20 @@ using IMapper = Cassandra.Mapping.IMapper;
 
 namespace Chatify.Infrastructure.Data.Seeding;
 
-internal sealed class ChatGroupSeeder : ISeeder
+internal sealed class ChatGroupSeeder(IServiceScopeFactory scopeFactory)
+    : BaseSeeder<ChatGroup>(scopeFactory)
 {
-    public int Priority => 1;
+    public override int Priority => 1;
 
-    private readonly Faker<ChatGroup> _groupsFaker;
-    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly Faker<ChatGroup> _groupsFaker = new Faker<ChatGroup>()
+        .RuleFor(g => g.Id, _ => Guid.NewGuid())
+        .RuleFor(g => g.About, f => f.Lorem.Sentences(2, " "))
+        .RuleFor(g => g.Name, f => f.Company.CompanyName())
+        .RuleFor(g => g.Picture, f => new Media { MediaUrl = f.Internet.Avatar(), Id = Guid.NewGuid() });
 
-    public ChatGroupSeeder(IServiceScopeFactory scopeFactory)
+    protected override async Task SeedCoreAsync(CancellationToken cancellationToken = default)
     {
-        _groupsFaker = new Faker<ChatGroup>()
-            .RuleFor(g => g.Id, _ => Guid.NewGuid())
-            .RuleFor(g => g.About, f => f.Lorem.Sentences(2, " "))
-            .RuleFor(g => g.Name, f => f.Company.CompanyName())
-            .RuleFor(g => g.Picture, f => new Media { MediaUrl = f.Internet.Avatar(), Id = Guid.NewGuid() });
-
-        _scopeFactory = scopeFactory;
-    }
-
-    public async Task SeedAsync(CancellationToken cancellationToken = default)
-    {
-        await using var scope = _scopeFactory.CreateAsyncScope();
+        await using var scope = ScopeFactory.CreateAsyncScope();
 
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
         var provider = scope.ServiceProvider
@@ -47,7 +40,7 @@ internal sealed class ChatGroupSeeder : ISeeder
 
             await mapper.InsertAsync(chatGroup, insertNulls: true);
             await provider.RedisCollection<ChatGroup>().InsertAsync(chatGroup);
-            
+
             var groupMember = new ChatGroupMember
             {
                 Id = Guid.NewGuid(),

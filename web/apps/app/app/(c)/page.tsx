@@ -2,7 +2,7 @@
 import React, { Fragment } from "react";
 import Link from "next/link";
 import SignOut from "@components/SignOut";
-import { useGetChatGroupDetailsQuery, useGetMyClaimsQuery } from "@web/api";
+import { useGetChatGroupDetailsQuery } from "@web/api";
 import { useIsUserLoggedIn } from "@hooks";
 import {
    Button,
@@ -16,7 +16,7 @@ import { useCurrentChatGroup } from "@hooks";
 import ChatGroupTopBar from "@components/chat-group/ChatGroupTopBar";
 import { useSearchParams } from "next/navigation";
 import CrossIcon from "@components/icons/CrossIcon";
-import ChatMessagesSection from "@components/chat-group/messages/ChatMessagesSection";
+import { ChatMessagesSection } from "@components/chat-group";
 
 export const revalidate = 0;
 

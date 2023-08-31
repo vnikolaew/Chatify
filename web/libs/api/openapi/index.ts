@@ -66,6 +66,7 @@ export type { User } from './models/User';
 export type { UserDetailsEntry } from './models/UserDetailsEntry';
 export type { UserDetailsEntryApiResponse } from './models/UserDetailsEntryApiResponse';
 export type { UserListApiResponse } from './models/UserListApiResponse';
+export type { UserMessageReaction } from './models/UserMessageReaction';
 export type { UserNotification } from './models/UserNotification';
 export type { UserNotificationCursorPagedApiResponse } from './models/UserNotificationCursorPagedApiResponse';
 export type { UserNotificationMetadata } from './models/UserNotificationMetadata';

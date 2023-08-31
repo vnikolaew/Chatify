@@ -24,6 +24,7 @@ public class MappingProfile : Profile
 
         foreach ( var type in types )
         {
+            // CreateMap(type, type);
             var instance = Activator.CreateInstance(type);
 
             var methods = type.GetMethods(

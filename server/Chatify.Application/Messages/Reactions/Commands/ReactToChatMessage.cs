@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Messages.Common;
-using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
 using Chatify.Domain.Repositories;
@@ -9,11 +8,12 @@ using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
+using LanguageExt.Common;
 using OneOf;
 
 namespace Chatify.Application.Messages.Reactions.Commands;
 
-using ReactToChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMemberError, Guid>;
+using ReactToChatMessageResult = OneOf<Error, MessageNotFoundError, UserIsNotMemberError, Guid>;
 
 public record ReactToChatMessage(
     [Required] Guid MessageId,
@@ -23,7 +23,8 @@ public record ReactToChatMessage(
 
 internal sealed class ReactToChatMessageHandler(IChatGroupMemberRepository members,
         IIdentityContext identityContext,
-        IDomainRepository<ChatMessage, Guid> messages, IEventDispatcher eventDispatcher, IClock clock,
+        IChatMessageRepository messages,
+        IEventDispatcher eventDispatcher, IClock clock,
         IGuidGenerator guidGenerator,
         IChatMessageReactionRepository messageReactions)
     : ICommandHandler<ReactToChatMessage, ReactToChatMessageResult>
@@ -45,10 +46,14 @@ internal sealed class ReactToChatMessageHandler(IChatGroupMemberRepository membe
                 command.MessageId,
                 identityContext.Id,
                 cancellationToken);
-        if (existingReaction is not null &&
-            existingReaction.ReactionCode != command.ReactionCode)
+        if (existingReaction is not null)
         {
             var oldReactionType = existingReaction.ReactionCode;
+            if ( oldReactionType == command.ReactionCode )
+            {
+                return Error.New("User has already reacted with the same code.");
+            }
+            
             await messageReactions.UpdateAsync(existingReaction.Id, reaction =>
             {
                 reaction.ReactionCode = command.ReactionCode;

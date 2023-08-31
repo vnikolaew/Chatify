@@ -13,7 +13,7 @@ import {
    useGetPaginatedGroupMessagesQuery,
 } from "@web/api";
 import { Button, ScrollShadow } from "@nextui-org/react";
-import ChatMessageEntry from "@components/chat-group/messages/ChatMessageEntry";
+import { ChatMessageEntry } from "@components/chat-group";
 import DownArrow from "@components/icons/DownArrow";
 import StartupRocketIcon from "@components/icons/StartupRocketIcon";
 import { LoadingChatMessageEntry } from "@components/chat-group/messages/LoadingChatMessageEntry";
@@ -22,7 +22,7 @@ export interface ChatMessagesSectionProps {
    groupId: string;
 }
 
-const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
+export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
    const messagesSectionRef = useRef<HTMLDivElement>(null!);
    const firstMessageRef = useRef<HTMLDivElement>(null!);
    const [isScrollDownButtonVisible, setIsScrollDownButtonVisible] =
@@ -116,7 +116,6 @@ const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
          <ScrollShadow
             onScroll={handleMessageSectionScroll}
             size={20}
-            style={{}}
             ref={messagesSectionRef}
             className={`w-full relative`}
             orientation={"vertical"}
@@ -171,12 +170,10 @@ const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                   variant={"light"}
                   color={"primary"}
                >
-                  Fetch more &#127988; &#127462; &#127465; &#127466; &#128514;
+                  Fetch more
                </Button>
             </div>
          )}
       </section>
    );
 };
-
-export default ChatMessagesSection;

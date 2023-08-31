@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Reflection;
+using System.Runtime.Serialization;
 using Chatify.Infrastructure.Common.Mappings;
+using FastDeepCloner;
 using Microsoft.AspNetCore.Hosting;
 
 namespace Chatify.Infrastructure.Data.Services;
@@ -9,22 +11,33 @@ public interface IEntityChangeTracker
 {
     public Dictionary<string, object?> Track<TEntity>(
         TEntity entity,
-        Action<TEntity> updateAction);
+        Action<TEntity> updateAction) where TEntity : class;
 
     public Task<Dictionary<string, object?>> TrackAsync<TEntity>(
         TEntity entity,
         Func<TEntity, Task> updateAction);
+    
+    Dictionary<string, object?> GetChangedProperties<TEntity>(
+        TEntity entity,
+        TEntity newEntity);
 }
 
 internal sealed class EntityChangeTracker : IEntityChangeTracker
 {
     public Dictionary<string, object?> Track<TEntity>(
         TEntity entity,
-        Action<TEntity> updateAction)
+        Action<TEntity> updateAction) where TEntity : class
     {
         var currentProps = GetProps(entity);
-        updateAction(entity);
-        var newProps = GetProps(entity);
+        var settings = new FastDeepClonerSettings
+        {
+            FieldType = FieldType.PropertyInfo,
+            OnCreateInstance = FormatterServices.GetUninitializedObject
+        };
+        var cloneEntity = entity.Clone(settings);
+        
+        updateAction(cloneEntity);
+        var newProps = GetProps(cloneEntity);
 
         var changedProps = TrackChangedProperties(
             currentProps, newProps);
@@ -32,7 +45,11 @@ internal sealed class EntityChangeTracker : IEntityChangeTracker
         return changedProps;
     }
 
-    private static Dictionary<string, object?> GetProps<TEntity>(TEntity entity)
+    public Dictionary<string, object?> GetChangedProperties<TEntity>(TEntity entity,
+        TEntity newEntity)
+        => TrackChangedProperties(GetProps(entity), GetProps(newEntity));
+
+    public Dictionary<string, object?> GetProps<TEntity>(TEntity entity)
         => typeof(TEntity)
             .GetProperties(BindingFlags.Instance | BindingFlags.Public)
             .ToDictionary(p => p.Name,
@@ -41,7 +58,7 @@ internal sealed class EntityChangeTracker : IEntityChangeTracker
                     var value = p.GetValue(entity);
 
                     // Handle collections separately:
-                    if ( value is IEnumerable enumerable and not string )
+                    if ( value is IEnumerable and not string )
                     {
                         if ( value is List<object> list ) return new List<object>(list);
                         if ( value is Dictionary<string, string> dictionary )
@@ -77,7 +94,7 @@ internal sealed class EntityChangeTracker : IEntityChangeTracker
         return changedProps;
     }
 
-    private static Dictionary<string, object?> TrackChangedProperties(
+    public Dictionary<string, object?> TrackChangedProperties(
         Dictionary<string, object?> oldProps,
         Dictionary<string, object?> newProps)
     {

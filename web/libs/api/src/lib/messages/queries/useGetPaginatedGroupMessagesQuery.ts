@@ -13,6 +13,7 @@ import {
    // @ts-ignore
 } from "@openapi";
 import { sleep } from "../../utils";
+import { DEFAULT_CACHE_TIME, DEFAULT_STALE_TIME } from "../../constants";
 
 export interface GetPaginatedGroupMessagesModel {
    groupId: string;
@@ -47,7 +48,7 @@ const getPaginatedGroupMessages = async (
 };
 
 export const useGetPaginatedGroupMessagesQuery = (
-   model: GetPaginatedGroupMessagesModel,
+   { pageSize, groupId, pagingCursor }: GetPaginatedGroupMessagesModel,
    options?: Omit<
       UseQueryOptions<any, unknown, any, (string | number)[]>,
       "initialData"
@@ -62,30 +63,20 @@ export const useGetPaginatedGroupMessagesQuery = (
       CursorPaged<ChatGroupMessageEntry>,
       QueryKey
    >({
-      queryKey: [
-         `chat-group`,
-         model.groupId,
-         `messages`,
-         model.pageSize,
-         model.pagingCursor,
-      ],
+      queryKey: [`chat-group`, groupId, `messages`],
       getNextPageParam: (lastPage) => {
          console.log(lastPage);
          return lastPage.pagingCursor;
       },
       getPreviousPageParam: (_, allPages) => allPages.at(-1)?.pagingCursor,
-      queryFn: ({
-         queryKey: [_, groupId, __, pageSize, pagingCursor],
-         pageParam = null!,
-      }) => {
+      queryFn: ({ queryKey: [_, groupId, __], pageParam = null! }) => {
          return getPaginatedGroupMessages({
             groupId: (groupId as string).toString(),
             pagingCursor: pageParam,
-            pageSize: Number(pageSize),
+            pageSize: pageSize,
          });
       },
-      enabled: !!model.groupId,
-      cacheTime: 60 * 60 * 1000,
+      enabled: !!groupId,
       // ...options,
    });
 };

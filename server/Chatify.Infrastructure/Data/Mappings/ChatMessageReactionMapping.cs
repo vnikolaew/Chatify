@@ -13,8 +13,8 @@ public class ChatMessageReactionMapping :Cassandra.Mapping.Mappings
             .TableName(nameof(ChatMessageReaction).Underscore().Pluralize())
             .PartitionKey(mr => mr.MessageId)
             .ClusteringKey(
-                new Tuple<string, SortOrder>(nameof(ChatMessageReaction.CreatedAt), SortOrder.Descending),
-                new Tuple<string, SortOrder>(nameof(ChatMessageReaction.Id), SortOrder.Ascending)
+                new Tuple<string, SortOrder>(nameof(ChatMessageReaction.CreatedAt).Underscore(), SortOrder.Descending),
+                new Tuple<string, SortOrder>(nameof(ChatMessageReaction.Id).Underscore(), SortOrder.Ascending)
             )
             .UnderscoreColumn(mr => mr.Id,
                 cm => cm.WithSecondaryIndex())

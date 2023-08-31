@@ -1,23 +1,28 @@
 "use client";
-import { ChatGroupMessageEntry } from "@openapi";
+import { ChatGroupMessageEntry, ChatMessageReaction } from "@openapi";
 import {
    Avatar,
    Button,
+   ButtonGroup,
    Chip,
    Link,
    Spinner,
    Tooltip,
 } from "@nextui-org/react";
-import { getMediaUrl } from "@web/api";
+import { getMediaUrl, useGetAllReactionsForMessage } from "@web/api";
 import { twMerge } from "tailwind-merge";
 import { ChatGroupMemberInfoCard } from "@components/members";
 import moment from "moment/moment";
 import React, { useMemo, useState } from "react";
-import ChatMessageRepliesSection from "@components/chat-group/messages/ChatMessageRepliesSection";
-import ExpandRepliesLink from "@components/chat-group/messages/ExpandRepliesLink";
+import {
+   ChatMessageRepliesSection,
+   ExpandRepliesLink,
+} from "@components/chat-group/messages";
 import { AnimatePresence, motion } from "framer-motion";
-import { useGetChatGroupMembers } from "../../../hooks/chat-groups/useGetChatGroupMembers";
-import { useGetAllReactionsForMessage } from "@web/api";
+import ReactionsSummaryTooltip from "@components/chat-group/messages/ReactionsSummaryTooltipContent";
+import ReactionsSummaryTooltipContent from "@components/chat-group/messages/ReactionsSummaryTooltipContent";
+import reactionsSummaryTooltipContent from "@components/chat-group/messages/ReactionsSummaryTooltipContent";
+import ChatMessageReactionSection from "@components/chat-group/messages/ChatMessageReactionSection";
 
 export interface ChatMessageEntryProps
    extends React.DetailedHTMLProps<
@@ -29,7 +34,7 @@ export interface ChatMessageEntryProps
    showReplies?: boolean;
 }
 
-const ChatMessageEntry = ({
+export const ChatMessageEntry = ({
    message,
    isMe,
    showReplies = false,
@@ -37,28 +42,47 @@ const ChatMessageEntry = ({
    ...rest
 }: ChatMessageEntryProps) => {
    const [repliesExpanded, setRepliesExpanded] = useState(showReplies);
+   const [showMessageActions, setShowMessageActions] = useState(false);
+
    const hasReplies = useMemo(
       () => message.repliersInfo.total > 0,
       [message.repliersInfo.total]
    );
-   const [fetchReactions, setFetchReactions] = useState(false);
-   const {
-      data: reactions,
-      isLoading: reactionsLoading,
-      error,
-   } = useGetAllReactionsForMessage(message.message.id, {
-      enabled: fetchReactions,
-   });
    const hasReactions = useMemo(() => {
       return Object.entries(message?.message?.reactionCounts ?? {}).length > 0;
    }, [message?.message?.reactionCounts]);
-   const members = useGetChatGroupMembers(message.message.chatGroupId);
 
    return (
       <div
-         className={`flex rounded-lg flex-col gap-2 items-start transition-background duration-100 hover:bg-default-100 ${className}`}
+         className={`flex relative rounded-lg flex-col gap-2 items-start transition-background duration-100 hover:bg-default-100 ${className}`}
+         onMouseEnter={(_) => setShowMessageActions(true)}
+         onMouseLeave={(_) => setShowMessageActions(false)}
          {...rest}
       >
+         {showMessageActions && (
+            <ButtonGroup
+               size={"sm"}
+               variant={"shadow"}
+               color={"default"}
+               className={`absolute h-5 text-xs min-h-fit max-h-fit rounded-md bg-dark -translate-y-1/2 top-0 right-10`}
+            >
+               <Button
+                  startContent={<span>#1</span>}
+                  isIconOnly
+                  className={`bg-default-100 max-h-fit py-0 px-0 h-5`}
+               />
+               <Button
+                  startContent={<span>#2</span>}
+                  isIconOnly
+                  className={`max-h-fit h-5`}
+               />
+               <Button
+                  startContent={<span>#3</span>}
+                  isIconOnly
+                  className={`max-h-fit h-5 bg-default-400`}
+               />
+            </ButtonGroup>
+         )}
          <div
             className={`flex px-2 py-1 rounded-lg gap-3 items-center transition-background duration-100 hover:bg-default-100 `}
             key={message.message.id}
@@ -117,58 +141,11 @@ const ChatMessageEntry = ({
                   {message.message.content}
                </span>
                {hasReactions && (
-                  <div className={`items-center mt-1 flex gap-1`}>
-                     {Object.entries(message.message.reactionCounts).map(
-                        ([reaction, count], i) => (
-                           <Tooltip
-                              showArrow
-                              delay={100}
-                              closeDelay={100}
-                              offset={2}
-                              size={"sm"}
-                              placement={"top"}
-                              key={i}
-                              content={
-                                 reactionsLoading ? (
-                                    <Spinner size={"sm"} color={"danger"} />
-                                 ) : (
-                                    <div>
-                                       {reactions
-                                          ?.filter(
-                                             (r) =>
-                                                r.reactionCode.toString() ===
-                                                reaction
-                                          )
-                                          .map((r) => r.username)
-                                          .join(", ")}{" "}
-                                       reacted with{" "}
-                                       <span
-                                          dangerouslySetInnerHTML={{
-                                             __html: `&#${reaction};`,
-                                          }}
-                                       ></span>
-                                    </div>
-                                 )
-                              }
-                           >
-                              <Button
-                                 className={`px-2 min-w-fit max-w-fit w-fit items-center justify-center h-5 py-0`}
-                                 onMouseEnter={(_) => setFetchReactions(true)}
-                                 size={"sm"}
-                                 color={"default"}
-                                 variant={"bordered"}
-                              >
-                                 <span
-                                    className={`text-xs text-default-500`}
-                                    dangerouslySetInnerHTML={{
-                                       __html: `&#${reaction}; ${count}`,
-                                    }}
-                                 />
-                              </Button>
-                           </Tooltip>
-                        )
-                     )}
-                  </div>
+                  <ChatMessageReactionSection
+                     userReaction={message.userReaction}
+                     messageId={message.message.id}
+                     reactionCounts={message.message.reactionCounts}
+                  />
                )}
                {hasReplies && (
                   <div
@@ -245,5 +222,3 @@ const ChatMessageEntry = ({
       </div>
    );
 };
-
-export default ChatMessageEntry;

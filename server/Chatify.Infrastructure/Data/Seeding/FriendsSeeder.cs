@@ -5,13 +5,14 @@ using StackExchange.Redis;
 
 namespace Chatify.Infrastructure.Data.Seeding;
 
-internal sealed class FriendsSeeder(IServiceScopeFactory scopeFactory) : ISeeder
+internal sealed class FriendsSeeder(IServiceScopeFactory scopeFactory)
+    : BaseSeeder<FriendsRelation>(scopeFactory)
 {
-    public int Priority => 3;
+    public override int Priority => 3;
 
-    public async Task SeedAsync(CancellationToken cancellationToken = default)
+    protected override async Task SeedCoreAsync(CancellationToken cancellationToken = default)
     {
-        await using var scope = scopeFactory.CreateAsyncScope();
+        await using var scope = ScopeFactory.CreateAsyncScope();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
         var cache = scope.ServiceProvider.GetRequiredService<IDatabase>();
 

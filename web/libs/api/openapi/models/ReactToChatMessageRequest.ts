@@ -4,7 +4,7 @@
 /* eslint-disable */
 
 export type ReactToChatMessageRequest = {
-    messageId?: string;
-    groupId?: string;
-    reactionType?: number;
+    messageId: string;
+    groupId: string;
+    reactionType: number;
 };

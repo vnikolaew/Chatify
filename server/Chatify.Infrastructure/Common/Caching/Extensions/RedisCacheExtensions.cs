@@ -9,13 +9,15 @@ public static class RedisCacheExtensions
 {
     private static readonly ISerializer Serializer = new SystemTextJsonSerializer();
 
-    public static async Task<T?> GetAsync<T>(this IDatabase database, string key)
+    public static async Task<T?> GetAsync<T>(this IDatabase database,
+        string key)
     {
         var value = await database.StringGetAsync(new RedisKey(key));
         return Serializer.Deserialize<T>(value.ToString());
     }
 
-    public static async Task<T?> GetAsync<T>(this IDistributedCache cache, string key)
+    public static async Task<T?> GetAsync<T>(this IDistributedCache cache,
+        string key)
     {
         var value = await cache.GetStringAsync(key);
         return Serializer.Deserialize<T>(value);
@@ -35,7 +37,8 @@ public static class RedisCacheExtensions
         return true;
     }
 
-    public static async Task<IEnumerable<T?>> GetAsync<T>(this IDatabase database, IEnumerable<string> keys)
+    public static async Task<IEnumerable<T?>> GetAsync<T>(this IDatabase database,
+        IEnumerable<string> keys)
     {
         var values = await database.StringGetAsync(keys.Select(_ => new RedisKey(_)).ToArray());
         return values
@@ -64,14 +67,19 @@ public static class RedisCacheExtensions
         => ( bool )await database.ExecuteAsync("BF.EXISTS", filterKey, itemKey);
 
     public static async Task<IEnumerable<T?>> SetMembersAsync<T>(
-        this IDatabase database, string key)
+        this IDatabase database,
+        string key)
         => ( await database.SetMembersAsync(key) )
             .Select(v => Serializer.Deserialize<T>(v.ToString()));
 
-    public static Task<bool> SetAsync<T>(this IDatabase database, IEnumerable<KeyValuePair<string, T>> values)
+    public static Task<bool> SetAsync<T>(this IDatabase database,
+        IEnumerable<KeyValuePair<string, T>> values)
         => database.StringSetAsync(
             values.Select(kv => new KeyValuePair<RedisKey, RedisValue>(
                     new RedisKey(kv.Key),
                     new RedisValue(Serializer.Serialize(kv.Value))))
                 .ToArray());
+
+    public static long? ToLong(this RedisValue redisValue)
+        => redisValue.IsInteger ? ( long )( redisValue.Box() ?? 0L ) : null;
 }

@@ -8,6 +8,7 @@ using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Data.Services;
 using Chatify.Shared.Abstractions.Queries;
+using Humanizer;
 using ChatMessage = Chatify.Domain.Entities.ChatMessage;
 using IMapper = AutoMapper.IMapper;
 using Mapper = Cassandra.Mapping.Mapper;
@@ -20,7 +21,7 @@ public sealed class ChatMessageRepository(
         IEntityChangeTracker changeTracker,
         IPagingCursorHelper pagingCursorHelper)
     :
-        BaseCassandraRepository<ChatMessage, Models.ChatMessage, Guid>(mapper, dbMapper, changeTracker),
+        BaseCassandraRepository<ChatMessage, Models.ChatMessage, Guid>(mapper, dbMapper, changeTracker, nameof(ChatMessage.Id).Underscore()),
         IChatMessageRepository
 {
     private Task<long> GetTotalMessagesCount(Guid groupId)

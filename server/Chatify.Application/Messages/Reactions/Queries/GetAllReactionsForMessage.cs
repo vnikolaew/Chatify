@@ -17,6 +17,7 @@ public record GetAllReactionsForMessage(
 
 internal sealed class GetAllForMessageHandler(
         IChatMessageRepository messages,
+        IChatMessageReplyRepository replies,
         IChatMessageReactionRepository reactions,
         IChatGroupMemberRepository members,
         IIdentityContext identityContext)
@@ -25,8 +26,14 @@ internal sealed class GetAllForMessageHandler(
     public async Task<GetAllForMessageResult> HandleAsync(GetAllReactionsForMessage query,
         CancellationToken cancellationToken = default)
     {
-        var message = await messages.GetAsync(query.MessageId, cancellationToken);
-        if ( message is null ) return Error.New("");
+        var messageTask = messages.GetAsync(query.MessageId, cancellationToken);
+        var replyTask = replies.GetAsync(query.MessageId, cancellationToken);
+
+        await Task.WhenAll(messageTask, replyTask);
+
+        var message = new[] { messageTask.Result, replyTask.Result }
+            .FirstOrDefault(_ => _ is not null);
+        if ( message is null) return Error.New("");
 
         var isMember = await members.Exists(message.ChatGroupId, identityContext.Id, cancellationToken);
         if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, message.ChatGroupId);

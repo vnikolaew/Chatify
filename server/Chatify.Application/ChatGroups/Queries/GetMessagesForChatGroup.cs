@@ -23,7 +23,9 @@ public record GetMessagesForChatGroup(
 ) : IQuery<GetMessagesForChatGroupResult>;
 
 [Timed]
-internal sealed class GetMessagesByChatGroupHandler(IChatMessageRepository messages,
+internal sealed class GetMessagesByChatGroupHandler(
+        IChatMessageRepository messages,
+        IChatMessageReactionRepository reactions,
         IIdentityContext identityContext,
         IChatGroupMemberRepository members,
         IPagingCursorHelper pagingCursorHelper,
@@ -56,8 +58,15 @@ internal sealed class GetMessagesByChatGroupHandler(IChatMessageRepository messa
             pagingCursors[1],
             cancellationToken);
 
+
         var (groupMessages, messageReplySummaries) =
             await ( messagesTask, messageReplierInfosTask ).WhenAll();
+
+        // Determine if user has reacted to each message:
+        var userMessageReactions = await reactions.AllByUserAndMessageIds(
+            identityContext.Id,
+            groupMessages.Select(_ => _.Id),
+            cancellationToken);
 
         var forwardedMessages = groupMessages
             .Where(m => m.Metadata.ContainsKey(ShareMessageHandler.SharedMessageIdKey))
@@ -91,6 +100,9 @@ internal sealed class GetMessagesByChatGroupHandler(IChatMessageRepository messa
                     return new ChatGroupMessageEntry
                     {
                         Message = message,
+                        UserReaction = userMessageReactions.TryGetValue(message.Id, out var code) && code is not null
+                            ? new UserMessageReaction(code.Value)
+                            : null,
                         ForwardedMessage =
                             message.Metadata.TryGetValue(ShareMessageHandler.SharedMessageIdKey, out var messageId)
                                 ? originMessages[Guid.Parse(messageId)]

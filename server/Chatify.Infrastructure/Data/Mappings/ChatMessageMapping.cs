@@ -11,10 +11,9 @@ public class ChatMessageMapping : Cassandra.Mapping.Mappings
     {
         For<ChatMessage>()
             .TableName(nameof(ChatMessage).Underscore().Pluralize())
-            .PartitionKey(cm => cm.Id)
+            .PartitionKey(cm => cm.ChatGroupId)
             .ClusteringKey(
-                new Tuple<string, SortOrder>(nameof(ChatMessage.CreatedAt), SortOrder.Descending),
-                new Tuple<string, SortOrder>(nameof(ChatMessage.Id), SortOrder.Ascending)
+                new Tuple<string, SortOrder>(nameof(ChatMessage.CreatedAt).Underscore(), SortOrder.Descending)
             )
             .UnderscoreColumn(cm => cm.Id,
                 cm => cm.WithSecondaryIndex())

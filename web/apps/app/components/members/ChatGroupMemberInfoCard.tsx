@@ -17,7 +17,7 @@ import {
    Spinner,
 } from "@nextui-org/react";
 import { PlusIcon } from "@icons";
-import { useCurrentChatGroup } from "@hooks";
+import { useCurrentChatGroup, useCurrentUserId } from "@hooks";
 import moment from "moment";
 import { FriendInvitationStatus, UserStatus } from "@openapi";
 
@@ -29,6 +29,7 @@ export const ChatGroupMemberInfoCard = ({
    userId,
 }: ChatGroupMemberInfoCardProps) => {
    const chatGroupId = useCurrentChatGroup();
+   const meId = useCurrentUserId();
    const {
       data: membership,
       error: memberError,
@@ -102,7 +103,12 @@ export const ChatGroupMemberInfoCard = ({
                src={userDetails.user.profilePicture.mediaUrl}
             />
             <div className={`flex items-start justify-evenly h-full flex-col`}>
-               <div className={`text-md`}>{userDetails.user.username}</div>
+               <div className={`text-md`}>
+                  {userDetails.user.username}{" "}
+                  {meId === userDetails.user.id && (
+                     <span className={`text-default-300`}>(you)</span>
+                  )}
+               </div>
                <div
                   className={`text-xs flex items-center gap-1 text-default-500`}
                >

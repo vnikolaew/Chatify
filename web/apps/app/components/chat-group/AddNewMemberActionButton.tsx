@@ -8,15 +8,11 @@ import {
    User,
 } from "@nextui-org/react";
 import { AddUserIcon, PinIcon, PlusIcon } from "@icons";
-import {
-   useAddChatGroupMember,
-   useGetChatGroupDetailsQuery,
-   useGetMyFriendsQuery,
-} from "@web/api";
+import { useAddChatGroupMember, useGetMyFriendsQuery } from "@web/api";
 import TooltipWithPopoverActionButton from "@components/TooltipWithPopoverActionButton";
 import { useCurrentChatGroup } from "@hooks";
 import SadFaceIcon from "@components/icons/SadFaceIcon";
-import { useGetNewMemberSuggestions } from "../../hooks/chat-groups/useGetNewMemberSuggestions";
+import { useGetNewMemberSuggestions } from "@hooks";
 
 export interface AddNewMemberActionButtonProps {}
 

@@ -8,11 +8,11 @@ using StackExchange.Redis;
 namespace Chatify.Infrastructure.Data.Seeding;
 
 internal sealed class ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory)
-    : ISeeder
+    : BaseSeeder<ChatGroupMember>(scopeFactory)
 {
-    public int Priority => 2;
+    public override int Priority => 2;
 
-    public async Task SeedAsync(CancellationToken cancellationToken = default)
+    protected override async Task SeedCoreAsync(CancellationToken cancellationToken = default)
     {
         await using var scope = scopeFactory.CreateAsyncScope();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();

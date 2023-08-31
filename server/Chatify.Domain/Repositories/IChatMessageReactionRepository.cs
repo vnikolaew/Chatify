@@ -9,5 +9,7 @@ public interface IChatMessageReactionRepository : IDomainRepository<ChatMessageR
     
     Task<List<ChatMessageReaction>?> AllForMessage(Guid messageId, CancellationToken cancellationToken = default);
     
+    Task<IDictionary<Guid, long?>> AllByUserAndMessageIds(Guid userId, IEnumerable<Guid> messageIds, CancellationToken cancellationToken = default);
+    
     Task<ChatMessageReaction?> ByMessageAndUser(Guid messageId, Guid userId, CancellationToken cancellationToken = default);
 }

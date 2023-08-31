@@ -10,7 +10,7 @@ export interface ExpandRepliesLinkProps {
 
 const TOOLTIP_DELAY = 100;
 
-const ExpandRepliesLink = ({
+export const ExpandRepliesLink = ({
    expanded,
    onPress,
    totalReplies,
@@ -55,5 +55,3 @@ const ExpandRepliesLink = ({
       </Tooltip>
    );
 };
-
-export default ExpandRepliesLink;

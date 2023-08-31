@@ -10,6 +10,7 @@ export * from "./HamburgerMenuIcon";
 export * from "./NotSentIcon";
 export * from "./PinIcon";
 export * from "./PlusIcon";
+export * from "./Emoji";
 export * from "./ProfileIcon";
 export * from "./RightArrow";
 export * from "./UploadIcon";

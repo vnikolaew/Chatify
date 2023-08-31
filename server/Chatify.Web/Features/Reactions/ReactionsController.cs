@@ -13,13 +13,13 @@ using static Chatify.Web.Features.Reactions.Models.Models;
 
 namespace Chatify.Web.Features.Reactions;
 
-using ReactToChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMemberError, Guid>;
+using ReactToChatMessageResult = OneOf<Error, MessageNotFoundError, UserIsNotMemberError, Guid>;
 using UnreactToChatMessageResult = OneOf<
     MessageNotFoundError,
     MessageReactionNotFoundError,
     UserHasNotReactedError,
     Unit>;
-using ReactToChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMemberError, Guid>;
+using ReactToChatMessageReplyResult = OneOf<Error, MessageNotFoundError, UserIsNotMemberError, Guid>;
 using UnreactToChatMessageReplyResult = OneOf<
     MessageNotFoundError,
     MessageReactionNotFoundError,
@@ -43,6 +43,7 @@ public class ReactionsController : ApiController
             ( request with { MessageId = messageId } ).ToCommand(), cancellationToken);
 
         return result.Match<IActionResult>(
+            _ => _.ToBadRequest(),
             _ => NotFound(),
             _ => _.ToBadRequest(),
             id => Accepted(ApiResponse<object>.Success(new { id }, "Successfully reacted to chat message.")));
@@ -79,6 +80,7 @@ public class ReactionsController : ApiController
         var result = await SendAsync<ReactToChatMessageReply, ReactToChatMessageReplyResult>(
             ( request with { MessageId = messageId } ).ToReplyCommand(), cancellationToken);
         return result.Match<IActionResult>(
+            _ => _.ToBadRequest(),
             _ => NotFound(),
             _ => _.ToBadRequest(),
             id => Accepted(ApiResponse<object>.Success(new { id }, "Successfully reacted to chat message reply.")));

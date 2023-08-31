@@ -1,17 +1,21 @@
 ﻿using Bogus;
 using Cassandra.Mapping;
+using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Chatify.Infrastructure.Data.Seeding;
 
-internal sealed class ChatMessageReactionsSeeder : ISeeder
+internal sealed class ChatMessageReactionsSeeder(IServiceScopeFactory scopeFactory)
+    : BaseSeeder<ChatMessageReaction>(scopeFactory)
 {
-    public int Priority => 6;
+    public override int Priority => 6;
 
-    private readonly Faker<ChatMessageReaction> _reactionFaker;
-    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly Faker<ChatMessageReaction> _reactionFaker = new Faker<ChatMessageReaction>()
+        .RuleFor(r => r.Id, _ => Guid.NewGuid())
+        .RuleFor(r => r.CreatedAt, f => f.Date.Past())
+        .RuleFor(r => r.ReactionCode, f => f.Random.ArrayElement(EmojiCodes));
 
     private static readonly long[] EmojiCodes =
     {
@@ -27,27 +31,18 @@ internal sealed class ChatMessageReactionsSeeder : ISeeder
         128562,
     };
 
-    public ChatMessageReactionsSeeder(
-        IServiceScopeFactory scopeFactory)
+    protected override async Task SeedCoreAsync(CancellationToken cancellationToken = default)
     {
-        _scopeFactory = scopeFactory;
-        _reactionFaker = new Faker<ChatMessageReaction>()
-            .RuleFor(r => r.Id, _ => Guid.NewGuid())
-            .RuleFor(r => r.CreatedAt, f => f.Date.Past())
-            .RuleFor(r => r.ReactionCode, f => f.Random.ArrayElement(EmojiCodes));
-    }
+        await using var scope = ScopeFactory.CreateAsyncScope();
 
-    public async Task SeedAsync(CancellationToken cancellationToken = default)
-    {
-        await using var scope = _scopeFactory.CreateAsyncScope();
-        var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
+        var dbMapper = scope.ServiceProvider.GetRequiredService<IMapper>();
+        var repo = scope.ServiceProvider.GetRequiredService<IChatMessageReactionRepository>();
+        var mapper = scope.ServiceProvider.GetRequiredService<AutoMapper.IMapper>();
 
-        var messages = await mapper.FetchListAsync<ChatMessage>();
-        var groups = await mapper.FetchListAsync<ChatGroup>();
-        var members = await mapper.FetchListAsync<ChatGroupMember>();
-        var users = await mapper.FetchListAsync<ChatifyUser>();
-
-        var reactions = _reactionFaker.Generate(300);
+        var messages = await dbMapper.FetchListAsync<ChatMessage>();
+        var groups = await dbMapper.FetchListAsync<ChatGroup>();
+        var members = await dbMapper.FetchListAsync<ChatGroupMember>();
+        var users = await dbMapper.FetchListAsync<ChatifyUser>();
 
         foreach ( var message in messages )
         {
@@ -70,7 +65,7 @@ internal sealed class ChatMessageReactionsSeeder : ISeeder
                 reaction.UserId = groupMembers[Random.Shared.Next(0, groupMembers.Count)].UserId;
                 reaction.Username = users.FirstOrDefault(_ => _.Id == reaction.UserId)?.UserName;
 
-                var reactionCounts = await mapper.FirstOrDefaultAsync<Dictionary<long, long>>(
+                var reactionCounts = await dbMapper.FirstOrDefaultAsync<Dictionary<long, long>>(
                     "SELECT reaction_counts FROM chat_message_reactions WHERE message_id = ?;",
                     reaction.MessageId) ?? new Dictionary<long, long>();
 
@@ -78,7 +73,7 @@ internal sealed class ChatMessageReactionsSeeder : ISeeder
                 reactionCounts[reaction.ReactionCode]++;
                 reaction.ReactionCounts = reactionCounts;
 
-                await mapper.InsertAsync(reaction, insertNulls: false);
+                await dbMapper.InsertAsync(reaction, insertNulls: true);
 
                 // Update Message Reaction Counts:
                 var chatMessage = groupMessages.FirstOrDefault(m => m.Id == reaction.MessageId)!;
@@ -89,7 +84,7 @@ internal sealed class ChatMessageReactionsSeeder : ISeeder
 
                 chatMessage.ReactionCounts[reaction.ReactionCode]++;
 
-                await mapper.InsertAsync(chatMessage);
+                await dbMapper.InsertAsync(chatMessage);
             }
         }
     }

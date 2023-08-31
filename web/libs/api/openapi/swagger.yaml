@@ -1696,6 +1696,7 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
+        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1726,7 +1727,6 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
-        - Unknown
       type: string
     ApiResponseStatus:
       enum:
@@ -1988,6 +1988,8 @@ components:
           $ref: '#/components/schemas/ChatMessage'
         senderInfo:
           $ref: '#/components/schemas/MessageSenderInfoEntry'
+        userReaction:
+          $ref: '#/components/schemas/UserMessageReaction'
         repliersInfo:
           $ref: '#/components/schemas/MessageRepliersInfoEntry'
       additionalProperties: false
@@ -2554,6 +2556,10 @@ components:
           nullable: true
       additionalProperties: { }
     ReactToChatMessageRequest:
+      required:
+        - groupId
+        - messageId
+        - reactionType
       type: object
       properties:
         messageId:
@@ -2564,7 +2570,7 @@ components:
           format: uuid
         reactionType:
           type: integer
-          format: int32
+          format: int64
       additionalProperties: false
     RegularSignIn:
       type: object
@@ -2690,15 +2696,19 @@ components:
           format: date-time
       additionalProperties: false
     UnreactToChatMessageRequest:
+      required:
+        - groupId
+        - messageId
+        - messageReactionId
       type: object
       properties:
-        messageReactionId:
-          type: string
-          format: uuid
         messageId:
           type: string
           format: uuid
         groupId:
+          type: string
+          format: uuid
+        messageReactionId:
           type: string
           format: uuid
       additionalProperties: false
@@ -2803,6 +2813,13 @@ components:
         timestamp:
           type: string
           format: date-time
+      additionalProperties: false
+    UserMessageReaction:
+      type: object
+      properties:
+        reactionCode:
+          type: integer
+          format: int64
       additionalProperties: false
     UserNotification:
       type: object
