@@ -17,7 +17,12 @@ const nextConfig = {
    },
    images: {
       formats: ["image/webp"],
-      remotePatterns: [{ hostname: "avatars.githubusercontent.com" }],
+      remotePatterns: [
+         { hostname: "avatars.githubusercontent.com" },
+         {
+            hostname: `cdn.jsdelivr.net`,
+         },
+      ],
       contentSecurityPolicy: "",
       loader: "default",
       unoptimized: true,

@@ -1,10 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+   InfiniteData,
+   useMutation,
+   useQueryClient,
+} from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { reactionsClient } from "../../client";
+// @ts-ignore
+import { ChatGroupMessageEntry, ChatMessageReaction } from "@openapi";
+import { CursorPaged } from "../../../../../openapi/common/CursorPaged";
+import { produce } from "immer";
 
 export interface UnreactToGroupMessageModel {
    messageId: string;
-   chatGroupId: string;
+   groupId: string;
    messageReactionId: string;
 }
 
@@ -29,11 +37,59 @@ const unreactToGroupMessage = async (model: UnreactToGroupMessageModel) => {
 export const useUnreactToGroupMessageMutation = () => {
    const client = useQueryClient();
 
-   return useMutation(unreactToGroupMessage, {
-      onError: console.error,
-      onSuccess: (data) =>
-         console.log("Successfully unreacted to chat group message: " + data),
-      onSettled: (res) => console.log(res),
-      // cacheTime: 60 * 60 * 1000,
-   });
+   return useMutation<string, Error, UnreactToGroupMessageModel, any>(
+      unreactToGroupMessage,
+      {
+         onError: console.error,
+         onSuccess: (data, { messageReactionId, messageId, groupId }) => {
+            console.log(
+               "Successfully unreacted to chat group message: " + data
+            );
+
+            const reaction = client
+               .getQueryData<ChatMessageReaction[]>([
+                  `chat-message`,
+                  messageId,
+                  `reactions`,
+               ])!
+               .find((r) => r.id === messageReactionId);
+
+            client.setQueryData<ChatMessageReaction[]>(
+               [`chat-message`, messageId, `reactions`],
+               (reactions) => {
+                  return [
+                     ...(reactions ?? []).filter(
+                        (r) => r.id !== messageReactionId
+                     ),
+                  ];
+               }
+            );
+
+            client.setQueryData<
+               InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+            >([`chat-group`, groupId, `messages`], (old) => {
+               // Update reaction counts for the message:
+               return produce(old, (draft) => {
+                  const message = draft!.pages
+                     .flatMap((p) => p.items)
+                     .find(
+                        (m) => m.message?.id === messageId
+                     ) as ChatGroupMessageEntry;
+
+                  if (message) {
+                     message.message.reactionCounts[
+                        reaction.reactionCode.toString()
+                     ] =
+                        Number(
+                           message.message?.reactionCounts[
+                              reaction.reactionCode.toString() ?? 0
+                           ]
+                        ) - 1;
+                  }
+               });
+            });
+         },
+         onSettled: (res) => console.log(res),
+      }
+   );
 };
