@@ -8,6 +8,7 @@ import { reactionsClient } from "../../client";
 import {
    ChatMessageReaction,
    ChatMessageReactionListApiResponse,
+   // @ts-ignore
 } from "@openapi";
 import { DEFAULT_CACHE_TIME, DEFAULT_STALE_TIME } from "../../../constants";
 

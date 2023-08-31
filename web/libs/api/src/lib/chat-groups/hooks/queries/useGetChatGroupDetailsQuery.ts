@@ -66,7 +66,12 @@ export const useMembersByCategory = (members?: User[], adminIds?: string[]) =>
 export const useGetChatGroupDetailsQuery = (
    chatGroupId: string,
    options?: Omit<
-      UseQueryOptions<any, unknown, any, string[]>,
+      UseQueryOptions<
+         ChatGroupDetailsEntry,
+         Error,
+         ChatGroupDetailsEntry,
+         string[]
+      >,
       "initialData"
    > & {
       initialData?: (() => undefined) | undefined;
@@ -74,7 +79,12 @@ export const useGetChatGroupDetailsQuery = (
 ) => {
    const client = useQueryClient();
 
-   return useQuery({
+   return useQuery<
+      ChatGroupDetailsEntry,
+      Error,
+      ChatGroupDetailsEntry,
+      string[]
+   >({
       queryKey: [`chat-group`, chatGroupId],
       queryFn: ({ queryKey: [_, id] }) =>
          getChatGroupDetails({ chatGroupId: id }),

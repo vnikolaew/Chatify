@@ -33,7 +33,10 @@
       "react-cookie-consent": "^8.0.1",
       "react-dom": "18.2.0",
       "react-github-login": "^1.0.3",
+      "react-quill": "^2.0.0",
       "react-use-cookie": "^1.4.0",
+      "slate": "^0.94.1",
+      "slate-react": "^0.98.3",
       "tailwind-merge": "^1.14.0",
       "tslib": "^2.3.0",
       "yup": "^1.2.0"
@@ -55,6 +58,7 @@
       "@types/node": "18.14.2",
       "@types/react": "18.2.14",
       "@types/react-dom": "18.2.6",
+      "@types/react-draft-wysiwyg": "^1.13.4",
       "@typescript-eslint/eslint-plugin": "^5.60.1",
       "@typescript-eslint/parser": "^5.60.1",
       "autoprefixer": "^10.4.14",
