@@ -36,7 +36,6 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
       });
    };
 
-   console.log(membersByCategory);
    return (
       <div
          className={`flex flex-col items-start py-2 min-h-[80vh] h-full border-l-1 border-l-default-200 rounded-medium`}
@@ -52,9 +51,7 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
          ) : (
             <Fragment>
                <div className={`w-full px-4 py-2`}>
-                  <h2 className={`text-large text-foreground`}>
-                     Group members
-                  </h2>
+                  <h2 className={`text-large text-foreground`}>Members</h2>
                </div>
                {Object.entries(membersByCategory).map(
                   ([category, members], id) => (

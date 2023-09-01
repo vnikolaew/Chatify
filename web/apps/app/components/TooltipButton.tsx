@@ -6,7 +6,7 @@ import {
    TooltipProps,
    useDisclosure,
 } from "@nextui-org/react";
-import React from "react";
+import React, { useMemo } from "react";
 
 export interface TooltipButtonProps extends TooltipProps {
    icon: React.ReactNode;
@@ -25,6 +25,11 @@ const TooltipButton = ({
    const { isOpen, onOpenChange, onClose, onOpen } = useDisclosure({
       defaultOpen: false,
    });
+   let chipClassname = useMemo(() => chipProps?.className, [chipProps]);
+   if (chipProps?.className) {
+      delete chipProps.className;
+   }
+
    return (
       <Tooltip
          shadow={"md"}
@@ -56,7 +61,7 @@ const TooltipButton = ({
             }}
             // content={""}
             variant={"light"}
-            className={`cursor-pointer transition-background duration-200 hover:bg-default-200`}
+            className={`cursor-pointer transition-background duration-200 hover:bg-default-200 ${chipClassname}`}
             {...chipProps}
          >
             {icon}

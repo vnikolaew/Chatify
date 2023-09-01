@@ -1,7 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.JavaScript;
-using AspNetCore.Identity.Cassandra.Extensions;
 using Cassandra;
 using Cassandra.Mapping;
 using Chatify.Domain.Common;

@@ -18,7 +18,8 @@ import { ChatMessageEntry } from "@components/chat-group";
 import DownArrow from "@components/icons/DownArrow";
 import StartupRocketIcon from "@components/icons/StartupRocketIcon";
 import { LoadingChatMessageEntry } from "@components/chat-group/messages/LoadingChatMessageEntry";
-import MessageTextEditor from "@components/chat-group/messages/MessageTextEditor";
+import MessageTextEditor from "@components/chat-group/messages/editor/MessageTextEditor";
+import PlateMessageTextEditor from "@components/chat-group/messages/PlateMessageTextEditor";
 
 export interface ChatMessagesSectionProps {
    groupId: string;
@@ -52,8 +53,6 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
          !messages?.pages?.at(-1)?.hasMore && !isLoading && !isFetchingNextPage,
       [messages?.pages, isLoading, isFetchingNextPage]
    );
-
-   console.log(`Messages: `, messages);
 
    const fetchMoreMessages = async () => {
       await fetchNextPage();
@@ -186,7 +185,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                </div>
             </ScrollShadow>
          </div>
-         <div className={`mt-12 mx-4`}>
+         <div className={`mt-12 w-full flex flex-col items-start gap-8 mx-4`}>
             <MessageTextEditor chatGroup={groupDetails?.chatGroup} />
          </div>
          {hasNextPage && (

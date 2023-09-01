@@ -1,15 +1,14 @@
 "use client";
-import { ChatGroupMessageEntry, ChatMessageReaction } from "@openapi";
+import { ChatGroupMessageEntry } from "@openapi";
 import {
    Avatar,
    Button,
    ButtonGroup,
    Chip,
    Link,
-   Spinner,
    Tooltip,
 } from "@nextui-org/react";
-import { getMediaUrl, useGetAllReactionsForMessage } from "@web/api";
+import { getMediaUrl } from "@web/api";
 import { twMerge } from "tailwind-merge";
 import { ChatGroupMemberInfoCard } from "@components/members";
 import moment from "moment/moment";
@@ -19,9 +18,6 @@ import {
    ExpandRepliesLink,
 } from "@components/chat-group/messages";
 import { AnimatePresence, motion } from "framer-motion";
-import ReactionsSummaryTooltip from "@components/chat-group/messages/ReactionsSummaryTooltipContent";
-import ReactionsSummaryTooltipContent from "@components/chat-group/messages/ReactionsSummaryTooltipContent";
-import reactionsSummaryTooltipContent from "@components/chat-group/messages/ReactionsSummaryTooltipContent";
 import ChatMessageReactionSection from "@components/chat-group/messages/ChatMessageReactionSection";
 
 export interface ChatMessageEntryProps
@@ -48,6 +44,7 @@ export const ChatMessageEntry = ({
       () => message.repliersInfo.total > 0,
       [message.repliersInfo.total]
    );
+
    const hasReactions = useMemo(() => {
       return Object.entries(message?.message?.reactionCounts ?? {}).length > 0;
    }, [message?.message?.reactionCounts]);
