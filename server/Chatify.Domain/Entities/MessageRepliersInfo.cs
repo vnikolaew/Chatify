@@ -2,6 +2,7 @@
 
 public class MessageRepliersInfo
 {
+    public Guid Id { get; set; }
     public Guid ChatGroupId { get; set; }
 
     public Guid MessageId { get; set; }

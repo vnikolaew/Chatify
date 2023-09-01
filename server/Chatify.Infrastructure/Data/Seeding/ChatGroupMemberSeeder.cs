@@ -44,7 +44,7 @@ internal sealed class ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory)
 
             await mapper.InsertAsync(member, insertNulls: false);
             var groupKey = GetGroupMembersCacheKey(member.ChatGroupId);
-            await cache.BloomFilterAddAsync(groupKey, member.UserId.ToString());
+            await cache.SetAddAsync(groupKey, member.UserId.ToString());
 
             var count = await mapper.FirstOrDefaultAsync<long?>(
                 "SELECT members_count FROM chat_group_members WHERE chat_group_id = ?",

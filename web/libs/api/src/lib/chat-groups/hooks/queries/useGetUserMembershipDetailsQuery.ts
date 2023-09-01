@@ -34,6 +34,11 @@ const getUserMembershipDetails = async (
    return data.data!;
 };
 
+export const GET_USER_MEMBERSHIP_DETAILS_KEY = (
+   groupId: string,
+   userId: string
+) => [`chat-group`, groupId, `members`, userId];
+
 export const useGetUserMembershipDetailsQuery = (
    model: GetUserMembershipDetailsModel,
    options?: Omit<
@@ -46,7 +51,10 @@ export const useGetUserMembershipDetailsQuery = (
    const client = useQueryClient();
 
    return useQuery<ChatGroupMember, Error, ChatGroupMember, string[]>({
-      queryKey: [`chat-group`, model.chatGroupId, `members`, model.userId],
+      queryKey: GET_USER_MEMBERSHIP_DETAILS_KEY(
+         model.chatGroupId,
+         model.userId
+      ),
       queryFn: ({ queryKey: [_, id] }) => getUserMembershipDetails(model),
       cacheTime: 60 * 60 * 1000,
       ...options,

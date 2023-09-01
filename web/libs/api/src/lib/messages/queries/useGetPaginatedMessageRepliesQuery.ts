@@ -10,6 +10,7 @@ import {
    MessageSenderInfoEntry,
    // @ts-ignore
 } from "@openapi";
+import { GET_PAGINATED_GROUP_MESSAGES_KEY } from "./useGetPaginatedGroupMessagesQuery";
 
 export interface GetPaginatedMessageRepliesModel {
    messageId: string;
@@ -61,7 +62,9 @@ export const useGetPaginatedMessageRepliesQuery = (
          data.forEach((reply) => {
             const x = client.getQueryData<
                InfiniteData<CursorPaged<ChatGroupMessageEntry>>
-            >([`chat-group`, reply.chatGroupId, `messages`], { exact: false });
+            >(GET_PAGINATED_GROUP_MESSAGES_KEY(reply.chatGroupId), {
+               exact: false,
+            });
 
             const user = x?.pages
                .flatMap((p) => p.items)

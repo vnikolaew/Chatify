@@ -28,7 +28,7 @@ public class ChatGroupAttachmentRepository(IMapper mapper,
         {
             var saveTasks = chunk
                 .Select(a =>
-                    DbMapper.InsertAsync(a, insertNulls: true));
+                    DbMapper.InsertAsync(a.To<Models.ChatGroupAttachment>(Mapper), insertNulls: true));
 
             await Task.WhenAll(saveTasks);
         }

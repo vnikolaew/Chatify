@@ -36,7 +36,7 @@ public sealed class ChatGroupMembersRepository(
         // Add new user to both database and cache set:
         var dbSaveTask = base.SaveAsync(entity, cancellationToken);
         
-        var cacheSaveTask = cache.BloomFilterAddAsync(groupKey, userKey);
+        var cacheSaveTask = cache.SetAddAsync(groupKey, userKey);
 
         var saveTasks = new Task[] { dbSaveTask, cacheSaveTask };
 

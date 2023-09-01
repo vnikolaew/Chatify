@@ -14,6 +14,8 @@ import {
 import { GetMyClaimsResponse } from "../../../auth";
 import { CursorPaged } from "../../../../../openapi/common/CursorPaged";
 import { produce } from "immer";
+import { GET_PAGINATED_GROUP_MESSAGES_KEY } from "../../../messages";
+import { GET_ALL_REACTIONS_KEY } from "../queries";
 
 export interface ReactToGroupMessageModel {
    messageId: string;
@@ -58,7 +60,7 @@ export const useReactToGroupMessageMutation = () => {
             const meName = me.claims!["name"];
 
             client.setQueryData<ChatMessageReaction[]>(
-               [`chat-message`, messageId, `reactions`],
+               GET_ALL_REACTIONS_KEY(messageId),
                (reactions) => {
                   return [
                      ...(reactions ?? []).filter((r) => r.userId !== meId),
@@ -77,7 +79,7 @@ export const useReactToGroupMessageMutation = () => {
 
             client.setQueryData<
                InfiniteData<CursorPaged<ChatGroupMessageEntry>>
-            >([`chat-group`, groupId, `messages`], (old) => {
+            >(GET_PAGINATED_GROUP_MESSAGES_KEY(groupId), (old) => {
                // Update reaction counts for the message:
                return produce(old, (draft) => {
                   const message = draft!.pages

@@ -111,6 +111,7 @@ public static class DependencyInjection
             .AddTransient<IPasswordHasher, PasswordHasher>()
             .AddTransient<IPagingCursorHelper, CassandraPagingCursorHelper>()
             .AddTransient<ISerializer, SystemTextJsonSerializer>()
+            .AddSingleton<IOpenGraphMetadataEnricher, OpenGraphMetadataEnricher>()
             .AddScoped<IChatGroupsFeedService, ChatGroupsFeedService>()
             .AddNotifications()
             .AddCounters();

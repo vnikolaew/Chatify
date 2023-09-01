@@ -47,6 +47,12 @@ const getPaginatedGroupMessages = async (
    return data.data as CursorPaged<ChatGroupMessageEntry>;
 };
 
+export const GET_PAGINATED_GROUP_MESSAGES_KEY = (groupId: string) => [
+   `chat-group`,
+   groupId,
+   `messages`,
+];
+
 export const useGetPaginatedGroupMessagesQuery = (
    { pageSize, groupId, pagingCursor }: GetPaginatedGroupMessagesModel,
    options?: Omit<
@@ -63,9 +69,8 @@ export const useGetPaginatedGroupMessagesQuery = (
       CursorPaged<ChatGroupMessageEntry>,
       QueryKey
    >({
-      queryKey: [`chat-group`, groupId, `messages`],
+      queryKey: GET_PAGINATED_GROUP_MESSAGES_KEY(groupId),
       getNextPageParam: (lastPage) => {
-         console.log(lastPage);
          return lastPage.pagingCursor;
       },
       getPreviousPageParam: (_, allPages) => allPages.at(-1)?.pagingCursor,

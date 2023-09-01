@@ -6,44 +6,53 @@ import ItalicIcon from "@components/icons/ItalicIcon";
 import StrikethroughIcon from "@components/icons/StrikethroughIcon";
 import CodeIcon from "@components/icons/CodeIcon";
 import { useSlate } from "slate-react";
-import { CustomEditor } from "@components/chat-group/messages/editor/MessageTextEditor";
+import { CustomEditor } from "./editor";
 
 export interface MessageTextEditorToolbarProps {}
 
 const MessageTextEditorToolbar = ({}: MessageTextEditorToolbarProps) => {
    const editor = useSlate();
    return (
-      <div className={`flex items-center gap-2 absolute left-3 top-2`}>
-         <ToolbarButton
-            onPress={(_) => CustomEditor.toggleBoldMark(editor)}
-            isActive={editor.getMarks()?.bold}
-            icon={<BoldIcon className={`fill-foreground`} size={16} />}
-            text={`Bold`}
-         />
+      <div
+         className={`flex flex-col items-start gap-1 absolute left-3 top-3 w-full`}
+      >
+         <div className={`flex items-center gap-2 `}>
+            <ToolbarButton
+               onPress={(_) => CustomEditor.toggleBoldMark(editor)}
+               isActive={editor.getMarks()?.bold}
+               icon={<BoldIcon className={`fill-foreground`} size={16} />}
+               text={`Bold`}
+            />
+            <Divider
+               orientation={"vertical"}
+               className={`h-3 text-default-300 bg-default-300 rounded-full w-[0.5px]`}
+            />
+            <ToolbarButton
+               isActive={editor.getMarks()?.italic}
+               onPress={(_) => CustomEditor.toggleItalicMark(editor)}
+               icon={<ItalicIcon className={`fill-foreground`} size={16} />}
+               text={`Italic`}
+            />
+            <Divider
+               orientation={"vertical"}
+               className={`h-3 text-default-300 bg-default-300 rounded-full w-[0.5px]`}
+            />
+            <ToolbarButton
+               isActive={editor.getMarks()?.strikethrough}
+               onPress={(_) => CustomEditor.toggleStrikethroughMark(editor)}
+               icon={
+                  <StrikethroughIcon className={`fill-foreground`} size={16} />
+               }
+               text={`Strikethrough`}
+            />
+            <ToolbarButton
+               onPress={(_) => CustomEditor.toggleCodeBlock(editor)}
+               icon={<CodeIcon className={`stroke-foreground`} size={16} />}
+               text={`Code`}
+            />
+         </div>
          <Divider
-            orientation={"vertical"}
-            className={`h-3 text-default-300 bg-default-300 rounded-full w-[0.5px]`}
-         />
-         <ToolbarButton
-            isActive={editor.getMarks()?.italic}
-            onPress={(_) => CustomEditor.toggleItalicMark(editor)}
-            icon={<ItalicIcon className={`fill-foreground`} size={16} />}
-            text={`Italic`}
-         />
-         <Divider
-            orientation={"vertical"}
-            className={`h-3 text-default-300 bg-default-300 rounded-full w-[0.5px]`}
-         />
-         <ToolbarButton
-            isActive={editor.getMarks()?.strikethrough}
-            onPress={(_) => CustomEditor.toggleStrikethroughMark(editor)}
-            icon={<StrikethroughIcon className={`fill-foreground`} size={16} />}
-            text={`Strikethrough`}
-         />
-         <ToolbarButton
-            onPress={(_) => CustomEditor.toggleCodeBlock(editor)}
-            icon={<CodeIcon className={`stroke-foreground`} size={16} />}
-            text={`Code`}
+            className={`w-5/6 h-[.5px] rounded-full mx-2 bg-default-300`}
          />
       </div>
    );

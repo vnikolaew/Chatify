@@ -10,7 +10,7 @@ namespace Chatify.Web.Features.Messages.Models;
 public static class Models
 {
     public sealed record SendGroupChatMessageRequest(
-        [Required] Guid ChatGroupId,
+        Guid ChatGroupId,
         [Required] string Content,
         IEnumerable<IFormFile>? Files,
         Dictionary<string, string>? Metadata = default)

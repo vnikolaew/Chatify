@@ -1,7 +1,4 @@
-﻿using Markdig;
-using Markdig.Syntax;
-using Markdig.Syntax.Inlines;
-using OpenGraphNet;
+﻿using OpenGraphNet;
 
 namespace Chatify.Infrastructure.Messages.BackgroundJobs;
 

@@ -48,10 +48,11 @@ internal sealed class ChatMessageSentEventHandler(
         // Add a Message Repliers Summary entry to DB:
         var repliersInfo = new MessageRepliersInfo
         {
+            Id = Guid.NewGuid(),
             MessageId = @event.MessageId,
             Total = 0,
             ChatGroupId = @event.GroupId,
-            ReplierInfos = new HashSet<MessageReplierInfo>(),
+            ReplierInfos = new HashSet<MessageReplierInfo>()
         };
         await replierInfos.SaveAsync(repliersInfo, cancellationToken);
         
@@ -72,9 +73,9 @@ internal sealed class ChatMessageSentEventHandler(
             });
         await attachments.SaveManyAsync(groupAttachments, cancellationToken);
 
-        var scheduler = await schedulerFactory.GetScheduler(cancellationToken);
-        await scheduler.ScheduleImmediateJob<ProcessChatMessageJob>(builder =>
-            builder.WithMessageId(@event.MessageId), cancellationToken);
+        // var scheduler = await schedulerFactory.GetScheduler(cancellationToken);
+        // await scheduler.ScheduleImmediateJob<ProcessChatMessageJob>(builder =>
+        //     builder.WithMessageId(@event.MessageId), cancellationToken);
         
         await chatifyHubContext
             .Clients

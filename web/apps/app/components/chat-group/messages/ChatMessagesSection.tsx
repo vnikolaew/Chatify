@@ -19,7 +19,6 @@ import DownArrow from "@components/icons/DownArrow";
 import StartupRocketIcon from "@components/icons/StartupRocketIcon";
 import { LoadingChatMessageEntry } from "@components/chat-group/messages/LoadingChatMessageEntry";
 import MessageTextEditor from "@components/chat-group/messages/editor/MessageTextEditor";
-import PlateMessageTextEditor from "@components/chat-group/messages/PlateMessageTextEditor";
 
 export interface ChatMessagesSectionProps {
    groupId: string;
@@ -100,7 +99,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
    }, [messages]);
 
    return (
-      <section className={`w-full`}>
+      <section className={`w-full flex flex-col items-start overflow-hidden`}>
          <div className={`w-full relative`}>
             {isScrollDownButtonVisible && !isLoading && (
                <Tooltip

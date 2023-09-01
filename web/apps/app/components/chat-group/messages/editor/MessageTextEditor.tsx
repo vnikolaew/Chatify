@@ -1,157 +1,81 @@
 "use client";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import { DefaultElement, Editable, Slate, withReact } from "slate-react";
+import { createEditor, Text, Transforms } from "slate";
 import {
-   DefaultElement,
-   Editable,
-   ReactEditor,
-   Slate,
-   useSlate,
-   withReact,
-} from "slate-react";
-import {
-   createEditor,
-   Editor,
-   Transforms,
-   Element,
-   BaseEditor,
-   Range,
-} from "slate";
-import {
+   Badge,
    Button,
-   ButtonGroup,
+   Chip,
    Dropdown,
    DropdownItem,
    DropdownMenu,
    DropdownTrigger,
+   Image,
    Link,
+   Spacer,
+   Spinner,
    Tooltip,
 } from "@nextui-org/react";
-import renderer from "slate-md-serializer/lib/renderer";
 import { RightArrow } from "@icons";
 import UploadIcon from "@components/icons/UploadIcon";
 import { ChatGroup } from "@openapi";
 import MessageTextEditorToolbar from "@components/chat-group/messages/editor/MessageTextEditorToolbar";
 import { useSendGroupChatMessageMutation } from "@web/api";
 import { useCurrentChatGroup } from "@hooks";
+import * as escaper from "html-escaper";
+import { plateToMarkdown } from "slate-mark";
+import { v4 as uuidv4 } from "uuid";
 
-console.log(renderer.serialize);
+import { CustomEditor } from "./editor";
+import CrossIcon from "@components/icons/CrossIcon";
+import { Space } from "lucide-react";
+
+export class ChatifyFile {
+   public readonly id: string;
+   public readonly file: File;
+
+   constructor(file: File, id: string) {
+      this.file = file;
+      this.id = id;
+   }
+}
 
 export interface MessageTextEditorProps {
    chatGroup: ChatGroup;
 }
 
-export const CustomEditor = {
-   isBoldMarkActive(editor: BaseEditor & ReactEditor) {
-      const marks = Editor.marks(editor);
-      return marks?.bold ?? false;
-   },
+export enum MessageAction {
+   FileUpload = "FileUpload ",
+}
 
-   isItalicMarkActive(editor: BaseEditor & ReactEditor) {
-      const marks = Editor.marks(editor);
-      return marks?.italic ?? false;
-   },
-
-   isCodeBlockActive(editor: BaseEditor & ReactEditor) {
-      const [match] = Editor.nodes(editor, {
-         match: (n) => n.type === "code",
-      });
-
-      return !!match;
-   },
-   serialize(node: any): string {
-      if (Editor.isEditor(node)) {
-         const children = node.children.map(CustomEditor.serialize);
-         return children.join("");
+function serializer(node: any) {
+   if (Text.isText(node)) {
+      let string = escaper.escape(node.text);
+      if (node.bold) {
+         string = `<strong>${string}</strong>`;
       }
-
-      if (Array.isArray(node.children)) {
-         console.log(node);
-         const children = node?.children?.map(CustomEditor.serialize).join("");
-         switch (node.type) {
-            case "paragraph":
-               return `\n${children}\n`;
-            case "heading-one":
-               return `# ${children}\n`;
-            case "heading-two":
-               return `## ${children}\n`;
-            // Add more cases for other element types if needed
-            default:
-               return children;
-         }
+      if (node.italic) {
+         string = `<i>${string}</i>`;
       }
-      if (node.bold) return `<b>${node.text}</b>`;
-
-      if ("text" in node) {
-         return node.text;
+      if (node.strikethrough) {
+         string = `<s>${string}</s>`;
       }
+      return string;
+   }
 
-      return "";
-   },
+   const children = node.children.map((n) => serializer(n)).join("");
 
-   clear(editor: BaseEditor & ReactEditor) {
-      editor.removeNodes({ match: (n) => true });
-   },
-
-   isVoid(editor: BaseEditor & ReactEditor) {
-      return !(
-         // editor.children.length &&
-         (editor.children[0] as Element)?.children[0]?.text?.length
-      );
-   },
-
-   toggleBoldMark(editor: BaseEditor & ReactEditor) {
-      const isActive = CustomEditor.isBoldMarkActive(editor);
-      if (isActive) {
-         Editor.removeMark(editor, "bold");
-      } else {
-         Editor.addMark(editor, "bold", true);
-      }
-   },
-
-   toggleItalicMark(editor: BaseEditor & ReactEditor) {
-      const isActive = CustomEditor.isItalicMarkActive(editor);
-      if (isActive) {
-         Editor.removeMark(editor, "italic");
-      } else {
-         Editor.addMark(editor, "italic", true);
-      }
-   },
-
-   toggleCodeBlock(editor: BaseEditor & ReactEditor) {
-      const isActive = CustomEditor.isCodeBlockActive(editor);
-      Transforms.setNodes(
-         editor,
-         { type: isActive ? null : "code" },
-         { match: (n) => Editor.isBlock(editor, n) }
-      );
-   },
-
-   toggleStrikethroughMark(editor: BaseEditor & ReactEditor) {
-      const isActive = CustomEditor.isStrikethroughMarkActive(editor);
-      if (isActive) {
-         Editor.removeMark(editor, "strikethrough");
-      } else {
-         Editor.addMark(editor, "strikethrough", true);
-      }
-   },
-   isStrikethroughMarkActive(editor: BaseEditor & ReactEditor) {
-      const marks = Editor.marks(editor);
-      return marks?.strikethrough ?? false;
-   },
-
-   addLink(editor: BaseEditor & ReactEditor, title: string, href: string) {
-      const link = {
-         type: "link",
-         href,
-         children: [{ text: title || href }],
-      };
-
-      Transforms.insertNodes(editor, link);
-      Transforms.collapse(editor, { edge: "end" });
-   },
-};
-
-CustomEditor.serialize.bind(CustomEditor);
+   switch (node.type) {
+      case "quote":
+         return `<blockquote><p>${children}</p></blockquote>`;
+      case "paragraph":
+         return `<p>${children}</p>`;
+      case "link":
+         return `<a href="${escaper.escape(node.url)}">${children}</a>`;
+      default:
+         return children;
+   }
+}
 
 // Define a React component renderer for our code blocks.
 const CodeElement = (props) => {
@@ -164,7 +88,6 @@ const CodeElement = (props) => {
 
 // Define a React component to render leaves with bold text.
 const Leaf = (props) => {
-   console.log(props);
    if (props.leaf.type === "link") {
       return (
          <Link
@@ -210,6 +133,23 @@ function getTextFromNode(node) {
 const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
    const [editor] = useState(() => withReact(createEditor()));
    const groupId = useCurrentChatGroup();
+   const [attachedFiles, setAttachedFiles] = useState<ChatifyFile[]>([]);
+
+   // Mapping of File ID -> File Object URL
+   const attachedFilesUrls = useMemo<Map<string, string>>(
+      () =>
+         new Map<string, string>(
+            attachedFiles.map((file) => [
+               file.id,
+               URL.createObjectURL(file.file),
+            ])
+         ),
+      [attachedFiles]
+   );
+   console.log(attachedFilesUrls);
+
+   const fileUploadRef = useRef<HTMLInputElement>(null!);
+
    const [disableSendMessageButton, setDisableSendMessageButton] =
       useState(true);
    const {
@@ -221,8 +161,6 @@ const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
    // Define a rendering function based on the element passed to `props`. We use
    // `useCallback` here to memoize the function for subsequent renders.
    const renderElement = useCallback((props) => {
-      console.log(props);
-
       switch (props.element.type) {
          case "code":
             return <CodeElement {...props} />;
@@ -259,38 +197,65 @@ const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
    }, []);
 
    async function handleSendMessage() {
-      await sendMessage({
-         content: getTextFromNode(editor),
-         chatGroupId: groupId,
-      });
+      console.log(getTextFromNode(editor));
+      console.log(editor.children);
+
+      const content = plateToMarkdown(editor.children);
+      await sendMessage(
+         {
+            content,
+            chatGroupId: groupId,
+            files: attachedFiles.map((_) => _.file),
+         },
+         {
+            onSuccess: (data, vars, context) => {
+               CustomEditor.clear(editor);
+               setAttachedFiles([]);
+            },
+         }
+      );
    }
+
+   const handleFileUpload: React.ChangeEventHandler<HTMLInputElement> = async ({
+      target: { files },
+   }) => {
+      console.log(files);
+      const newFiles = Array.from({ length: files.length }).map((_, i) =>
+         files.item(i)
+      );
+      setAttachedFiles((files) => [
+         ...files,
+         ...newFiles.map((_) => new ChatifyFile(_, uuidv4())),
+      ]);
+   };
 
    return (
       <Slate
          onChange={(value) => {
-            const isAstChange = editor.operations.some(
-               (op) => "set_selection" !== op.type
-            );
             if (CustomEditor.isVoid(editor)) setDisableSendMessageButton(true);
             else setDisableSendMessageButton(false);
-
-            if (isAstChange) {
-               const content = JSON.stringify(value);
-               localStorage.setItem("content", content);
-            }
          }}
          editor={editor}
          initialValue={initialValue}
       >
-         <div className={`relative h-fit w-full`}>
+         <div className={`relative h-fit w-5/6 mr-12`}>
             <Editable
-               placeholder={`Message in ${chatGroup?.name}`}
-               className={`bg-zinc-900 min-h-[140px] relative text-medium px-4 pt-12 rounded-medium text-white border-default-200 border-1 !active:border-default-300 !focus:border-default-300`}
+               placeholder={
+                  chatGroup?.name && `Message in ${chatGroup?.name} ...`
+               }
+               className={`bg-zinc-900 !break-words !whitespace-nowrap ${
+                  attachedFilesUrls?.size ? `min-h-[180px]` : `min-h-[140px]`
+               }  h-auto relative text-medium px-6 pt-14 rounded-medium text-white border-default-200 border-1 !active:border-default-300 !focus:border-default-300`}
                renderElement={renderElement}
                renderLeaf={renderLeaf}
                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                     e.preventDefault();
+                     Transforms.insertText(editor, `\u00a0`);
+                     return;
+                  }
+
                   if (!e.ctrlKey) return;
-                  console.log(e.key, e.ctrlKey);
 
                   switch (e.key) {
                      case "`": {
@@ -317,35 +282,132 @@ const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
                }}
             />
             <MessageTextEditorToolbar />
-            <Dropdown size={`sm`} placement={"top"}>
-               <DropdownTrigger className={`absolute z-10 left-3 bottom-3 `}>
-                  <Button
-                     variant={"shadow"}
-                     className={`text-foreground p-0`}
-                     color={"primary"}
-                     radius={"full"}
-                     size={"sm"}
-                     startContent={
-                        <span className={`fill-foreground text-medium`}>+</span>
-                     }
-                     isIconOnly
-                  />
-               </DropdownTrigger>
-               <DropdownMenu
-                  onAction={(key) => {}}
-                  variant={"flat"}
-                  color={"default"}
-               >
-                  <DropdownItem
-                     description={"Description"}
-                     startContent={
-                        <UploadIcon className={`fill-foreground`} size={20} />
-                     }
+            <input
+               name={"file-upload"}
+               onChange={handleFileUpload}
+               ref={fileUploadRef}
+               hidden
+               multiple
+               type={"file"}
+            />
+            <div
+               className={`items-end gap-2 flex absolute z-10 left-3 bottom-3`}
+            >
+               <Dropdown size={`sm`} placement={"top"}>
+                  <DropdownTrigger className={` `}>
+                     <Button
+                        variant={"shadow"}
+                        className={`text-foreground p-0`}
+                        color={"primary"}
+                        radius={"full"}
+                        size={"sm"}
+                        startContent={
+                           <span className={`fill-foreground text-medium`}>
+                              +
+                           </span>
+                        }
+                        isIconOnly
+                     />
+                  </DropdownTrigger>
+                  <DropdownMenu
+                     onAction={(key) => {
+                        if (key === MessageAction.FileUpload) {
+                           fileUploadRef.current.click();
+                        }
+                     }}
+                     variant={"flat"}
+                     color={"default"}
                   >
-                     Upload File
-                  </DropdownItem>
-               </DropdownMenu>
-            </Dropdown>
+                     <DropdownItem
+                        key={MessageAction.FileUpload}
+                        description={
+                           <span>
+                              Choose one or more <br /> from your device
+                           </span>
+                        }
+                        startContent={
+                           <UploadIcon
+                              className={`fill-foreground`}
+                              size={20}
+                           />
+                        }
+                     >
+                        Upload File
+                     </DropdownItem>
+                  </DropdownMenu>
+               </Dropdown>
+               <Spacer y={4} />
+               {[...attachedFilesUrls?.entries()].map(([id, url], i) => (
+                  <div key={id} className={`flex flex-col items-center gap-2`}>
+                     <Badge
+                        size={"sm"}
+                        classNames={{
+                           badge: `w-3 h-3 m-0 p-0`,
+                        }}
+                        content={
+                           <Tooltip
+                              closeDelay={100}
+                              disableAnimation
+                              delay={100}
+                              color={"default"}
+                              size={"sm"}
+                              classNames={{
+                                 base: `px-2 py-0`,
+                              }}
+                              showArrow
+                              content={
+                                 <span className={`text-[.6rem]`}>
+                                    Remove file
+                                 </span>
+                              }
+                           >
+                              <Button
+                                 variant={"shadow"}
+                                 color={"default"}
+                                 onPress={(_) => {
+                                    setAttachedFiles((files) =>
+                                       files.filter((f) => f.id !== id)
+                                    );
+                                 }}
+                                 className={`!w-fit hover:bg-zinc-900 !min-w-fit m-0 px-1 h-4`}
+                                 type={"button"}
+                                 size={"sm"}
+                                 radius={"full"}
+                                 startContent={
+                                    <CrossIcon
+                                       className={`stroke-foreground fill-transparent `}
+                                       size={10}
+                                    />
+                                 }
+                                 isIconOnly
+                              />
+                           </Tooltip>
+                        }
+                        key={i}
+                        color={"default"}
+                     >
+                        <Image
+                           height={40}
+                           width={40}
+                           shadow={"md"}
+                           radius={"md"}
+                           src={url}
+                        />
+                     </Badge>
+                     <Chip
+                        variant={"flat"}
+                        color={"warning"}
+                        size={"sm"}
+                        classNames={{
+                           base: `px-1 h-4`,
+                        }}
+                        className={`text-[.6rem] px-1`}
+                     >
+                        {attachedFiles.find((f) => f.id === id)!.file.name}
+                     </Chip>
+                  </div>
+               ))}
+            </div>
             <div
                className={`flex z-10 absolute bottom-3 right-4 items-center gap-2`}
             >
@@ -361,27 +423,31 @@ const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
                >
                   <Button
                      color={"primary"}
-                     variant={"solid"}
+                     variant={`shadow`}
+                     isLoading={isLoading}
+                     spinner={<Spinner color={"white"} size={"sm"} />}
                      onPress={handleSendMessage}
                      isDisabled={disableSendMessageButton}
-                     className={`z-10 items-center px-4 !gap-1 pr-2 text-white`}
-                     size={"sm"}
-                     endContent={
-                        <RightArrow className={`fill-foreground`} size={24} />
-                     }
+                     className={`z-10 items-center !gap-2 pr-2 text-white`}
+                     size={"md"}
+                     {...(!isLoading
+                        ? {
+                             endContent: (
+                                <RightArrow
+                                   className={`fill-white group-hover:fill-white`}
+                                   size={20}
+                                />
+                             ),
+                          }
+                        : {})}
                   >
-                     Send
+                     {isLoading ? "Sending" : "Send"}
                   </Button>
                </Tooltip>
             </div>
          </div>
       </Slate>
    );
-};
-
-const Toolbar = () => {
-   const editor = useSlate();
-   return <ButtonGroup size={"sm"}></ButtonGroup>;
 };
 
 export default MessageTextEditor;

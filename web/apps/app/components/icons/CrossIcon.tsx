@@ -5,7 +5,7 @@ export interface CrossIconProps extends SVGProps<SVGSVGElement> {
    size: string | number;
 }
 
-const CrossIcon = ({ size, fill, ...rest }: CrossIconProps) => {
+const CrossIcon = ({ size, fill, className, ...rest }: CrossIconProps) => {
    return (
       <svg
          width={size}
@@ -15,15 +15,14 @@ const CrossIcon = ({ size, fill, ...rest }: CrossIconProps) => {
          id="x"
          {...rest}
       >
-         <rect width="256" height="256"></rect>
+         <rect className={className} width="256" height="256"></rect>
          <line
             x1="200"
             x2="56"
             y1="56"
             y2="200"
-            fill={fill}
-            stroke={fill}
             strokeLinecap="round"
+            className={className}
             strokeLinejoin="round"
             strokeWidth="24"
          ></line>
@@ -32,8 +31,7 @@ const CrossIcon = ({ size, fill, ...rest }: CrossIconProps) => {
             x2="56"
             y1="200"
             y2="56"
-            fill={fill}
-            stroke={fill}
+            className={className}
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="24"

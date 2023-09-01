@@ -9,6 +9,8 @@ import { reactionsClient } from "../../client";
 import { ChatGroupMessageEntry, ChatMessageReaction } from "@openapi";
 import { CursorPaged } from "../../../../../openapi/common/CursorPaged";
 import { produce } from "immer";
+import { GET_PAGINATED_GROUP_MESSAGES_KEY } from "../../../messages";
+import { GET_ALL_REACTIONS_KEY } from "../queries";
 
 export interface UnreactToGroupMessageModel {
    messageId: string;
@@ -47,15 +49,13 @@ export const useUnreactToGroupMessageMutation = () => {
             );
 
             const reaction = client
-               .getQueryData<ChatMessageReaction[]>([
-                  `chat-message`,
-                  messageId,
-                  `reactions`,
-               ])!
+               .getQueryData<ChatMessageReaction[]>(
+                  GET_ALL_REACTIONS_KEY(messageId)
+               )!
                .find((r) => r.id === messageReactionId);
 
             client.setQueryData<ChatMessageReaction[]>(
-               [`chat-message`, messageId, `reactions`],
+               GET_ALL_REACTIONS_KEY(messageId),
                (reactions) => {
                   return [
                      ...(reactions ?? []).filter(
@@ -67,7 +67,7 @@ export const useUnreactToGroupMessageMutation = () => {
 
             client.setQueryData<
                InfiniteData<CursorPaged<ChatGroupMessageEntry>>
-            >([`chat-group`, groupId, `messages`], (old) => {
+            >(GET_PAGINATED_GROUP_MESSAGES_KEY(groupId), (old) => {
                // Update reaction counts for the message:
                return produce(old, (draft) => {
                   const message = draft!.pages
