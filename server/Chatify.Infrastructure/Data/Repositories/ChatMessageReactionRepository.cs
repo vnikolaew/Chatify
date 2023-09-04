@@ -19,12 +19,6 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
             nameof(Models.ChatMessageReaction.Id).Underscore()),
         IChatMessageReactionRepository
 {
-    private static RedisKey GetUserReactionsKey(Guid userId)
-        => new($"user:{userId.ToString()}:reactions");
-
-    private static RedisKey GetMessageReactionsKey(Guid messageId)
-        => new($"message:{messageId.ToString()}:reactions");
-
     public new async Task<ChatMessageReaction> SaveAsync(
         ChatMessageReaction messageReaction,
         CancellationToken cancellationToken = default)
@@ -32,11 +26,11 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
         var model = await base.SaveAsync(messageReaction, cancellationToken);
         
         // Add userId to Reactions set:
-        var messageReactionsKey = GetMessageReactionsKey(messageReaction.MessageId);
+        var messageReactionsKey = messageReaction.MessageId.GetMessageReactionsKey();
         var userId = new RedisValue(messageReaction.UserId.ToString());
 
         // Add messageId -> reactionCode to User reactions Hash:
-        var userReactionsKey = GetUserReactionsKey(messageReaction.UserId);
+        var userReactionsKey = messageReaction.UserId.GetUserReactionsKey();
 
         var cacheSaveTasks = new Task[]
         {
@@ -60,11 +54,11 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
         var messageReaction = await GetAsync(id, cancellationToken);
         if ( messageReaction is null ) return false;
 
-        var messageReactionsKey = GetMessageReactionsKey(messageReaction.MessageId);
+        var messageReactionsKey = messageReaction.MessageId.GetMessageReactionsKey();
         var userId = new RedisValue(messageReaction.UserId.ToString());
 
         // Delete messageId -> reactionCode to User reactions Hash:
-        var userReactionsKey = GetUserReactionsKey(messageReaction.UserId);
+        var userReactionsKey = messageReaction.UserId.GetUserReactionsKey();
 
         var removeTasks = new[]
         {
@@ -83,10 +77,10 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
         Guid userId,
         CancellationToken cancellationToken = default)
     {
-        var messageReactionsKey = GetMessageReactionsKey(messageId);
+        var messageReactionsKey = messageId.GetMessageReactionsKey();
         var userIdValue = new RedisValue(userId.ToString());
 
-        var userReactionsKey = GetUserReactionsKey(userId);
+        var userReactionsKey = userId.GetUserReactionsKey();
 
         var existTasks = new[]
         {
@@ -108,7 +102,7 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
         IEnumerable<Guid> messageIds,
         CancellationToken cancellationToken = default)
     {
-        var userReactionsKey = GetUserReactionsKey(userId);
+        var userReactionsKey = userId.GetUserReactionsKey();
         var reactionCodes = await cache.HashGetAsync(
             userReactionsKey,
             messageIds.Select(id => new RedisValue(id.ToString())).ToArray());

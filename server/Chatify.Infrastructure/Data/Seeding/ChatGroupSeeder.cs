@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,13 +59,10 @@ internal sealed class ChatGroupSeeder(IServiceScopeFactory scopeFactory)
             await mapper.InsertAsync(groupMember);
 
             await cache.SetAddAsync(
-                GetGroupMembersCacheKey(chatGroup.Id),
+                chatGroup.Id.GetGroupMembersKey(),
                 user.Id.ToString());
         }
     }
-
-    private static string GetGroupMembersCacheKey(Guid groupId)
-        => $"groups:{groupId.ToString()}:members";
 
     private static ChatifyUser PickUnusedUser(
         List<ChatifyUser> users,

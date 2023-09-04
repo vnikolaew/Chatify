@@ -1,4 +1,5 @@
 ﻿using Cassandra.Mapping;
+using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
@@ -96,12 +97,12 @@ internal sealed class FriendsSeeder(IServiceScopeFactory scopeFactory)
             var cacheSaveTasks = new Task[]
             {
                 cache.SortedSetAddAsync(
-                    GetUserFriendsCacheKey(userOne.Id),
+                    userOne.Id.GetUserFriendsKey(),
                     new RedisValue(userTwo.Id.ToString()),
                     friendshipOne.CreatedAt.Ticks
                     ),
                 cache.SortedSetAddAsync(
-                    GetUserFriendsCacheKey(userTwo.Id),
+                    userTwo.Id.GetUserFriendsKey(),
                     new RedisValue(userOne.Id.ToString()),
                     friendshipTwo.CreatedAt.Ticks
                     )
@@ -109,7 +110,4 @@ internal sealed class FriendsSeeder(IServiceScopeFactory scopeFactory)
             await Task.WhenAll(cacheSaveTasks);
         }
     }
-    
-    private static RedisKey GetUserFriendsCacheKey(Guid userId)
-        => $"user:{userId}:friends";
 }

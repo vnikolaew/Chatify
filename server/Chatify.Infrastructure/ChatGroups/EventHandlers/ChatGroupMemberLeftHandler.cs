@@ -14,9 +14,6 @@ internal sealed class ChatGroupMemberLeftHandler(ICounterService<ChatGroupMember
         IIdentityContext identityContext)
     : IEventHandler<ChatGroupMemberLeftEvent>
 {
-    // private static RedisKey GetGroupMembersCacheKey(Guid groupId)
-    //     => new($"groups:{groupId.ToString()}:members");
-
     public async Task HandleAsync(
         ChatGroupMemberLeftEvent @event,
         CancellationToken cancellationToken = default)

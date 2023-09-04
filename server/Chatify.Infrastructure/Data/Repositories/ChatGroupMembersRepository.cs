@@ -23,14 +23,11 @@ public sealed class ChatGroupMembersRepository(
         IChatGroupMemberRepository
 
 {
-    private static string GetGroupMembersCacheKey(Guid groupId)
-        => $"groups:{groupId.ToString()}:members";
-
     public new async Task<ChatGroupMember> SaveAsync(
         ChatGroupMember entity,
         CancellationToken cancellationToken = default)
     {
-        var groupKey = GetGroupMembersCacheKey(entity.ChatGroupId);
+        var groupKey = entity.ChatGroupId.GetGroupMembersKey();
         var userKey = new RedisValue(entity.UserId.ToString());
 
         // Add new user to both database and cache set:
@@ -51,7 +48,7 @@ public sealed class ChatGroupMembersRepository(
         var member = await GetAsync(id, cancellationToken);
         if ( member is null ) return false;
 
-        var groupKey = GetGroupMembersCacheKey(member.ChatGroupId);
+        var groupKey = member.ChatGroupId.GetGroupMembersKey();
         var userKey = new RedisValue(member.UserId.ToString());
 
         // Delete member from both the database and the cache:

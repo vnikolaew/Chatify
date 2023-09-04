@@ -1,5 +1,6 @@
 ﻿using Bogus;
 using Cassandra.Mapping;
+using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -119,9 +120,8 @@ internal sealed class ChatGroupMessageSeeder(IServiceScopeFactory scopeFactory)
             // Update User Feed for each group members (Sorted Set):
             foreach ( var groupMember in groupMembers )
             {
-                var userFeedCacheKey = new RedisKey($"user:{groupMember.UserId}:feed");
                 await cache.SortedSetAddAsync(
-                    userFeedCacheKey,
+                    groupMember.UserId.GetUserFeedKey(),
                     new RedisValue(
                         latestMessage.ChatGroupId.ToString()
                     ), latestMessage.CreatedAt.Ticks);

@@ -1,6 +1,7 @@
 ﻿using Bogus;
 using Cassandra.Mapping;
 using Chatify.Domain.Repositories;
+using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -103,9 +104,9 @@ internal sealed class ChatMessageReactionsSeeder(IServiceScopeFactory scopeFacto
         ChatMessageReaction reaction,
         IDatabase cache)
     {
-        var messageReactionsKey = GetMessageReactionsKey(reaction.MessageId);
+        var messageReactionsKey = reaction.MessageId.GetMessageReactionsKey();
         var userId = new RedisValue(reaction.UserId.ToString());
-        var userReactionsKey = GetUserReactionsKey(reaction.UserId);
+        var userReactionsKey = reaction.UserId.GetUserReactionsKey();
 
         var cacheSaveTasks = new Task[]
         {
@@ -120,10 +121,4 @@ internal sealed class ChatMessageReactionsSeeder(IServiceScopeFactory scopeFacto
 
         await Task.WhenAll(cacheSaveTasks);
     }
-
-    private static RedisKey GetUserReactionsKey(Guid userId)
-        => new($"user:{userId.ToString()}:reactions");
-
-    private static RedisKey GetMessageReactionsKey(Guid messageId)
-        => new($"message:{messageId.ToString()}:reactions");
 }

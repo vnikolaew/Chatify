@@ -3,12 +3,10 @@ using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Extensions;
-using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Data.Services;
 using Chatify.Shared.Abstractions.Serialization;
 using Humanizer;
 using Redis.OM.Contracts;
-using Redis.OM.Searching;
 using StackExchange.Redis;
 using FriendsRelation = Chatify.Domain.Entities.FriendsRelation;
 using Mapper = Cassandra.Mapping.Mapper;
@@ -27,15 +25,6 @@ public sealed class FriendshipsRepository(
             nameof(FriendsRelation.Id).Underscore()),
         IFriendshipsRepository
 {
-    private static RedisKey GetUserFriendsCacheKey(Guid userId)
-        => $"user:{userId}:friends";
-
-    private static RedisKey GetUserCacheKey(Guid userId)
-        => $"user:{userId}";
-
-    private readonly IRedisCollection<ChatifyUser> _cacheUsers
-        = connectionProvider.RedisCollection<ChatifyUser>();
-
     public new async Task<FriendsRelation> SaveAsync(
         FriendsRelation entity,
         CancellationToken cancellationToken = default)
@@ -62,7 +51,7 @@ public sealed class FriendshipsRepository(
         CancellationToken cancellationToken = default)
     {
         var friendsIds = await cache.SortedSetRangeByScoreAsync(
-            GetUserFriendsCacheKey(userId), order: Order.Descending);
+            userId.GetUserFriendsKey(), order: Order.Descending);
 
         // Chunk Ids to ease cache server processing:
         var friends = new List<Domain.Entities.User>();
@@ -98,10 +87,10 @@ public sealed class FriendshipsRepository(
         var deleteTasks = new Task[]
         {
             cache.SortedSetRemoveAsync(
-                GetUserFriendsCacheKey(friendOneId),
+                friendOneId.GetUserFriendsKey(),
                 new RedisValue(friendTwoId.ToString())),
             cache.SortedSetRemoveAsync(
-                GetUserFriendsCacheKey(friendTwoId),
+                friendTwoId.GetUserFriendsKey(),
                 new RedisValue(friendOneId.ToString())),
         };
 
@@ -114,7 +103,7 @@ public sealed class FriendshipsRepository(
         CancellationToken cancellationToken = default)
     {
         var friendsIds = await cache.SortedSetRangeByScoreAsync(
-            GetUserFriendsCacheKey(userId), order: Order.Descending);
+            userId.GetUserFriendsKey(), order: Order.Descending);
 
         return friendsIds.Select(id => Guid.Parse(id.ToString())).ToList();
     }

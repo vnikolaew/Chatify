@@ -1,6 +1,7 @@
 ﻿using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Common;
 using Chatify.Domain.Events.Groups;
+using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Server;
@@ -20,12 +21,6 @@ internal sealed class ChatGroupMemberAddedEventHandler(
         IHubContext<ChatifyHub, IChatifyHubClient> chatifyHubContext)
     : IEventHandler<ChatGroupMemberAddedEvent>
 {
-    private static RedisKey GetGroupMembersCacheKey(Guid groupId)
-        => new($"groups:{groupId.ToString()}:members");
-
-    private static RedisKey GetUserFeedCacheKey(Guid userId)
-        => new($"user:{userId.ToString()}:feed");
-
     public async Task HandleAsync(
         ChatGroupMemberAddedEvent @event,
         CancellationToken cancellationToken = default)
@@ -35,7 +30,7 @@ internal sealed class ChatGroupMemberAddedEventHandler(
             @event.GroupId, membersCount?.MembersCount);
 
         // // Add new member to cache set as well:
-        var groupMembersCacheKey = GetGroupMembersCacheKey(@event.GroupId);
+        var groupMembersCacheKey = @event.GroupId.GetGroupMembersKey();
 
         // Add user to groups:id:members
         await cache.SetAddAsync(
@@ -44,7 +39,7 @@ internal sealed class ChatGroupMemberAddedEventHandler(
 
         // Add group to users:id:feed
         await cache.SortedSetAddAsync(
-            GetUserFeedCacheKey(@event.MemberId),
+            @event.MemberId.GetUserFeedKey(),
             new RedisValue(@event.GroupId.ToString()),
             @event.Timestamp.Ticks);
 

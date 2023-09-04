@@ -3,6 +3,7 @@ using Chatify.Application.ChatGroups.Contracts;
 using Chatify.Application.ChatGroups.Queries;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
+using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Shared.Infrastructure.Common.Extensions;
 using StackExchange.Redis;
 
@@ -42,9 +43,6 @@ internal sealed class ChatGroupsFeedService(
                 AdminIds = new HashSet<Guid> { e.MessageSender.Id },
             });
 
-    private static RedisKey GetUserFeedCacheKey(Guid userId)
-        => new($"user:{userId}:feed");
-
     public async Task<List<ChatGroupFeedEntry>> GetFeedEntriesForUserAsync(
         Guid userId,
         int limit,
@@ -52,7 +50,7 @@ internal sealed class ChatGroupsFeedService(
         CancellationToken cancellationToken = default)
     {
         // Get feed with group ids from cache sorted set:
-        var userFeedCacheKey = GetUserFeedCacheKey(userId);
+        var userFeedCacheKey = userId.GetUserFeedKey();
         var values = await cache.SortedSetRangeByRankAsync(
             userFeedCacheKey,
             offset, limit + offset, Order.Descending);

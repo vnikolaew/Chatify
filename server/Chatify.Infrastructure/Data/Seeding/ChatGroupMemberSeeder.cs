@@ -1,4 +1,5 @@
 ﻿using Cassandra.Mapping;
+using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,7 +45,7 @@ internal sealed class ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory)
                 addedUserIds.Add(user.Id);
 
                 await mapper.InsertAsync(member, insertNulls: false);
-                var groupKey = GetGroupMembersCacheKey(member.ChatGroupId);
+                var groupKey = member.ChatGroupId.GetGroupMembersKey();
                 await cache.SetAddAsync(groupKey, member.UserId.ToString());
 
                 var count = await mapper.FirstOrDefaultAsync<long?>(
@@ -79,7 +80,4 @@ internal sealed class ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory)
             return user;
         }
     }
-
-    private static string GetGroupMembersCacheKey(Guid groupId)
-        => $"groups:{groupId.ToString()}:members";
 }

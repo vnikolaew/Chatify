@@ -3,8 +3,6 @@ using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Caching.Extensions;
-using Chatify.Infrastructure.Common.Extensions;
-using Chatify.Infrastructure.Messages.BackgroundJobs;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Client;
 using Chatify.Shared.Abstractions.Contexts;
@@ -24,22 +22,18 @@ internal sealed class ChatMessageSentEventHandler(
         IChatGroupAttachmentRepository attachments, IChatMessageRepository messages)
     : IEventHandler<ChatMessageSentEvent>
 {
-    private static string GetGroupMembersCacheKey(Guid groupId)
-        => $"groups:{groupId.ToString()}:members";
-
     public async Task HandleAsync(
         ChatMessageSentEvent @event,
         CancellationToken cancellationToken = default)
     {
         // Update user caches that serve for feed generation:
-        var groupKey = GetGroupMembersCacheKey(@event.GroupId);
+        var groupKey = @event.GroupId.GetGroupMembersKey();
         var membersIds = await cache.SetMembersAsync(groupKey);
         foreach (var membersId in membersIds.Select(_ => Guid.Parse(_.ToString())))
         {
             // Update User Feed (Sorted Set):
-            var userFeedCacheKey = new RedisKey($"user:{membersId.ToString()}:feed");
             await cache.SortedSetAddAsync(
-                userFeedCacheKey,
+                membersId.GetUserFeedKey(),
                 new RedisValue(
                     @event.GroupId.ToString()
                 ), @event.Timestamp.Ticks);

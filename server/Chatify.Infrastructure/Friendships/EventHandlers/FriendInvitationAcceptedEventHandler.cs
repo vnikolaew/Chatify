@@ -2,6 +2,7 @@
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Friendships;
 using Chatify.Domain.Repositories;
+using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Server;
 using Chatify.Shared.Abstractions.Events;
@@ -21,8 +22,6 @@ internal sealed class FriendInvitationAcceptedEventHandler(
     : IEventHandler<FriendInvitationAcceptedEvent>
 {
     
-    private static RedisKey GetUserFriendsCacheKey(Guid userId)
-        => $"user:{userId}:friends";
     
     public async Task HandleAsync(
         FriendInvitationAcceptedEvent @event,
@@ -31,12 +30,12 @@ internal sealed class FriendInvitationAcceptedEventHandler(
         var cacheSaveTasks = new Task[]
         {
             cache.SortedSetAddAsync(
-                GetUserFriendsCacheKey(@event.InviterId),
+                @event.InviterId.GetUserFriendsKey(),
                 new RedisValue(@event.InviteeId.ToString()),
                 @event.Timestamp.Ticks,
                 SortedSetWhen.NotExists),
             cache.SortedSetAddAsync(
-                GetUserFriendsCacheKey(@event.InviteeId),
+                @event.InviteeId.GetUserFriendsKey(),
                 new RedisValue(@event.InviterId.ToString()),
                 @event.Timestamp.Ticks,
                 SortedSetWhen.NotExists),
