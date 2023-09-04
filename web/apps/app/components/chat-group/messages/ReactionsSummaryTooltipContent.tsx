@@ -8,7 +8,7 @@ export interface ReactionsSummaryTooltipContentProps {
    reactions: ChatMessageReaction[];
 }
 
-const ReactionsSummaryTooltipContent = ({
+export const ReactionsSummaryTooltipContent = ({
    reactions,
 }: ReactionsSummaryTooltipContentProps) => {
    const meId = useCurrentUserId();
@@ -27,6 +27,13 @@ const ReactionsSummaryTooltipContent = ({
             reactions.length > 3 ? "s" : ""
          }`;
       } else {
+         if (reactions.length === 1) {
+            return `${
+               reactions[0].userId === meId
+                  ? "You (click to remove)"
+                  : reactions[0].username
+            }`;
+         }
          const lastReaction = reactions.at(-1);
 
          return `${reactions
@@ -53,5 +60,3 @@ const ReactionsSummaryTooltipContent = ({
       </div>
    );
 };
-
-export default ReactionsSummaryTooltipContent;

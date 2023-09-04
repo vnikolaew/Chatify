@@ -5,7 +5,6 @@ import {
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { notificationsClient } from "../../client";
-import { DEFAULT_CACHE_TIME, DEFAULT_STALE_TIME } from "../../../constants";
 import { UserNotification } from "@openapi";
 import { NOTIFICATIONS_KEY } from "./useGetPaginatedNotificationsQuery";
 
@@ -34,8 +33,6 @@ export const useGetUnreadNotificationsQuery = (
    return useQuery({
       queryKey: [NOTIFICATIONS_KEY, `unread`],
       queryFn: () => getUnreadNotifications(),
-      cacheTime: DEFAULT_CACHE_TIME,
-      staleTime: DEFAULT_STALE_TIME,
       ...options,
    });
 };

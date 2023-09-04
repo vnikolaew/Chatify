@@ -9,26 +9,28 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FastEndpoints" Version="5.15.0.22-beta" />
-        <PackageReference Include="Humanizer.Core" Version="2.14.1" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0-preview.2.23153.2" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Chatify.Application\Chatify.Application.csproj" />
-      <ProjectReference Include="..\Chatify.Infrastructure\Chatify.Infrastructure.csproj" />
+        <PackageReference Include="FastEndpoints" Version="5.15.0.22-beta"/>
+        <PackageReference Include="Humanizer.Core" Version="2.14.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0-preview.2.23153.2"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="swagger\v1" />
+        <InternalsVisibleTo Include="Chatify.IntegrationTesting"/>
     </ItemGroup>
     <ItemGroup>
-      <_ContentIncludedByDefault Remove="Views\Index\Index.cshtml" />
+        <ProjectReference Include="..\Chatify.Application\Chatify.Application.csproj"/>
+        <ProjectReference Include="..\Chatify.Infrastructure\Chatify.Infrastructure.csproj"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="swagger\v1"/>
+    </ItemGroup>
+    <ItemGroup>
+        <_ContentIncludedByDefault Remove="Views\Index\Index.cshtml"/>
     </ItemGroup>
 
     <Target Name="OpenAPI" AfterTargets="Build" Condition="$(Configuration)=='Debug'">
         <Exec Command="dotnet tool restore"></Exec>
-        <Exec Command="dotnet swagger tofile --output ./swagger/v1/swagger.yaml --yaml $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
-        <Exec Command="powershell.exe -ExecutionPolicy Bypass -File .\openapi-swagger.ps1" />
+        <Exec Command="dotnet swagger tofile --output ./swagger/v1/swagger.yaml --yaml $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)"/>
+        <Exec Command="powershell.exe -ExecutionPolicy Bypass -File .\openapi-swagger.ps1"/>
     </Target>
 </Project>

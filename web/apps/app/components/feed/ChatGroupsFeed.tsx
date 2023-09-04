@@ -12,9 +12,17 @@ import {
    Skeleton,
 } from "@nextui-org/react";
 import ChatGroupFeedEntry from "./ChatGroupFeedEntry";
-import { useIsUserLoggedIn, useDebounce } from "@hooks";
+import { useIsUserLoggedIn, useDebounce, useCurrentChatGroup } from "@hooks";
 import { useSearchChatGroupsByName } from "@web/api";
 import { HamburgerMenuIcon, NotSentIcon, SearchIcon } from "@icons";
+import {
+   AnimatePresence,
+   makeUseVisualState,
+   motion,
+   Reorder,
+} from "framer-motion";
+import { randomShuffleArray } from "../../utils";
+import ChatGroupFeedEntries from "@components/feed/ChatGroupFeedEntries";
 
 export interface ChatGroupsFeedProps {}
 
@@ -45,6 +53,8 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
       { enabled: isUserLoggedIn }
    );
 
+   const [reorderedFeed, setReorderedFeed] = useState(null!);
+
    const filteredEntries = useMemo(() => {
       if (!debouncedSearch || !searchEntries) return feedEntries;
 
@@ -52,15 +62,13 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
       return feedEntries?.filter((e) => searchEntryIds.has(e.chatGroup.id));
    }, [debouncedSearch, searchEntries, feedEntries]);
 
-   console.log(`q = ${debouncedSearch}`, filteredEntries);
-   console.log(searchEntries);
-
+   // @ts-ignore
    return (
       <aside
          className={`border-r-1 rounded-medium border-r-default-200 flex w-full flex-col items-center gap-2`}
       >
          <section
-            className={`flex h-fit w-full items-center p-2 gap-2 rounded-medium `}
+            className={`flex h-fit w-full items-center p-2 gap-1 rounded-medium `}
          >
             <Dropdown offset={10} showArrow>
                <DropdownTrigger>
@@ -89,7 +97,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                   value={searchTerm}
                   isClearable
                   onValueChange={setSearchTerm}
-                  className={`w-3/4 px-2`}
+                  className={`w-full px-2`}
                   classNames={{
                      inputWrapper:
                         "hover:border-foreground-500 px-4 group-data-[focus=true]:border-primary-500 border-1 border-transparent",
@@ -108,7 +116,9 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                />
             </div>
          </section>
-         <div className={`w-full  pr-4 flex flex-col gap-2 p-2 items-center`}>
+         <div
+            className={`w-full pr-4 flex flex-col gap-2 p-2 items-center rounded-md border-b-1 border-b-default-200`}
+         >
             {(isLoading || searchLoading) && (isFetching || searchFetching) && (
                <Fragment>
                   {Array.from({ length: 10 }).map((_, i) => (
@@ -150,11 +160,11 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                   </Button>
                </div>
             ) : (
-               <Fragment>
-                  {(filteredEntries ?? feedEntries)?.map((e, i) => (
-                     <ChatGroupFeedEntry key={i} feedEntry={e} />
-                  ))}
-               </Fragment>
+               <ChatGroupFeedEntries
+                  feedEntries={
+                     reorderedFeed ?? filteredEntries ?? feedEntries ?? []
+                  }
+               />
             )}
          </div>
       </aside>

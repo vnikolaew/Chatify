@@ -16,24 +16,14 @@ public record GetAllNotifications(
     [Required] string? PagingCursor
 ) : IQuery<GetAllNotificationsResult>;
 
-internal sealed class GetAllNotificationsHandler
+internal sealed class GetAllNotificationsHandler(IIdentityContext identityContext,
+        INotificationRepository notifications)
     : IQueryHandler<GetAllNotifications, GetAllNotificationsResult>
 {
-    private readonly IIdentityContext _identityContext;
-    private readonly INotificationRepository _notifications;
-
-    public GetAllNotificationsHandler(
-        IIdentityContext identityContext,
-        INotificationRepository notifications)
-    {
-        _identityContext = identityContext;
-        _notifications = notifications;
-    }
-
     public async Task<GetAllNotificationsResult> HandleAsync(
         GetAllNotifications query,
         CancellationToken cancellationToken = default)
-        => await _notifications.GetPaginatedForUserAsync(
-            _identityContext.Id, query.PageSize, query.PagingCursor,
+        => await notifications.GetPaginatedForUserAsync(
+            identityContext.Id, query.PageSize, query.PagingCursor,
             cancellationToken);
 }

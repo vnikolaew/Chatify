@@ -16,7 +16,7 @@ public interface IEntityChangeTracker
     public Task<Dictionary<string, object?>> TrackAsync<TEntity>(
         TEntity entity,
         Func<TEntity, Task> updateAction);
-    
+
     Dictionary<string, object?> GetChangedProperties<TEntity>(
         TEntity entity,
         TEntity newEntity);
@@ -35,7 +35,7 @@ internal sealed class EntityChangeTracker : IEntityChangeTracker
             OnCreateInstance = FormatterServices.GetUninitializedObject
         };
         var cloneEntity = entity.Clone(settings);
-        
+
         updateAction(cloneEntity);
         var newProps = GetProps(cloneEntity);
 
@@ -50,35 +50,13 @@ internal sealed class EntityChangeTracker : IEntityChangeTracker
         => TrackChangedProperties(GetProps(entity), GetProps(newEntity));
 
     public Dictionary<string, object?> GetProps<TEntity>(TEntity entity)
-        => typeof(TEntity)
-            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-            .ToDictionary(p => p.Name,
-                p =>
-                {
-                    var value = p.GetValue(entity);
-
-                    // Handle collections separately:
-                    if ( value is IEnumerable and not string )
-                    {
-                        if ( value is List<object> list ) return new List<object>(list);
-                        if ( value is Dictionary<string, string> dictionary )
-                        {
-                            return new Dictionary<string, string>(dictionary);
-                        }
-
-                        if ( value is HashSet<object> set ) return new HashSet<object>(set);
-
-                        if ( value is object[] array )
-                        {
-                            var newArray = new object[array.Length];
-                            
-                            array.CopyTo(newArray, 0);
-                            return newArray;
-                        }
-                    }
-                    
-                    return value;
-                });
+    {
+        var props = typeof(TEntity)
+            .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        
+        return props.ToDictionary(p => p.Name,
+            p => p.GetValue(entity));
+    }
 
     public async Task<Dictionary<string, object?>> TrackAsync<TEntity>(
         TEntity entity,
@@ -117,7 +95,7 @@ internal sealed class EntityChangeTracker : IEntityChangeTracker
                     changes.Add(propsName, enumerableTwo);
                     continue;
                 }
-                
+
                 var objectEnumerable = enumerable.Cast<object>().ToList();
                 var objectEnumerableTwo = enumerableTwo.Cast<object>().ToList();
 

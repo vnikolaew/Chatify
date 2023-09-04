@@ -1,10 +1,15 @@
-// global using FastEndpoints;
-
+using System.Globalization;
+using System.Net;
+using System.Runtime.CompilerServices;
+using System.Security.Claims;
+using System.Threading.RateLimiting;
 using Chatify.Application;
 using Chatify.Infrastructure;
 using Chatify.Shared.Infrastructure.Contexts;
+using Chatify.Web.Common;
 using Chatify.Web.Extensions;
 
+[assembly: InternalsVisibleTo("Chatify.IntegrationTesting")]
 var builder = WebApplication.CreateBuilder(args);
 {
     builder.UseUrls(
@@ -12,6 +17,41 @@ var builder = WebApplication.CreateBuilder(args);
         "https://0.0.0.0:7139"
     );
     builder.Services
+        .AddRateLimiter(opts =>
+        {
+            opts.AddPolicy(ApiController.DefaultUserRateLimitPolicy,
+                ctx =>
+                {
+                    if ( ctx.User.Identity?.IsAuthenticated is false )
+                    {
+                        return RateLimitPartition.GetNoLimiter(string.Empty);
+                    }
+
+                    var userId = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                    return RateLimitPartition.GetSlidingWindowLimiter(userId,
+                        _ => new SlidingWindowRateLimiterOptions
+                        {
+                            PermitLimit = 20,
+                            QueueLimit = 20,
+                            QueueProcessingOrder = QueueProcessingOrder.NewestFirst,
+                            Window = TimeSpan.FromSeconds(10)
+                        });
+                });
+            opts.OnRejected = (ctx,
+                ct) =>
+            {
+                if ( ctx.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter) )
+                {
+                    ctx.HttpContext.Response.Headers.RetryAfter =
+                        ( ( int )retryAfter.TotalSeconds ).ToString(NumberFormatInfo.InvariantInfo);
+                }
+
+                ctx.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                return ValueTask.CompletedTask;
+            };
+
+            opts.RejectionStatusCode = ( int )HttpStatusCode.TooManyRequests;
+        })
         .AddWebComponents()
         .AddMappers()
         .AddApplication(builder.Configuration)
@@ -22,32 +62,12 @@ var app = builder.Build();
 {
     app
         .UseHttpsRedirection()
-        .UseCors(policy =>
-            policy
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .WithOrigins("http://localhost:4200")
-                .AllowCredentials())
+        .UseConfiguredCors()
         .UseCachedStaticFiles(app.Environment, "/static")
         .UseDevelopmentSwagger(app.Environment)
+        .UseConfiguredCookiePolicy()
         .UseRouting()
-        .UseCookiePolicy(new CookiePolicyOptions
-        {
-            Secure = CookieSecurePolicy.Always,
-            MinimumSameSitePolicy = SameSiteMode.None,
-            ConsentCookieValue = true.ToString(),
-            CheckConsentNeeded = _ => true,
-            ConsentCookie = new CookieBuilder
-            {
-                Name = "Cookie-Consent",
-                Expiration = TimeSpan.FromHours(24 * 30 * 6),
-                MaxAge = TimeSpan.FromHours(24 * 30 * 6),
-                HttpOnly = false,
-                SameSite = SameSiteMode.None,
-                IsEssential = true,
-                SecurePolicy = CookieSecurePolicy.Always
-            }
-        })
+        .UseRateLimiter()
         .UseAuthentication()
         .UseAuthorization()
         .UseContext()
@@ -60,4 +80,8 @@ var app = builder.Build();
         });
 
     app.Run();
+}
+
+public partial class Program
+{
 }

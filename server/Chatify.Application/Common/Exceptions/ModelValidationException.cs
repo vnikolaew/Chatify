@@ -2,13 +2,9 @@
 
 namespace Chatify.Application.Common.Exceptions;
 
-public class ModelValidationException : Exception
+public class ModelValidationException() : Exception("One or more validation exceptions have occured")
 {
-    public ModelValidationException()
-        : base("One or more validation exceptions have occured")
-        => Errors = new List<string>();
-
-    public IList<string> Errors { get; set; }
+    public IList<string> Errors { get; set; } = new List<string>();
 
     public ModelValidationException(IEnumerable<ValidationResult> failures)
         : this()

@@ -11,29 +11,19 @@ using MarkAllAsReadResult = OneOf<BaseError, Unit>;
 
 public record MarkAllAsRead : ICommand<MarkAllAsReadResult>;
 
-internal sealed class MarkAllAsReadHandler
+internal sealed class MarkAllAsReadHandler(IIdentityContext identityContext,
+        INotificationRepository notifications)
     : ICommandHandler<MarkAllAsRead, MarkAllAsReadResult>
 {
-    private readonly IIdentityContext _identityContext;
-    private readonly INotificationRepository _notifications;
-
-    public MarkAllAsReadHandler(
-        IIdentityContext identityContext,
-        INotificationRepository notifications)
-    {
-        _identityContext = identityContext;
-        _notifications = notifications;
-    }
-
     public async Task<MarkAllAsReadResult> HandleAsync(
         MarkAllAsRead command,
         CancellationToken cancellationToken = default)
     {
-        var notifications = await _notifications
-            .AllForUserAsync(_identityContext.Id, cancellationToken);
-        foreach ( var userNotification in notifications )
+        var userNotifications = await notifications
+            .AllForUserAsync(identityContext.Id, cancellationToken);
+        foreach ( var userNotification in userNotifications )
         {
-            await _notifications.UpdateAsync(
+            await notifications.UpdateAsync(
                 userNotification,
                 notification => notification.Read = true,
                 cancellationToken);

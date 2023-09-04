@@ -14,6 +14,10 @@ import NextLink from "next/link";
 import { useGetMyClaimsQuery } from "@web/api";
 import { useIsUserLoggedIn } from "@hooks";
 import { NotificationsDropdown, UserDropdown } from "@components/navbar";
+import { ExitIcon } from "@icons";
+import TooltipButton from "@components/TooltipButton";
+import LogoutIcon from "@components/icons/LogoutIcon";
+import SignOutButton from "@components/navbar/SignOutButton";
 
 const NAV_LINKS: (LinkProps & { label: string })[] = [
    {
@@ -66,10 +70,13 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
             {data?.claims && Object.keys(data?.claims).length ? (
                <Fragment>
                   <NavbarItem>
-                     <UserDropdown baseImagesUrl={baseImagesUrl} />
+                     <UserDropdown />
                   </NavbarItem>
                   <NavbarItem>
                      <NotificationsDropdown />
+                  </NavbarItem>
+                  <NavbarItem>
+                     <SignOutButton />
                   </NavbarItem>
                </Fragment>
             ) : (

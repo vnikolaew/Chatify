@@ -24,40 +24,26 @@ public record GetUserDetails(
     [Required] [property: CacheKey] Guid UserId
 ) : IQuery<GetUserDetailsResult>;
 
-internal sealed class GetUserDetailsHandler
-    : IQueryHandler<GetUserDetails, GetUserDetailsResult>
-{
-    private readonly IIdentityContext _identityContext;
-    private readonly IFriendInvitationRepository _friendInvites;
-    private readonly IFriendshipsRepository _friendships;
-    private readonly IUserRepository _users;
-
-    public GetUserDetailsHandler(
-        IIdentityContext identityContext,
+internal sealed class GetUserDetailsHandler(IIdentityContext identityContext,
         IUserRepository users,
         IFriendshipsRepository friendships,
         IFriendInvitationRepository friendInvites)
-    {
-        _identityContext = identityContext;
-        _users = users;
-        _friendships = friendships;
-        _friendInvites = friendInvites;
-    }
-
+    : IQueryHandler<GetUserDetails, GetUserDetailsResult>
+{
     public async Task<GetUserDetailsResult> HandleAsync(
         GetUserDetails query,
         CancellationToken cancellationToken = default)
     {
-        var user = await _users.GetAsync(query.UserId, cancellationToken);
+        var user = await users.GetAsync(query.UserId, cancellationToken);
         if ( user is null ) return new UserNotFound();
-        if ( query.UserId == _identityContext.Id ) return new UserDetailsEntry(user);
+        if ( query.UserId == identityContext.Id ) return new UserDetailsEntry(user);
 
-        var friendships = await _friendships.AllFriendshipsForUser(_identityContext.Id, cancellationToken);
-        var friendInvite = await _friendInvites.ForUsersAsync(_identityContext.Id, query.UserId, cancellationToken);
+        var userFriendships = await friendships.AllFriendshipsForUser(identityContext.Id, cancellationToken);
+        var friendInvite = await friendInvites.ForUsersAsync(identityContext.Id, query.UserId, cancellationToken);
 
         return new UserDetailsEntry(
             user,
-            friendships.FirstOrDefault(_ => _.FriendTwoId == query.UserId),
+            userFriendships.FirstOrDefault(_ => _.FriendTwoId == query.UserId),
             friendInvite);
     }
 }

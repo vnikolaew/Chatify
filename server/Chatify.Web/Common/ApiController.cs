@@ -5,16 +5,19 @@ using Chatify.Shared.Abstractions.Queries;
 using LanguageExt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Chatify.Web.Common;
 
 [ApiController]
 [Authorize]
+[EnableRateLimiting(DefaultUserRateLimitPolicy)]
 [Produces(MediaTypeNames.Application.Json)]
 [Route("api/[controller]")]
 public abstract class ApiController : ControllerBase
 {
     private IDispatcher? _dispatcher;
+    public const string DefaultUserRateLimitPolicy = "user";
 
     protected IDispatcher Dispatcher
         => _dispatcher ??= HttpContext.RequestServices.GetRequiredService<IDispatcher>();

@@ -19,41 +19,28 @@ public record GetRepliesForMessage(
     [Required] string PagingCursor
 ) : IQuery<GetRepliesForMessageResult>;
 
-internal sealed class GetRepliesByForMessageHandler
+internal sealed class GetRepliesByForMessageHandler(IChatMessageReplyRepository messageReplies,
+        IIdentityContext identityContext,
+        IChatGroupMemberRepository members,
+        IChatMessageRepository messages)
     : IQueryHandler<GetRepliesForMessage, GetRepliesForMessageResult>
 {
-    private readonly IChatMessageReplyRepository _messageReplies;
-    private readonly IChatMessageRepository _messages;
-    private readonly IIdentityContext _identityContext;
-    private readonly IChatGroupMemberRepository _members;
-
-    public GetRepliesByForMessageHandler(
-        IChatMessageReplyRepository messageReplies,
-        IIdentityContext identityContext,
-        IChatGroupMemberRepository members, IChatMessageRepository messages)
-    {
-        _messageReplies = messageReplies;
-        _identityContext = identityContext;
-        _members = members;
-        _messages = messages;
-    }
-
     public async Task<GetRepliesForMessageResult> HandleAsync(
         GetRepliesForMessage command,
         CancellationToken cancellationToken = default)
     {
-        var message = await _messages.GetAsync(
+        var message = await messages.GetAsync(
             command.MessageId, cancellationToken);
         if ( message is null ) return new MessageNotFoundError(command.MessageId);
 
-        var isGroupMember = await _members.Exists(
+        var isGroupMember = await members.Exists(
             message.ChatGroupId,
-            _identityContext.Id, cancellationToken);
-        if ( !isGroupMember ) return new UserIsNotMemberError(_identityContext.Id, message.ChatGroupId);
+            identityContext.Id, cancellationToken);
+        if ( !isGroupMember ) return new UserIsNotMemberError(identityContext.Id, message.ChatGroupId);
 
-        var messages = await _messageReplies.GetPaginatedByMessageAsync(
+        var replies = await messageReplies.GetPaginatedByMessageAsync(
             command.MessageId, command.PageSize, command.PagingCursor, cancellationToken);
         
-        return messages;
+        return replies;
     }
 }

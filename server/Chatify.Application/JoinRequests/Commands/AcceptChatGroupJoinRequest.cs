@@ -20,20 +20,7 @@ public record AcceptChatGroupJoinRequest(
     [Required] Guid RequestId
 ) : ICommand<AcceptChatGroupJoinRequestResult>;
 
-internal sealed class AcceptChatGroupJoinRequestHandler
-    : ICommandHandler<AcceptChatGroupJoinRequest, AcceptChatGroupJoinRequestResult>
-{
-    private readonly IChatGroupMemberRepository _members;
-    private readonly IUserRepository _users;
-    private readonly IGuidGenerator _guidGenerator;
-    private readonly IClock _clock;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IChatGroupRepository _groups;
-    private readonly IIdentityContext _identityContext;
-    private readonly IDomainRepository<ChatGroupJoinRequest, Guid> _joinRequests;
-
-    public AcceptChatGroupJoinRequestHandler(
-        IChatGroupMemberRepository members,
+internal sealed class AcceptChatGroupJoinRequestHandler(IChatGroupMemberRepository members,
         IIdentityContext identityContext,
         IDomainRepository<ChatGroupJoinRequest, Guid> joinRequests,
         IChatGroupRepository groups,
@@ -41,52 +28,43 @@ internal sealed class AcceptChatGroupJoinRequestHandler
         IClock clock,
         IEventDispatcher eventDispatcher,
         IUserRepository users)
-    {
-        _members = members;
-        _identityContext = identityContext;
-        _joinRequests = joinRequests;
-        _groups = groups;
-        _guidGenerator = guidGenerator;
-        _clock = clock;
-        _eventDispatcher = eventDispatcher;
-        _users = users;
-    }
-
+    : ICommandHandler<AcceptChatGroupJoinRequest, AcceptChatGroupJoinRequestResult>
+{
     public async Task<AcceptChatGroupJoinRequestResult> HandleAsync(
         AcceptChatGroupJoinRequest command,
         CancellationToken cancellationToken = default)
     {
-        var request = await _joinRequests.GetAsync(command.RequestId, cancellationToken);
+        var request = await joinRequests.GetAsync(command.RequestId, cancellationToken);
         if ( request is null ) return Error.New("");
 
-        var group = await _groups.GetAsync(request.ChatGroupId, cancellationToken);
+        var group = await groups.GetAsync(request.ChatGroupId, cancellationToken);
         if ( group is null ) return new ChatGroupNotFoundError();
 
         var isCurrentUserGroupAdmin = group
             .AdminIds
-            .Any(_ => _ == _identityContext.Id);
-        if ( !isCurrentUserGroupAdmin ) return new UserIsNotGroupAdminError(_identityContext.Id, group.Id);
+            .Any(_ => _ == identityContext.Id);
+        if ( !isCurrentUserGroupAdmin ) return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
 
-        var user = await _users.GetAsync(request.UserId, cancellationToken);
+        var user = await users.GetAsync(request.UserId, cancellationToken);
 
-        var membershipId = _guidGenerator.New();
+        var membershipId = guidGenerator.New();
         var groupMember = new ChatGroupMember
         {
             Id = membershipId,
             ChatGroupId = group.Id,
             UserId = user!.Id,
             Username = user.Username,
-            CreatedAt = _clock.Now,
+            CreatedAt = clock.Now,
             User = user
         };
 
-        await _members.SaveAsync(groupMember, cancellationToken);
-        await _eventDispatcher.PublishAsync(new ChatGroupJoinRequestAccepted
+        await members.SaveAsync(groupMember, cancellationToken);
+        await eventDispatcher.PublishAsync(new ChatGroupJoinRequestAccepted
         {
             RequestId = request.Id,
             UserId = request.UserId,
-            AcceptedById = _identityContext.Id,
-            Timestamp = _clock.Now,
+            AcceptedById = identityContext.Id,
+            Timestamp = clock.Now,
             Username = user.Username,
             GroupId = group.Id
         }, cancellationToken);

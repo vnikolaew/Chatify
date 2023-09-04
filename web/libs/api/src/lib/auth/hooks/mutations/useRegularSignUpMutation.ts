@@ -6,6 +6,7 @@ export interface RegularSignUpModel {
    email: string;
    username: string;
    password: string;
+   acceptTermsAndConditions: boolean;
 }
 const regularSignUp = async (model: RegularSignUpModel) => {
    const { status, data, headers } = await authClient.post(`/signup`, model);

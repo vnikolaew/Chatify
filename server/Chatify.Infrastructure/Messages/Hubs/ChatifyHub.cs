@@ -13,13 +13,14 @@ namespace Chatify.Infrastructure.Messages.Hubs;
 using SendGroupChatMessageResult = Either<Error, Guid>;
 
 // [Authorize]
-public sealed class ChatifyHub(IChatGroupMemberRepository members, IIdentityContext identityContext)
+public sealed class ChatifyHub(IChatGroupMemberRepository members,
+        IIdentityContext identityContext)
     : Hub<IChatifyHubClient>
 {
-    public const string Endpoint = "/chat";
+    public const string Endpoint = "/api/chat";
 
     public static string GetChatGroupId(Guid groupId)
-        => $"chat-groups:{groupId}";
+        => $"chat-groups:{groupId.ToString()}";
 
     private Guid UserId => Guid.TryParse(Context.User!
         .Claims
@@ -28,7 +29,35 @@ public sealed class ChatifyHub(IChatGroupMemberRepository members, IIdentityCont
         ? userId
         : Guid.Empty;
 
-    public async Task SendMessage(string username, string message)
+    public override async Task OnConnectedAsync()
+    {
+        var groupIds = await GetService<IChatGroupMemberRepository>()
+            .GroupsIdsByUser(UserId);
+
+        var joinGroupsTasks = groupIds
+            .Chunk(10)
+            .Select(ids =>
+            {
+                return Task.WhenAll(ids.Select(id => Groups.AddToGroupAsync(
+                    Context.ConnectionId,
+                    GetChatGroupId(id))));
+            });
+
+        await Task.WhenAll(joinGroupsTasks);
+        await base.OnConnectedAsync();
+    }
+
+    public async Task Test(
+        string groupId,
+        string value)
+    {
+        await Clients
+            .Group(GetChatGroupId(Guid.Parse(groupId)))
+            .Test(groupId, value);
+    }
+
+    public async Task SendMessage(string username,
+        string message)
     {
         await Clients.All.ReceiveMessage(username, message);
     }
@@ -86,7 +115,7 @@ public sealed class ChatifyHub(IChatGroupMemberRepository members, IIdentityCont
         if ( !isGroupMember ) return Error.New("");
 
         await Clients
-            .Group(groupId.ToString())
+            .Group(GetChatGroupId(groupId))
             .ChatGroupMemberStartedTyping(new ChatGroupMemberStartedTyping(
                 groupId,
                 UserId,
@@ -106,7 +135,7 @@ public sealed class ChatifyHub(IChatGroupMemberRepository members, IIdentityCont
         if ( !isGroupMember ) return Error.New("");
 
         await Clients
-            .Group(groupId.ToString())
+            .Group(GetChatGroupId(groupId))
             .ChatGroupMemberStoppedTyping(new ChatGroupMemberStoppedTyping(
                 groupId,
                 UserId,

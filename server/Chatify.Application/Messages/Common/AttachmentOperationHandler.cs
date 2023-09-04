@@ -20,33 +20,21 @@ public interface IAttachmentOperationHandler
         CancellationToken cancellationToken = default);
 }
 
-public class AttachmentOperationHandler : IAttachmentOperationHandler
-{
-    private readonly IFileUploadService _fileUploadService;
-    private readonly IChatGroupAttachmentRepository _attachments;
-    private readonly IClock _clock;
-    private readonly IIdentityContext _identityContext;
-
-    public AttachmentOperationHandler(
-        IFileUploadService fileUploadService,
+public class AttachmentOperationHandler(IFileUploadService fileUploadService,
         IIdentityContext identityContext,
-        IChatGroupAttachmentRepository attachments, IClock clock)
-    {
-        _fileUploadService = fileUploadService;
-        _identityContext = identityContext;
-        _attachments = attachments;
-        _clock = clock;
-    }
-
+        IChatGroupAttachmentRepository attachments,
+        IClock clock)
+    : IAttachmentOperationHandler
+{
     private async Task HandleAddAsync(
         ChatMessage message,
         AddAttachmentOperation addAttachmentOperation,
         CancellationToken cancellationToken = default)
     {
-        var uploadResult = await _fileUploadService.UploadAsync(
+        var uploadResult = await fileUploadService.UploadAsync(
                 new SingleFileUploadRequest
                 {
-                    UserId = _identityContext.Id,
+                    UserId = identityContext.Id,
                     File = addAttachmentOperation.InputFile
                 }, cancellationToken);
         if ( uploadResult.IsT0 ) return;
@@ -66,12 +54,12 @@ public class AttachmentOperationHandler : IAttachmentOperationHandler
         {
             AttachmentId = fileUploadResult.FileId,
             UserId = message.UserId,
-            CreatedAt = _clock.Now,
-            Username = _identityContext.Username,
+            CreatedAt = clock.Now,
+            Username = identityContext.Username,
             MediaInfo = newMedia,
             ChatGroupId = message.ChatGroupId
         };
-        await _attachments.SaveAsync(attachment, cancellationToken);
+        await attachments.SaveAsync(attachment, cancellationToken);
     }
 
     public async Task HandleDeleteAsync(
@@ -84,17 +72,17 @@ public class AttachmentOperationHandler : IAttachmentOperationHandler
             .FirstOrDefault(m => m.Id == deleteAttachmentOperation.AttachmentId);
         if ( media is null ) return;
 
-        var deleteResult = await _fileUploadService
+        var deleteResult = await fileUploadService
             .DeleteAsync(new SingleFileDeleteRequest
             {
                 FileUrl = media.MediaUrl,
-                UserId = _identityContext.Id
+                UserId = identityContext.Id
             }, cancellationToken);
         
         deleteResult.MapT1(async _ =>
         {
             message.DeleteAttachment(media.Id);
-            await _attachments.DeleteAsync(media.Id, cancellationToken);
+            await attachments.DeleteAsync(media.Id, cancellationToken);
         });
     }
 

@@ -11,24 +11,15 @@ using GetSentInvitationsResult = OneOf<BaseError, List<FriendInvitation>>;
 
 public record GetSentInvitations : IQuery<GetSentInvitationsResult>;
 
-internal sealed class GetSentInvitationsHandler : IQueryHandler<GetSentInvitations, GetSentInvitationsResult>
-{
-    private readonly IIdentityContext _identityContext;
-    private readonly IFriendInvitationRepository _friendInvitations;
-
-    public GetSentInvitationsHandler(
-        IIdentityContext identityContext,
+internal sealed class GetSentInvitationsHandler(IIdentityContext identityContext,
         IFriendInvitationRepository friendInvitations)
-    {
-        _identityContext = identityContext;
-        _friendInvitations = friendInvitations;
-    }
-
+    : IQueryHandler<GetSentInvitations, GetSentInvitationsResult>
+{
     public async Task<GetSentInvitationsResult> HandleAsync(
         GetSentInvitations query,
         CancellationToken cancellationToken = default)
     {
-        var invites = await _friendInvitations.AllSentByUserAsync(_identityContext.Id, cancellationToken);
+        var invites = await friendInvitations.AllSentByUserAsync(identityContext.Id, cancellationToken);
         return invites;
     }
 }

@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import {
+   ChipProps,
    Popover,
    PopoverContent,
    PopoverProps,
@@ -12,7 +13,8 @@ import TooltipButton from "@components/TooltipButton";
 
 export interface TooltipWithPopoverActionButtonProps {
    popoverContent: React.ReactNode;
-   popoverProps?: PopoverProps;
+   popoverProps?: Omit<PopoverProps, "children">;
+   chipProps?: ChipProps;
    tooltipProps?: TooltipProps;
    tooltipContent: React.ReactNode;
    icon: React.ReactNode;
@@ -24,6 +26,7 @@ const TooltipWithPopoverActionButton = ({
    popoverContent,
    tooltipContent,
    icon,
+   chipProps,
    popoverProps,
    tooltipProps,
    isOpen,
@@ -43,6 +46,7 @@ const TooltipWithPopoverActionButton = ({
                   content={tooltipContent}
                   icon={icon}
                   {...tooltipProps}
+                  chipProps={chipProps}
                />
             </div>
          </PopoverTrigger>

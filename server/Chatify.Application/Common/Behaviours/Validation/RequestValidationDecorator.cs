@@ -6,14 +6,9 @@ namespace Chatify.Application.Common.Behaviours.Validation;
 
 // TODO: Replace Exceptions with proper Result Type instead:
 [Decorator]
-public class RequestValidationDecorator<TCommand>
-    : ICommandHandler<TCommand> where TCommand : class, ICommand
+public class RequestValidationDecorator<TCommand>(ICommandHandler<TCommand> inner) : ICommandHandler<TCommand>
+    where TCommand : class, ICommand
 {
-    private readonly ICommandHandler<TCommand> _inner;
-
-    public RequestValidationDecorator(ICommandHandler<TCommand> inner)
-        => _inner = inner;
-
     public async Task HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default)
@@ -24,19 +19,15 @@ public class RequestValidationDecorator<TCommand>
             throw new ModelValidationException(validationErrors);
         }
 
-        await _inner.HandleAsync(command, cancellationToken);
+        await inner.HandleAsync(command, cancellationToken);
     }
 }
 
 [Decorator]
 public class RequestValidationDecorator<TCommand, TResult>
-    : ICommandHandler<TCommand, TResult> where TCommand : class, ICommand<TResult>
+    (ICommandHandler<TCommand, TResult> inner) : ICommandHandler<TCommand, TResult>
+    where TCommand : class, ICommand<TResult>
 {
-    private readonly ICommandHandler<TCommand, TResult> _inner;
-
-    public RequestValidationDecorator(ICommandHandler<TCommand, TResult> inner)
-        => _inner = inner;
-
     public async Task<TResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default)
@@ -47,6 +38,6 @@ public class RequestValidationDecorator<TCommand, TResult>
             throw new ModelValidationException(validationErrors);
         }
 
-        return await _inner.HandleAsync(command, cancellationToken);
+        return await inner.HandleAsync(command, cancellationToken);
     }
 }

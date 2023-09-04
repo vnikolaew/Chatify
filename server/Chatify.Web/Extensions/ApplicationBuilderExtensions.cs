@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Net.Http.Headers;
+using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace Chatify.Web.Extensions;
 
@@ -21,6 +22,36 @@ public static class ApplicationBuilderExtensions
 
         return app;
     }
+
+    public static IApplicationBuilder UseConfiguredCors(
+        this IApplicationBuilder app)
+        => app.UseCors(policy =>
+            policy
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .WithOrigins("http://localhost:4200")
+                .AllowCredentials());
+
+    public static IApplicationBuilder UseConfiguredCookiePolicy(
+        this IApplicationBuilder app)
+        => app
+            .UseCookiePolicy(new CookiePolicyOptions
+            {
+                Secure = CookieSecurePolicy.Always,
+                MinimumSameSitePolicy = SameSiteMode.None,
+                ConsentCookieValue = true.ToString(),
+                CheckConsentNeeded = _ => true,
+                ConsentCookie = new CookieBuilder
+                {
+                    Name = "Cookie-Consent",
+                    Expiration = TimeSpan.FromHours(24 * 30 * 6),
+                    MaxAge = TimeSpan.FromHours(24 * 30 * 6),
+                    HttpOnly = false,
+                    SameSite = SameSiteMode.None,
+                    IsEssential = true,
+                    SecurePolicy = CookieSecurePolicy.Always
+                }
+            });
 
     public static IApplicationBuilder UseCachedStaticFiles(
         this IApplicationBuilder app,

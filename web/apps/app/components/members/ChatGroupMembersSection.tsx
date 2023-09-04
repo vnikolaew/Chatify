@@ -1,5 +1,5 @@
 "use client";
-import React, { Fragment } from "react";
+import React, { Fragment, useMemo } from "react";
 import {
    getUserDetails,
    useGetChatGroupDetailsQuery,
@@ -8,9 +8,10 @@ import {
    USER_DETAILS_KEY,
 } from "@web/api";
 import { useSearchParams } from "next/navigation";
-import { Skeleton } from "@nextui-org/react";
+import { ScrollShadow, Skeleton } from "@nextui-org/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChatGroupMemberEntry } from "@components/members";
+import AddNewGroupAdminActionButton from "./AddNewGroupAdminActionButton";
 
 export interface ChatGroupMembersSectionProps {}
 
@@ -27,6 +28,14 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
    );
    const client = useQueryClient();
 
+   const isCurrentUserGroupAdmin = useMemo(
+      () =>
+         data &&
+         me &&
+         data?.chatGroup?.adminIds?.some((_) => _ === me?.claims?.identifier),
+      [data, me]
+   );
+
    const handlePrefetchUserDetails = async (userId: string) => {
       console.log(`Fetching data for user ${userId} ...`);
 
@@ -37,8 +46,9 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
    };
 
    return (
-      <div
-         className={`flex flex-col items-start py-2 min-h-[80vh] h-full border-l-1 border-l-default-200 rounded-medium`}
+      <ScrollShadow
+         size={60}
+         className={`flex flex-col items-start py-2 max-h-[90vh] overflow-y-scroll min-h-[80vh] h-full border-b-1 border-b-default-200 border-l-1 border-l-default-200 pb-10 rounded-medium`}
       >
          {!chatGroupId ? (
             <div
@@ -56,10 +66,15 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
                {Object.entries(membersByCategory).map(
                   ([category, members], id) => (
                      <div key={id} className={`my-2 w-full`}>
-                        <div className={`w-full mt-2 px-4`}>
+                        <div
+                           className={`w-full flex items-center justify-between gap-2 mt-2 px-4`}
+                        >
                            <h2 className={`text-xs uppercase text-default-400`}>
                               {category} - {members.length}
                            </h2>
+                           {category === "admins" && true && (
+                              <AddNewGroupAdminActionButton />
+                           )}
                         </div>
                         {isLoading ? (
                            <div className={`w-full`}>
@@ -88,10 +103,6 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
                                     }
                                     key={member.id}
                                     member={member}
-                                    isMe={
-                                       me?.claims?.nameidentifier === member.id
-                                    }
-                                    myName={me?.claims?.name}
                                     category={category}
                                  />
                               ))}
@@ -102,7 +113,7 @@ const ChatGroupMembersSection = ({}: ChatGroupMembersSectionProps) => {
                )}
             </Fragment>
          )}
-      </div>
+      </ScrollShadow>
    );
 };
 

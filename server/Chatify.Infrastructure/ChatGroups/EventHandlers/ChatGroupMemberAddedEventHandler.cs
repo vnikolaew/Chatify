@@ -23,21 +23,30 @@ internal sealed class ChatGroupMemberAddedEventHandler(
     private static RedisKey GetGroupMembersCacheKey(Guid groupId)
         => new($"groups:{groupId.ToString()}:members");
 
+    private static RedisKey GetUserFeedCacheKey(Guid userId)
+        => new($"user:{userId.ToString()}:feed");
+
     public async Task HandleAsync(
         ChatGroupMemberAddedEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var group = await groups.GetAsync(@event.GroupId, cancellationToken);
-        if ( group is null ) return;
-
-        var membersCount = await membersCounts.Increment(group.Id, cancellationToken: cancellationToken);
+        var membersCount = await membersCounts.Increment(@event.GroupId, cancellationToken: cancellationToken);
         logger.LogInformation("Incremented Membership count for Chat Group with Id '{Id}' to {Count} ",
             @event.GroupId, membersCount?.MembersCount);
 
         // // Add new member to cache set as well:
-        var groupMembersCacheKey = GetGroupMembersCacheKey(group.Id);
-        var memberId = @event.MemberId.ToString();
-        await cache.SetAddAsync(groupMembersCacheKey, memberId);
+        var groupMembersCacheKey = GetGroupMembersCacheKey(@event.GroupId);
+
+        // Add user to groups:id:members
+        await cache.SetAddAsync(
+            groupMembersCacheKey,
+            @event.MemberId.ToString());
+
+        // Add group to users:id:feed
+        await cache.SortedSetAddAsync(
+            GetUserFeedCacheKey(@event.MemberId),
+            new RedisValue(@event.GroupId.ToString()),
+            @event.Timestamp.Ticks);
 
         await chatifyHubContext
             .Clients

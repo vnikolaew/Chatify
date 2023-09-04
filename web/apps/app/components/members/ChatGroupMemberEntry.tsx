@@ -1,28 +1,31 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import { User, UserStatus } from "@openapi";
 import { Avatar, Badge, Skeleton, Tooltip } from "@nextui-org/react";
 import { ChatGroupMemberInfoCard } from "@components/members";
+import { useGetMyClaimsQuery } from "@web/api";
 
 export interface ChatGroupMemberEntryProps {
    member: User;
-   isMe: boolean;
-   myName: string;
    category: string;
    onHover?: React.MouseEventHandler<HTMLDivElement>;
 }
 
 export const ChatGroupMemberEntry = ({
    member,
-   isMe,
    onHover,
    category,
-   myName,
 }: ChatGroupMemberEntryProps) => {
+   const { data: me } = useGetMyClaimsQuery();
+   const isMe = useMemo(
+      () => member.id === me.claims.nameidentifier,
+      [member, me]
+   );
+
    const innerDiv = (
       <div
          onMouseEnter={onHover}
-         className={`h-fit w-fit px-3 ml-4 mt-4 rounded-md transition-background duration-100 hover:bg-default-100 cursor-pointer flex items-start gap-3`}
+         className={`w-4/5 py-1 px-3 ml-4 mt-2 rounded-md transition-background duration-100 hover:bg-default-100 cursor-pointer flex items-center gap-3`}
       >
          <Badge
             color={
@@ -54,10 +57,8 @@ export const ChatGroupMemberEntry = ({
                src={member.profilePicture.mediaUrl}
             />
          </Badge>
-         <span className={`text-medium`}>
-            {myName === member.username
-               ? `${member.username} (you)`
-               : member.username}
+         <span className={`text-small`}>
+            {isMe ? `${member.username} (you)` : member.username}
          </span>
       </div>
    );

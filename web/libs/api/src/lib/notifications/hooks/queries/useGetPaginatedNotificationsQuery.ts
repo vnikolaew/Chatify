@@ -6,7 +6,7 @@ import {
 import { HttpStatusCode } from "axios";
 import { notificationsClient } from "../../client";
 import { DEFAULT_CACHE_TIME, DEFAULT_STALE_TIME } from "../../../constants";
-import { UserNotification } from "@openapi/index";
+import { UserNotification } from "@openapi";
 import { URLSearchParams } from "next/dist/compiled/@edge-runtime/primitives/url";
 
 export interface GetPaginatedNotificationsModel {
@@ -52,8 +52,6 @@ export const useGetPaginatedNotificationsQuery = (
    return useQuery({
       queryKey: [NOTIFICATIONS_KEY, model.pageSize, model.pagingCursor],
       queryFn: () => getPaginatedNotifications(model),
-      cacheTime: DEFAULT_CACHE_TIME,
-      staleTime: DEFAULT_STALE_TIME,
       ...options,
    });
 };

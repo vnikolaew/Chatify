@@ -54,7 +54,7 @@ export const ChatMessageRepliesSection = ({
             <div className={`text-default-300 inline-flex text-center text-xs`}>
                <span>{replies?.length}</span>
                <span className={`ml-1`}>
-                  {replies?.length > 1 ? "replies" : "reply"}
+                  {replies?.length !== 1 ? "replies" : "reply"}
                </span>
             </div>
             <Divider

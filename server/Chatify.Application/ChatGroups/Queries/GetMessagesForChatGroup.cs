@@ -107,12 +107,7 @@ internal sealed class GetMessagesByChatGroupHandler(
                             message.Metadata.TryGetValue(ShareMessageHandler.SharedMessageIdKey, out var messageId)
                                 ? originMessages[Guid.Parse(messageId)]
                                 : default,
-                        RepliersInfo = new MessageRepliersInfoEntry(
-                            repliersSummary.Total,
-                            repliersSummary.LastUpdatedAt,
-                            repliersSummary.ReplierInfos.Select(
-                                    ri => new MessageReplierInfoEntry(ri.UserId, ri.Username, ri.ProfilePictureUrl))
-                                .ToList()),
+                        RepliersInfo = repliersSummary.ToEntry(),
                         SenderInfo = new MessageSenderInfoEntry(
                             user.Id,
                             user.Username,

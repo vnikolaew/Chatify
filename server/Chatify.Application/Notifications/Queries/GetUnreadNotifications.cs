@@ -11,26 +11,16 @@ using GetUnreadNotificationsResult = OneOf<BaseError, List<UserNotification>>;
 
 public record GetUnreadNotifications : IQuery<GetUnreadNotificationsResult>;
 
-internal sealed class GetUnreadNotificationsHandler
+internal sealed class GetUnreadNotificationsHandler(IIdentityContext identityContext,
+        INotificationRepository notifications)
     : IQueryHandler<GetUnreadNotifications, GetUnreadNotificationsResult>
 {
-    private readonly IIdentityContext _identityContext;
-    private readonly INotificationRepository _notifications;
-
-    public GetUnreadNotificationsHandler(
-        IIdentityContext identityContext,
-        INotificationRepository notifications)
-    {
-        _identityContext = identityContext;
-        _notifications = notifications;
-    }
-
     public async Task<GetUnreadNotificationsResult> HandleAsync(
         GetUnreadNotifications _,
         CancellationToken cancellationToken = default)
     {
-        var allNotifications = await _notifications.AllForUserAsync(
-            _identityContext.Id,
+        var allNotifications = await notifications.AllForUserAsync(
+            identityContext.Id,
             cancellationToken);
         
         return allNotifications

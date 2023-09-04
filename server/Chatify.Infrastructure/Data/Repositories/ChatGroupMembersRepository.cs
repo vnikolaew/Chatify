@@ -35,7 +35,7 @@ public sealed class ChatGroupMembersRepository(
 
         // Add new user to both database and cache set:
         var dbSaveTask = base.SaveAsync(entity, cancellationToken);
-        
+
         var cacheSaveTask = cache.SetAddAsync(groupKey, userKey);
 
         var saveTasks = new Task[] { dbSaveTask, cacheSaveTask };
@@ -55,27 +55,9 @@ public sealed class ChatGroupMembersRepository(
         var userKey = new RedisValue(member.UserId.ToString());
 
         // Delete member from both the database and the cache:
-        var groupMemberByUserIdDeleteTask =
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await DbMapper
-                        .DeleteAsync<ChatGroupMemberByUser>(
-                            " WHERE user_id = ? AND chat_group_id = ?",
-                            member.UserId, member.ChatGroupId);
-                    return true;
-                }
-                catch ( Exception )
-                {
-                    return false;
-                }
-            }, cancellationToken);
-
         var deleteTasks = new[]
         {
             base.DeleteAsync(member.Id, cancellationToken),
-            groupMemberByUserIdDeleteTask,
             cache.SetRemoveAsync(groupKey, userKey)
         };
 
@@ -97,7 +79,8 @@ public sealed class ChatGroupMembersRepository(
     }
 
     public async Task<List<ChatGroupMember>?> ByGroup(
-        Guid groupId, CancellationToken cancellationToken = default)
+        Guid groupId,
+        CancellationToken cancellationToken = default)
         => ( await DbMapper
                 .FetchListAsync<Models.ChatGroupMember>(" WHERE chat_group_id = ?", groupId) )
             .ToList<ChatGroupMember>(Mapper);
@@ -124,13 +107,7 @@ public sealed class ChatGroupMembersRepository(
         Guid groupId,
         Guid userId,
         CancellationToken cancellationToken = default)
-    {
-        var groupKey = GetGroupMembersCacheKey(groupId);
-        var userKey = userId.ToString();
-
-        var members = await dbMapper.FetchListAsync<Models.ChatGroupMember>("WHERE chat_group_id = ?", groupId);
-        return members.Any(m => m.UserId == userId);
-        //
-        // return await cache.BloomFilterExistsAsync(groupKey, userKey);
-    }
+        => await dbMapper.FirstOrDefaultAsync<long>(
+            "SELECT COUNT(*) FROM chat_group_members WHERE chat_group_id = ? AND user_id = ? ALLOW FILTERING;",
+            groupId, userId) > 0;
 }

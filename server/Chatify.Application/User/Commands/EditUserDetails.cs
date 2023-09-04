@@ -35,37 +35,19 @@ public record EditUserDetails(
     ISet<string>? PhoneNumbers,
     NewPasswordInput? NewPasswordInput) : ICommand<EditUserDetailsResult>;
 
-internal sealed class EditUserDetailsHandler
-    : ICommandHandler<EditUserDetails, EditUserDetailsResult>
-{
-    private readonly IDomainRepository<Domain.Entities.User, Guid> _users;
-    private readonly IFileUploadService _fileUploadService;
-    private readonly IIdentityContext _identityContext;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IAuthenticationService _authenticationService;
-    private readonly IClock _clock;
-
-    public EditUserDetailsHandler(
-        IDomainRepository<Domain.Entities.User, Guid> users,
+internal sealed class EditUserDetailsHandler(IDomainRepository<Domain.Entities.User, Guid> users,
         IIdentityContext identityContext,
         IClock clock,
         IFileUploadService fileUploadService,
         IAuthenticationService authenticationService,
         IEventDispatcher eventDispatcher)
-    {
-        _users = users;
-        _identityContext = identityContext;
-        _clock = clock;
-        _fileUploadService = fileUploadService;
-        _authenticationService = authenticationService;
-        _eventDispatcher = eventDispatcher;
-    }
-
+    : ICommandHandler<EditUserDetails, EditUserDetailsResult>
+{
     public async Task<EditUserDetailsResult> HandleAsync(
         EditUserDetails command,
         CancellationToken cancellationToken = default)
     {
-        var user = await _users.GetAsync(_identityContext.Id, cancellationToken);
+        var user = await users.GetAsync(identityContext.Id, cancellationToken);
         if ( user is null ) return new UserNotFound();
 
         var newProfilePicture = user.ProfilePicture;
@@ -74,7 +56,7 @@ internal sealed class EditUserDetailsHandler
 
         if ( command.ProfilePicture is not null )
         {
-            var deleteResult = await _fileUploadService.DeleteAsync(
+            var deleteResult = await fileUploadService.DeleteAsync(
                 new SingleFileDeleteRequest
                 {
                     UserId = user.Id,
@@ -85,11 +67,11 @@ internal sealed class EditUserDetailsHandler
                 return new FileUploadError(deleteResult.AsT0.Message);
             }
 
-            var uploadResult = await _fileUploadService
+            var uploadResult = await fileUploadService
                 .UploadAsync(
                     new SingleFileUploadRequest
                     {
-                        UserId = _identityContext.Id,
+                        UserId = identityContext.Id,
                         File = command.ProfilePicture
                     }, cancellationToken);
 
@@ -110,7 +92,7 @@ internal sealed class EditUserDetailsHandler
 
         if ( command.NewPasswordInput is not null )
         {
-            var result = await _authenticationService.ChangePasswordAsync(
+            var result = await authenticationService.ChangePasswordAsync(
                 user.Id,
                 command.NewPasswordInput.OldPassword,
                 command.NewPasswordInput.NewPassword,
@@ -120,7 +102,7 @@ internal sealed class EditUserDetailsHandler
             if ( result.Value is PasswordChangeError passwordChangeError ) return passwordChangeError;
         }
 
-        await _users.UpdateAsync(user, user =>
+        await users.UpdateAsync(user, user =>
         {
             if ( command.PhoneNumbers?.Any() ?? false )
             {
@@ -131,11 +113,11 @@ internal sealed class EditUserDetailsHandler
 
             user.Username = newUsername;
             user.DisplayName = newDisplayName;
-            user.UpdatedAt = _clock.Now;
+            user.UpdatedAt = clock.Now;
             user.ProfilePicture = newProfilePicture;
         }, cancellationToken);
 
-        await _eventDispatcher.PublishAsync(new UserDetailsEditedEvent
+        await eventDispatcher.PublishAsync(new UserDetailsEditedEvent
         {
             UserId = user.Id,
             ProfilePicture = user.ProfilePicture,

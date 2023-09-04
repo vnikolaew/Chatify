@@ -14,29 +14,21 @@ public record MarkAsRead(
     [Required] Guid NotificationId
 ) : ICommand<MarkAsReadResult>;
 
-internal sealed class MarkAsReadHandler
+internal sealed class MarkAsReadHandler(IIdentityContext identityContext,
+        INotificationRepository notifications)
     : ICommandHandler<MarkAsRead, MarkAsReadResult>
 {
-    private readonly IIdentityContext _identityContext;
-    private readonly INotificationRepository _notifications;
-
-    public MarkAsReadHandler(
-        IIdentityContext identityContext,
-        INotificationRepository notifications)
-    {
-        _identityContext = identityContext;
-        _notifications = notifications;
-    }
+    private readonly IIdentityContext _identityContext = identityContext;
 
     public async Task<MarkAsReadResult> HandleAsync(
         MarkAsRead command,
         CancellationToken cancellationToken = default)
     {
-        var notification = await _notifications
+        var notification = await notifications
             .GetAsync(command.NotificationId, cancellationToken);
         if ( notification is null ) return new MarkAsReadResult()!;
 
-        await _notifications
+        await notifications
             .UpdateAsync(notification,
                 notification => notification.Read = true,
                 cancellationToken);

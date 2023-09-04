@@ -24,40 +24,26 @@ public record GetChatGroupJoinRequests(
 ) : IQuery<GetChatGroupJoinRequestsResult>;
 
 [Timed]
-internal sealed class GetChatGroupJoinRequestsHandler
-    : IQueryHandler<GetChatGroupJoinRequests, GetChatGroupJoinRequestsResult>
-{
-    private readonly IChatGroupJoinRequestRepository _joinRequests;
-    private readonly IUserRepository _users;
-    private readonly IIdentityContext _identityContext;
-    private readonly IChatGroupRepository _groups;
-
-    public GetChatGroupJoinRequestsHandler(
-        IChatGroupJoinRequestRepository joinRequests,
+internal sealed class GetChatGroupJoinRequestsHandler(IChatGroupJoinRequestRepository joinRequests,
         IIdentityContext identityContext,
         IChatGroupRepository groups,
         IUserRepository users)
-    {
-        _joinRequests = joinRequests;
-        _identityContext = identityContext;
-        _groups = groups;
-        _users = users;
-    }
-
+    : IQueryHandler<GetChatGroupJoinRequests, GetChatGroupJoinRequestsResult>
+{
     public async Task<GetChatGroupJoinRequestsResult> HandleAsync(
         GetChatGroupJoinRequests query,
         CancellationToken cancellationToken = default)
     {
-        var group = await _groups.GetAsync(query.GroupId, cancellationToken);
+        var group = await groups.GetAsync(query.GroupId, cancellationToken);
         if ( group is null ) return new ChatGroupNotFoundError();
 
-        var isCurrentUserAdmin = group.AdminIds.Any(_ => _ == _identityContext.Id);
-        if ( !isCurrentUserAdmin ) return new UserIsNotGroupAdminError(_identityContext.Id, group.Id);
+        var isCurrentUserAdmin = group.AdminIds.Any(_ => _ == identityContext.Id);
+        if ( !isCurrentUserAdmin ) return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
 
-        var requests = await _joinRequests
+        var requests = await joinRequests
             .ByGroup(group.Id, cancellationToken);
 
-        var userInfos = await _users.GetByIds(
+        var userInfos = await users.GetByIds(
             requests.Select(r => r.UserId), cancellationToken);
 
         return requests

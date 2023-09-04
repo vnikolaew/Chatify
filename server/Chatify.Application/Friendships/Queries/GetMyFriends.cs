@@ -13,22 +13,12 @@ using GetMyFriendsResult = OneOf<BaseError, List<Domain.Entities.User>>;
 [CachedByUser("friends", 30)]
 public record GetMyFriends : IQuery<GetMyFriendsResult>;
 
-internal sealed class GetMyFriendsHandler
+internal sealed class GetMyFriendsHandler(IFriendshipsRepository friendships,
+        IIdentityContext identityContext)
     : IQueryHandler<GetMyFriends, GetMyFriendsResult>
 {
-    private readonly IFriendshipsRepository _friendships;
-    private readonly IIdentityContext _identityContext;
-
-    public GetMyFriendsHandler(
-        IFriendshipsRepository friendships,
-        IIdentityContext identityContext)
-    {
-        _friendships = friendships;
-        _identityContext = identityContext;
-    }
-
     public async Task<GetMyFriendsResult> HandleAsync(
         GetMyFriends query,
         CancellationToken cancellationToken = default)
-        => await _friendships.AllForUser(_identityContext.Id, cancellationToken);
+        => await friendships.AllForUser(identityContext.Id, cancellationToken);
 }

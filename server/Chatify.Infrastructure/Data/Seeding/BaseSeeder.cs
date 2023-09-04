@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Chatify.Infrastructure.Data.Seeding;
 
-internal abstract class BaseSeeder<TEntity>(IServiceScopeFactory scopeFactory)
+public abstract class BaseSeeder<TEntity>(IServiceScopeFactory scopeFactory)
     : ISeeder
 {
     public abstract int Priority { get; }

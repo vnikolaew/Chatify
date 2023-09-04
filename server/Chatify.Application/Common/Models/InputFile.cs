@@ -11,13 +11,9 @@ public class InputFile
     public long SizeInBytes => Data.Length;
 }
 
-public class MaxSizeAttribute : ValidationAttribute
+public class MaxSizeAttribute(long limit) : ValidationAttribute($"File size cannot exceed {limit} bytes.")
 {
-    public MaxSizeAttribute(long limit)
-        : base($"File size cannot exceed {limit} bytes.")
-        => Limit = limit;
-
-    public long Limit { get; set; }
+    public long Limit { get; set; } = limit;
 
     protected override ValidationResult? IsValid(
         object? value,

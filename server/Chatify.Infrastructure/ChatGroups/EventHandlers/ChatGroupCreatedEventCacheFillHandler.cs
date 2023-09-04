@@ -1,4 +1,5 @@
 ﻿using Chatify.Domain.Events.Groups;
+using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Shared.Abstractions.Events;
 using Redis.OM.Contracts;
@@ -16,7 +17,8 @@ internal sealed class ChatGroupCreatedEventCacheFillHandler
     private readonly IRedisCollection<ChatGroup> _cacheGroups
         = connectionProvider.RedisCollection<ChatGroup>();
 
-    public async Task HandleAsync(ChatGroupCreatedEvent @event, CancellationToken cancellationToken = default)
+    public async Task HandleAsync(ChatGroupCreatedEvent @event,
+        CancellationToken cancellationToken = default)
     {
         var chatGroup = await mapper.FirstOrDefaultAsync<ChatGroup>(
             " WHERE id = ?", @event.GroupId);

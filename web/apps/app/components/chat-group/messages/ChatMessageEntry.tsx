@@ -1,13 +1,6 @@
 "use client";
 import { ChatGroupMessageEntry } from "@openapi";
-import {
-   Avatar,
-   Button,
-   ButtonGroup,
-   Chip,
-   Link,
-   Tooltip,
-} from "@nextui-org/react";
+import { Avatar, Chip, Link, Tooltip } from "@nextui-org/react";
 import { getMediaUrl } from "@web/api";
 import { twMerge } from "tailwind-merge";
 import { ChatGroupMemberInfoCard } from "@components/members";
@@ -19,6 +12,9 @@ import {
 } from "@components/chat-group/messages";
 import { AnimatePresence, motion } from "framer-motion";
 import ChatMessageReactionSection from "@components/chat-group/messages/ChatMessageReactionSection";
+import ChatMessageActionsToolbar from "@components/chat-group/messages/ChatMessageActionsToolbar";
+import { useHover } from "@hooks";
+import MessageAttachmentsSection from "@components/chat-group/messages/MessageAttachmentsSection";
 
 export interface ChatMessageEntryProps
    extends React.DetailedHTMLProps<
@@ -38,7 +34,7 @@ export const ChatMessageEntry = ({
    ...rest
 }: ChatMessageEntryProps) => {
    const [repliesExpanded, setRepliesExpanded] = useState(showReplies);
-   const [showMessageActions, setShowMessageActions] = useState(false);
+   const [messageSectionRef, showMessageActions] = useHover<HTMLDivElement>();
 
    const hasReplies = useMemo(
       () => message.repliersInfo.total > 0,
@@ -49,43 +45,28 @@ export const ChatMessageEntry = ({
       return Object.entries(message?.message?.reactionCounts ?? {}).length > 0;
    }, [message?.message?.reactionCounts]);
 
+   const hasAttachments = useMemo(() => {
+      return message?.message?.attachments?.length > 0 ?? false;
+   }, [message]);
+
    return (
       <div
+         ref={messageSectionRef}
          className={`flex relative rounded-lg flex-col gap-2 items-start transition-background duration-100 hover:bg-default-100 ${className}`}
-         onMouseEnter={(_) => setShowMessageActions(true)}
-         onMouseLeave={(_) => setShowMessageActions(false)}
          {...rest}
       >
          {showMessageActions && (
-            <ButtonGroup
-               size={"sm"}
-               variant={"shadow"}
-               color={"default"}
-               className={`absolute h-5 text-xs min-h-fit max-h-fit rounded-md bg-dark -translate-y-1/2 top-0 right-10`}
-            >
-               <Button
-                  startContent={<span>#1</span>}
-                  isIconOnly
-                  className={`bg-default-100 max-h-fit py-0 px-0 h-5`}
-               />
-               <Button
-                  startContent={<span>#2</span>}
-                  isIconOnly
-                  className={`max-h-fit h-5`}
-               />
-               <Button
-                  startContent={<span>#3</span>}
-                  isIconOnly
-                  className={`max-h-fit h-5 bg-default-400`}
-               />
-            </ButtonGroup>
+            <ChatMessageActionsToolbar
+               messageId={message.message.id}
+               showMoreActions={isMe}
+            />
          )}
          <div
-            className={`flex px-2 py-1 rounded-lg gap-3 items-center transition-background duration-100 hover:bg-default-100 `}
+            className={`flex px-2 py-1 rounded-lg gap-3 items-start transition-background duration-100 hover:bg-default-100 `}
             key={message.message.id}
          >
             <Avatar
-               className={`w-10 h-10`}
+               className={`w-10 mt-2 h-10`}
                size={"md"}
                radius={"md"}
                color={"warning"}
@@ -132,18 +113,23 @@ export const ChatMessageEntry = ({
                </div>
                <span
                   className={`max-w-[500px] leading-5 text-[0.8rem] text-foreground-500 mt-1 ${
-                     !hasReplies && `mb-4`
+                     !hasReplies && `mb-0`
                   }`}
-               >
-                  {message.message.content}
-               </span>
-               {hasReactions && (
+                  dangerouslySetInnerHTML={{ __html: message.message.content }}
+               ></span>
+               {hasAttachments && (
+                  <MessageAttachmentsSection
+                     messageId={message.message.id}
+                     attachments={message.message.attachments}
+                  />
+               )}
+               {
                   <ChatMessageReactionSection
                      userReaction={message.userReaction}
                      messageId={message.message.id}
                      reactionCounts={message.message.reactionCounts}
                   />
-               )}
+               }
                {hasReplies && (
                   <div
                      className={`max-w-[500px] mt-1 flex items-center gap-0 text-small text-default-300`}

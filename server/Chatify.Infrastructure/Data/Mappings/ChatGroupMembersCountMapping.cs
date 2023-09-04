@@ -10,8 +10,8 @@ public class ChatGroupMembersCountMapping : Cassandra.Mapping.Mappings
     {
         For<ChatGroupMembersCount>()
             .TableName(nameof(ChatGroupMembersCount).Underscore())
-            .PartitionKey(mc => mc.Id)
-            .UnderscoreColumn(mc => mc.Id)
+            .PartitionKey(mc => mc.ChatGroupId)
+            .UnderscoreColumn(mc => mc.ChatGroupId)
             .UnderscoreColumn(mc => mc.MembersCount)
             .Column(mc => mc.MembersCount, mc => mc.AsCounter());
     }

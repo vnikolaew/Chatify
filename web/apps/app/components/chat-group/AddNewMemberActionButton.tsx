@@ -1,5 +1,5 @@
 "use client";
-import React, { Fragment, useCallback, useMemo } from "react";
+import React, { Fragment, useCallback } from "react";
 import {
    Button,
    CircularProgress,
@@ -8,7 +8,11 @@ import {
    User,
 } from "@nextui-org/react";
 import { AddUserIcon, PinIcon, PlusIcon } from "@icons";
-import { useAddChatGroupMember, useGetMyFriendsQuery } from "@web/api";
+import {
+   useAddChatGroupMember,
+   useGetChatGroupPinnedMessages,
+   useGetMyFriendsQuery,
+} from "@web/api";
 import TooltipWithPopoverActionButton from "@components/TooltipWithPopoverActionButton";
 import { useCurrentChatGroup } from "@hooks";
 import SadFaceIcon from "@components/icons/SadFaceIcon";
@@ -18,12 +22,39 @@ export interface AddNewMemberActionButtonProps {}
 
 export const PinnedMessagesActionButton = ({}: {}) => {
    const { isOpen, onOpenChange } = useDisclosure({ defaultOpen: false });
+   const groupId = useCurrentChatGroup();
+   const {
+      data: pinnedMessages,
+      isLoading,
+      error,
+   } = useGetChatGroupPinnedMessages(
+      { groupId },
+      {
+         enabled: false,
+      }
+   );
 
    return (
       <TooltipWithPopoverActionButton
          isOpen={isOpen}
          onOpenChange={onOpenChange}
-         popoverContent={"Content"}
+         popoverContent={
+            true ? (
+               <div className={`flex my-2 flex-col items-start gap-2`}>
+                  {Array.from({ length: 3 }).map((_, i) => (
+                     <div className={`flex items-center gap-1`} key={i}>
+                        <Skeleton className={`w-5 h-5 rounded-full`} />
+                        <div className={`flex flex-col gap-1`}>
+                           <Skeleton className={`w-24 h-2 rounded-full`} />
+                           <Skeleton className={`w-12 h-1 rounded-full`} />
+                        </div>
+                     </div>
+                  ))}
+               </div>
+            ) : (
+               null!
+            )
+         }
          tooltipContent={"Pinned messages"}
          icon={<PinIcon fill={"white"} size={24} />}
       />
@@ -95,7 +126,9 @@ const AddNewMemberPopover = () => {
                className={`text-default-300 my-2 gap-1 flex-col flex items-center w-full`}
             >
                <SadFaceIcon className={`fill-default-300`} size={20} />
-               <span>You have no suggestions for new members </span>
+               <span className={`text-xs`}>
+                  You have no suggestions for new members{" "}
+               </span>
             </div>
          )}
          {addMemberSuggestedUsers?.map((friend, i) => (

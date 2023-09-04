@@ -27,6 +27,10 @@ public sealed class ChatMessageRepository(
     private Task<long> GetTotalMessagesCount(Guid groupId)
         => DbMapper.FirstOrDefaultAsync<long>(
             "SELECT COUNT(*) FROM chat_messages WHERE chat_group_id = ?", groupId);
+    
+    private Task<long> GetTotalMessagesRepliersCount(Guid groupId)
+        => DbMapper.FirstOrDefaultAsync<long>(
+            "SELECT COUNT(*) FROM chat_message_replies_summaries WHERE chat_group_id = ?", groupId);
 
     public async Task<CursorPaged<ChatMessage>> GetPaginatedByGroupAsync(
         Guid groupId,
@@ -58,7 +62,7 @@ public sealed class ChatMessageRepository(
             pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?;",
             new object[] { groupId });
 
-        var total = await GetTotalMessagesCount(groupId);
+        var total = await GetTotalMessagesRepliersCount(groupId);
         return new CursorPaged<MessageRepliersInfo>(
             replierInfoes
                 .Select(ri => ri.To<MessageRepliersInfo>(Mapper))

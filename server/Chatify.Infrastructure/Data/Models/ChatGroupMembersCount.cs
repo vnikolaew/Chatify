@@ -2,7 +2,7 @@
 
 public class ChatGroupMembersCount
 {
-    public Guid Id { get; set; }
+    public Guid ChatGroupId { get; set; }
     
     public long MembersCount { get; set; }
 }

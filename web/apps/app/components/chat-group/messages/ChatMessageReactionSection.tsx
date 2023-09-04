@@ -7,14 +7,14 @@ import {
    Tooltip,
    useDisclosure,
 } from "@nextui-org/react";
-import ReactionsSummaryTooltipContent from "@components/chat-group/messages/ReactionsSummaryTooltipContent";
+import { ReactionsSummaryTooltipContent } from "@components/chat-group/messages";
 import {
    useGetAllReactionsForMessage,
    useReactToGroupMessageMutation,
    useUnreactToGroupMessageMutation,
 } from "@web/api";
 import { ChatMessageReaction, UserMessageReaction } from "@openapi";
-import { useCurrentChatGroup, useCurrentUserId } from "@hooks";
+import { useCurrentChatGroup, useCurrentUserId, useHover } from "@hooks";
 import { PlusIcon } from "@icons";
 import HappyFaceIcon from "@components/icons/HappyFaceIcon";
 import Picker from "@emoji-mart/react";
@@ -71,6 +71,10 @@ const ChatMessageReactionSection = ({
       [reactions]
    );
 
+   const handleFetchReactions = () => {
+      if (!fetchReactions) setFetchReactions(true);
+   };
+
    const handleReactToMessage = async (reactionCode: number) => {
       if (hasUserReacted(reactionCode)) {
          const reactionId = reactions.find((r) => r.userId === meId).id!;
@@ -112,7 +116,7 @@ const ChatMessageReactionSection = ({
             >
                <Button
                   className={`px-2 min-w-fit max-w-fit w-fit items-center justify-center h-5 py-0`}
-                  onMouseEnter={(_) => setFetchReactions(true)}
+                  onMouseEnter={handleFetchReactions}
                   onPress={(_) => handleReactToMessage(Number(reactionCode))}
                   size={"sm"}
                   color={
@@ -157,8 +161,7 @@ const ChatMessageReactionSection = ({
             <Button
                className={`px-2 min-w-fit max-w-fit w-fit items-center justify-center h-5 py-0`}
                isIconOnly
-               onMouseEnter={(_) => setFetchReactions(true)}
-               // onPress={}
+               onMouseEnter={handleFetchReactions}
                startContent={
                   <Badge
                      size={"sm"}

@@ -2,7 +2,7 @@
 import React, { Fragment } from "react";
 import Link from "next/link";
 import SignOut from "@components/SignOut";
-import { useGetChatGroupDetailsQuery } from "@web/api";
+import { useGetChatGroupDetailsQuery, useGetMyClaimsQuery } from "@web/api";
 import { useIsUserLoggedIn } from "@hooks";
 import {
    Button,
@@ -17,13 +17,16 @@ import ChatGroupTopBar from "@components/chat-group/ChatGroupTopBar";
 import { useSearchParams } from "next/navigation";
 import CrossIcon from "@components/icons/CrossIcon";
 import { ChatMessagesSection } from "@components/chat-group";
+import { useChatifyClientContext } from "../../hub/ChatHubConnection";
 
 export const revalidate = 0;
 
 function IndexPage(props) {
    const params = useSearchParams();
    const isNew = params.get("new") === "true";
+   const { data: me } = useGetMyClaimsQuery();
 
+   const client = useChatifyClientContext();
    const {
       isOpen: isSuccessModalOpen,
       onOpenChange: onSuccessModalOpenChange,
@@ -39,7 +42,12 @@ function IndexPage(props) {
       enabled: !!chatGroupId && isUserLoggedIn,
    });
 
-   console.log(chatGroupDetails);
+   const handleSignalRTest = async () => {
+      await client.test(
+         chatGroupId,
+         `Test value from ${me.claims.nameidentifier}`
+      );
+   };
 
    return (
       <div
@@ -115,6 +123,15 @@ function IndexPage(props) {
                className={`self-center w-full flex flex-col items-center mt-4`}
             >
                <ChatMessagesSection groupId={chatGroupId} />
+               <Button
+                  onPress={handleSignalRTest}
+                  className={`mt-4`}
+                  radius={"md"}
+                  variant={"solid"}
+                  color={"primary"}
+               >
+                  Test SignalR
+               </Button>
                <SignOut />
             </div>
          )}

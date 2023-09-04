@@ -18,32 +18,64 @@ internal sealed class FriendsSeeder(IServiceScopeFactory scopeFactory)
 
         var insertedMembers = new HashSet<(Guid, Guid)>();
 
-        var userIds = ( await mapper
-            .FetchAsync<Guid>("SELECT id FROM users;") ).ToArray();
+        var users = ( await mapper
+            .FetchAsync<ChatifyUser>("SELECT * FROM users;") ).ToArray();
 
         foreach ( var _ in Enumerable.Range(1, 100) )
         {
-            var userOneId = userIds[Random.Shared.Next(0, userIds.Length)];
-            var userTwoId = userIds[Random.Shared.Next(0, userIds.Length)];
+            var userOne = users[Random.Shared.Next(0, users.Length)];
+            var userTwo = users[Random.Shared.Next(0, users.Length)];
 
-            if ( insertedMembers.Contains(( userOneId, userTwoId )) ||
-                 insertedMembers.Contains(( userTwoId, userOneId ))
-                 || userOneId == userTwoId ) continue;
+            if ( insertedMembers.Contains(( userOne.Id, userTwo.Id )) ||
+                 insertedMembers.Contains(( userTwo.Id, userOne.Id ))
+                 || userOne.Id == userTwo.Id ) continue;
 
-            var friends = new FriendsRelation
+            var friendshipOne = new FriendsRelation
             {
                 Id = Guid.NewGuid(),
-                FriendOneId = userOneId,
-                FriendTwoId = userTwoId,
+                FriendOneId = userOne.Id,
+                FriendTwoId = userTwo.Id,
                 CreatedAt = DateTimeOffset.Now,
                 GroupId = Guid.NewGuid()
             };
+
+            var friendshipTwo = new FriendsRelation
+            {
+                Id = Guid.NewGuid(),
+                FriendOneId = userTwo.Id,
+                FriendTwoId = userOne.Id,
+                CreatedAt = friendshipOne.CreatedAt,
+                GroupId = friendshipOne.GroupId
+            };
+
             var newGroup = new ChatGroup
             {
-                Id = friends.GroupId,
+                Id = friendshipOne.GroupId,
                 CreatedAt = DateTimeOffset.Now,
-                Name = $"{friends.FriendOneId}:{friends.FriendTwoId}",
-                AdminIds = new HashSet<Guid> { friends.FriendOneId, friends.FriendTwoId }
+                Name = $"{friendshipOne.FriendOneId}:{friendshipOne.FriendTwoId}",
+                AdminIds = new HashSet<Guid> { friendshipOne.FriendOneId, friendshipOne.FriendTwoId }
+            };
+
+            var memberships = new ChatGroupMember[]
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    CreatedAt = DateTimeOffset.Now,
+                    MembershipType = 0,
+                    ChatGroupId = newGroup.Id,
+                    Username = userOne.UserName,
+                    UserId = userOne.Id
+                },
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    CreatedAt = DateTimeOffset.Now,
+                    MembershipType = 0,
+                    ChatGroupId = newGroup.Id,
+                    Username = userTwo.UserName,
+                    UserId = userTwo.Id
+                }
             };
 
             var idIndex = Math.Max(0,
@@ -51,27 +83,33 @@ internal sealed class FriendsSeeder(IServiceScopeFactory scopeFactory)
             );
 
             newGroup.CreatorId = newGroup.AdminIds.ToArray()[idIndex];
+            insertedMembers.Add(( userOne.Id, userTwo.Id ));
 
-            insertedMembers.Add(( userOneId, userTwoId ));
-
-            await mapper.InsertAsync(friends, insertNulls: true);
+            await mapper.InsertAsync(friendshipOne, insertNulls: true);
+            await mapper.InsertAsync(friendshipTwo, insertNulls: true);
+            await Task.WhenAll(memberships.Select(m =>
+                mapper.InsertAsync(m, insertNulls: true)));
+            
             await mapper.InsertAsync(newGroup, insertNulls: false);
 
             // Insert friend Ids in Redis Sorted set caches:
             var cacheSaveTasks = new Task[]
             {
                 cache.SortedSetAddAsync(
-                    new RedisKey($"user:{userOneId}:friends"),
-                    new RedisValue(userTwoId.ToString()),
-                    friends.CreatedAt.Ticks,
-                    SortedSetWhen.NotExists),
+                    GetUserFriendsCacheKey(userOne.Id),
+                    new RedisValue(userTwo.Id.ToString()),
+                    friendshipOne.CreatedAt.Ticks
+                    ),
                 cache.SortedSetAddAsync(
-                    new RedisKey($"user:{userTwoId}:friends"),
-                    new RedisValue(userOneId.ToString()),
-                    friends.CreatedAt.Ticks,
-                    SortedSetWhen.NotExists)
+                    GetUserFriendsCacheKey(userTwo.Id),
+                    new RedisValue(userOne.Id.ToString()),
+                    friendshipTwo.CreatedAt.Ticks
+                    )
             };
             await Task.WhenAll(cacheSaveTasks);
         }
     }
+    
+    private static RedisKey GetUserFriendsCacheKey(Guid userId)
+        => $"user:{userId}:friends";
 }

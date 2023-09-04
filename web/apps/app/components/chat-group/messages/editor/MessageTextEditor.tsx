@@ -1,5 +1,11 @@
 "use client";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, {
+   useCallback,
+   useEffect,
+   useMemo,
+   useRef,
+   useState,
+} from "react";
 import { DefaultElement, Editable, Slate, withReact } from "slate-react";
 import { createEditor, Text, Transforms } from "slate";
 import {
@@ -24,11 +30,18 @@ import { useSendGroupChatMessageMutation } from "@web/api";
 import { useCurrentChatGroup } from "@hooks";
 import * as escaper from "html-escaper";
 import { plateToMarkdown } from "slate-mark";
+import slate from "remark-slate";
+
 import { v4 as uuidv4 } from "uuid";
 
 import { CustomEditor } from "./editor";
 import CrossIcon from "@components/icons/CrossIcon";
-import { Space } from "lucide-react";
+import { markdownProcessor, normalizeFileName } from "../../../../utils";
+import { unified } from "unified";
+import markdown from "remark-parse";
+import { useChatifyClientContext } from "../../../../hub/ChatHubConnection";
+import { useFileUpload } from "@hooks";
+import ChatMessageAttachmentEntry from "@components/chat-group/messages/editor/ChatMessageAttachmentEntry";
 
 export class ChatifyFile {
    public readonly id: string;
@@ -133,23 +146,30 @@ function getTextFromNode(node) {
 const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
    const [editor] = useState(() => withReact(createEditor()));
    const groupId = useCurrentChatGroup();
-   const [attachedFiles, setAttachedFiles] = useState<ChatifyFile[]>([]);
+   const hubClient = useChatifyClientContext();
+   const [isUserTyping, setIsUserTyping] = useState(false);
+   const {
+      attachedFilesUrls,
+      attachedFiles,
+      fileUploadRef,
+      handleFileUpload,
+      handleRemoveFile,
+      clearFiles,
+   } = useFileUpload();
 
-   // Mapping of File ID -> File Object URL
-   const attachedFilesUrls = useMemo<Map<string, string>>(
-      () =>
-         new Map<string, string>(
-            attachedFiles.map((file) => [
-               file.id,
-               URL.createObjectURL(file.file),
-            ])
-         ),
-      [attachedFiles]
-   );
-   console.log(attachedFilesUrls);
-
-   const fileUploadRef = useRef<HTMLInputElement>(null!);
-
+   useEffect(() => {
+      if (isUserTyping) {
+         hubClient
+            .startTypingInGroupChat(groupId)
+            .then(console.log)
+            .catch(console.error);
+      } else {
+         hubClient
+            .stopTypingInGroupChat(groupId)
+            .then(console.log)
+            .catch(console.error);
+      }
+   }, [isUserTyping]);
    const [disableSendMessageButton, setDisableSendMessageButton] =
       useState(true);
    const {
@@ -201,33 +221,29 @@ const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
       console.log(editor.children);
 
       const content = plateToMarkdown(editor.children);
+      console.log(`Markdown: ${content}`);
+      console.log(markdownProcessor.processSync(content).value as string);
+
+      unified()
+         .use(markdown as any)
+         .use(slate)
+         .process(content, (err, data) => {
+            console.log({ data: data.result });
+         });
       await sendMessage(
          {
-            content,
+            content: markdownProcessor.processSync(content).value as string,
             chatGroupId: groupId,
             files: attachedFiles.map((_) => _.file),
          },
          {
             onSuccess: (data, vars, context) => {
                CustomEditor.clear(editor);
-               setAttachedFiles([]);
+               clearFiles();
             },
          }
       );
    }
-
-   const handleFileUpload: React.ChangeEventHandler<HTMLInputElement> = async ({
-      target: { files },
-   }) => {
-      console.log(files);
-      const newFiles = Array.from({ length: files.length }).map((_, i) =>
-         files.item(i)
-      );
-      setAttachedFiles((files) => [
-         ...files,
-         ...newFiles.map((_) => new ChatifyFile(_, uuidv4())),
-      ]);
-   };
 
    return (
       <Slate
@@ -244,8 +260,10 @@ const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
                   chatGroup?.name && `Message in ${chatGroup?.name} ...`
                }
                className={`bg-zinc-900 !break-words !whitespace-nowrap ${
-                  attachedFilesUrls?.size ? `min-h-[180px]` : `min-h-[140px]`
-               }  h-auto relative text-medium px-6 pt-14 rounded-medium text-white border-default-200 border-1 !active:border-default-300 !focus:border-default-300`}
+                  attachedFilesUrls?.size
+                     ? `!min-h-[180px] !max-h-[180px]`
+                     : `!min-h-[140px] !max-h-[140px]`
+               } relative text-medium px-6 pt-14 rounded-medium text-white border-default-200 border-1 !active:border-default-300 !focus:border-default-300`}
                renderElement={renderElement}
                renderLeaf={renderLeaf}
                onKeyDown={(e) => {
@@ -254,6 +272,11 @@ const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
                      Transforms.insertText(editor, `\u00a0`);
                      return;
                   }
+                  if (CustomEditor.isVoid(editor) && isUserTyping) {
+                     setIsUserTyping(false);
+                  } else if (!isUserTyping) setIsUserTyping(true);
+
+                  console.log(CustomEditor.isVoid(editor));
 
                   if (!e.ctrlKey) return;
 
@@ -338,74 +361,11 @@ const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
                </Dropdown>
                <Spacer y={4} />
                {[...attachedFilesUrls?.entries()].map(([id, url], i) => (
-                  <div key={id} className={`flex flex-col items-center gap-2`}>
-                     <Badge
-                        size={"sm"}
-                        classNames={{
-                           badge: `w-3 h-3 m-0 p-0`,
-                        }}
-                        content={
-                           <Tooltip
-                              closeDelay={100}
-                              disableAnimation
-                              delay={100}
-                              color={"default"}
-                              size={"sm"}
-                              classNames={{
-                                 base: `px-2 py-0`,
-                              }}
-                              showArrow
-                              content={
-                                 <span className={`text-[.6rem]`}>
-                                    Remove file
-                                 </span>
-                              }
-                           >
-                              <Button
-                                 variant={"shadow"}
-                                 color={"default"}
-                                 onPress={(_) => {
-                                    setAttachedFiles((files) =>
-                                       files.filter((f) => f.id !== id)
-                                    );
-                                 }}
-                                 className={`!w-fit hover:bg-zinc-900 !min-w-fit m-0 px-1 h-4`}
-                                 type={"button"}
-                                 size={"sm"}
-                                 radius={"full"}
-                                 startContent={
-                                    <CrossIcon
-                                       className={`stroke-foreground fill-transparent `}
-                                       size={10}
-                                    />
-                                 }
-                                 isIconOnly
-                              />
-                           </Tooltip>
-                        }
-                        key={i}
-                        color={"default"}
-                     >
-                        <Image
-                           height={40}
-                           width={40}
-                           shadow={"md"}
-                           radius={"md"}
-                           src={url}
-                        />
-                     </Badge>
-                     <Chip
-                        variant={"flat"}
-                        color={"warning"}
-                        size={"sm"}
-                        classNames={{
-                           base: `px-1 h-4`,
-                        }}
-                        className={`text-[.6rem] px-1`}
-                     >
-                        {attachedFiles.find((f) => f.id === id)!.file.name}
-                     </Chip>
-                  </div>
+                  <ChatMessageAttachmentEntry
+                     attachment={attachedFiles.find((_) => _.id === id)!}
+                     url={url}
+                     onRemove={() => handleRemoveFile(id)}
+                  />
                ))}
             </div>
             <div

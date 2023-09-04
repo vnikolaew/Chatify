@@ -7,7 +7,6 @@ using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
-using LanguageExt.Common;
 using OneOf;
 using ChatGroupNotFoundError = Chatify.Application.Messages.Common.ChatGroupNotFoundError;
 
@@ -31,24 +30,26 @@ internal sealed class PinChatGroupMessageHandler(IIdentityContext identityContex
     {
         var message = await messages.GetAsync(command.MessageId, cancellationToken);
         if ( message is null ) return new MessageNotFoundError(command.MessageId);
-        
+
         var group = await groups.GetAsync(message.ChatGroupId, cancellationToken);
         if ( group is null ) return new ChatGroupNotFoundError();
 
-        if ( !group.AdminIds.Contains(identityContext.Id) ) return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
-        
+        if ( !group.AdminIds.Contains(identityContext.Id) )
+            return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
+
         await groups.UpdateAsync(group, group =>
         {
-            var pinnedMessageIds = JsonSerializer.Deserialize<System.Collections.Generic.HashSet<Guid>>(
-                group.Metadata["pinned_message_ids"]
-            ) ?? new System.Collections.Generic.HashSet<Guid>();
+            var pinnedMessageIds = group.Metadata.TryGetValue("pinned_message_ids",
+                out var messageIds)
+                ? JsonSerializer.Deserialize<System.Collections.Generic.HashSet<Guid>>(messageIds)!
+                : new System.Collections.Generic.HashSet<Guid>();
 
             pinnedMessageIds.Add(message.Id);
 
             group.Metadata["pinned_message_ids"] = JsonSerializer.Serialize(pinnedMessageIds);
             group.UpdatedAt = clock.Now;
         }, cancellationToken);
-        
+
         return Unit.Default;
     }
 }

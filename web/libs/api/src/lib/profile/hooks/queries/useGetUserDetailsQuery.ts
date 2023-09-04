@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { profileClient } from "../../client";
-import { UserDetailsEntry, UserDetailsEntryApiResponse } from "@openapi/index";
+import { UserDetailsEntry, UserDetailsEntryApiResponse } from "@openapi";
 
 // @ts-ignore
 
@@ -36,14 +36,14 @@ export const USER_DETAILS_KEY = "user-details";
 export const useGetUserDetailsQuery = (
    userId: string,
    options?: Omit<
-      UseQueryOptions<UserDetailsEntry, unknown, UserDetailsEntry, string[]>,
+      UseQueryOptions<UserDetailsEntry, Error, UserDetailsEntry, string[]>,
       "initialData"
    > & {
       initialData?: (() => undefined) | undefined;
    }
 ) => {
    const client = useQueryClient();
-   return useQuery({
+   return useQuery<UserDetailsEntry, Error, UserDetailsEntry, string[]>({
       queryKey: [USER_DETAILS_KEY, userId],
       queryFn: ({ queryKey: [_, userId] }) => getUserDetails({ userId }),
       cacheTime: 60 * 60 * 1000,

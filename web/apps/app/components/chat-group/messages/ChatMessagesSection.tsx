@@ -1,5 +1,6 @@
 "use client";
 import React, {
+   Fragment,
    UIEventHandler,
    useCallback,
    useEffect,
@@ -19,6 +20,7 @@ import DownArrow from "@components/icons/DownArrow";
 import StartupRocketIcon from "@components/icons/StartupRocketIcon";
 import { LoadingChatMessageEntry } from "@components/chat-group/messages/LoadingChatMessageEntry";
 import MessageTextEditor from "@components/chat-group/messages/editor/MessageTextEditor";
+import MembersTypingSection from "@components/chat-group/messages/MembersTypingSection";
 
 export interface ChatMessagesSectionProps {
    groupId: string;
@@ -34,6 +36,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
    const {
       data: messages,
       isLoading,
+      isFetching,
       error,
       fetchNextPage,
       hasNextPage,
@@ -49,13 +52,14 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
    const { data: me } = useGetMyClaimsQuery();
    const showConversationBeginningMessage = useMemo(
       () =>
-         !messages?.pages?.at(-1)?.hasMore && !isLoading && !isFetchingNextPage,
+         !messages?.pages?.at(-1)?.hasMore &&
+         !isLoading &&
+         !isFetchingNextPage &&
+         !error,
       [messages?.pages, isLoading, isFetchingNextPage]
    );
 
-   const fetchMoreMessages = async () => {
-      await fetchNextPage();
-   };
+   const fetchMoreMessages = async () => await fetchNextPage();
 
    const handleMessageSectionScroll: UIEventHandler<HTMLDivElement> =
       useCallback(
@@ -100,93 +104,109 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
 
    return (
       <section className={`w-full flex flex-col items-start overflow-hidden`}>
-         <div className={`w-full relative`}>
-            {isScrollDownButtonVisible && !isLoading && (
-               <Tooltip
-                  showArrow
-                  offset={2}
-                  placement={"top"}
-                  color={"default"}
-                  size={"sm"}
-                  content={"Scroll to bottom"}
-               >
-                  <Button
-                     size={"md"}
-                     radius={"full"}
-                     onPress={handleScrollDown}
-                     isIconOnly
-                     className={`absolute opacity-80 z-10 cursor-pointer bottom-20 right-10`}
-                     startContent={
-                        <DownArrow className={`fill-transparent`} size={30} />
-                     }
-                     variant={"shadow"}
-                     color={"default"}
-                  />
-               </Tooltip>
-            )}
-            <ScrollShadow
-               onScroll={handleMessageSectionScroll}
-               size={20}
-               ref={messagesSectionRef}
-               className={`w-full relative`}
-               orientation={"vertical"}
-            >
-               {showConversationBeginningMessage && (
-                  <div
-                     className={`w-full flex justify-center gap-4 text-center items-center my-8`}
+         {groupId && (
+            <Fragment>
+               <div className={`w-full relative min-h-[60vh]`}>
+                  {isScrollDownButtonVisible && !isLoading && (
+                     <Tooltip
+                        showArrow
+                        offset={2}
+                        placement={"top"}
+                        color={"default"}
+                        size={"sm"}
+                        classNames={{
+                           base: `px-2 py-0 text-[.6rem]`,
+                        }}
+                        content={"Scroll to bottom"}
+                     >
+                        <Button
+                           size={"md"}
+                           radius={"full"}
+                           onPress={handleScrollDown}
+                           isIconOnly
+                           className={`absolute opacity-80 z-10 cursor-pointer bottom-20 right-10`}
+                           startContent={
+                              <DownArrow
+                                 className={`fill-transparent`}
+                                 size={30}
+                              />
+                           }
+                           variant={"shadow"}
+                           color={"default"}
+                        />
+                     </Tooltip>
+                  )}
+                  <ScrollShadow
+                     onScroll={handleMessageSectionScroll}
+                     size={20}
+                     ref={messagesSectionRef}
+                     className={`w-full relative`}
+                     orientation={"vertical"}
                   >
-                     <StartupRocketIcon
-                        className={`fill-default-400`}
-                        size={24}
-                     />
-                     <span className={`text-medium text-default-400`}>
-                        You've scrolled to the beginning of this conversation.
-                     </span>
-                  </div>
-               )}
-               <div
-                  className={`flex relative px-2 my-12 w-full max-h-[60vh] flex-col gap-4`}
-               >
-                  {!isLoading &&
-                     isFetchingNextPage &&
-                     Array.from({ length: 5 }).map((_, i) => (
-                        <LoadingChatMessageEntry
-                           reversed={i % 4 === 0}
-                           key={i}
-                        />
-                     ))}
-                  {isLoading &&
-                     Array.from({ length: 10 }).map((_, i) => (
-                        <LoadingChatMessageEntry
-                           reversed={i % 4 === 0}
-                           key={i}
-                        />
-                     ))}
-                  {messages?.pages
-                     ?.flatMap((p) => p.items)
-                     .reverse()
-                     ?.map((message, i, arr) => {
-                        const isMe =
-                           message.senderInfo.userId ===
-                           me.claims.nameidentifier;
-                        const isLatest = i === arr.length - 1;
-                        return (
-                           <ChatMessageEntry
-                              message={message}
-                              key={i}
-                              isMe={isMe}
-                              {...(isLatest && { className: `mb-12` })}
-                              {...(i === 0 && { ref: firstMessageRef })}
-                              {...(i === 0 && { showReplies: true })}
+                     {showConversationBeginningMessage && (
+                        <div
+                           className={`w-full flex justify-center gap-4 text-center items-center my-8`}
+                        >
+                           <StartupRocketIcon
+                              className={`fill-default-400`}
+                              size={24}
                            />
-                        );
-                     })}
+                           <span className={`text-medium text-default-400`}>
+                              You've scrolled to the beginning of this
+                              conversation.
+                           </span>
+                        </div>
+                     )}
+                     <div
+                        className={`flex relative px-2 mt-12 w-full max-h-[60vh] flex-col gap-4`}
+                     >
+                        {!isLoading &&
+                           isFetchingNextPage &&
+                           Array.from({ length: 5 }).map((_, i) => (
+                              <LoadingChatMessageEntry
+                                 reversed={i % 4 === 0}
+                                 key={i}
+                              />
+                           ))}
+                        {isFetching &&
+                           Array.from({ length: 10 }).map((_, i) => (
+                              <LoadingChatMessageEntry
+                                 reversed={i % 4 === 0}
+                                 key={i}
+                              />
+                           ))}
+                        {messages?.pages
+                           ?.flatMap((p) => p.items)
+                           .reverse()
+                           ?.map((message, i, arr) => {
+                              const isMe =
+                                 message.senderInfo.userId ===
+                                 me.claims.nameidentifier;
+                              const isLatest = i === arr.length - 1;
+                              return (
+                                 <ChatMessageEntry
+                                    message={message}
+                                    key={i}
+                                    isMe={isMe}
+                                    {...(isLatest && { className: `mb-4` })}
+                                    {...(i === 0 && { ref: firstMessageRef })}
+                                    {...(i === 0 && { showReplies: true })}
+                                 />
+                              );
+                           })}
+                        <div className={`mb-4`}>
+                           <MembersTypingSection />
+                        </div>
+                     </div>
+                  </ScrollShadow>
                </div>
-            </ScrollShadow>
-         </div>
-         <div className={`mt-12 w-full flex flex-col items-start gap-8 mx-4`}>
-            <MessageTextEditor chatGroup={groupDetails?.chatGroup} />
-         </div>
+               <div
+                  className={`mt-4 w-full flex flex-col items-start gap-8 mx-4`}
+               >
+                  <MessageTextEditor chatGroup={groupDetails?.chatGroup} />
+               </div>
+            </Fragment>
+         )}
          {hasNextPage && (
             <div className={`mt-4`}>
                <Button

@@ -22,11 +22,14 @@ const addChatGroupAdmin = async (model: AddChatGroupAdminModel) => {
 export const useAddChatGroupAdmin = () => {
    const client = useQueryClient();
 
-   return useMutation(addChatGroupAdmin, {
-      onError: console.error,
-      onSuccess: (data) =>
-         console.log("Chat group admin added successfully: " + data),
-      onSettled: (res) => console.log(res),
-      cacheTime: 60 * 60 * 1000,
-   });
+   return useMutation<any, Error, AddChatGroupAdminModel, any>(
+      addChatGroupAdmin,
+      {
+         onError: console.error,
+         onSuccess: (data) =>
+            console.log("Chat group admin added successfully: " + data),
+         onSettled: (res) => console.log(res),
+         cacheTime: 60 * 60 * 1000,
+      }
+   );
 };

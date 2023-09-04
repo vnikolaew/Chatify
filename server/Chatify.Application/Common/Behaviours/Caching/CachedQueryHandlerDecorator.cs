@@ -8,14 +8,13 @@ using Humanizer;
 namespace Chatify.Application.Common.Behaviours.Caching;
 
 [Decorator]
-internal sealed class CachedQueryHandlerDecorator<TQuery, TResult>
-    : IQueryHandler<TQuery, TResult> where TQuery : class, IQuery<TResult>
+internal sealed class CachedQueryHandlerDecorator<TQuery, TResult>(IQueryHandler<TQuery, TResult> inner,
+        ICacheService cache,
+        IIdentityContext identityContext)
+    : IQueryHandler<TQuery, TResult>
+    where TQuery : class, IQuery<TResult>
 {
-    private readonly IQueryHandler<TQuery, TResult> _inner;
-    private readonly IIdentityContext _identityContext;
-    private readonly ICacheService _cache;
-
-    private string UserId => _identityContext.Id.ToString();
+    private string UserId => identityContext.Id.ToString();
 
     private static readonly List<PropertyInfo> PropertyCacheKeys =
         typeof(TQuery)
@@ -37,24 +36,13 @@ internal sealed class CachedQueryHandlerDecorator<TQuery, TResult>
 
     private static bool IsCachingEnabled => CachedQueryOptions.ContainsKey(typeof(TQuery));
 
-    public CachedQueryHandlerDecorator(
-        IQueryHandler<TQuery, TResult> inner,
-        ICacheService cache,
-        IIdentityContext identityContext
-    )
-    {
-        _inner = inner;
-        _cache = cache;
-        _identityContext = identityContext;
-    }
-
     public async Task<TResult> HandleAsync(
         TQuery query,
         CancellationToken cancellationToken = default)
     {
         if ( !IsCachingEnabled )
         {
-            return await _inner.HandleAsync(query, cancellationToken);
+            return await inner.HandleAsync(query, cancellationToken);
         }
 
         var cacheAttribute = CachedQueryOptions[typeof(TQuery)];
@@ -68,11 +56,11 @@ internal sealed class CachedQueryHandlerDecorator<TQuery, TResult>
 
         var cacheKey = $"{cacheAttribute.QueryCacheKeyPrefix}:{string.Join(":", keyPropertyValues)}";
 
-        var item = await _cache.GetAsync<TResult>(cacheKey, cancellationToken);
+        var item = await cache.GetAsync<TResult>(cacheKey, cancellationToken);
         if ( item is not null ) return item;
 
-        var result = await _inner.HandleAsync(query, cancellationToken);
-        await _cache.SetAsync(cacheKey, result, cacheAttribute.TtlInSeconds?.Seconds(), cancellationToken);
+        var result = await inner.HandleAsync(query, cancellationToken);
+        await cache.SetAsync(cacheKey, result, cacheAttribute.TtlInSeconds?.Seconds(), cancellationToken);
 
         return result;
     }

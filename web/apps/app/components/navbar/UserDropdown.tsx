@@ -46,11 +46,9 @@ const USER_STATUSES = new Set<{
    { status: UserStatus.OFFLINE, color: "default" },
 ]);
 
-export interface UserDropdownProps {
-   baseImagesUrl: string;
-}
+export interface UserDropdownProps {}
 
-export const UserDropdown = ({ baseImagesUrl }: UserDropdownProps) => {
+export const UserDropdown = ({}: UserDropdownProps) => {
    const { isUserLoggedIn } = useIsUserLoggedIn();
    const { data, isLoading, error } = useGetMyClaimsQuery({
       enabled: isUserLoggedIn,

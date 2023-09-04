@@ -1242,7 +1242,7 @@ paths:
                 $ref: '#/components/schemas/ProblemDetails'
         '204':
           description: No Content
-  '/pins/{messageId}':
+  '/api/Messages/pins/{messageId}':
     post:
       tags:
         - Messages
@@ -1254,17 +1254,6 @@ paths:
           schema:
             type: string
             format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PinChatGroupMessage'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/PinChatGroupMessage'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/PinChatGroupMessage'
       responses:
         '400':
           description: Bad Request
@@ -1696,6 +1685,7 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
+        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1726,7 +1716,6 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
-        - Unknown
       type: string
     ApiResponseStatus:
       enum:
@@ -2527,13 +2516,6 @@ components:
           type: string
           nullable: true
           readOnly: true
-      additionalProperties: false
-    PinChatGroupMessage:
-      type: object
-      properties:
-        messageId:
-          type: string
-          format: uuid
       additionalProperties: false
     ProblemDetails:
       type: object

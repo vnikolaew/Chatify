@@ -120,6 +120,7 @@ public sealed class AuthenticationService(
         var ipAddress = IPAddress.Parse(context.IpAddress);
         if ( !user.DeviceIps.Contains(ipAddress) )
         {
+            
             await users.UpdateAsync(user.Id, user => { user.DeviceIps.Add(ipAddress); }, cancellationToken);
         }
 

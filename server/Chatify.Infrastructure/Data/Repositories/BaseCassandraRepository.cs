@@ -3,7 +3,9 @@ using Cassandra;
 using Cassandra.Mapping;
 using Chatify.Domain.Common;
 using Chatify.Infrastructure.Common.Mappings;
+using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Services;
+using FastDeepCloner;
 using Humanizer;
 using IMapper = AutoMapper.IMapper;
 using Mapper = Cassandra.Mapping.Mapper;
@@ -63,14 +65,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         var entity = dataEntity.To<TEntity>(Mapper);
         updateAction(entity);
 
-        var newDataEntity = Mapper.Map<TDataEntity>(entity);
-        var dataChangedProps = _changeTracker
-            .GetChangedProperties(dataEntity, newDataEntity);
-
-        var cql = GetUpdateCqlStatement(dataEntity, dataChangedProps);
-        await DbMapper.ExecuteAsync(cql);
-
-        return entity;
+        return await ExecuteUpdateAsync(entity, dataEntity);
     }
 
     public async Task<TEntity?> UpdateAsync(
@@ -81,26 +76,22 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         var dataEntity = Mapper.Map<TDataEntity>(entity);
         updateAction(entity);
 
-        var newDataEntity = Mapper.Map<TDataEntity>(entity);
-        var dataChangedProps = _changeTracker
-            .GetChangedProperties(dataEntity, newDataEntity);
-
-        var cql = GetUpdateCqlStatement(dataEntity, dataChangedProps);
-        await DbMapper.ExecuteAsync(cql);
-
-        return entity;
+        return await ExecuteUpdateAsync(entity, dataEntity);
     }
 
-    private Cql GetUpdateCqlStatement(
+    private static Cql GetUpdateCqlStatement(
         TDataEntity entity,
         Dictionary<string, object?> changedProps)
     {
         if ( changedProps.Count == 0 ) return new Cql("SELECT 1 + 1 ;");
 
-        var tableColumnNames = changedProps
-            .Keys
-            .Select(prop => typeof(TDataEntity).GetProperty(prop)!)
-            .Select(pi => MappingDefinition.GetColumnDefinition(pi).ColumnName ?? pi.Name.Underscore())
+        var tableColumns = changedProps
+            .Where(prop =>
+                MappingDefinition.GetColumnDefinition(typeof(TDataEntity).GetProperty(prop.Key)!) is not null)
+            .Select(prop => (
+                name: MappingDefinition.GetColumnDefinition(typeof(TDataEntity).GetProperty(prop.Key)!)?.ColumnName,
+                value: prop.Value ))
+            .Where(prop => prop.name is not null)
             .ToList();
 
         var primaryKeys = MappingDefinition
@@ -121,21 +112,19 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
             .ToList();
 
         var filterStatement = string.Join(" AND ", primaryKeys.OrderBy(_ => _).Select(key => $"{key} = ?"));
+        var arguments = tableColumns
+            .Select(_ => _.value)
+            .Append(partitionKeyValues)
+            .ToArray();
+
         var cql = new Cql($" UPDATE {MappingDefinition.TableName} SET {string.Join(
             ", ",
-            tableColumnNames
-                .Select(c => $"{c} = ?").ToList())} WHERE {filterStatement};")
+            tableColumns
+                .Select(c => $"{c.name} = ?").ToList())} WHERE {filterStatement};")
             .WithOptions(opts =>
                 opts.SetConsistencyLevel(ConsistencyLevel.Quorum)
-                    .SetRetryPolicy(new DefaultRetryPolicy()));
-
-        cql.GetType()
-            .GetProperty(nameof(Cql.Arguments),
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
-            .SetValue(cql, changedProps
-                .Select(_ => _.Value)
-                .Append(partitionKeyValues)
-                .ToArray());
+                    .SetRetryPolicy(new DefaultRetryPolicy()))
+            .WithArguments(arguments);
 
         return cql;
     }
@@ -151,9 +140,18 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         var entity = dataEntity.To<TEntity>(Mapper);
         await updateAction(entity);
 
-        var newDataEntity = Mapper.Map<TDataEntity>(entity);
+        return await ExecuteUpdateAsync(entity, dataEntity);
+    }
+
+    private async Task<TEntity?> ExecuteUpdateAsync(
+        TEntity entity,
+        TDataEntity dataEntity)
+    {
+        var newDataEntity = dataEntity.Clone(FieldType.Both);
+        Mapper.Map(entity, newDataEntity);
+
         var dataChangedProps = _changeTracker
-            .GetChangedProperties(dataEntity, newDataEntity);
+            .GetChangedProperties(dataEntity, ( TDataEntity )newDataEntity);
 
         var cql = GetUpdateCqlStatement(dataEntity, dataChangedProps);
         await DbMapper.ExecuteAsync(cql);

@@ -23,11 +23,16 @@ const searchUsersByName = async ({ usernameQuery }: SearchUsersByNameModel) => {
    return data;
 };
 
+export const GET_USERS_SEARCH_KEY = (username: string) => [
+   "users-search-by-name",
+   username,
+];
+
 export const useSearchUsersByNameQuery = (usernameQuery: string) => {
    const client = useQueryClient();
 
    return useQuery({
-      queryKey: ["users-search-by-name", usernameQuery],
+      queryKey: GET_USERS_SEARCH_KEY(usernameQuery),
       queryFn: ({ queryKey: [_, usernameQuery] }) =>
          searchUsersByName({ usernameQuery }),
       cacheTime: 60 * 60 * 1000,

@@ -113,7 +113,6 @@ internal sealed class CreateChatGroupHandler(
             });
 
         await eventDispatcher.PublishAsync(@events, cancellationToken);
-
         return chatGroup.Id;
     }
 }

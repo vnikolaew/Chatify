@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Chatify.Application.Common.Mappings;
 using Redis.OM.Modeling;
+using Metadata = System.Collections.Generic.IDictionary<string, string>;
 
 namespace Chatify.Infrastructure.Data.Models;
 
@@ -24,6 +25,10 @@ public class ChatGroup : IMapFrom<Domain.Entities.ChatGroup>
     public ISet<Guid> AdminIds { get; set; } = new HashSet<Guid>();
 
     [Indexed] public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
+    
+    public Metadata Metadata { get; set; } = new Dictionary<string, string>();
+    
+    public DateTimeOffset? UpdatedAt { get; set; }
 
     public void Mapping(Profile profile)
         => profile

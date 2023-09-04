@@ -20,7 +20,9 @@ import {
 export enum HubMethods {
    ReceiveGroupChatMessage = "ReceiveGroupChatMessage",
    ChatGroupMemberStartedTyping = "ChatGroupMemberStartedTyping",
+   StartTypingInGroupChat = "StartTypingInGroupChat",
    ChatGroupMemberStoppedTyping = "ChatGroupMemberStoppedTyping",
+   StopTypingInGroupChat = "StopTypingInGroupChat",
    ChatGroupMemberRemoved = "ChatGroupMemberRemoved",
    ChatGroupMemberLeft = "ChatGroupMemberLeft",
    ChatGroupNewAdminAdded = "ChatGroupNewAdminAdded",
@@ -33,9 +35,18 @@ export enum HubMethods {
    FriendInvitationDeclined = "FriendInvitationDeclined",
    AddedToChatGroup = "AddedToChatGroup",
    UserStatusChanged = "UserStatusChanged",
+   Test = "Test",
 }
 
 export class ChatifyHubClient implements IChatClient {
+   onTest(callback: (groupId: string, message: string) => void): void {
+      this.connection.on(HubMethods.Test, callback);
+   }
+
+   test(groupId: string, value: string): Promise<void> {
+      return this.connection.send("Test", groupId, value);
+   }
+
    private readonly connection: HubConnection;
 
    constructor(connection: HubConnection) {
@@ -60,6 +71,22 @@ export class ChatifyHubClient implements IChatClient {
       callback: (event: IChatGroupMemberRemoved) => void
    ): void {
       this.connection.on(HubMethods.ChatGroupMemberRemoved, callback);
+   }
+
+   startTypingInGroupChat(groupId: string): Promise<void> {
+      return this.connection.send(
+         HubMethods.StartTypingInGroupChat,
+         groupId,
+         new Date()
+      );
+   }
+
+   stopTypingInGroupChat(groupId: string): Promise<void> {
+      return this.connection.send(
+         HubMethods.StopTypingInGroupChat,
+         groupId,
+         new Date()
+      );
    }
 
    onChatGroupMemberStartedTyping(
@@ -148,6 +175,10 @@ export class ChatifyHubClient implements IChatClient {
 export interface IChatClient {
    get state(): HubConnectionState;
 
+   test(groupId: string, value: string): Promise<void>;
+
+   onTest(callback: (groupId: string, message: string) => void): void;
+
    onReceiveChatGroupMessage(
       callback: (message: IChatGroupMessage) => void
    ): void;
@@ -201,6 +232,10 @@ export interface IChatClient {
    ): void;
 
    onAddedToChatGroup(callback: (event: IAddedToChatGroup) => void): void;
+
+   startTypingInGroupChat(groupId: string): Promise<void>;
+
+   stopTypingInGroupChat(groupId: string): Promise<void>;
 
    onClose?(callback: (error?: Error | undefined) => void): void;
 

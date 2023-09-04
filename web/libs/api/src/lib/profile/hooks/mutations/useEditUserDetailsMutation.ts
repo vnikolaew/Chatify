@@ -30,6 +30,5 @@ export const useEditUserDetailsMutation = () => {
       onSuccess: (data) =>
          console.log("User details edited successfully: " + data),
       onSettled: (res) => console.log(res),
-      // cacheTime: 60 * 60 * 1000,
    });
 };

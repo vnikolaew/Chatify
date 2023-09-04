@@ -33,11 +33,11 @@ internal sealed class ChatMessageSentEventHandler(
     {
         // Update user caches that serve for feed generation:
         var groupKey = GetGroupMembersCacheKey(@event.GroupId);
-        var membersIds = await cache.SetMembersAsync<Guid>(groupKey);
-        foreach (var membersId in membersIds)
+        var membersIds = await cache.SetMembersAsync(groupKey);
+        foreach (var membersId in membersIds.Select(_ => Guid.Parse(_.ToString())))
         {
             // Update User Feed (Sorted Set):
-            var userFeedCacheKey = new RedisKey($"user:{membersId}:feed");
+            var userFeedCacheKey = new RedisKey($"user:{membersId.ToString()}:feed");
             await cache.SortedSetAddAsync(
                 userFeedCacheKey,
                 new RedisValue(

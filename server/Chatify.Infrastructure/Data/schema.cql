@@ -64,6 +64,8 @@ CREATE TABLE IF NOT EXISTS chat_groups
     name       text,
     about      text,
     picture    media,
+    metadata   map<text, text>,
+    updated_at timestamp,
     admin_ids  set<uuid>,
     created_at timestamp,
     PRIMARY KEY ( (id), created_at )

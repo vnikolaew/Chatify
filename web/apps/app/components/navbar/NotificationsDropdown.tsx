@@ -59,8 +59,6 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
       error: markError,
    } = useMarkNotificationsAsReadMutation();
 
-   console.log(notifications);
-
    const handleMarkNotificationsAsRead = async () => {
       // await markAsRead({}, {});
       await sleep(2000);
@@ -99,6 +97,7 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
                            className={`bg-transparent self-end mr-4 overflow-visible border-none hover:bg-default-200`}
                            onPress={handleMarkNotificationsAsRead}
                            isLoading={markLoading}
+                           isDisabled={!notifications?.length}
                            variant={"faded"}
                            spinner={<Spinner size={"sm"} color={"danger"} />}
                            size={"sm"}

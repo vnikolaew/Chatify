@@ -16,6 +16,12 @@ export interface GetAllReactionsForMessageModel {
    messageId: string;
 }
 
+export const GET_ALL_REACTIONS_KEY = (messageId: string) => [
+   `chat-message`,
+   messageId,
+   `reactions`,
+];
+
 const getAllReactionsForMessage = async (
    model: GetAllReactionsForMessageModel
 ): Promise<ChatMessageReaction[]> => {
@@ -44,7 +50,7 @@ export const useGetAllReactionsForMessage = (
    const client = useQueryClient();
 
    return useQuery<ChatMessageReaction[], Error, ChatMessageReaction[], any>(
-      [`chat-message`, messageId, `reactions`],
+      GET_ALL_REACTIONS_KEY(messageId),
       () => getAllReactionsForMessage({ messageId }),
       {
          onError: console.error,

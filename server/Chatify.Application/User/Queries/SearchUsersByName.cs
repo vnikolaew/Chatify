@@ -15,21 +15,14 @@ public record SearchUsersByName(
 ) : IQuery<SearchUsersByNameResult>;
 
 internal sealed class SearchUsersByNameHandler
-    : IQueryHandler<SearchUsersByName, SearchUsersByNameResult>
+    (IUserRepository users) : IQueryHandler<SearchUsersByName, SearchUsersByNameResult>
 {
-    private readonly IUserRepository _users;
-
-    public SearchUsersByNameHandler(
-        IUserRepository users)
-        => _users = users;
-
     public async Task<SearchUsersByNameResult> HandleAsync(
         SearchUsersByName command,
         CancellationToken cancellationToken = default)
     {
         // Figure put Full-Text search here:
-        var users = await _users.SearchByUsername(command.SearchQuery, cancellationToken);
-        if ( users is null ) return new UserNotFound();
-        return users;
+        var searchUsers = await users.SearchByUsername(command.SearchQuery, cancellationToken);
+        return searchUsers is null ? new UserNotFound() : searchUsers;
     }
 }

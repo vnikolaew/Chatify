@@ -18,7 +18,6 @@ internal sealed class ChatMessageRepliesSeeder(IServiceScopeFactory scopeFactory
         var messages = await mapper.FetchListAsync<ChatMessage>();
         var groupMembers = await mapper.FetchListAsync<ChatGroupMember>();
 
-        var replyCounters = new Dictionary<Guid, long>();
         foreach ( var chatMessage in messages )
         {
             var members = groupMembers
@@ -29,13 +28,10 @@ internal sealed class ChatMessageRepliesSeeder(IServiceScopeFactory scopeFactory
             foreach ( var _ in Enumerable.Range(0, repliesCount) )
             {
                 var replyMessage = ChatGroupMessageSeeder.MessageFaker.Generate();
-
-                replyCounters.TryAdd(chatMessage.Id, 0);
-                replyCounters[chatMessage.Id]++;
                 var reply = new ChatMessageReply
                 {
                     Id = replyMessage.Id,
-                    CreatedAt = chatMessage.CreatedAt.Add(TimeSpan.FromDays(Random.Shared.Next(0, 3))),
+                    CreatedAt = chatMessage.CreatedAt.Add(TimeSpan.FromMinutes(Random.Shared.Next(0, 120))),
                     ChatGroupId = chatMessage.ChatGroupId,
                     UserId = members[Random.Shared.Next(0, members.Count)].UserId,
                     Content = replyMessage.Content,
@@ -43,7 +39,7 @@ internal sealed class ChatMessageRepliesSeeder(IServiceScopeFactory scopeFactory
                     ReactionCounts = replyMessage.ReactionCounts,
                     UpdatedAt = replyMessage.UpdatedAt,
                     ReplyToId = chatMessage.Id,
-                    RepliesCount = replyCounters[chatMessage.Id]
+                    RepliesCount = repliesCount
                 };
 
                 await mapper.InsertAsync(reply, insertNulls: true);
@@ -56,6 +52,10 @@ internal sealed class ChatMessageRepliesSeeder(IServiceScopeFactory scopeFactory
                 {
                 }
             }
+
+            await mapper.ExecuteAsync(
+                "UPDATE chat_message_replies SET replies_count = ? WHERE reply_to_id = ?;",
+                (long) repliesCount, chatMessage.Id);
         }
 
         await UpdateChatMessageReplySummariesTotals(mapper);
@@ -98,7 +98,7 @@ internal sealed class ChatMessageRepliesSeeder(IServiceScopeFactory scopeFactory
             reply.ReplyToId);
 
         // Update `reply_summaries` view table:
-        var replierIds = await mapper.FirstOrDefaultAsync<System.Collections.Generic.HashSet<Guid>>(
+        var replierIds = await mapper.FirstOrDefaultAsync<HashSet<Guid>>(
             "SELECT replier_ids FROM chat_message_replies_summaries WHERE message_id = ? ALLOW FILTERING;",
             reply.ReplyToId);
 

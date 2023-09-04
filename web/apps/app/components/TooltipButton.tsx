@@ -61,7 +61,7 @@ const TooltipButton = ({
             }}
             // content={""}
             variant={"light"}
-            className={`cursor-pointer transition-background duration-200 hover:bg-default-200 ${chipClassname}`}
+            className={`cursor-pointer group transition-background duration-200 hover:bg-default-200 ${chipClassname}`}
             {...chipProps}
          >
             {icon}

@@ -40,7 +40,10 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
 
         var cacheSaveTasks = new Task[]
         {
+            // Add user to message reactors:
             cache.SetAddAsync(messageReactionsKey, userId),
+            
+            // Add message and reaction type to users reactions:
             cache.HashSetAsync(userReactionsKey,
                 new RedisValue(messageReaction.MessageId.ToString()),
                 new RedisValue(messageReaction.ReactionCode.ToString()))

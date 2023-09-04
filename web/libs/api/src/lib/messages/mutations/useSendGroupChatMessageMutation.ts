@@ -14,7 +14,7 @@ import { CursorPaged } from "../../../../openapi/common/CursorPaged";
 import { produce } from "immer";
 import { GetMyClaimsResponse } from "../../auth";
 import { GET_PAGINATED_GROUP_MESSAGES_KEY } from "../queries";
-import { group } from "@nx/workspace/src/utils/strings";
+import { v4 as uuidv4 } from "uuid";
 
 export interface SendGroupChatMessageModel {
    chatGroupId: string;
@@ -49,6 +49,7 @@ const sendGroupChatMessage = async (
    }
 
    return data.data.id as string;
+   return uuidv4();
 };
 
 export const useSendGroupChatMessageMutation = () => {
@@ -75,6 +76,7 @@ export const useSendGroupChatMessageMutation = () => {
                InfiniteData<CursorPaged<ChatGroupMessageEntry>>
             >(GET_PAGINATED_GROUP_MESSAGES_KEY(chatGroupId), (messages) =>
                produce(messages, (draft) => {
+                  // draft.pageParams.
                   (
                      draft!.pages[0] as CursorPaged<ChatGroupMessageEntry>
                   ).items.unshift({

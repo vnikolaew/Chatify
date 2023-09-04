@@ -20,8 +20,8 @@ public sealed class FriendshipsRepository(
         Mapper dbMapper,
         IEntityChangeTracker changeTracker,
         IDatabase cache,
-        IRedisConnectionProvider connectionProvider,
-        ISerializer serializer)
+        IUserRepository users,
+        IRedisConnectionProvider connectionProvider)
     : BaseCassandraRepository<FriendsRelation, Models.FriendsRelation, Guid>(mapper, dbMapper,
             changeTracker,
             nameof(FriendsRelation.Id).Underscore()),
@@ -58,20 +58,25 @@ public sealed class FriendshipsRepository(
     }
 
     public async Task<List<Domain.Entities.User>> AllForUser(
-        Guid userId, CancellationToken cancellationToken = default)
+        Guid userId,
+        CancellationToken cancellationToken = default)
     {
         var friendsIds = await cache.SortedSetRangeByScoreAsync(
             GetUserFriendsCacheKey(userId), order: Order.Descending);
 
         // Chunk Ids to ease cache server processing:
-        var users = new System.Collections.Generic.List<ChatifyUser>();
+        var friends = new List<Domain.Entities.User>();
         foreach ( var idsChunk in friendsIds.Chunk(10) )
         {
-            var usersChunk = await _cacheUsers.FindByIdsAsync(idsChunk.Select(_ => _.ToString()));
-            users.AddRange(( usersChunk?.Values ?? new List<ChatifyUser>()! )!);
+            var usersChunk =
+                await users.GetByIds(idsChunk
+                        .Select(_ => Guid.TryParse(_.ToString(), out var id)
+                            ? id : default),
+                    cancellationToken);
+            friends.AddRange(usersChunk ?? new List<Domain.Entities.User>() );
         }
 
-        return users.ToList<Domain.Entities.User>(Mapper);
+        return friends;
     }
 
     public async Task<bool> DeleteForUsers(
@@ -115,7 +120,8 @@ public sealed class FriendshipsRepository(
     }
 
     public async Task<List<FriendsRelation>> AllFriendshipsForUser(
-        Guid userId, CancellationToken cancellationToken = default)
+        Guid userId,
+        CancellationToken cancellationToken = default)
     {
         var friendships = await DbMapper
             .FetchListAsync<Models.FriendsRelation>(

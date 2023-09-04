@@ -17,63 +17,46 @@ using SendFriendInvitationResult = OneOf<UserNotFound, FriendInviteNotFoundError
 
 public record SendFriendInvitation([Required] Guid InviteeId) : ICommand<SendFriendInvitationResult>;
 
-internal sealed class SendFriendInvitationHandler
-    : ICommandHandler<SendFriendInvitation, SendFriendInvitationResult>
-{
-    private readonly IFriendInvitationRepository _friendInvites;
-    private readonly IDomainRepository<Domain.Entities.User, Guid> _users;
-    private readonly IIdentityContext _identityContext;
-    private readonly IGuidGenerator _guidGenerator;
-    private readonly IClock _clock;
-    private readonly IEventDispatcher _eventDispatcher;
-
-    public SendFriendInvitationHandler(
-        IFriendInvitationRepository friendInvites,
+internal sealed class SendFriendInvitationHandler(IFriendInvitationRepository friendInvites,
         IIdentityContext identityContext,
         IDomainRepository<Domain.Entities.User, Guid> users,
-        IClock clock, IEventDispatcher eventDispatcher,
+        IClock clock,
+        IEventDispatcher eventDispatcher,
         IGuidGenerator guidGenerator)
-    {
-        _friendInvites = friendInvites;
-        _identityContext = identityContext;
-        _users = users;
-        _clock = clock;
-        _eventDispatcher = eventDispatcher;
-        _guidGenerator = guidGenerator;
-    }
-
+    : ICommandHandler<SendFriendInvitation, SendFriendInvitationResult>
+{
     public async Task<SendFriendInvitationResult> HandleAsync(
         SendFriendInvitation command,
         CancellationToken cancellationToken = default)
     {
-        var invitee = await _users.GetAsync(command.InviteeId, cancellationToken);
+        var invitee = await users.GetAsync(command.InviteeId, cancellationToken);
         if ( invitee is null ) return new UserNotFound();
 
-        var existingInvites = await _friendInvites
-            .AllSentByUserAsync(_identityContext.Id, cancellationToken);
+        var existingInvites = await friendInvites
+            .AllSentByUserAsync(identityContext.Id, cancellationToken);
         if (existingInvites.Any(i => i.InviteeId == command.InviteeId))
         {
             return new FriendInviteNotFoundError(InviteeId: command.InviteeId);
         }
 
-        var friendInviteId = _guidGenerator.New();
+        var friendInviteId = guidGenerator.New();
         var friendInvite = new FriendInvitation
         {
             InviteeId = invitee.Id,
             Id = friendInviteId,
             Status = (sbyte)FriendInvitationStatus.Pending,
-            CreatedAt = _clock.Now,
-            InviterId = _identityContext.Id
+            CreatedAt = clock.Now,
+            InviterId = identityContext.Id
         };
 
-        var invite = await _friendInvites.SaveAsync(friendInvite, cancellationToken);
-        await _eventDispatcher.PublishAsync(new FriendInvitationSentEvent
+        var invite = await friendInvites.SaveAsync(friendInvite, cancellationToken);
+        await eventDispatcher.PublishAsync(new FriendInvitationSentEvent
         {
             Id = friendInviteId,
             InviterId = friendInvite.InviterId,
             InviteeId = friendInvite.InviteeId,
-            Timestamp = _clock.Now,
-            InviterUsername = _identityContext.Username
+            Timestamp = clock.Now,
+            InviterUsername = identityContext.Username
         }, cancellationToken);
         return invite.Id;
     }

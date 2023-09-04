@@ -184,12 +184,11 @@ public class MessagesController : ApiController
     }
 
     [HttpPost]
-    [Route("/pins/{messageId:guid}")]
+    [Route("pins/{messageId:guid}")]
     [ProducesBadRequestApiResponse]
     [ProducesNotFoundApiResponse]
     [ProducesNoContentApiResponse]
     public async Task<IActionResult> PinGroupChatMessage(
-        [FromBody] PinChatGroupMessage request,
         [FromRoute] Guid messageId,
         CancellationToken cancellationToken = default)
     {

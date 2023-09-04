@@ -21,48 +21,35 @@ public record UnfriendUser(
     [Required] Guid UserId
 ) : ICommand<UnfriendUserResult>;
 
-internal sealed class UnfriendUserHandler
+internal sealed class UnfriendUserHandler(IFriendshipsRepository friendships,
+        IIdentityContext identityContext,
+        IEventDispatcher eventDispatcher,
+        IClock clock,
+        IChatGroupRepository groups)
     : ICommandHandler<UnfriendUser, UnfriendUserResult>
 {
-    private readonly IFriendshipsRepository _friendships;
-    private readonly IChatGroupRepository _groups;
-    private readonly IClock _clock;
-    private readonly IEventDispatcher _eventDispatcher;
-    private readonly IIdentityContext _identityContext;
-
-    public UnfriendUserHandler(
-        IFriendshipsRepository friendships,
-        IIdentityContext identityContext, IEventDispatcher eventDispatcher, IClock clock, IChatGroupRepository groups)
-    {
-        _friendships = friendships;
-        _identityContext = identityContext;
-        _eventDispatcher = eventDispatcher;
-        _clock = clock;
-        _groups = groups;
-    }
-
     public async Task<UnfriendUserResult> HandleAsync(
         UnfriendUser command,
         CancellationToken cancellationToken = default)
     {
-        var userFriendships = await _friendships.AllFriendshipsForUser(_identityContext.Id, cancellationToken);
+        var userFriendships = await friendships.AllFriendshipsForUser(identityContext.Id, cancellationToken);
         var friendship = userFriendships
             .FirstOrDefault(fr =>
                 fr.FriendTwoId == command.UserId);
         
-        if (friendship is null) return new UsersAreNotFriendsError(_identityContext.Id, command.UserId);
+        if (friendship is null) return new UsersAreNotFriendsError(identityContext.Id, command.UserId);
 
-        var success = await _friendships.DeleteForUsers(_identityContext.Id, command.UserId, cancellationToken);
+        var success = await friendships.DeleteForUsers(identityContext.Id, command.UserId, cancellationToken);
         if ( !success ) return Error.New("");
 
-        success = await _groups.DeleteAsync(friendship.GroupId, cancellationToken);
+        success = await groups.DeleteAsync(friendship.GroupId, cancellationToken);
         if ( !success ) return Error.New("");
 
-        await _eventDispatcher.PublishAsync(new UserUnfriendedEvent
+        await eventDispatcher.PublishAsync(new UserUnfriendedEvent
         {
             UserId = command.UserId,
-            Timestamp = _clock.Now,
-            UnfriendedById = _identityContext.Id
+            Timestamp = clock.Now,
+            UnfriendedById = identityContext.Id
         }, cancellationToken);
 
         return Unit.Default;

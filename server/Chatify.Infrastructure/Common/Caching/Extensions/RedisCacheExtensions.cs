@@ -81,5 +81,7 @@ public static class RedisCacheExtensions
                 .ToArray());
 
     public static long? ToLong(this RedisValue redisValue)
-        => redisValue.IsInteger ? ( long )( redisValue.Box() ?? 0L ) : null;
+        => redisValue.TryParse(out long number)
+            ? number
+            : 0L;
 }

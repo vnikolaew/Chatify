@@ -6,6 +6,9 @@ namespace Chatify.Infrastructure.Messages.Hubs;
 public interface IChatifyHubClient
 {
     Task ReceiveMessage(string username, string message);
+    
+    Task Test(string groupId, string value);
+    
     Task ReceiveGroupChatMessage(ReceiveGroupChatMessage receiveGroupChatMessage);
 
     Task ChatGroupMemberStartedTyping(ChatGroupMemberStartedTyping chatGroupMemberStartedTyping);

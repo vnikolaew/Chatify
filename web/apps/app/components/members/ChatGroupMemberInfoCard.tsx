@@ -1,6 +1,7 @@
 "use client";
 import React, { Fragment, useMemo } from "react";
 import {
+   getMediaUrl,
    useGetChatGroupDetailsQuery,
    useGetUserDetailsQuery,
    useGetUserMembershipDetailsQuery,
@@ -13,10 +14,11 @@ import {
    Card,
    CardBody,
    CardHeader,
+   Link,
    Skeleton,
    Spinner,
 } from "@nextui-org/react";
-import { PlusIcon } from "@icons";
+import { PlusIcon, RightArrow } from "@icons";
 import { useCurrentChatGroup, useCurrentUserId } from "@hooks";
 import moment from "moment";
 import { FriendInvitationStatus, UserStatus } from "@openapi";
@@ -75,7 +77,6 @@ export const ChatGroupMemberInfoCard = ({
       return "default";
    }, [userDetails]);
 
-   console.log(membership);
    if (isLoading && isFetching) {
       return <Spinner size={"sm"} color={"danger"} />;
    }
@@ -100,7 +101,7 @@ export const ChatGroupMemberInfoCard = ({
                size={"md"}
                isBordered
                radius={"full"}
-               src={userDetails.user.profilePicture.mediaUrl}
+               src={getMediaUrl(userDetails.user?.profilePicture?.mediaUrl)}
             />
             <div className={`flex items-start justify-evenly h-full flex-col`}>
                <div className={`text-md`}>
@@ -202,7 +203,7 @@ export const ChatGroupMemberInfoCard = ({
                      ).format("MMM DD, YYYY")}
                   </div>
                )}
-            {!userDetails.friendsRelation && !userDetails.friendInvitation && (
+            {!userDetails.friendsRelation && !userDetails.friendInvitation ? (
                <Button
                   isLoading={friendInviteLoading}
                   startContent={
@@ -220,6 +221,26 @@ export const ChatGroupMemberInfoCard = ({
                   size={"sm"}
                >
                   {friendInviteLoading ? "" : "Add as friend"}
+               </Button>
+            ) : (
+               <Button
+                  as={Link}
+                  href={`?c=${userDetails.friendsRelation.groupId}`}
+                  endContent={
+                     <RightArrow
+                        size={24}
+                        fill={"white"}
+                        className={`fill-foreground`}
+                     />
+                  }
+                  spinner={<Spinner color={"white"} size={"sm"} />}
+                  onPress={(_) => handleSendFriendInvite()}
+                  className={`mt-4 text-foreground self-center w-3/5`}
+                  variant={"shadow"}
+                  color={"warning"}
+                  size={"sm"}
+               >
+                  {"DM"}
                </Button>
             )}
          </CardBody>

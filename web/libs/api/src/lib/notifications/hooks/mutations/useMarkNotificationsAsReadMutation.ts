@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { notificationsClient } from "../../client";
-import { UserNotification } from "@openapi/index";
+import { UserNotification } from "@openapi";
 import { NOTIFICATIONS_KEY } from "../queries";
 
 export interface MarkNotificationsAsReadModel {}
@@ -34,7 +34,7 @@ export const useMarkNotificationsAsReadMutation = (
    const client = useQueryClient();
    return useMutation(() => markNotificationsAsRead({}), {
       onError: console.error,
-      onSuccess: (data, vars, context) => {
+      onSuccess: () => {
          // Delete all unread notifications from query cache:
          client.setQueryData<UserNotification[]>(
             [NOTIFICATIONS_KEY, `unread`],

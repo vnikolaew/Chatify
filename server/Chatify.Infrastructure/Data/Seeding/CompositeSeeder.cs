@@ -14,9 +14,7 @@ internal sealed class CompositeSeeder(IServiceScopeFactory scopeFactory) : ISeed
 
         var seeders = scope.ServiceProvider
             .GetServices<ISeeder>()
-            .Where(s => s is ChatGroupMessageSeeder
-                or ChatMessageReactionsSeeder
-                or ChatMessageRepliesSeeder)
+            .Where(s => s is not CompositeSeeder)
             .OrderBy(s => s.Priority)
             .ToList();
 

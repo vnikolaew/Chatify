@@ -11,23 +11,14 @@ using GetIncomingInvitationsResult = OneOf<BaseError, List<FriendInvitation>>;
 
 public record GetIncomingInvitations : IQuery<GetIncomingInvitationsResult>;
 
-internal sealed class GetIncomingInvitationsHandler
+internal sealed class GetIncomingInvitationsHandler(IIdentityContext identityContext,
+        IFriendInvitationRepository friendInvitations)
     : IQueryHandler<GetIncomingInvitations, GetIncomingInvitationsResult>
 {
-    private readonly IIdentityContext _identityContext;
-    private readonly IFriendInvitationRepository _friendInvitations;
-
-    public GetIncomingInvitationsHandler(IIdentityContext identityContext,
-        IFriendInvitationRepository friendInvitations)
-    {
-        _identityContext = identityContext;
-        _friendInvitations = friendInvitations;
-    }
-
     public async Task<GetIncomingInvitationsResult> HandleAsync(GetIncomingInvitations query,
         CancellationToken cancellationToken = default)
     {
-        var invites = await _friendInvitations.AllSentToUserAsync(_identityContext.Id, cancellationToken);
+        var invites = await friendInvitations.AllSentToUserAsync(identityContext.Id, cancellationToken);
         return invites;
     }
 }

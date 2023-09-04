@@ -26,7 +26,6 @@ internal sealed class GetChatGroupPinnedMessagesHandler(
         IIdentityContext identityContext,
         IChatMessageRepository messages)
     : IQueryHandler<GetChatGroupPinnedMessages, GetChatGroupPinnedMessagesResult>
-
 {
     public async Task<GetChatGroupPinnedMessagesResult> HandleAsync(
         GetChatGroupPinnedMessages query,

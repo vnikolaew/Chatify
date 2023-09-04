@@ -28,7 +28,8 @@ public record UnreactToChatMessage(
     [Required] Guid MessageId,
     [Required] Guid GroupId) : ICommand<UnreactToChatMessageResult>;
 
-internal sealed class UnreactToChatMessageHandler(IIdentityContext identityContext,
+internal sealed class UnreactToChatMessageHandler(
+    IIdentityContext identityContext,
         IChatMessageRepository messages,
         IChatMessageReactionRepository messageReactions,
         IEventDispatcher eventDispatcher,
