@@ -23,7 +23,7 @@ export interface CookieConsentBannerProps {
 }
 
 export const CookieConsentBannerWrapper = () => {
-   const { isOpen, onOpenChange } = useDisclosure({ defaultOpen: false });
+   const { isOpen, onOpenChange } = useDisclosure({ defaultOpen: true });
    return <CookieConsentBanner isOpen={isOpen} onOpenChange={onOpenChange} />;
 };
 

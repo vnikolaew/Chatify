@@ -6,6 +6,7 @@ export interface CookieConsentBannerWrapperProps {}
 
 const CookieConsentBannerModal = ({}: CookieConsentBannerWrapperProps) => {
    const isConsentNeeded = !cookies().get("Cookie-Consent");
+   console.log(`Is consent needed: `, isConsentNeeded);
    return isConsentNeeded && <CookieConsentBannerWrapper />;
 };
 

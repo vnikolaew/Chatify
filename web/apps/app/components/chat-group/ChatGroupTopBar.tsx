@@ -72,10 +72,10 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                         <Fragment>
                            <span className={`text-medium text-foreground`}>
                               {" "}
-                              {chatGroupDetails.chatGroup.name}
+                              {chatGroupDetails?.chatGroup.name}
                            </span>
                            <span className={`text-xs text-default-500`}>
-                              {chatGroupDetails.chatGroup.about.substring(
+                              {chatGroupDetails.chatGroup.about?.substring(
                                  0,
                                  30
                               )}

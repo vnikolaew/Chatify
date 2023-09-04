@@ -18,11 +18,13 @@ import {
    SelectedItems,
    SelectItem,
    Spinner,
+   User,
 } from "@nextui-org/react";
 import UploadIcon from "@components/icons/UploadIcon";
 import { useRouter } from "next/navigation";
-import { User } from "@openapi";
+import { User as TUser } from "@openapi";
 import * as yup from "yup";
+import { useQueryClient } from "@tanstack/react-query";
 
 export interface CreateChatGroupFormProps {}
 
@@ -51,6 +53,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
       if (!selectedFile) return "";
       return URL.createObjectURL(selectedFile);
    }, [selectedFile]);
+
    const normalizedFileName = useMemo(() => {
       if (!selectedFile) return "";
       const parts = selectedFile?.name.split(".");
@@ -59,6 +62,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
          .join("")
          .substring(0, 20)}.${parts.at(-1)}`;
    }, [selectedFile]);
+
    const {
       isLoading,
       error,
@@ -69,16 +73,15 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
       isLoading: friendsLoading,
       error: friendsError,
    } = useGetMyFriendsQuery();
+   const client = useQueryClient();
 
    const handleSubmit = async (model: CreateChatGroupModel) => {
       await createChatGroup(model, {
          onSuccess: (data) => {
-            console.log(data);
-            // router.push(`/?c=${(data as any)?.data?.groupId}&new=true`);
+            client.refetchQueries({ exact: true, queryKey: [`feed`] });
+            router.push(`/?c=${(data as any)?.data?.groupId}&new=true`);
          },
       });
-      console.log(model);
-      console.log("form submitted");
    };
 
    return (
@@ -197,13 +200,11 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                   )}
                   <input
                      onChange={async ({ target: { files } }) => {
-                        console.log(files[0]);
                         setSelectedFile(files[0]);
                         await setFieldValue("file", files[0]);
                         await setFieldTouched("file");
                      }}
                      name={"file"}
-                     // value={selectedFile}
                      ref={fileInputRef}
                      hidden
                      type={"file"}
@@ -214,11 +215,10 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                   selectionMode={"multiple"}
                   color={"primary"}
                   onSelectionChange={async (ids) => {
-                     console.log([...ids]);
                      await setFieldValue("memberIds", [...ids]);
                      await setFieldTouched("memberIds");
                   }}
-                  renderValue={(users: SelectedItems<User>) =>
+                  renderValue={(users: SelectedItems<TUser>) =>
                      users.map((user) => (
                         <Chip
                            startContent={
@@ -258,7 +258,21 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                   items={friends ?? []}
                >
                   {(user) => (
-                     <SelectItem key={user.id}>{user.username}</SelectItem>
+                     <SelectItem key={user.id}>
+                        <User
+                           avatarProps={{
+                              src: getMediaUrl(user.profilePicture.mediaUrl),
+                              size: `sm`,
+                              color: "danger",
+                              className: `w-6 h-6`,
+                              radius: `full`,
+                           }}
+                           classNames={{
+                              name: `text-small`,
+                           }}
+                           name={user.username}
+                        />
+                     </SelectItem>
                   )}
                </Select>
                <div

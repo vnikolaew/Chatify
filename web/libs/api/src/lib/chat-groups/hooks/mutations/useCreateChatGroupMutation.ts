@@ -12,18 +12,18 @@ export interface CreateChatGroupModel {
 }
 
 const createChatGroup = async (model: CreateChatGroupModel) => {
-   // const { status, data } = await chatGroupsClient.postForm(`/`, model, {
-   //    headers: {
-   //       "Content-Type": "multipart/form-data",
-   //    },
-   // });
-   //
-   // if (status === HttpStatusCode.BadRequest) {
-   //    throw new Error("error");
-   // }
+   const { status, data } = await chatGroupsClient.postForm(`/`, model, {
+      headers: {
+         "Content-Type": "multipart/form-data",
+      },
+   });
+
+   if (status === HttpStatusCode.BadRequest) {
+      throw new Error("error");
+   }
    await sleep(2000);
 
-   return {};
+   return data;
 };
 
 export const useCreateChatGroupMutation = () => {
