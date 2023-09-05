@@ -120,11 +120,9 @@ internal sealed class ChatGroupMessageSeeder(IServiceScopeFactory scopeFactory)
             // Update User Feed for each group members (Sorted Set):
             foreach ( var groupMember in groupMembers )
             {
-                await cache.SortedSetAddAsync(
-                    groupMember.UserId.GetUserFeedKey(),
-                    new RedisValue(
-                        latestMessage.ChatGroupId.ToString()
-                    ), latestMessage.CreatedAt.Ticks);
+                await cache.AddUserFeedEntryAsync(groupMember.UserId,
+                    latestMessage.ChatGroupId,
+                    latestMessage.CreatedAt);
             }
         }
     }

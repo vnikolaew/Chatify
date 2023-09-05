@@ -9,7 +9,7 @@ namespace Chatify.Infrastructure.Data.Seeding;
 internal sealed class FriendsSeeder(IServiceScopeFactory scopeFactory)
     : BaseSeeder<FriendsRelation>(scopeFactory)
 {
-    public override int Priority => 3;
+    public override int Priority => 2;
 
     protected override async Task SeedCoreAsync(CancellationToken cancellationToken = default)
     {
@@ -54,7 +54,8 @@ internal sealed class FriendsSeeder(IServiceScopeFactory scopeFactory)
                 Id = friendshipOne.GroupId,
                 CreatedAt = DateTimeOffset.Now,
                 Name = $"{friendshipOne.FriendOneId}:{friendshipOne.FriendTwoId}",
-                AdminIds = new HashSet<Guid> { friendshipOne.FriendOneId, friendshipOne.FriendTwoId }
+                AdminIds = new HashSet<Guid> { friendshipOne.FriendOneId, friendshipOne.FriendTwoId },
+                Metadata = new Dictionary<string, string> { { "private", "true" } }
             };
 
             var memberships = new ChatGroupMember[]
@@ -90,22 +91,21 @@ internal sealed class FriendsSeeder(IServiceScopeFactory scopeFactory)
             await mapper.InsertAsync(friendshipTwo, insertNulls: true);
             await Task.WhenAll(memberships.Select(m =>
                 mapper.InsertAsync(m, insertNulls: true)));
-            
+
             await mapper.InsertAsync(newGroup, insertNulls: false);
 
             // Insert friend Ids in Redis Sorted set caches:
             var cacheSaveTasks = new Task[]
             {
-                cache.SortedSetAddAsync(
-                    userOne.Id.GetUserFriendsKey(),
-                    new RedisValue(userTwo.Id.ToString()),
-                    friendshipOne.CreatedAt.Ticks
-                    ),
-                cache.SortedSetAddAsync(
-                    userTwo.Id.GetUserFriendsKey(),
-                    new RedisValue(userOne.Id.ToString()),
-                    friendshipTwo.CreatedAt.Ticks
-                    )
+                cache.AddUserFriendAsync(
+                    userOne.Id,
+                    userTwo.Id,
+                    friendshipOne.CreatedAt),
+
+                cache.AddUserFriendAsync(
+                    userTwo.Id,
+                    userOne.Id,
+                    friendshipTwo.CreatedAt),
             };
             await Task.WhenAll(cacheSaveTasks);
         }

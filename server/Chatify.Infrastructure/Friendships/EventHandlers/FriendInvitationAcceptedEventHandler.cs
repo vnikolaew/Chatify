@@ -21,24 +21,19 @@ internal sealed class FriendInvitationAcceptedEventHandler(
         IClock clock)
     : IEventHandler<FriendInvitationAcceptedEvent>
 {
-    
-    
     public async Task HandleAsync(
         FriendInvitationAcceptedEvent @event,
         CancellationToken cancellationToken = default)
     {
         var cacheSaveTasks = new Task[]
         {
-            cache.SortedSetAddAsync(
-                @event.InviterId.GetUserFriendsKey(),
-                new RedisValue(@event.InviteeId.ToString()),
-                @event.Timestamp.Ticks,
-                SortedSetWhen.NotExists),
-            cache.SortedSetAddAsync(
-                @event.InviteeId.GetUserFriendsKey(),
-                new RedisValue(@event.InviterId.ToString()),
-                @event.Timestamp.Ticks,
-                SortedSetWhen.NotExists),
+            cache.AddUserFriendAsync(
+                @event.InviterId,
+                @event.InviteeId,@event.Timestamp),
+            cache.AddUserFriendAsync(
+                @event.InviteeId,
+                @event.InviterId,
+                @event.Timestamp),
         };
         await Task.WhenAll(cacheSaveTasks);
 

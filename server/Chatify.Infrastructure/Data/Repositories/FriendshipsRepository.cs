@@ -50,19 +50,18 @@ public sealed class FriendshipsRepository(
         Guid userId,
         CancellationToken cancellationToken = default)
     {
-        var friendsIds = await cache.SortedSetRangeByScoreAsync(
-            userId.GetUserFriendsKey(), order: Order.Descending);
+        var friendsIds = await cache.GetUserFriendsAsync(userId);
 
         // Chunk Ids to ease cache server processing:
         var friends = new List<Domain.Entities.User>();
         foreach ( var idsChunk in friendsIds.Chunk(10) )
         {
-            var usersChunk =
-                await users.GetByIds(idsChunk
-                        .Select(_ => Guid.TryParse(_.ToString(), out var id)
-                            ? id : default),
-                    cancellationToken);
-            friends.AddRange(usersChunk ?? new List<Domain.Entities.User>() );
+            var usersChunk = await users.GetByIds(idsChunk
+                .Select(_ => Guid.TryParse(_.ToString(), out var id)
+                    ? id
+                    : default), cancellationToken);
+
+            friends.AddRange(usersChunk ?? new List<Domain.Entities.User>());
         }
 
         return friends;
@@ -86,12 +85,13 @@ public sealed class FriendshipsRepository(
         // Purge entries from cache as well:
         var deleteTasks = new Task[]
         {
-            cache.SortedSetRemoveAsync(
-                friendOneId.GetUserFriendsKey(),
-                new RedisValue(friendTwoId.ToString())),
-            cache.SortedSetRemoveAsync(
-                friendTwoId.GetUserFriendsKey(),
-                new RedisValue(friendOneId.ToString())),
+            cache.RemoveUserFriendAsync(
+                friendOneId,
+                friendTwoId),
+            cache.RemoveUserFriendAsync(
+                friendTwoId,
+                friendOneId
+            ),
         };
 
         await Task.WhenAll(deleteTasks);
@@ -102,9 +102,7 @@ public sealed class FriendshipsRepository(
         Guid userId,
         CancellationToken cancellationToken = default)
     {
-        var friendsIds = await cache.SortedSetRangeByScoreAsync(
-            userId.GetUserFriendsKey(), order: Order.Descending);
-
+        var friendsIds = await cache.GetUserFriendsAsync(userId);
         return friendsIds.Select(id => Guid.Parse(id.ToString())).ToList();
     }
 

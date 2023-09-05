@@ -1,5 +1,4 @@
 ﻿using Chatify.Domain.Events.Groups;
-using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Shared.Abstractions.Events;
@@ -28,10 +27,9 @@ internal sealed class ChatGroupCreatedEventCacheFillHandler
         await _cacheGroups.InsertAsync(chatGroup);
 
         // Update User Feed (Sorted Set):
-        await cache.SortedSetAddAsync(
-            @event.CreatorId.GetUserFeedKey(),
-            new RedisValue(
-                @event.GroupId.ToString()
-            ), @event.Timestamp.Ticks);
+        await cache.AddUserFeedEntryAsync(
+            @event.CreatorId,
+            @event.GroupId,
+            @event.Timestamp);
     }
 }

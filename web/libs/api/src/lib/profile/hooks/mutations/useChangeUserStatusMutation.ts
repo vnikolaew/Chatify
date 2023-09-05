@@ -3,7 +3,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { useGetMyClaimsQuery } from "../../../auth";
 import { USER_DETAILS_KEY } from "../queries";
-import { UserDetailsEntry, UserStatus } from "@openapi";
+import {
+   ChatGroupDetailsEntry,
+   User,
+   UserDetailsEntry,
+   UserStatus,
+} from "@openapi";
 import { produce } from "immer";
 
 export interface ChangeUserStatusModel {
@@ -42,6 +47,18 @@ export const useChangeUserStatusMutation = () => {
                      ...draft.user,
                      status: newStatus as UserStatus,
                   };
+               })
+         );
+
+         client.setQueriesData<ChatGroupDetailsEntry>(
+            [`chat-group`],
+            (group: ChatGroupDetailsEntry) =>
+               produce(group, (draft: ChatGroupDetailsEntry) => {
+                  const user = draft.members?.find(
+                     (m: User) => m.userId === userId
+                  );
+                  user.status = newStatus;
+                  return draft;
                })
          );
       },

@@ -28,11 +28,21 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
       enabled: !!chatGroupId && isUserLoggedIn,
    });
 
+   const isPrivateGroup = useMemo(
+      () => chatGroupDetails?.chatGroup?.metadata?.private === "true",
+      [chatGroupDetails]
+   );
+
    const isUserGroupAdmin = useMemo(() => {
       return chatGroupDetails?.chatGroup?.adminIds?.some(
          (id) => id === me?.claims?.nameidentifier
       );
    }, [chatGroupDetails?.chatGroup?.adminIds, me?.claims?.nameidentifier]);
+   const membersOnline = useMemo(() => {
+      return chatGroupDetails?.members?.filter(
+         (m) => m.status === UserStatus.ONLINE
+      )?.length;
+   }, [chatGroupDetails]);
 
    return (
       <div
@@ -72,14 +82,19 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                         <Fragment>
                            <span className={`text-medium text-foreground`}>
                               {" "}
-                              {chatGroupDetails?.chatGroup.name}
+                              {isPrivateGroup
+                                 ? chatGroupDetails.members.filter(
+                                      (m) => m.id !== me.claims.nameidentifier
+                                   )[0].username
+                                 : chatGroupDetails?.chatGroup.name}
                            </span>
                            <span className={`text-xs text-default-500`}>
-                              {chatGroupDetails.chatGroup.about?.substring(
-                                 0,
-                                 30
-                              )}
-                              ...
+                              {chatGroupDetails.chatGroup.about?.length
+                                 ? `${chatGroupDetails.chatGroup.about?.substring(
+                                      0,
+                                      30
+                                   )}...`
+                                 : `No description.`}
                            </span>
                            <div className={`flex items-center gap-3`}>
                               <span className={`text-xs text-default-400`}>
@@ -122,11 +137,9 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                                        ))}
                                  </AvatarGroup>
                                  <span className={`text-xs text-success-300`}>
-                                    {
-                                       chatGroupDetails.members.filter(
-                                          (m) => m.status === UserStatus.ONLINE
-                                       ).length
-                                    }{" "}
+                                    {membersOnline === 0
+                                       ? `No members `
+                                       : `${membersOnline} `}{" "}
                                     online
                                  </span>
                               </div>

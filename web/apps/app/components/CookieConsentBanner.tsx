@@ -55,14 +55,13 @@ const CookieConsentBanner = ({
             <Button
                size={"sm"}
                radius={"full"}
-               variant={"shadow"}
+               variant={"light"}
                isIconOnly
                className={`top-2 p-0 right-2`}
                color={"default"}
             >
                <CrossIcon
-                  className={`fill-transparent`}
-                  fill={`white`}
+                  className={`fill-transparent stroke-foreground`}
                   size={12}
                />
             </Button>
@@ -101,7 +100,16 @@ const CookieConsentBanner = ({
                   We use cookies to enhance your experience on our chat
                   application. By clicking{" "}
                   <strong className={`inline`}> "Accept" </strong>, you agree to
-                  our use of cookies <br /> as described in our Privacy Policy.
+                  our use of cookies <br /> as described in our{" "}
+                  <Link
+                     className={`text-xs`}
+                     size={"sm"}
+                     underline={"hover"}
+                     color={"primary"}
+                     href={`/terms-of-service`}
+                  >
+                     Terms of Service.
+                  </Link>
                </p>
             </ModalBody>
             <ModalFooter

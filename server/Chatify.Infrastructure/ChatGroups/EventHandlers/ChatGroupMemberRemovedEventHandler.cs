@@ -34,16 +34,15 @@ internal sealed class ChatGroupMemberRemovedEventHandler(IDomainRepository<Domai
          @event.GroupId, membersCount?.MembersCount);
 
       // Remove new member to cache set as well:
-      var groupKey = group.Id.GetGroupMembersKey();
       var memberId = @event.MemberId;
 
       var cacheRemoveTasks = new[]
       {
           // Remove user from `group-members` set
-         cache.SetRemoveAsync(groupKey, memberId.ToString()),
+         cache.RemoveGroupMemberAsync(group.Id, memberId),
          
           // Remove `group entry` user feed sorted set
-         cache.SortedSetRemoveAsync(memberId.GetUserFeedKey(), @event.GroupId.ToString())
+          cache.RemoveUserFeedEntryAsync(memberId, group.Id)
       };
       
       var success = await Task.WhenAll(cacheRemoveTasks);

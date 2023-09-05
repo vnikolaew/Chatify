@@ -18,8 +18,10 @@ internal sealed class ChatMessageSentEventHandler(
         IHubContext<ChatifyHub, IChatifyHubClient> chatifyHubContext,
         IIdentityContext identityContext,
         IDatabase cache,
-        IDomainRepository<MessageRepliersInfo, Guid> replierInfos, ISchedulerFactory schedulerFactory,
-        IChatGroupAttachmentRepository attachments, IChatMessageRepository messages)
+        IDomainRepository<MessageRepliersInfo, Guid> replierInfos,
+        ISchedulerFactory schedulerFactory,
+        IChatGroupAttachmentRepository attachments,
+        IChatMessageRepository messages)
     : IEventHandler<ChatMessageSentEvent>
 {
     public async Task HandleAsync(
@@ -27,16 +29,15 @@ internal sealed class ChatMessageSentEventHandler(
         CancellationToken cancellationToken = default)
     {
         // Update user caches that serve for feed generation:
-        var groupKey = @event.GroupId.GetGroupMembersKey();
-        var membersIds = await cache.SetMembersAsync(groupKey);
-        foreach (var membersId in membersIds.Select(_ => Guid.Parse(_.ToString())))
+        var membersIds = await cache.GetGroupMembersAsync(@event.GroupId);
+        foreach ( var membersId in membersIds.Select(_ => Guid.Parse(_.ToString())) )
         {
             // Update User Feed (Sorted Set):
-            await cache.SortedSetAddAsync(
-                membersId.GetUserFeedKey(),
-                new RedisValue(
-                    @event.GroupId.ToString()
-                ), @event.Timestamp.Ticks);
+            await cache.AddUserFeedEntryAsync(
+                membersId,
+                @event.GroupId,
+                @event.Timestamp
+            );
         }
 
         // Add a Message Repliers Summary entry to DB:
@@ -49,11 +50,11 @@ internal sealed class ChatMessageSentEventHandler(
             ReplierInfos = new HashSet<MessageReplierInfo>()
         };
         await replierInfos.SaveAsync(repliersInfo, cancellationToken);
-        
+
         // Handle update of group attachments "View" table:
         var message = await messages
             .GetAsync(@event.MessageId, cancellationToken);
-        
+
         var groupAttachments = message!
             .Attachments
             .Select(media => new ChatGroupAttachment
@@ -70,7 +71,7 @@ internal sealed class ChatMessageSentEventHandler(
         // var scheduler = await schedulerFactory.GetScheduler(cancellationToken);
         // await scheduler.ScheduleImmediateJob<ProcessChatMessageJob>(builder =>
         //     builder.WithMessageId(@event.MessageId), cancellationToken);
-        
+
         await chatifyHubContext
             .Clients
             .Group(ChatifyHub.GetChatGroupId(@event.GroupId))

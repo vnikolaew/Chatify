@@ -46,7 +46,7 @@ public sealed class ChatGroupRepository(
 
             foreach ( var id in missingGroupIds )
             {
-                groups[id.ToString()] = missingGroups[id];
+                groups[id.ToString()] = missingGroups.TryGetValue(id, out var group) ? group : default;
             }
         }
 

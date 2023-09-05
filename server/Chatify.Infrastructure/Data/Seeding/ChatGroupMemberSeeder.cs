@@ -11,10 +11,7 @@ namespace Chatify.Infrastructure.Data.Seeding;
 internal sealed class ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory)
     : BaseSeeder<ChatGroupMember>(scopeFactory)
 {
-    public override int Priority => 2;
-
-    public override Task SeedAsync(CancellationToken cancellationToken = default)
-        => SeedCoreAsync(cancellationToken);
+    public override int Priority => 3;
 
     protected override async Task SeedCoreAsync(CancellationToken cancellationToken = default)
     {
@@ -25,13 +22,14 @@ internal sealed class ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory)
         var users = await mapper.FetchListAsync<ChatifyUser>();
         var groups = await mapper.FetchListAsync<ChatGroup>();
 
-        foreach ( var group in groups )
+        foreach ( var group in groups.Where(g =>
+                     !g.Metadata.TryGetValue("private", out var isPrivate) && isPrivate != "true") )
         {
             var addedUserIds = new HashSet<Guid>();
             foreach ( var _ in Enumerable.Range(1, 10) )
             {
                 var user = PickNewMember(addedUserIds, users);
-                
+
                 var memberId = Guid.NewGuid();
                 var member = new ChatGroupMember
                 {
@@ -45,8 +43,7 @@ internal sealed class ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory)
                 addedUserIds.Add(user.Id);
 
                 await mapper.InsertAsync(member, insertNulls: false);
-                var groupKey = member.ChatGroupId.GetGroupMembersKey();
-                await cache.SetAddAsync(groupKey, member.UserId.ToString());
+                await cache.AddGroupMemberAsync(member.ChatGroupId, member.UserId);
 
                 var count = await mapper.FirstOrDefaultAsync<long?>(
                     "SELECT members_count FROM chat_group_members WHERE chat_group_id = ?",
@@ -76,7 +73,7 @@ internal sealed class ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory)
         while ( true )
         {
             var user = users[Random.Shared.Next(0, users.Count)];
-            if ( insertedMembers.Contains(user.Id)) continue;
+            if ( insertedMembers.Contains(user.Id) ) continue;
             return user;
         }
     }

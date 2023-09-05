@@ -29,19 +29,15 @@ internal sealed class ChatGroupMemberAddedEventHandler(
         logger.LogInformation("Incremented Membership count for Chat Group with Id '{Id}' to {Count} ",
             @event.GroupId, membersCount?.MembersCount);
 
-        // // Add new member to cache set as well:
-        var groupMembersCacheKey = @event.GroupId.GetGroupMembersKey();
-
         // Add user to groups:id:members
-        await cache.SetAddAsync(
-            groupMembersCacheKey,
-            @event.MemberId.ToString());
+        await cache.AddGroupMemberAsync(@event.GroupId, @event.MemberId);
 
         // Add group to users:id:feed
-        await cache.SortedSetAddAsync(
-            @event.MemberId.GetUserFeedKey(),
-            new RedisValue(@event.GroupId.ToString()),
-            @event.Timestamp.Ticks);
+        await cache.AddUserFeedEntryAsync(
+            @event.MemberId,
+            @event.GroupId,
+            @event.Timestamp
+        );
 
         await chatifyHubContext
             .Clients

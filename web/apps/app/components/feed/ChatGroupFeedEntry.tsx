@@ -5,8 +5,12 @@ import { Avatar, Button, Skeleton } from "@nextui-org/react";
 import moment from "moment";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
-import { getChatGroupDetails, getMediaUrl } from "@web/api";
-import { useCurrentChatGroup } from "@hooks";
+import {
+   getChatGroupDetails,
+   getMediaUrl,
+   useGetUserDetailsQuery,
+} from "@web/api";
+import { useCurrentChatGroup, useCurrentUserId } from "@hooks";
 
 export interface ChatGroupFeedEntryProps {
    feedEntry: ChatGroupFeedEntry;
@@ -23,6 +27,7 @@ function formatDate(dateTime: string) {
 
 const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
    const client = useQueryClient();
+   const meId = useCurrentUserId();
    const groupId = useCurrentChatGroup();
    const isActive = useMemo(
       () => feedEntry.chatGroup.id === groupId,
@@ -36,6 +41,18 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
          staleTime: 30 * 60 * 1000,
       });
    };
+   const isPrivateGroup = useMemo(
+      () => feedEntry?.chatGroup?.metadata?.private === "true",
+      [feedEntry]
+   );
+   const {
+      data: user,
+      isLoading,
+      error,
+   } = useGetUserDetailsQuery(
+      feedEntry?.chatGroup?.adminIds?.filter((id) => id !== meId)?.[0],
+      { enabled: isPrivateGroup }
+   );
 
    return (
       <Button
@@ -59,14 +76,20 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
             color={"primary"}
             size={"lg"}
             className={`aspect-square ml-2 object-cover`}
-            src={getMediaUrl(feedEntry?.chatGroup?.picture?.mediaUrl)}
+            src={getMediaUrl(
+               isPrivateGroup
+                  ? user?.user?.profilePicture?.mediaUrl
+                  : feedEntry?.chatGroup?.picture?.mediaUrl
+            )}
          />
          <div
             className={`flex flex-1 flex-col justify-evenly items-center gap-1`}
          >
             <div className={`flex w-full gap-2 items-center justify-between`}>
                <span className="text-medium w-3/4 truncate font-semibold text-default-800">
-                  {feedEntry.chatGroup.name.substring(0, 20)}
+                  {isPrivateGroup
+                     ? user?.user?.username
+                     : feedEntry.chatGroup.name.substring(0, 20)}
                </span>
                <time className={`text-xs font-light text-default-500`}>
                   {feedEntry.latestMessage?.createdAt

@@ -57,10 +57,7 @@ internal sealed class ChatGroupSeeder(IServiceScopeFactory scopeFactory)
             };
 
             await mapper.InsertAsync(groupMember);
-
-            await cache.SetAddAsync(
-                chatGroup.Id.GetGroupMembersKey(),
-                user.Id.ToString());
+            await cache.AddGroupMemberAsync(chatGroup.Id, user.Id);
         }
     }
 

@@ -27,13 +27,9 @@ public sealed class ChatGroupMembersRepository(
         ChatGroupMember entity,
         CancellationToken cancellationToken = default)
     {
-        var groupKey = entity.ChatGroupId.GetGroupMembersKey();
-        var userKey = new RedisValue(entity.UserId.ToString());
-
         // Add new user to both database and cache set:
         var dbSaveTask = base.SaveAsync(entity, cancellationToken);
-
-        var cacheSaveTask = cache.SetAddAsync(groupKey, userKey);
+        var cacheSaveTask = cache.AddGroupMemberAsync(entity.ChatGroupId, entity.UserId);
 
         var saveTasks = new Task[] { dbSaveTask, cacheSaveTask };
 
@@ -48,14 +44,11 @@ public sealed class ChatGroupMembersRepository(
         var member = await GetAsync(id, cancellationToken);
         if ( member is null ) return false;
 
-        var groupKey = member.ChatGroupId.GetGroupMembersKey();
-        var userKey = new RedisValue(member.UserId.ToString());
-
         // Delete member from both the database and the cache:
         var deleteTasks = new[]
         {
             base.DeleteAsync(member.Id, cancellationToken),
-            cache.SetRemoveAsync(groupKey, userKey)
+            cache.RemoveGroupMemberAsync(member.ChatGroupId, member.UserId)
         };
 
         var results = await Task.WhenAll(deleteTasks);

@@ -155,7 +155,9 @@ export const ChatGroupMemberInfoCard = ({
                      ) : (
                         <Fragment>
                            <Avatar
-                              src={chatGroupDetails.chatGroup.picture.mediaUrl}
+                              src={getMediaUrl(
+                                 chatGroupDetails?.chatGroup?.picture?.mediaUrl
+                              )}
                               radius={"full"}
                               className={`w-4 h-4`}
                            />
@@ -234,7 +236,7 @@ export const ChatGroupMemberInfoCard = ({
                      />
                   }
                   spinner={<Spinner color={"white"} size={"sm"} />}
-                  onPress={(_) => handleSendFriendInvite()}
+                  // onPress={(_) => handleSendFriendInvite()}
                   className={`mt-4 text-foreground self-center w-3/5`}
                   variant={"shadow"}
                   color={"warning"}

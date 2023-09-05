@@ -50,10 +50,9 @@ internal sealed class ChatGroupsFeedService(
         CancellationToken cancellationToken = default)
     {
         // Get feed with group ids from cache sorted set:
-        var userFeedCacheKey = userId.GetUserFeedKey();
-        var values = await cache.SortedSetRangeByRankAsync(
-            userFeedCacheKey,
-            offset, limit + offset, Order.Descending);
+        var values = await cache.GetUserFeedAsync(
+            userId,
+            offset, limit + offset);
         if ( !values.Any() ) return FeedEntryFaker.Generate(10);
 
         var groupIds = values

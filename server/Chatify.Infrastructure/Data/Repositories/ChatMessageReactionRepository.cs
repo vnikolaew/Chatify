@@ -24,23 +24,22 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
         CancellationToken cancellationToken = default)
     {
         var model = await base.SaveAsync(messageReaction, cancellationToken);
-        
+
         // Add userId to Reactions set:
         var messageReactionsKey = messageReaction.MessageId.GetMessageReactionsKey();
         var userId = new RedisValue(messageReaction.UserId.ToString());
 
         // Add messageId -> reactionCode to User reactions Hash:
-        var userReactionsKey = messageReaction.UserId.GetUserReactionsKey();
-
         var cacheSaveTasks = new Task[]
         {
             // Add user to message reactors:
             cache.SetAddAsync(messageReactionsKey, userId),
-            
+
             // Add message and reaction type to users reactions:
-            cache.HashSetAsync(userReactionsKey,
-                new RedisValue(messageReaction.MessageId.ToString()),
-                new RedisValue(messageReaction.ReactionCode.ToString()))
+            cache.AddUserReactionAsync(
+                messageReaction.UserId,
+                messageReaction.MessageId,
+                messageReaction.ReactionCode)
         };
 
         await Task.WhenAll(cacheSaveTasks);
@@ -58,14 +57,13 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
         var userId = new RedisValue(messageReaction.UserId.ToString());
 
         // Delete messageId -> reactionCode to User reactions Hash:
-        var userReactionsKey = messageReaction.UserId.GetUserReactionsKey();
-
         var removeTasks = new[]
         {
             base.DeleteAsync(messageReaction, cancellationToken),
             cache.SetRemoveAsync(messageReactionsKey, userId),
-            cache.HashDeleteAsync(userReactionsKey,
-                new RedisValue(messageReaction.MessageId.ToString()))
+            cache.RemoveUserReactionAsync(
+                messageReaction.UserId,
+                messageReaction.MessageId)
         };
 
         var results = await Task.WhenAll(removeTasks);
@@ -81,7 +79,6 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
         var userIdValue = new RedisValue(userId.ToString());
 
         var userReactionsKey = userId.GetUserReactionsKey();
-
         var existTasks = new[]
         {
             cache.SetContainsAsync(messageReactionsKey, userIdValue),
@@ -102,10 +99,10 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
         IEnumerable<Guid> messageIds,
         CancellationToken cancellationToken = default)
     {
-        var userReactionsKey = userId.GetUserReactionsKey();
-        var reactionCodes = await cache.HashGetAsync(
-            userReactionsKey,
-            messageIds.Select(id => new RedisValue(id.ToString())).ToArray());
+        var reactionCodes = await cache.GetUserReactionsAsync(
+                userId,
+                messageIds.Select(id => new RedisValue(id.ToString())).ToArray()
+            );
 
         return messageIds
             .Select((id,

@@ -38,8 +38,6 @@ internal sealed class ChatMessageReactionsSeeder(IServiceScopeFactory scopeFacto
         await using var scope = ScopeFactory.CreateAsyncScope();
 
         var dbMapper = scope.ServiceProvider.GetRequiredService<IMapper>();
-        var repo = scope.ServiceProvider.GetRequiredService<IChatMessageReactionRepository>();
-        var mapper = scope.ServiceProvider.GetRequiredService<AutoMapper.IMapper>();
         var cache = scope.ServiceProvider.GetRequiredService<IDatabase>();
 
         var messages = await dbMapper.FetchListAsync<ChatMessage>();
@@ -106,17 +104,16 @@ internal sealed class ChatMessageReactionsSeeder(IServiceScopeFactory scopeFacto
     {
         var messageReactionsKey = reaction.MessageId.GetMessageReactionsKey();
         var userId = new RedisValue(reaction.UserId.ToString());
-        var userReactionsKey = reaction.UserId.GetUserReactionsKey();
-
         var cacheSaveTasks = new Task[]
         {
             // Add user to message reactors:
             cache.SetAddAsync(messageReactionsKey, userId),
 
             // Add message and reaction type to users reactions:
-            cache.HashSetAsync(userReactionsKey,
-                new RedisValue(reaction.MessageId.ToString()),
-                new RedisValue(reaction.ReactionCode.ToString()))
+            cache.AddUserReactionAsync(
+                reaction.UserId,
+                reaction.MessageId,
+                reaction.ReactionCode),
         };
 
         await Task.WhenAll(cacheSaveTasks);
