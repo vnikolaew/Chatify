@@ -7,6 +7,7 @@ import { HttpStatusCode } from "axios";
 import { profileClient } from "../../client";
 // @ts-ignore
 import { UserDetailsEntry, UserDetailsEntryApiResponse } from "@openapi";
+import { USER_DETAILS_KEY } from "./useGetUserDetailsQuery";
 
 export interface FindUserByHandleModel {
    userHandle: string;
@@ -45,6 +46,11 @@ export const useFindUserByHandleQuery = (
       queryFn: ({ queryKey: [_, handle] }) =>
          findUserByHandleQuery({ userHandle: handle }),
       enabled: false,
+      onSuccess: (user) =>
+         client.setQueryData<UserDetailsEntry>(
+            [USER_DETAILS_KEY, user.user?.id],
+            user
+         ),
       ...options,
    });
 };

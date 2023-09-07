@@ -48,7 +48,7 @@ public sealed class FriendInvitationRepository(IMapper mapper, Mapper dbMapper, 
                 userOneId, userTwoId),
             DbMapper.FirstOrDefaultAsync<Models.FriendInvitation>(
                 "WHERE inviter_id = ? AND invitee_id = ? ALLOW FILTERING;",
-                userTwoId, userOneId),
+                userTwoId, userOneId)
         };
 
         var friendInvites = await Task.WhenAll(dbTasks);

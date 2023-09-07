@@ -24,19 +24,16 @@ import {
 } from "@nextui-org/react";
 import { RightArrow } from "@icons";
 import UploadIcon from "@components/icons/UploadIcon";
-import { ChatGroup } from "@openapi";
+import { ChatGroup, ChatGroupDetailsEntry } from "@openapi";
 import MessageTextEditorToolbar from "@components/chat-group/messages/editor/MessageTextEditorToolbar";
 import { useSendGroupChatMessageMutation } from "@web/api";
-import { useCurrentChatGroup } from "@hooks";
+import { useCurrentChatGroup, useIsChatGroupPrivate } from "@hooks";
 import * as escaper from "html-escaper";
 import { plateToMarkdown } from "slate-mark";
 import slate from "remark-slate";
 
-import { v4 as uuidv4 } from "uuid";
-
 import { CustomEditor } from "./editor";
-import CrossIcon from "@components/icons/CrossIcon";
-import { markdownProcessor, normalizeFileName } from "../../../../utils";
+import { markdownProcessor } from "../../../../utils";
 import { unified } from "unified";
 import markdown from "remark-parse";
 import { useChatifyClientContext } from "../../../../hub/ChatHubConnection";
@@ -54,7 +51,8 @@ export class ChatifyFile {
 }
 
 export interface MessageTextEditorProps {
-   chatGroup: ChatGroup;
+   chatGroup: ChatGroupDetailsEntry;
+   placeholder?: string;
 }
 
 export enum MessageAction {
@@ -143,9 +141,11 @@ function getTextFromNode(node) {
    }
 }
 
-const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
+const MessageTextEditor = ({
+   chatGroup,
+   placeholder,
+}: MessageTextEditorProps) => {
    const [editor] = useState(() => withReact(createEditor()));
-   const groupId = useCurrentChatGroup();
    const hubClient = useChatifyClientContext();
    const [isUserTyping, setIsUserTyping] = useState(false);
    const {
@@ -156,6 +156,7 @@ const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
       handleRemoveFile,
       clearFiles,
    } = useFileUpload();
+   const groupId = useCurrentChatGroup();
 
    useEffect(() => {
       if (isUserTyping) {
@@ -256,9 +257,7 @@ const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
       >
          <div className={`relative h-fit w-5/6 mr-12`}>
             <Editable
-               placeholder={
-                  chatGroup?.name && `Message in ${chatGroup?.name} ...`
-               }
+               placeholder={placeholder}
                className={`bg-zinc-900 !break-words !whitespace-nowrap ${
                   attachedFilesUrls?.size
                      ? `!min-h-[180px] !max-h-[180px]`

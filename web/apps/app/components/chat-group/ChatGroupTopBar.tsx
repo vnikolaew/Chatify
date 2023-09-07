@@ -1,6 +1,10 @@
 "use client";
 import React, { Fragment, useMemo } from "react";
-import { useCurrentChatGroup, useIsUserLoggedIn } from "@hooks";
+import {
+   useCurrentChatGroup,
+   useIsChatGroupPrivate,
+   useIsUserLoggedIn,
+} from "@hooks";
 import {
    getMediaUrl,
    useGetChatGroupDetailsQuery,
@@ -28,11 +32,7 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
       enabled: !!chatGroupId && isUserLoggedIn,
    });
 
-   const isPrivateGroup = useMemo(
-      () => chatGroupDetails?.chatGroup?.metadata?.private === "true",
-      [chatGroupDetails]
-   );
-
+   const isPrivateGroup = useIsChatGroupPrivate(chatGroupDetails);
    const isUserGroupAdmin = useMemo(() => {
       return chatGroupDetails?.chatGroup?.adminIds?.some(
          (id) => id === me?.claims?.nameidentifier
@@ -42,7 +42,7 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
       return chatGroupDetails?.members?.filter(
          (m) => m.status === UserStatus.ONLINE
       )?.length;
-   }, [chatGroupDetails]);
+   }, [chatGroupDetails?.members]);
 
    return (
       <div
@@ -61,7 +61,11 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                      size={"md"}
                      className={`aspect-square object-cover`}
                      src={getMediaUrl(
-                        chatGroupDetails?.chatGroup?.picture?.mediaUrl
+                        isPrivateGroup
+                           ? chatGroupDetails?.members?.find(
+                                (m) => m.id !== me.claims.nameidentifier
+                             )?.profilePicture?.mediaUrl
+                           : chatGroupDetails?.chatGroup?.picture?.mediaUrl
                      )}
                   />
                   <div
@@ -84,7 +88,7 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                               {" "}
                               {isPrivateGroup
                                  ? chatGroupDetails.members.filter(
-                                      (m) => m.id !== me.claims.nameidentifier
+                                      (m) => m.id !== me?.claims?.nameidentifier
                                    )[0].username
                                  : chatGroupDetails?.chatGroup.name}
                            </span>

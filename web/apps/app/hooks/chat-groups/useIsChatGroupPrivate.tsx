@@ -1,18 +1,9 @@
-import { useGetChatGroupDetailsQuery } from "@web/api";
 import { useMemo } from "react";
 import { ChatGroupDetailsEntry } from "@openapi";
 
-// export function useIsChatGroupPrivate(groupId: string) {
-//    const { data: details } = useGetChatGroupDetailsQuery(groupId);
-//    return useMemo(
-//       () => details?.chatGroup?.metadata?.private === "true",
-//       [details]
-//    );
-// }
-
-export function useIsChatGroupPrivate(chaGroupDetails: ChatGroupDetailsEntry) {
+export function useIsChatGroupPrivate(chatGroupDetails: ChatGroupDetailsEntry) {
    return useMemo(
-      () => chaGroupDetails?.chatGroup?.metadata?.private === "true",
-      [chaGroupDetails]
+      () => chatGroupDetails?.chatGroup?.metadata?.private === "true",
+      [chatGroupDetails?.chatGroup?.metadata?.private]
    );
 }

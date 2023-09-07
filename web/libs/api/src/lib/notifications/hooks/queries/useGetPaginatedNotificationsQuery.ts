@@ -6,7 +6,10 @@ import {
 import { HttpStatusCode } from "axios";
 import { notificationsClient } from "../../client";
 import { DEFAULT_CACHE_TIME, DEFAULT_STALE_TIME } from "../../../constants";
-import { UserNotification } from "@openapi";
+import {
+   UserNotification,
+   UserNotificationCursorPagedApiResponse,
+} from "@openapi";
 import { URLSearchParams } from "next/dist/compiled/@edge-runtime/primitives/url";
 
 export interface GetPaginatedNotificationsModel {
@@ -21,16 +24,20 @@ const getPaginatedNotifications = async ({
    const params = new URLSearchParams({ pageSize: pageSize.toString() });
    if (pagingCursor) params.set("pagingCursor", pagingCursor);
 
-   const { status, data } = await notificationsClient.get(``, {
-      headers: {},
-      params,
-   });
+   const { status, data } =
+      await notificationsClient.get<UserNotificationCursorPagedApiResponse>(
+         ``,
+         {
+            headers: {},
+            params,
+         }
+      );
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
    }
 
-   return data;
+   return data!.data;
 };
 
 export const NOTIFICATIONS_KEY = `notifications`;

@@ -35,6 +35,7 @@ using LanguageExt.UnitsOfMeasure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -121,7 +122,11 @@ public static class DependencyInjection
     {
         services
             .AddScoped<INotificationService, SignalRNotificationService>()
-            .AddSignalR(opts => { opts.KeepAliveInterval = 30.Seconds(); })
+            .AddSignalR(opts =>
+            {
+                opts.KeepAliveInterval = 30.Seconds();
+                opts.AddFilter<ConnectionIdCookieHubFilter>();
+            })
             .AddHubOptions<ChatifyHub>(opts =>
             {
                 opts.EnableDetailedErrors = false;

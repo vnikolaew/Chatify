@@ -11,7 +11,6 @@ import React, {
 import {
    sleep,
    useGetChatGroupDetailsQuery,
-   useGetMyClaimsQuery,
    useGetPaginatedGroupMessagesQuery,
 } from "@web/api";
 import { Button, ScrollShadow, Tooltip } from "@nextui-org/react";
@@ -21,6 +20,7 @@ import StartupRocketIcon from "@components/icons/StartupRocketIcon";
 import { LoadingChatMessageEntry } from "@components/chat-group/messages/LoadingChatMessageEntry";
 import MessageTextEditor from "@components/chat-group/messages/editor/MessageTextEditor";
 import MembersTypingSection from "@components/chat-group/messages/MembersTypingSection";
+import { useCurrentUserId, useIsChatGroupPrivate } from "@hooks";
 
 export interface ChatMessagesSectionProps {
    groupId: string;
@@ -49,14 +49,15 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
       },
       { enabled: !!groupId }
    );
-   const { data: me } = useGetMyClaimsQuery();
+   const meId = useCurrentUserId();
+   const isPrivate = useIsChatGroupPrivate(groupDetails);
    const showConversationBeginningMessage = useMemo(
       () =>
          !messages?.pages?.at(-1)?.hasMore &&
          !isLoading &&
          !isFetchingNextPage &&
          !error,
-      [messages?.pages, isLoading, isFetchingNextPage]
+      [messages?.pages, isLoading, isFetchingNextPage, error]
    );
 
    const fetchMoreMessages = async () => await fetchNextPage();
@@ -179,9 +180,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                            ?.flatMap((p) => p.items)
                            .reverse()
                            ?.map((message, i, arr) => {
-                              const isMe =
-                                 message.senderInfo.userId ===
-                                 me.claims.nameidentifier;
+                              const isMe = message.senderInfo.userId === meId;
                               const isLatest = i === arr.length - 1;
                               return (
                                  <ChatMessageEntry
@@ -203,7 +202,18 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                <div
                   className={`mt-4 w-full flex flex-col items-start gap-8 mx-4`}
                >
-                  <MessageTextEditor chatGroup={groupDetails} />
+                  <MessageTextEditor
+                     chatGroup={groupDetails}
+                     placeholder={
+                        isPrivate
+                           ? `Message ${
+                                groupDetails?.members?.find(
+                                   (_) => _.id !== meId
+                                )?.username
+                             }`
+                           : `Message in ${groupDetails?.chatGroup.name}`
+                     }
+                  />
                </div>
             </Fragment>
          )}
