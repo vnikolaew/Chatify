@@ -11,17 +11,9 @@ import {
    Link,
    Skeleton,
 } from "@nextui-org/react";
-import ChatGroupFeedEntry from "./ChatGroupFeedEntry";
 import { useIsUserLoggedIn, useDebounce, useCurrentChatGroup } from "@hooks";
 import { useSearchChatGroupsByName } from "@web/api";
 import { HamburgerMenuIcon, NotSentIcon, SearchIcon } from "@icons";
-import {
-   AnimatePresence,
-   makeUseVisualState,
-   motion,
-   Reorder,
-} from "framer-motion";
-import { randomShuffleArray } from "../../utils";
 import ChatGroupFeedEntries from "@components/feed/ChatGroupFeedEntries";
 
 export interface ChatGroupsFeedProps {}

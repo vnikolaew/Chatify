@@ -17,7 +17,7 @@ const ChatGroupFeedEntries = ({ feedEntries }: ChatGroupFeedEntriesProps) => {
             onReorder={undefined!}
             values={feedEntries ?? []}
          >
-            {feedEntries?.map((e, i) => (
+            {feedEntries?.map((e, i, { length }) => (
                <Reorder.Item key={e.chatGroup.id} value={e.chatGroup.id}>
                   <motion.div
                      layout
@@ -29,7 +29,7 @@ const ChatGroupFeedEntries = ({ feedEntries }: ChatGroupFeedEntriesProps) => {
                         staggerChildren: 1,
                         type: `spring`,
                      }}
-                     className={``}
+                     className={i === length - 1 && `mb-12`}
                      key={(e as ChatGroupFeedEntry).chatGroup.id}
                   >
                      <ChatGroupFeedEntry feedEntry={e} />

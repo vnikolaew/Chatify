@@ -1,6 +1,10 @@
 "use client";
 import React, { Fragment, useMemo } from "react";
-import { useCurrentChatGroup, useIsUserLoggedIn } from "@hooks";
+import {
+   useCurrentChatGroup,
+   useIsChatGroupPrivate,
+   useIsUserLoggedIn,
+} from "@hooks";
 import {
    getMediaUrl,
    useGetChatGroupDetailsQuery,
@@ -28,10 +32,7 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
       enabled: !!chatGroupId && isUserLoggedIn,
    });
 
-   const isPrivateGroup = useMemo(
-      () => chatGroupDetails?.chatGroup?.metadata?.private === "true",
-      [chatGroupDetails]
-   );
+   const isPrivateGroup = useIsChatGroupPrivate(chatGroupDetails);
 
    const isUserGroupAdmin = useMemo(() => {
       return chatGroupDetails?.chatGroup?.adminIds?.some(
@@ -52,12 +53,15 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
             {chatGroupDetails ? (
                <Fragment>
                   <Avatar
-                     fallback={
-                        <Skeleton className={`h-10 w-10 rounded-full`} />
-                     }
+                     // fallback={
+                     //    <Skeleton className={`h-10 w-10 rounded-full`} />
+                     // }
+                     name={`${me.claims.name[0].toUpperCase()} ${chatGroupDetails.members
+                        .filter((_) => _.id !== me.claims.nameidentifier)[0]
+                        ?.username[0]?.toUpperCase()}`}
                      isBordered
                      radius={"full"}
-                     color={"danger"}
+                     color={"success"}
                      size={"md"}
                      className={`aspect-square object-cover`}
                      src={getMediaUrl(
