@@ -51,17 +51,17 @@ export const NotificationEntry = ({
          </Badge>
 
          <div
-            className={`flex h-full grow-[1] flex-col justify-center items-start gap-1`}
+            className={`flex h-full grow-[1] flex-col justify-center items-start gap-0`}
          >
             <p className={`text-small`}>{message}</p>
-            <time className={`text-xs text-primary-400`}>
+            <time className={`text-[.6rem] text-primary-400`}>
                {moment(new Date(notification.createdAt)).fromNow()}
             </time>
             {notification.type ===
                UserNotificationType.INCOMING_FRIEND_INVITE && (
-               <div className={`w-full mt-1 flex items-center justify-evenly`}>
+               <div className={`w-full mt-0 flex items-center justify-evenly`}>
                   <Button
-                     className={`px-8 py-1`}
+                     className={`px-12 text-xs py-0`}
                      onPress={async () => {
                         await acceptFriendInvite(
                            {
@@ -119,7 +119,7 @@ export const NotificationEntry = ({
                      isLoading={declineLoading}
                      radius={"full"}
                      size={"sm"}
-                     variant={"ghost"}
+                     variant={"light"}
                      color={"danger"}
                   >
                      Decline

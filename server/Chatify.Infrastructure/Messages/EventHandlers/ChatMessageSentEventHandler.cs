@@ -74,7 +74,7 @@ internal sealed class ChatMessageSentEventHandler(
 
         await chatifyHubContext
             .Clients
-            .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
+            .GroupExcept(ChatifyHub.GetChatGroupId(@event.GroupId), identityContext.WebSocketConnectionId!)
             .ReceiveGroupChatMessage(
                 new ReceiveGroupChatMessage(
                     @event.GroupId,

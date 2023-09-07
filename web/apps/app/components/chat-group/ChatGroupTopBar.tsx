@@ -33,7 +33,6 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
    });
 
    const isPrivateGroup = useIsChatGroupPrivate(chatGroupDetails);
-
    const isUserGroupAdmin = useMemo(() => {
       return chatGroupDetails?.chatGroup?.adminIds?.some(
          (id) => id === me?.claims?.nameidentifier
@@ -43,7 +42,7 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
       return chatGroupDetails?.members?.filter(
          (m) => m.status === UserStatus.ONLINE
       )?.length;
-   }, [chatGroupDetails]);
+   }, [chatGroupDetails?.members]);
 
    return (
       <div
@@ -53,19 +52,20 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
             {chatGroupDetails ? (
                <Fragment>
                   <Avatar
-                     // fallback={
-                     //    <Skeleton className={`h-10 w-10 rounded-full`} />
-                     // }
-                     name={`${me.claims.name[0].toUpperCase()} ${chatGroupDetails.members
-                        .filter((_) => _.id !== me.claims.nameidentifier)[0]
-                        ?.username[0]?.toUpperCase()}`}
+                     fallback={
+                        <Skeleton className={`h-10 w-10 rounded-full`} />
+                     }
                      isBordered
                      radius={"full"}
-                     color={"success"}
+                     color={"danger"}
                      size={"md"}
                      className={`aspect-square object-cover`}
                      src={getMediaUrl(
-                        chatGroupDetails?.chatGroup?.picture?.mediaUrl
+                        isPrivateGroup
+                           ? chatGroupDetails?.members?.find(
+                                (m) => m.id !== me.claims.nameidentifier
+                             )?.profilePicture?.mediaUrl
+                           : chatGroupDetails?.chatGroup?.picture?.mediaUrl
                      )}
                   />
                   <div
@@ -88,7 +88,7 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                               {" "}
                               {isPrivateGroup
                                  ? chatGroupDetails.members.filter(
-                                      (m) => m.id !== me.claims.nameidentifier
+                                      (m) => m.id !== me?.claims?.nameidentifier
                                    )[0].username
                                  : chatGroupDetails?.chatGroup.name}
                            </span>

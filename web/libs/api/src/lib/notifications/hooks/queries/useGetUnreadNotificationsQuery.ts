@@ -5,19 +5,26 @@ import {
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { notificationsClient } from "../../client";
-import { UserNotification } from "@openapi";
+import {
+   UserNotification,
+   UserNotificationCursorPagedApiResponse,
+} from "@openapi";
 import { NOTIFICATIONS_KEY } from "./useGetPaginatedNotificationsQuery";
 
 const getUnreadNotifications = async (): Promise<UserNotification[]> => {
-   const { status, data } = await notificationsClient.get(`unread`, {
-      headers: {},
-   });
+   const { status, data } =
+      await notificationsClient.get<UserNotificationCursorPagedApiResponse>(
+         `unread`,
+         {
+            headers: {},
+         }
+      );
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
    }
 
-   return data;
+   return data!.data;
 };
 
 export const useGetUnreadNotificationsQuery = (

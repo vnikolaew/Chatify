@@ -14,6 +14,8 @@ public interface IIdentityContext
     string Role { get; }
 
     string? UserLocale { get; }
+    
+    string? WebSocketConnectionId { get; set; }
 
     GeoLocation? UserLocation { get; }
 

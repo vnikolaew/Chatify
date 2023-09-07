@@ -1,24 +1,37 @@
 "use client";
 import React from "react";
-import { Button, Link } from "@nextui-org/react";
-import { PlusIcon } from "@icons";
+import { Button, Link, Tooltip } from "@nextui-org/react";
+import { AddUserIcon } from "@icons";
 
 export interface AddNewFriendButtonProps {}
 
 const AddNewFriendButton = ({}: AddNewFriendButtonProps) => {
    return (
       <div>
-         <Button
-            as={Link}
-            href={`/friends`}
-            startContent={<PlusIcon className={`fill-foreground`} size={16} />}
-            variant={`light`}
-            className={`text-xs gap-1`}
-            size={"sm"}
-            color={`default`}
+         <Tooltip
+            showArrow
+            classNames={{
+               base: `text-sm`,
+            }}
+            shadow={`sm`}
+            size={`sm`}
+            content={"Add a new friend"}
          >
-            Add a friend
-         </Button>
+            <Button
+               as={Link}
+               onPress={console.log}
+               href={`/friends`}
+               startContent={
+                  <AddUserIcon className={`fill-foreground`} size={20} />
+               }
+               radius={"full"}
+               isIconOnly
+               variant={`solid`}
+               className={`text-xs gap-1 p-4 bg-transparent rounded-full hover:bg-default-200`}
+               size={"md"}
+               color={`default`}
+            />
+         </Tooltip>
       </div>
    );
 };

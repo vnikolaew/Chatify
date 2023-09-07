@@ -1,13 +1,22 @@
 "use client";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+   useCallback,
+   useEffect,
+   useMemo,
+   useRef,
+   useState,
+} from "react";
 import { DefaultElement, Editable, Slate, withReact } from "slate-react";
 import { createEditor, Text, Transforms } from "slate";
 import {
+   Badge,
    Button,
+   Chip,
    Dropdown,
    DropdownItem,
    DropdownMenu,
    DropdownTrigger,
+   Image,
    Link,
    Spacer,
    Spinner,
@@ -15,14 +24,10 @@ import {
 } from "@nextui-org/react";
 import { RightArrow } from "@icons";
 import UploadIcon from "@components/icons/UploadIcon";
-import { ChatGroupDetailsEntry } from "@openapi";
+import { ChatGroup, ChatGroupDetailsEntry } from "@openapi";
 import MessageTextEditorToolbar from "@components/chat-group/messages/editor/MessageTextEditorToolbar";
 import { useSendGroupChatMessageMutation } from "@web/api";
-import {
-   useCurrentChatGroup,
-   useCurrentUserId,
-   useIsChatGroupPrivate,
-} from "@hooks";
+import { useCurrentChatGroup, useIsChatGroupPrivate } from "@hooks";
 import * as escaper from "html-escaper";
 import { plateToMarkdown } from "slate-mark";
 import slate from "remark-slate";
@@ -47,6 +52,7 @@ export class ChatifyFile {
 
 export interface MessageTextEditorProps {
    chatGroup: ChatGroupDetailsEntry;
+   placeholder?: string;
 }
 
 export enum MessageAction {
@@ -135,12 +141,12 @@ function getTextFromNode(node) {
    }
 }
 
-const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
+const MessageTextEditor = ({
+   chatGroup,
+   placeholder,
+}: MessageTextEditorProps) => {
    const [editor] = useState(() => withReact(createEditor()));
-   const meId = useCurrentUserId();
-   const groupId = useCurrentChatGroup();
    const hubClient = useChatifyClientContext();
-   const isGroupPrivate = useIsChatGroupPrivate(chatGroup);
    const [isUserTyping, setIsUserTyping] = useState(false);
    const {
       attachedFilesUrls,
@@ -150,6 +156,7 @@ const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
       handleRemoveFile,
       clearFiles,
    } = useFileUpload();
+   const groupId = useCurrentChatGroup();
 
    useEffect(() => {
       if (isUserTyping) {
@@ -250,16 +257,8 @@ const MessageTextEditor = ({ chatGroup }: MessageTextEditorProps) => {
       >
          <div className={`relative h-fit w-5/6 mr-12`}>
             <Editable
-               placeholder={
-                  chatGroup?.chatGroup?.name &&
-                  `Message ${
-                     isGroupPrivate
-                        ? chatGroup?.members?.find((m) => m.id !== meId)
-                             ?.username
-                        : `in ${chatGroup?.chatGroup?.name?.substring(0, 30)}`
-                  } ...`
-               }
-               className={`bg-zinc-900 bg-opacity-40 !break-words !whitespace-nowrap ${
+               placeholder={placeholder}
+               className={`bg-zinc-900 !break-words !whitespace-nowrap ${
                   attachedFilesUrls?.size
                      ? `!min-h-[180px] !max-h-[180px]`
                      : `!min-h-[140px] !max-h-[140px]`

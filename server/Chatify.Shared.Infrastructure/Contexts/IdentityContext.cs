@@ -10,6 +10,8 @@ public class IdentityContext : IIdentityContext
 
     private const string UserLocationHeader = "X-User-Location";
 
+    private const string ConnectionIdCookieName = "Connection-Id";
+
     public bool IsAuthenticated { get; }
     public Guid Id { get; }
     public string Username { get; set; }
@@ -19,6 +21,8 @@ public class IdentityContext : IIdentityContext
 
     public GeoLocation? UserLocation { get; }
     public Dictionary<string, IEnumerable<string>> Claims { get; }
+
+    public string? WebSocketConnectionId { get; set; }
 
     private IdentityContext()
     {
@@ -44,6 +48,9 @@ public class IdentityContext : IIdentityContext
                        && location.Count >= 1
                        && GeoLocation.TryParse(location[0]!, out var geoLocation)
             ? geoLocation
+            : default;
+        WebSocketConnectionId = context.Request.Cookies.TryGetValue(ConnectionIdCookieName, out var connectionId)
+            ? connectionId
             : default;
     }
 
