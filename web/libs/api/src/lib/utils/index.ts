@@ -24,6 +24,7 @@ export function isLocalUrl(url: string) {
 }
 
 export function getMediaUrl(url: string) {
+   if (!url) return null!;
    return isLocalUrl(url) ? `${getImagesBaseUrl()}/${url}` : url;
 }
 

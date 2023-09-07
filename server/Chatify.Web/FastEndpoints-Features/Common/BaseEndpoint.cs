@@ -10,10 +10,11 @@ namespace Chatify.Web.FastEndpoints_Features.Common;
 
 public class BaseGroup : Group
 {
+    public const string ApiPrefix = "api";
+
     public BaseGroup()
-        => Configure("api",
-            ep =>
-                ep.Description(x => x.WithTags("base")));
+        => Configure(ApiPrefix,
+            ep => ep.Description(x => x.WithTags("base")));
 }
 
 public abstract class BaseEndpoint<TRequest, TResponse> : Endpoint<TRequest, TResponse>
@@ -30,7 +31,8 @@ public abstract class BaseEndpoint<TRequest, TResponse> : Endpoint<TRequest, TRe
     protected IDispatcher Dispatcher
         => _dispatcher ??= Resolve<IDispatcher>();
 
-    protected Task SendAsync<TCommand>(TCommand command, CancellationToken cancellationToken = default)
+    protected Task SendAsync<TCommand>(TCommand command,
+        CancellationToken cancellationToken = default)
         where TCommand : class, ICommand, Shared.Abstractions.Commands.ICommand =>
         Dispatcher.SendAsync(command, cancellationToken);
 
@@ -40,7 +42,8 @@ public abstract class BaseEndpoint<TRequest, TResponse> : Endpoint<TRequest, TRe
         where TCommand : class, Shared.Abstractions.Commands.ICommand<TResult>
         => Dispatcher.SendAsync<TCommand, TResult>(command, cancellationToken);
 
-    protected Task<TResult> QueryAsync<TQuery, TResult>(TQuery query, CancellationToken cancellationToken = default)
+    protected Task<TResult> QueryAsync<TQuery, TResult>(TQuery query,
+        CancellationToken cancellationToken = default)
         where TQuery : class, IQuery<TResult>
         => Dispatcher.QueryAsync(query, cancellationToken);
 
@@ -48,8 +51,8 @@ public abstract class BaseEndpoint<TRequest, TResponse> : Endpoint<TRequest, TRe
         => TypedResults.StatusCode(( int )HttpStatusCode.Accepted);
 
     protected IResult Accepted(string? message = default)
-        => TypedResults
-            .Accepted(string.Empty, ApiResponse<Unit>.Success(Unit.Default, message));
+        => TypedResults.Accepted(string.Empty,
+            ApiResponse<Unit>.Success(Unit.Default, message));
 
     protected IResult NoContent(Unit _)
         => TypedResults.NoContent();

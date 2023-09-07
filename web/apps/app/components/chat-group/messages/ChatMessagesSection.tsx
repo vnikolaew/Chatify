@@ -203,7 +203,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                <div
                   className={`mt-4 w-full flex flex-col items-start gap-8 mx-4`}
                >
-                  <MessageTextEditor chatGroup={groupDetails?.chatGroup} />
+                  <MessageTextEditor chatGroup={groupDetails} />
                </div>
             </Fragment>
          )}

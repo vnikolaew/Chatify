@@ -33,6 +33,8 @@ public class User : IDomainEntity
     
     public string DisplayName { get; set; }
     
+    public string UserHandle { get; set; }
+    
     public void AddDeviceIp(IPAddress ipAddress)
         => DeviceIps.Add(ipAddress);
 }

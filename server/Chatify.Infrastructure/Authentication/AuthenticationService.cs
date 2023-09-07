@@ -47,12 +47,20 @@ public sealed class AuthenticationService(
     private static Error InvalidOrUnconfirmedEmailError => Error.New("Email address is invalid or not confirmed.");
     private static Error UserLoginInfoNotFoundError => Error.New("Uer login information was not found.");
 
+    private static string GenerateUserHandle(string username,
+        int sameUsernamesCount)
+        => $"{username}#{sameUsernamesCount.ToString().PadLeft(4, '0')}";
+
     public async Task<OneOf<Error, UserSignedUpResult>> RegularSignUpAsync(
         RegularSignUp request,
         CancellationToken cancellationToken = default)
     {
         var existingUser = await userManager.FindByEmailAsync(request.Email);
         if ( existingUser is not null ) return Error.New("User already exists");
+
+        // Get count of users having the same username:
+        var usersWithSameUserName = await users.GetAllWithUsername(
+            request.Username, cancellationToken);
 
         var chatifyUser = new ChatifyUser
         {
@@ -64,7 +72,8 @@ public sealed class AuthenticationService(
                     ? IPAddress.IsLoopback(address) ? IPAddress.Loopback : address
                     : IPAddress.None
             },
-            ProfilePicture = Constants.DefaultUserProfilePicture
+            ProfilePicture = Constants.DefaultUserProfilePicture,
+            UserHandle = GenerateUserHandle(request.Username, usersWithSameUserName?.Count ?? 0)
         };
 
         var identityResult = await userManager
@@ -94,11 +103,7 @@ public sealed class AuthenticationService(
             chatifyUser, request.Password, isPersistent: true, lockoutOnFailure: true);
 
         return signInResult.Succeeded
-            ? new UserSignedUpResult
-            {
-                UserId = chatifyUser.Id,
-                AuthenticationProvider = RegularLogin
-            }
+            ? new UserSignedUpResult { UserId = chatifyUser.Id, AuthenticationProvider = RegularLogin }
             : identityResult.ToError()!;
     }
 
@@ -120,8 +125,7 @@ public sealed class AuthenticationService(
         var ipAddress = IPAddress.Parse(context.IpAddress);
         if ( !user.DeviceIps.Contains(ipAddress) )
         {
-            
-            await users.UpdateAsync(user.Id, user => { user.DeviceIps.Add(ipAddress); }, cancellationToken);
+            await users.UpdateAsync(user.Id, user => user.DeviceIps.Add(ipAddress), cancellationToken);
         }
 
         return result.Succeeded
@@ -175,6 +179,10 @@ public sealed class AuthenticationService(
             return await SignInWithLoginProvider(existingUser, Google);
         }
 
+        // Get count of users having the same username:
+        var usersWithSameUserName = await users.GetAllWithUsername(
+            userInfo.Name.Underscore(), cancellationToken);
+
         var chatifyUser = new ChatifyUser
         {
             Email = userInfo.Email,
@@ -195,8 +203,10 @@ public sealed class AuthenticationService(
                 Type = "",
                 FileName = "",
                 MediaUrl = userInfo.Picture
-            }
+            },
+            UserHandle = GenerateUserHandle(userInfo.Name.Underscore(), usersWithSameUserName?.Count ?? 0)
         };
+
         chatifyUser.AddToken(new TokenInfo(Google, AuthenticationTokenName, request.AccessToken));
 
         var identityResult = await userManager.CreateAsync(chatifyUser);
@@ -238,6 +248,10 @@ public sealed class AuthenticationService(
         {
             return await SignInWithLoginProvider(existingUser, Github);
         }
+        
+        // Get count of users having the same username:
+        var usersWithSameUserName = await users.GetAllWithUsername(
+            userInfo.Name.Underscore(), cancellationToken);
 
         var chatifyUser = new ChatifyUser
         {
@@ -259,7 +273,8 @@ public sealed class AuthenticationService(
                 Type = "",
                 FileName = "",
                 MediaUrl = userInfo.AvatarUrl
-            }
+            },
+            UserHandle = GenerateUserHandle(userInfo.Name.Underscore(), usersWithSameUserName?.Count ?? 0)
         };
         chatifyUser.AddToken(new TokenInfo(Github, AuthenticationCodeName, request.Code));
 
@@ -311,6 +326,10 @@ public sealed class AuthenticationService(
         {
             return await SignInWithLoginProvider(existingUser, Facebook);
         }
+        
+        // Get count of users having the same username:
+        var usersWithSameUserName = await users.GetAllWithUsername(
+            userInfo.Name.Underscore(), cancellationToken);
 
         var chatifyUser = new ChatifyUser
         {
@@ -328,7 +347,8 @@ public sealed class AuthenticationService(
             ProfilePicture = new Media
             {
                 MediaUrl = userInfo.Picture.Data.Url
-            }
+            },
+            UserHandle = GenerateUserHandle(userInfo.Name.Underscore(), usersWithSameUserName?.Count ?? 0)
         };
         chatifyUser.AddToken(new TokenInfo(Facebook, AuthenticationTokenName, request.AccessToken));
 

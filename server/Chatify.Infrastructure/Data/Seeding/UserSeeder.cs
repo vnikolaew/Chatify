@@ -25,7 +25,7 @@ public sealed partial class UserSeeder(IServiceScopeFactory factory)
         .RuleFor(u => u.Status, f => f.PickRandom(Enum.GetValues<UserStatus>()))
         .RuleFor(u => u.ProfilePicture, f => new Media { MediaUrl = f.Internet.Avatar(), Id = Guid.NewGuid() })
         .RuleFor(u => u.PhoneNumbers,
-            f => new System.Collections.Generic.HashSet<string> { f.Phone.PhoneNumber(), f.Phone.PhoneNumber() })
+            f => new HashSet<string> { f.Phone.PhoneNumber(), f.Phone.PhoneNumber() })
         .RuleFor(u => u.EmailConfirmed, _ => true)
         .RuleFor(u => u.Logins,
             (_,
@@ -60,37 +60,43 @@ public sealed partial class UserSeeder(IServiceScopeFactory factory)
 
         var pattern = SpecialCharsRegex();
 
-        var users = _userFaker
+        var usersDict = _userFaker
             .Generate(50)
             .Select(u =>
             {
                 u.UserName = pattern.Replace(u.UserName,
-                    match => string.Empty);
+                    _ => string.Empty);
                 u.DisplayName = u.UserName.Humanize();
                 return u;
             })
-            .ToList();
+            .GroupBy(u => u.UserName)
+            .ToDictionary(gr => gr.Key, gr => gr.ToList());
 
-        foreach ( var user in users )
+        foreach ( var (username, users) in usersDict )
         {
-            _ = await userManager
-                .CreateAsync(user, $"{user.UserName.Titleize()}123!");
-
-            // Insert user in RedisJSON cache:
-            try
+            var index = 1;
+            foreach ( var user in users )
             {
-                await provider.RedisCollection<ChatifyUser>().InsertAsync(user);
-            }
-            catch ( Exception e )
-            {
-                Console.WriteLine(e);
-            }
+                user.UserHandle = $"{username}#{(index++).ToString().PadLeft(4, '0')}";
+                _ = await userManager
+                    .CreateAsync(user, $"{user.UserName.Titleize()}123!");
 
-            _ = await userManager.AddClaimsAsync(
-                user, new List<Claim>
+                // Insert user in RedisJSON cache:
+                try
                 {
-                    new(Authentication.External.Constants.ClaimNames.Picture, user.ProfilePicture.MediaUrl),
-                });
+                    await provider.RedisCollection<ChatifyUser>().InsertAsync(user);
+                }
+                catch ( Exception e )
+                {
+                    Console.WriteLine(e);
+                }
+
+                _ = await userManager.AddClaimsAsync(
+                    user, new List<Claim>
+                    {
+                        new(Authentication.External.Constants.ClaimNames.Picture, user.ProfilePicture.MediaUrl),
+                    });
+            }
         }
     }
 

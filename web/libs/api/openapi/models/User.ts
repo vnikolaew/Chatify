@@ -23,4 +23,5 @@ export type User = {
     deviceIps?: Array<IPAddress> | null;
     metadata?: Record<string, string> | null;
     displayName?: string | null;
+    userHandle?: string | null;
 };

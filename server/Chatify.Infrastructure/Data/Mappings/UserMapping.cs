@@ -24,6 +24,7 @@ public class UserMapping : Cassandra.Mapping.Mappings
             .UnderscoreColumn(u => u.CreatedAt)
             .UnderscoreColumn(u => u.UpdatedAt)
             .UnderscoreColumn(u => u.LastLogin)
+            .UnderscoreColumn(u => u.UserHandle, cm => cm.WithSecondaryIndex())
             .Column(u => u.DeviceIps, cm => cm.Ignore())
             .Column(u => u.RedisId, cm => cm.Ignore())
             .Column(u => u.RedisUsername, cm => cm.Ignore())

@@ -3,13 +3,12 @@ using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Extensions;
 using Chatify.Web.FastEndpoints_Features.Common;
 using FastEndpoints;
-
 using RegularSignUpResult = OneOf.OneOf<Chatify.Application.Authentication.Models.SignUpError, LanguageExt.Unit>;
 using RegularSignUpResponse =
     Microsoft.AspNetCore.Http.HttpResults.Results<Microsoft.AspNetCore.Http.HttpResults.BadRequest<object>,
         Microsoft.AspNetCore.Http.HttpResults.NoContent>;
 
-namespace Chatify.Web.FastEndpoints_Features;
+namespace Chatify.Web.FastEndpoints_Features.Auth;
 
 [HttpPost("signup")]
 public sealed class RegularSignUpEndpoint

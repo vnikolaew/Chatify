@@ -7,7 +7,6 @@ using Chatify.Infrastructure.Data.Services;
 using Redis.OM;
 using Redis.OM.Contracts;
 using Redis.OM.Searching;
-using SmartFormat.Utilities;
 using Guid = System.Guid;
 using IMapper = AutoMapper.IMapper;
 using Mapper = Cassandra.Mapping.Mapper;
@@ -37,6 +36,24 @@ public sealed class UserRepository(
             .ToList();
     }
 
+    public async Task<Domain.Entities.User?> FindByUserHandle(
+        string handle,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await DbMapper.FirstOrDefaultAsync<ChatifyUser>(
+                "SELECT * FROM users WHERE user_handle = ? ALLOW FILTERING;",
+                handle);
+        return user.To<Domain.Entities.User>(Mapper);
+    }
+
+    public async Task<List<Domain.Entities.User>?> GetAllWithUsername(
+        string username,
+        CancellationToken cancellationToken = default)
+        => await DbMapper.FetchListAsync<ChatifyUser>(
+                "SELECT * FROM users_by_username WHERE normalizedusername = ?;",
+                username.ToUpper())
+            .ToAsyncList<ChatifyUser, Domain.Entities.User>(Mapper);
+
 
     public async Task<List<Domain.Entities.User>?> GetByIds(
         IEnumerable<Guid> userIds,
@@ -50,7 +67,7 @@ public sealed class UserRepository(
             .Where(_ => _.Value is null)
             .Select(_ => Guid.TryParse(_.Key, out var id) ? id : default)
             .ToArray();
-        
+
         if ( missingUserIds.Any() )
         {
             var missingUsers = ( await DbMapper.FetchListAsync<ChatifyUser>(

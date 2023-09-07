@@ -2,6 +2,7 @@
 using Chatify.Application.User.Common;
 using Chatify.Application.User.Queries;
 using Chatify.Domain.Entities;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
 using Chatify.Web.Common.Attributes;
 using Chatify.Web.Extensions;
@@ -11,12 +12,12 @@ using OneOf;
 
 namespace Chatify.Web.Features.Profile;
 
-
 using ChangeUserStatusResult = OneOf<UserNotFound, Unit>;
 using GetUserDetailsResult = OneOf<UserNotFound, NotFriendsError, UserDetailsEntry>;
 using EditUserDetailsResult =
     OneOf<UserNotFound, FileUploadError, PasswordChangeError, Unit>;
 using SearchUsersByNameResult = OneOf<UserNotFound, List<User>>;
+using FindByUserHandleResult = OneOf<UserNotFound, UserDetailsEntry>;
 
 public class ProfileController : ApiController
 {
@@ -24,16 +25,14 @@ public class ProfileController : ApiController
     [Route("status")]
     [ProducesBadRequestApiResponse]
     [ProducesAcceptedApiResponse]
-    public async Task<IActionResult> ChangeUserStatus(
+    public Task<IActionResult> ChangeUserStatus(
         [FromBody] ChangeUserStatus request,
         CancellationToken cancellationToken = default
-    )
-    {
-        var result = await SendAsync<ChangeUserStatus, ChangeUserStatusResult>(request, cancellationToken);
-        return result.Match<IActionResult>(
+    ) => SendAsync<ChangeUserStatus, ChangeUserStatusResult>(
+            request, cancellationToken)
+        .MatchAsync(
             _ => NotFound(),
             Accepted);
-    }
 
     [HttpPatch]
     [Route("details")]
@@ -44,7 +43,8 @@ public class ProfileController : ApiController
         [FromBody] EditUserDetails request,
         CancellationToken cancellationToken = default)
     {
-        var result = await SendAsync<EditUserDetails, EditUserDetailsResult>(request, cancellationToken);
+        var result = await SendAsync<EditUserDetails, EditUserDetailsResult>(
+            request, cancellationToken);
 
         return result.Match<IActionResult>(
             _ => NotFound(),
@@ -58,32 +58,38 @@ public class ProfileController : ApiController
     [ProducesBadRequestApiResponse]
     [ProducesNotFoundApiResponse]
     [ProducesOkApiResponse<UserDetailsEntry>]
-    public async Task<IActionResult> GetUserDetails(
+    public Task<IActionResult> GetUserDetails(
         [FromRoute] Guid userId,
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetUserDetails, GetUserDetailsResult>(
-            new GetUserDetails(userId), cancellationToken);
-        return result.Match<IActionResult>(
-            _ => NotFound(),
-            _ => _.ToBadRequest(),
-            Ok);
-    }
+        => QueryAsync<GetUserDetails, GetUserDetailsResult>(
+                new GetUserDetails(userId), cancellationToken)
+            .MatchAsync(
+                _ => NotFound(),
+                _ => _.ToBadRequest(),
+                Ok);
 
     [HttpGet]
     [Route("search")]
     [ProducesNotFoundApiResponse]
     [ProducesOkApiResponse<List<User>>]
-    public async Task<IActionResult> SearchUsersByName(
+    public Task<IActionResult> SearchUsersByName(
         [FromQuery] string usernameQuery,
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<SearchUsersByName, SearchUsersByNameResult>(
-            new SearchUsersByName(usernameQuery),
-            cancellationToken);
+        => QueryAsync<SearchUsersByName, SearchUsersByNameResult>(
+                new SearchUsersByName(usernameQuery),
+                cancellationToken)
+            .MatchAsync(
+                _ => NotFound(),
+                Ok);
 
-        return result.Match<IActionResult>(
-            _ => NotFound(),
-            Ok);
-    }
+    [HttpGet]
+    [ProducesNotFoundApiResponse]
+    [ProducesOkApiResponse<UserDetailsEntry>]
+    public Task<IActionResult> FindByHandle(
+        [FromQuery(Name = "handle")] string userHandle,
+        CancellationToken cancellationToken = default)
+        => QueryAsync<FindByUserHandle, FindByUserHandleResult>(
+                new FindByUserHandle(userHandle),
+                cancellationToken)
+            .MatchAsync(_ => NotFound(), Ok);
 }

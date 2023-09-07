@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS users
     banner_pictures       set<media>,
     device_ips            set<blob>,
     display_name          text,
+    user_handle           text,
     email                 text,
     emailconfirmationtime timestamp,
     last_login            timestamp,
@@ -46,6 +47,8 @@ CREATE TABLE IF NOT EXISTS users
     updated_at            timestamp,
     PRIMARY KEY ((id), created_at)
 ) WITH CLUSTERING ORDER BY (created_at desc);
+
+CREATE INDEX IF NOT EXISTS users_by_user_handle ON users (user_handle);
 
 CREATE TABLE IF NOT EXISTS friends
 (

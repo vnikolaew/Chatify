@@ -35,7 +35,10 @@ public class ChatifyUser() :
 
     [Searchable] public string RedisUsername => UserName;
 
-    [Searchable] public string DisplayName { get; set; }
+    [Searchable] public string DisplayName { get; set; } = default!;
+
+    // A user handle with the following format: username#0000
+    [Searchable] public string UserHandle { get; set; } = default!;
 
     [Indexed] public UserStatus Status { get; set; }
 

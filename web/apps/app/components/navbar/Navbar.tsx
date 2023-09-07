@@ -18,6 +18,7 @@ import { ExitIcon } from "@icons";
 import TooltipButton from "@components/TooltipButton";
 import LogoutIcon from "@components/icons/LogoutIcon";
 import SignOutButton from "@components/navbar/SignOutButton";
+import AddNewFriendButton from "@components/navbar/AddNewFriendButton";
 
 const NAV_LINKS: (LinkProps & { label: string })[] = [
    {
@@ -71,6 +72,9 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
                <Fragment>
                   <NavbarItem>
                      <UserDropdown />
+                  </NavbarItem>
+                  <NavbarItem>
+                     <AddNewFriendButton />
                   </NavbarItem>
                   <NavbarItem>
                      <NotificationsDropdown />

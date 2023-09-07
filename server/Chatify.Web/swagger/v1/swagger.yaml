@@ -1474,6 +1474,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserListApiResponse'
+  /api/Profile:
+    get:
+      tags:
+        - Profile
+      parameters:
+        - name: handle
+          in: query
+          style: form
+          schema:
+            type: string
+      responses:
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailsEntryApiResponse'
   '/api/Reactions/{messageId}':
     post:
       tags:
@@ -2742,6 +2765,9 @@ components:
             type: string
           nullable: true
         displayName:
+          type: string
+          nullable: true
+        userHandle:
           type: string
           nullable: true
       additionalProperties: false

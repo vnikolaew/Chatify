@@ -1,11 +1,16 @@
 ﻿using System.Collections.Immutable;
+using System.Globalization;
+using System.Net;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using System.Threading.RateLimiting;
 using Chatify.Application.ChatGroups.Queries.Models;
 using Chatify.Domain.Entities;
 using Chatify.Infrastructure;
 using Chatify.Shared.Abstractions.Queries;
+using Chatify.Web.Common;
 using Chatify.Web.Middleware;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -35,10 +40,7 @@ public static class ServiceCollectionExtensions
             .AddProblemDetails(opts => { opts.CustomizeProblemDetails = _ => { }; })
             .AddConfiguredSwagger()
             .Configure<KestrelServerOptions>(opts => opts.AllowSynchronousIO = true)
-            .AddControllers(opts =>
-            {
-                opts.Filters.Add<GlobalExceptionFilter>();
-            })
+            .AddControllers(opts => { opts.Filters.Add<GlobalExceptionFilter>(); })
             .AddJsonOptions(opts =>
             {
                 opts.JsonSerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
@@ -52,6 +54,44 @@ public static class ServiceCollectionExtensions
         services.AddControllersWithViews();
         return services;
     }
+
+    public static IServiceCollection AddUserRateLimiting(this IServiceCollection services)
+        => services
+            .AddRateLimiter(opts =>
+            {
+                opts.AddPolicy(ApiController.DefaultUserRateLimitPolicy,
+                    ctx =>
+                    {
+                        if ( ctx.User.Identity?.IsAuthenticated is false )
+                        {
+                            return RateLimitPartition.GetNoLimiter(string.Empty);
+                        }
+
+                        var userId = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                        return RateLimitPartition.GetSlidingWindowLimiter(userId,
+                            _ => new SlidingWindowRateLimiterOptions
+                            {
+                                PermitLimit = 20,
+                                QueueLimit = 20,
+                                QueueProcessingOrder = QueueProcessingOrder.NewestFirst,
+                                Window = TimeSpan.FromSeconds(10)
+                            });
+                    });
+                opts.OnRejected = (ctx,
+                    ct) =>
+                {
+                    if ( ctx.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter) )
+                    {
+                        ctx.HttpContext.Response.Headers.RetryAfter =
+                            ( ( int )retryAfter.TotalSeconds ).ToString(NumberFormatInfo.InvariantInfo);
+                    }
+
+                    ctx.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                    return ValueTask.CompletedTask;
+                };
+
+                opts.RejectionStatusCode = ( int )HttpStatusCode.TooManyRequests;
+            });
 
     public static IServiceCollection AddConfiguredSwagger(this IServiceCollection services)
         => services

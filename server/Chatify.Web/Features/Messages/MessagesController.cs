@@ -47,7 +47,7 @@ public class MessagesController : ApiController
         var result = await QueryAsync<GetMessagesForChatGroup, GetMessagesForChatGroupResult>(
             ( request with { GroupId = groupId } ).ToCommand(), cancellationToken);
 
-        return result.Match( BadRequest, Ok);
+        return result.Match(BadRequest, Ok);
     }
 
     [HttpGet]
@@ -213,7 +213,7 @@ public class MessagesController : ApiController
         CancellationToken cancellationToken = default)
     {
         var result = await SendAsync<ShareMessage, ShareMessageResult>(
-            request, cancellationToken);
+            request with { MessageId = messageId }, cancellationToken);
         return result.Match<IActionResult>(
             _ => NotFound(),
             _ => _.ToBadRequest(),

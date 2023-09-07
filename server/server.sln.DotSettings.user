@@ -2,9 +2,16 @@
 	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;&#xD;
   &lt;Assembly Path="C:\Users\Victorio\.nuget\packages\oneof.sourcegenerator\3.0.255\analyzers\dotnet\cs\OneOf.SourceGenerator.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=66a54a0c_002D21d1_002D4d6b_002Dbf29_002D437cb82a0439/@EntryIndexedValue">&lt;SessionState ContinuousTestingIsOn="True" ContinuousTestingMode="1" IsActive="True" Name="Test1" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;Project Location="C:\Users\Victorio\Desktop\Coding\DotNet\Chatify\server\Chatify.IntegrationTesting" Presentation="&amp;lt;Tests&amp;gt;\&amp;lt;Chatify.IntegrationTesting&amp;gt;" /&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=2ec9c389_002D7e70_002D4227_002D9588_002D49ff3497206d/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="BasicTest" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;xUnit::33682A3E-2F6D-4701-B414-ABD56A8E172E::net8.0::Chatify.IntegrationTesting.BasicTest.RunTest&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
+	
+	
+	
+	
+	
 	
 	
 	
