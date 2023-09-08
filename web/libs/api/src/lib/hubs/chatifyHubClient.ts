@@ -16,6 +16,8 @@ import {
    IReceiveFriendInvitation,
    IUserStatusChanged,
 } from "./messages";
+// @ts-ignore
+import Cookies from "js-cookie";
 
 export enum HubMethods {
    ReceiveGroupChatMessage = "ReceiveGroupChatMessage",
@@ -154,7 +156,11 @@ export class ChatifyHubClient implements IChatClient {
    }
 
    async start(): Promise<void> {
-      return this.connection.start();
+      return this.connection.start().then(() => {
+         Cookies.set("Connection-Id", this.connection.connectionId!, {
+            expires: 30,
+         });
+      });
    }
 
    get state(): HubConnectionState {
@@ -162,7 +168,7 @@ export class ChatifyHubClient implements IChatClient {
    }
 
    async stop(): Promise<void> {
-      return this.connection.stop();
+      return this.connection.stop().then(() => Cookies.remove("Connection-Id"));
    }
 
    onChatGroupMessageRemoved(

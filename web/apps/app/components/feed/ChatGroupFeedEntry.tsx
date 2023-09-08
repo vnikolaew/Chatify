@@ -31,7 +31,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
    const groupId = useCurrentChatGroup();
    const isActive = useMemo(
       () => feedEntry.chatGroup.id === groupId,
-      [feedEntry, groupId]
+      [groupId, feedEntry.chatGroup.id]
    );
 
    const handlePrefetchGroupDetails = async () => {
@@ -43,7 +43,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
    };
    const isPrivateGroup = useMemo(
       () => feedEntry?.chatGroup?.metadata?.private === "true",
-      [feedEntry]
+      [feedEntry?.chatGroup?.metadata?.private]
    );
    const {
       data: user,
@@ -89,10 +89,10 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
                <span className="text-medium w-3/4 truncate font-semibold text-default-800">
                   {isPrivateGroup
                      ? user?.user?.username
-                     : feedEntry.chatGroup.name.substring(0, 20)}
+                     : feedEntry?.chatGroup?.name?.substring(0, 20)}
                </span>
                <time className={`text-xs font-light text-default-500`}>
-                  {feedEntry.latestMessage?.createdAt
+                  {feedEntry?.latestMessage?.createdAt
                      ? formatDate(feedEntry.latestMessage.createdAt)
                      : "-"}
                </time>
