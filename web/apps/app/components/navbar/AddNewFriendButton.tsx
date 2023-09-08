@@ -10,8 +10,10 @@ const AddNewFriendButton = ({}: AddNewFriendButtonProps) => {
       <div>
          <Tooltip
             showArrow
+            closeDelay={100}
+            delay={100}
             classNames={{
-               base: `text-sm`,
+               base: `text-xs`,
             }}
             shadow={`sm`}
             size={`sm`}

@@ -11,16 +11,20 @@ import {
 } from "@openapi";
 import { GET_PAGINATED_GROUP_MESSAGES_KEY } from "@web/api";
 import { produce } from "immer";
+import { useCurrentUserId } from "@hooks";
 
 export interface ChatifyHubInitializerProps {}
 
 export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
    const client = useChatifyClientContext();
+   const meId = useCurrentUserId();
    const queryClient = useQueryClient();
 
    useEffect(() => {
       client.onReceiveChatGroupMessage((message) => {
          // Update client cache with new message:
+         console.log(message.senderId, meId);
+         if (message.senderId === meId) return;
          console.log(`New message: `, message);
 
          queryClient.setQueryData<

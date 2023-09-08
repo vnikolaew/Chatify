@@ -1,7 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
 import CreateChatGroupForm from "./CreateChatGroupForm";
-import { Divider } from "@nextui-org/react";
 import CreateChatGroupHeading from "./CreateChatGroupHeading";
 
 export interface PageProps {}
