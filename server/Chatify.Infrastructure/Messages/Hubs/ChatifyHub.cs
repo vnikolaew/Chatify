@@ -8,6 +8,7 @@ using LanguageExt.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Chatify.Infrastructure.Messages.Hubs;
 
@@ -15,13 +16,14 @@ using SendGroupChatMessageResult = Either<Error, Guid>;
 
 // [Authorize]
 public sealed class ChatifyHub(IChatGroupMemberRepository members,
-        IIdentityContext identityContext)
+        ILogger<ChatifyHub> logger, IIdentityContext identityContext)
     : Hub<IChatifyHubClient>
 {
     public const string Endpoint = "/api/chat";
 
     public static string GetChatGroupId(Guid groupId)
         => $"chat-groups:{groupId.ToString()}";
+    
 
     private Guid UserId => Guid.TryParse(Context.User!
         .Claims
@@ -106,15 +108,15 @@ public sealed class ChatifyHub(IChatGroupMemberRepository members,
         return Unit.Default;
     }
 
+    [HubMethodName(nameof(StartTypingInGroupChat))]
     public async Task<Either<Error, Unit>> StartTypingInGroupChat(
         Guid groupId,
-        DateTime timestamp,
-        CancellationToken cancellationToken = default)
+        DateTime timestamp)
     {
         var isGroupMember = await GetService<IChatGroupMemberRepository>()
-            .Exists(groupId, UserId, cancellationToken);
+            .Exists(groupId, UserId);
         if ( !isGroupMember ) return Error.New("");
-
+        
         await Clients
             .Group(GetChatGroupId(groupId))
             .ChatGroupMemberStartedTyping(new ChatGroupMemberStartedTyping(
@@ -126,13 +128,14 @@ public sealed class ChatifyHub(IChatGroupMemberRepository members,
         return Unit.Default;
     }
 
+    [HubMethodName(nameof(StopTypingInGroupChat))]
     public async Task<Either<Error, Unit>> StopTypingInGroupChat(
         Guid groupId,
-        DateTime timestamp,
-        CancellationToken cancellationToken = default)
+        DateTime timestamp
+      )
     {
         var isGroupMember = await GetService<IChatGroupMemberRepository>()
-            .Exists(groupId, UserId, cancellationToken);
+            .Exists(groupId, UserId);
         if ( !isGroupMember ) return Error.New("");
 
         await Clients

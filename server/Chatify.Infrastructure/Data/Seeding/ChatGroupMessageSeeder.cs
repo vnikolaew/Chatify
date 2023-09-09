@@ -115,7 +115,7 @@ internal sealed class ChatGroupMessageSeeder(IServiceScopeFactory scopeFactory)
         {
             // Fetch all group members for each message:
             var groupMembers = await mapper.FetchListAsync<ChatGroupMember>(
-                " WHERE chat_group_id = ?", latestMessage.ChatGroupId);
+                " WHERE chat_group_id = ?;", latestMessage.ChatGroupId);
 
             // Update User Feed for each group members (Sorted Set):
             foreach ( var groupMember in groupMembers )

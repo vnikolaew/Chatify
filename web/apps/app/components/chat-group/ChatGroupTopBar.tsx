@@ -63,7 +63,7 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                      src={getMediaUrl(
                         isPrivateGroup
                            ? chatGroupDetails?.members?.find(
-                                (m) => m.id !== me.claims.nameidentifier
+                                (m) => m.id !== me?.claims?.nameidentifier
                              )?.profilePicture?.mediaUrl
                            : chatGroupDetails?.chatGroup?.picture?.mediaUrl
                      )}

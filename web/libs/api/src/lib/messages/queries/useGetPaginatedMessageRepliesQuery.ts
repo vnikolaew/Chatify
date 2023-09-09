@@ -71,7 +71,6 @@ export const useGetPaginatedMessageRepliesQuery = (
                .find((m) => m.message?.userId === reply.userId)
                ?.senderInfo as MessageSenderInfoEntry;
 
-            console.log("Chat group user: ", user);
             if (user) {
                reply.user = {
                   id: user?.userId,

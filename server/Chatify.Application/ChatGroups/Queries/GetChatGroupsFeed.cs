@@ -1,4 +1,5 @@
-﻿using Chatify.Application.ChatGroups.Contracts;
+﻿using System.Text;
+using Chatify.Application.ChatGroups.Contracts;
 using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Application.Common.Models;
 using Chatify.Domain.Entities;
@@ -13,7 +14,17 @@ using GetChatGroupsFeedResult = OneOf<BaseError, List<ChatGroupFeedEntry>>;
 public record ChatGroupFeedEntry(
     ChatGroup ChatGroup,
     ChatMessage LatestMessage,
-    Domain.Entities.User MessageSender = default!);
+    Domain.Entities.User? MessageSender = default!)
+{
+    public ChatGroup ChatGroup { get; init; }
+    public ChatMessage LatestMessage { get; init; }
+    public Domain.Entities.User? MessageSender { get; init; }
+
+    public ChatGroupFeedEntry() : this(new ChatGroup(), new ChatMessage())
+    {
+        
+    }
+}
 
 [Timed]
 public record GetChatGroupsFeed

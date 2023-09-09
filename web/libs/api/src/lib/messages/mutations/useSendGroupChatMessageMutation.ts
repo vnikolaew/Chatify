@@ -8,9 +8,10 @@ import { HttpStatusCode } from "axios";
 import {
    ChatGroupMessageEntry,
    ObjectApiResponse,
+   CursorPaged,
    UserDetailsEntry,
+   // @ts-ignore
 } from "@openapi";
-import { CursorPaged } from "../../../../openapi/common/CursorPaged";
 import { produce } from "immer";
 import { GetMyClaimsResponse } from "../../auth";
 import { GET_PAGINATED_GROUP_MESSAGES_KEY } from "../queries";
@@ -58,10 +59,21 @@ export const useSendGroupChatMessageMutation = () => {
    return useMutation<string, Error, SendGroupChatMessageModel, any>(
       sendGroupChatMessage,
       {
-         onError: console.error,
-         onSuccess: (id, { chatGroupId, content, metadata, files }) => {
-            console.log("Chat message sent successfully. Id is " + id);
-
+         onError: (error, { chatGroupId }) => {
+            console.error(error);
+            // Update client cache with by deleting message:
+            client.setQueryData<
+               InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+            >(GET_PAGINATED_GROUP_MESSAGES_KEY(chatGroupId), (messages) =>
+               produce(messages, (draft) => {
+                  (
+                     draft!.pages[0] as CursorPaged<ChatGroupMessageEntry>
+                  ).items.shift();
+                  return draft;
+               })
+            );
+         },
+         onMutate: ({ chatGroupId, content, metadata, files }) => {
             const me = client.getQueryData<GetMyClaimsResponse>([
                `me`,
                `claims`,
@@ -76,12 +88,11 @@ export const useSendGroupChatMessageMutation = () => {
                InfiniteData<CursorPaged<ChatGroupMessageEntry>>
             >(GET_PAGINATED_GROUP_MESSAGES_KEY(chatGroupId), (messages) =>
                produce(messages, (draft) => {
-                  // draft.pageParams.
                   (
                      draft!.pages[0] as CursorPaged<ChatGroupMessageEntry>
                   ).items.unshift({
                      message: {
-                        id,
+                        id: uuidv4(),
                         chatGroupId,
                         content,
                         metadata,
@@ -106,8 +117,21 @@ export const useSendGroupChatMessageMutation = () => {
                })
             );
          },
-         onSettled: (res) => console.log(res),
-         // cacheTime: 60 * 60 * 1000,
+         onSuccess: (id, { chatGroupId, content, metadata, files }) => {
+            console.log("Chat message sent successfully. Id is " + id);
+
+            // Only update message with its new id:
+            client.setQueryData<
+               InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+            >(GET_PAGINATED_GROUP_MESSAGES_KEY(chatGroupId), (messages) =>
+               produce(messages, (draft) => {
+                  (
+                     draft!.pages[0] as CursorPaged<ChatGroupMessageEntry>
+                  ).items[0].message.id = id;
+                  return draft;
+               })
+            );
+         },
       }
    );
 };

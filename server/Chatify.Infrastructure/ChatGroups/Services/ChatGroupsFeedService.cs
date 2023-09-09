@@ -52,7 +52,7 @@ internal sealed class ChatGroupsFeedService(
         // Get feed with group ids from cache sorted set:
         var values = await cache.GetUserFeedAsync(
             userId,
-            offset, limit + offset);
+            offset, limit);
         if ( !values.Any() ) return FeedEntryFaker.Generate(10);
 
         var groupIds = values
@@ -76,12 +76,13 @@ internal sealed class ChatGroupsFeedService(
             .ToList();
         var userInfos = await users.GetByIds(messageSenderIds, cancellationToken);
 
-        return feedGroups
+        var entries = feedGroups
             .ZipOn(feedMessages,
                 r => r.Id,
                 m => m?.ChatGroupId,
-                (group, message) => new ChatGroupFeedEntry(group, message))
-            .ZipOn(userInfos,
+                (group, message) => new ChatGroupFeedEntry { ChatGroup = group, LatestMessage = message });
+
+        return entries.ZipOn(userInfos,
                 e => e.LatestMessage?.UserId,
                 u => u.Id,
                 (e, user) => e with { MessageSender = user })

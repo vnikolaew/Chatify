@@ -26,7 +26,7 @@ internal sealed class ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory)
                      !g.Metadata.TryGetValue("private", out var isPrivate) && isPrivate != "true") )
         {
             var addedUserIds = new HashSet<Guid>();
-            foreach ( var _ in Enumerable.Range(1, 10) )
+            foreach ( var _ in Enumerable.Range(1, 25) )
             {
                 var user = PickNewMember(addedUserIds, users);
 
@@ -39,8 +39,6 @@ internal sealed class ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory)
                     UserId = user.Id,
                     ChatGroupId = group.Id,
                 };
-
-                addedUserIds.Add(user.Id);
 
                 await mapper.InsertAsync(member, insertNulls: false);
                 await cache.AddGroupMemberAsync(member.ChatGroupId, member.UserId);
@@ -74,6 +72,8 @@ internal sealed class ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory)
         {
             var user = users[Random.Shared.Next(0, users.Count)];
             if ( insertedMembers.Contains(user.Id) ) continue;
+
+            insertedMembers.Add(user.Id);
             return user;
         }
     }

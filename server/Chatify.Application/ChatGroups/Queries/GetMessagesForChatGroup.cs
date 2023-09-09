@@ -91,29 +91,30 @@ internal sealed class GetMessagesByChatGroupHandler(
             groupMessages.PagingCursor,
             messageReplySummaries.PagingCursor);
 
-        return groupMessages
-            .Zip(messageReplySummaries,
-                (message,
-                    repliersSummary) =>
+        return groupMessages.ZipOn(messageReplySummaries,
+            m => m.Id,
+            ri => ri.MessageId,
+            (message,
+                repliersSummary) =>
+            {
+                var user = userInfos[message.UserId];
+                return new ChatGroupMessageEntry
                 {
-                    var user = userInfos[message.UserId];
-                    return new ChatGroupMessageEntry
-                    {
-                        Message = message,
-                        UserReaction = userMessageReactions.TryGetValue(message.Id, out var code) && code is not null
-                            ? new UserMessageReaction(code.Value)
-                            : null,
-                        ForwardedMessage =
-                            message.Metadata.TryGetValue(ShareMessageHandler.SharedMessageIdKey, out var messageId)
-                                ? originMessages[Guid.Parse(messageId)]
-                                : default,
-                        RepliersInfo = repliersSummary.ToEntry(),
-                        SenderInfo = new MessageSenderInfoEntry(
-                            user.Id,
-                            user.Username,
-                            user.ProfilePicture.MediaUrl)
-                    };
-                })
-            .ToCursorPaged(combinedCursor, groupMessages.HasMore, groupMessages.Total);
+                    Message = message,
+                    UserReaction = userMessageReactions.TryGetValue(message.Id, out var code) && code is not null
+                        ? new UserMessageReaction(code.Value)
+                        : null,
+                    ForwardedMessage =
+                        message.Metadata.TryGetValue(ShareMessageHandler.SharedMessageIdKey, out var messageId)
+                            ? originMessages[Guid.Parse(messageId)]
+                            : default,
+                    RepliersInfo = repliersSummary?.ToEntry() ?? new MessageRepliersInfoEntry(0, null!, new List<MessageReplierInfoEntry>()),
+                    SenderInfo = new MessageSenderInfoEntry(
+                        user.Id,
+                        user.Username,
+                        user.ProfilePicture.MediaUrl)
+                };
+            }
+        ).ToCursorPaged(combinedCursor, groupMessages.HasMore, groupMessages.Total)!;
     }
 }

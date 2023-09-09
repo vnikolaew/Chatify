@@ -156,11 +156,11 @@ export const ChatMessageEntry = ({
                                     key={replier.userId}
                                  />
                               ))}
-                           {message.repliersInfo.total > 3 && (
+                           {message.repliersInfo.replierInfos.length > 3 && (
                               <div
                                  className={`rounded-md flex items-center justify-center bg-black text-xs w-5 h-5 text-foreground`}
                               >
-                                 +{message.repliersInfo.total - 3}
+                                 +{message.repliersInfo.replierInfos.length - 3}
                               </div>
                            )}
                         </div>

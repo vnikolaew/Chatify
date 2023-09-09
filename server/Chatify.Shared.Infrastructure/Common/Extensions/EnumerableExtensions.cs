@@ -32,20 +32,9 @@ public static class EnumerableExtensions
     {
         var listOne = enumerable.ToList();
 
-        var dictOne = listOne
-            .Where(_ => enumerableKeySelector(_) is not null && _ is not null)
-            .GroupBy(enumerableKeySelector)
-            .ToDictionary(gr => gr.Key!, gr => gr.ToList());
-
         var dictTwo = enumerableTwo
             .Where(_ => _ is not null && enumerableTwoKeySelector(_) is not null)
             .ToDictionary(enumerableTwoKeySelector);
-
-        var kvs = dictOne
-            .Select(kv => kv.Value
-                .Select(_ => new KeyValuePair<TKey, T1>(kv.Key, _)))
-            .SelectMany(_ => _)
-            .ToList();
 
         return listOne.Select(
                 item =>

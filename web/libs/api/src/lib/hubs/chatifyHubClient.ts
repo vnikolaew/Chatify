@@ -76,18 +76,18 @@ export class ChatifyHubClient implements IChatClient {
    }
 
    startTypingInGroupChat(groupId: string): Promise<void> {
-      return this.connection.send(
+      return this.connection.invoke(
          HubMethods.StartTypingInGroupChat,
          groupId,
-         new Date()
+         new Date().toISOString()
       );
    }
 
    stopTypingInGroupChat(groupId: string): Promise<void> {
-      return this.connection.send(
+      return this.connection.invoke(
          HubMethods.StopTypingInGroupChat,
          groupId,
-         new Date()
+         new Date().toISOString()
       );
    }
 

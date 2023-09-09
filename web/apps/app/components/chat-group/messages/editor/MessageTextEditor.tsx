@@ -160,11 +160,13 @@ const MessageTextEditor = ({
 
    useEffect(() => {
       if (isUserTyping) {
+         console.log(`Starting typing ...`);
          hubClient
             .startTypingInGroupChat(groupId)
             .then(console.log)
             .catch(console.error);
       } else {
+         console.log(`Stopping typing ...`);
          hubClient
             .stopTypingInGroupChat(groupId)
             .then(console.log)
@@ -218,19 +220,9 @@ const MessageTextEditor = ({
    }, []);
 
    async function handleSendMessage() {
-      console.log(getTextFromNode(editor));
-      console.log(editor.children);
-
       const content = plateToMarkdown(editor.children);
-      console.log(`Markdown: ${content}`);
-      console.log(markdownProcessor.processSync(content).value as string);
+      CustomEditor.clear(editor);
 
-      unified()
-         .use(markdown as any)
-         .use(slate)
-         .process(content, (err, data) => {
-            console.log({ data: data.result });
-         });
       await sendMessage(
          {
             content: markdownProcessor.processSync(content).value as string,
@@ -238,8 +230,7 @@ const MessageTextEditor = ({
             files: attachedFiles.map((_) => _.file),
          },
          {
-            onSuccess: (data, vars, context) => {
-               CustomEditor.clear(editor);
+            onSuccess: (_, {}) => {
                clearFiles();
             },
          }

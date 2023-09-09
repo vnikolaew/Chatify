@@ -18,7 +18,7 @@ export const ChatGroupMemberEntry = ({
 }: ChatGroupMemberEntryProps) => {
    const { data: me } = useGetMyClaimsQuery();
    const isMe = useMemo(
-      () => member.id === me.claims.nameidentifier,
+      () => member.id === me?.claims?.nameidentifier,
       [member, me]
    );
 

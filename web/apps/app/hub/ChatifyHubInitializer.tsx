@@ -9,22 +9,32 @@ import {
    CursorPaged,
    UserStatus,
 } from "@openapi";
-import { GET_PAGINATED_GROUP_MESSAGES_KEY } from "@web/api";
+import {
+   GET_PAGINATED_GROUP_MESSAGES_KEY,
+   GetMyClaimsResponse,
+} from "@web/api";
 import { produce } from "immer";
 import { useCurrentUserId } from "@hooks";
+import { sendError } from "next/dist/server/api-utils";
 
 export interface ChatifyHubInitializerProps {}
 
 export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
    const client = useChatifyClientContext();
-   const meId = useCurrentUserId();
    const queryClient = useQueryClient();
 
    useEffect(() => {
+      console.log(`Running Hub initializer effect ...`);
       client.onReceiveChatGroupMessage((message) => {
          // Update client cache with new message:
-         console.log(message.senderId, meId);
+         const meId = queryClient.getQueryData<GetMyClaimsResponse>([
+            `me`,
+            `claims`,
+         ]).claims.nameidentifier;
+         console.log(`Sender ID: ${message.senderId}`);
+         console.log(`Sender ID: ${meId}`);
          if (message.senderId === meId) return;
+
          console.log(`New message: `, message);
 
          queryClient.setQueryData<
@@ -119,10 +129,12 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
       });
 
       client.onChatGroupMemberStartedTyping((event) => {
+         console.log(`Member started typing: `, event);
          queryClient.setQueryData<Set<string>>(
             [`chat-group`, event.chatGroupId, "typing"],
             (old) =>
                produce(old, (draft) => {
+                  if (!draft) draft = new Set<string>();
                   draft.add(event.userId);
                   return draft;
                })
@@ -130,6 +142,7 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
       });
 
       client.onChatGroupMemberStoppedTyping((event) => {
+         console.log(`Member stoppted typing: `, event);
          queryClient.setQueryData<Set<string>>(
             [`chat-group`, event.chatGroupId, "typing"],
             (old) =>

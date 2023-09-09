@@ -45,8 +45,6 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
       { enabled: isUserLoggedIn }
    );
 
-   const [reorderedFeed, setReorderedFeed] = useState(null!);
-
    const filteredEntries = useMemo(() => {
       if (!debouncedSearch || !searchEntries) return feedEntries;
 
@@ -153,9 +151,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                </div>
             ) : (
                <ChatGroupFeedEntries
-                  feedEntries={
-                     reorderedFeed ?? filteredEntries ?? feedEntries ?? []
-                  }
+                  feedEntries={filteredEntries ?? feedEntries ?? []}
                />
             )}
          </div>
