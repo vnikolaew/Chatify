@@ -61,14 +61,17 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
    );
 
    const messageSummary = useMemo(() => {
-      return usersTyping.size > 0
-         ? `${[...usersTyping].map((_) => _.username).join(", ")} ${
+      return [...usersTyping].filter((_) => _.userId !== meId).length > 0
+         ? `${[...usersTyping]
+              .filter((u) => u.userId !== meId)
+              .map((_) => _.username)
+              .join(", ")} ${
               usersTyping.size === 1 ? ` is ` : ` are `
            } currently typing ...`
          : `${feedEntry.latestMessage?.content?.substring(0, 30)}${
               feedEntry.latestMessage?.content?.length > 30 ? `...` : ``
            }` ?? `No messages yet.`;
-   }, [usersTyping, feedEntry?.latestMessage]);
+   }, [usersTyping, feedEntry.latestMessage.content, meId]);
 
    return (
       <Button

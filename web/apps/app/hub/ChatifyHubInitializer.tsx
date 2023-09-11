@@ -61,6 +61,19 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
 
          console.log(`New message: `, message);
 
+         // Update users typing:
+         queryClient.setQueryData<Set<IUserTyping>>(
+            [`chat-group`, message.chatGroupId, `typing`],
+            (old) =>
+               produce(
+                  old,
+                  () =>
+                     new Set(
+                        [...old].filter((u) => u.userId !== message.senderId)
+                     )
+               )
+         );
+
          queryClient.setQueryData<
             InfiniteData<CursorPaged<ChatGroupMessageEntry>>
          >(

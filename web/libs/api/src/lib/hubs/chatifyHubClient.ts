@@ -17,9 +17,6 @@ import {
    IReceiveFriendInvitation,
    IUserStatusChanged,
 } from "./messages";
-import { string } from "yup";
-import { Promise } from "cypress/types/cy-bluebird";
-import { Cookies } from "react-cookie-consent";
 // @ts-ignore
 const Cookies = require("js-cookie");
 

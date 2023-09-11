@@ -45,7 +45,7 @@ export const ChatMessageEntry = ({
          groupDetails?.chatGroup?.pinnedMessages?.some(
             (m) => m.messageId === message?.message.id
          ),
-      [groupDetails, message]
+      [groupDetails?.chatGroup?.pinnedMessages, message?.message.id]
    );
 
    const hasReplies = useMemo(
@@ -55,7 +55,7 @@ export const ChatMessageEntry = ({
 
    const hasAttachments = useMemo(() => {
       return message?.message?.attachments?.length > 0 ?? false;
-   }, [message]);
+   }, [message?.message?.attachments?.length]);
 
    return (
       <div

@@ -45,7 +45,23 @@ export const useUnpinGroupChatMessage = () => {
    return useMutation<any, Error, UnpinGroupChatMessageModel, any>(
       unpinGroupChatMessage,
       {
-         onError: (_, { groupId }, message: ChatGroupMessageEntry) => {
+         onError: (
+            _,
+            { groupId },
+            {
+               message,
+               oldPinnedMessages,
+            }: {
+               message: ChatGroupMessageEntry;
+               oldPinnedMessages: PinnedMessage[];
+            }
+         ) => {
+            client.setQueryData<ChatGroupDetailsEntry>(
+               [`chat-group`, groupId],
+               (old: ChatGroupDetailsEntry) =>
+                  produce(old, () => oldPinnedMessages)
+            );
+
             client.setQueryData<ChatMessage[]>(
                GET_PINNED_GROUP_MESSAGES_KEY(groupId),
                (old) => {
@@ -77,15 +93,14 @@ export const useUnpinGroupChatMessage = () => {
                   });
                }
             );
-            return message;
-         },
-         onSuccess: (data, { messageId, groupId }) => {
-            console.log("Chat message unpinned successfully: " + data);
 
+            let oldPinnedMessages: PinnedMessage[] = [];
             client.setQueryData<ChatGroupDetailsEntry>(
                [`chat-group`, groupId],
                (old: ChatGroupDetailsEntry) => {
                   return produce(old, (draft: ChatGroupDetailsEntry) => {
+                     oldPinnedMessages = draft.chatGroup?.pinnedMessages;
+
                      draft.chatGroup.pinnedMessages =
                         draft.chatGroup?.pinnedMessages?.filter(
                            (m: PinnedMessage) => m.messageId !== messageId
@@ -94,6 +109,11 @@ export const useUnpinGroupChatMessage = () => {
                   });
                }
             );
+
+            return { message, oldPinnedMessages };
+         },
+         onSuccess: (data) => {
+            console.log("Chat message unpinned successfully: " + data);
          },
          onSettled: (res) => console.log(res),
       }

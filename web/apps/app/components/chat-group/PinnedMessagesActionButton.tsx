@@ -77,7 +77,7 @@ export const PinnedMessagesPopover = ({
             acc[m.id] = m;
             return acc;
          }, {} as Record<string, TUser>);
-   }, [pinnedMessages, groupId]);
+   }, [pinnedMessages, groupDetails?.members]);
 
    const handleUnpinMessage = async (messageId: string) => {
       await unpinMessage({ groupId, messageId });

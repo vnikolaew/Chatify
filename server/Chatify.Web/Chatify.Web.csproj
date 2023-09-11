@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="6.0.4" />
         <PackageReference Include="FastEndpoints" Version="5.15.0.22-beta"/>
         <PackageReference Include="Humanizer.Core" Version="2.14.1"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0-preview.2.23153.2"/>
