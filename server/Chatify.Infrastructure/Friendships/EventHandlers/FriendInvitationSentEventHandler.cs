@@ -26,7 +26,7 @@ internal sealed class FriendInvitationSentEventHandler
         var inviter = await users.GetAsync(@event.InviterId, cancellationToken);
 
         // Save a new notification for Invitee:
-        var notification = new IncomingFriendInvitationNotification 
+        var notification = new IncomingFriendInvitationNotification
         {
             Id = guidGenerator.New(),
             CreatedAt = clock.Now,
@@ -46,6 +46,12 @@ internal sealed class FriendInvitationSentEventHandler
             .User(@event.InviteeId.ToString())
             .ReceiveFriendInvitation(new ReceiveFriendInvitation(
                 @event.InviterId,
-                @event.Timestamp));
+                @event.InviterUsername,
+                @event.Timestamp,
+                new Dictionary<string, string>
+                {
+                    { nameof(UserNotification.Metadata.UserMedia),
+                        notification.Metadata.UserMedia.MediaUrl }
+                }));
     }
 }

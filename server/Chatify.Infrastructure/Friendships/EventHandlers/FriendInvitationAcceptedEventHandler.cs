@@ -29,7 +29,7 @@ internal sealed class FriendInvitationAcceptedEventHandler(
         {
             cache.AddUserFriendAsync(
                 @event.InviterId,
-                @event.InviteeId,@event.Timestamp),
+                @event.InviteeId, @event.Timestamp),
             cache.AddUserFriendAsync(
                 @event.InviteeId,
                 @event.InviterId,
@@ -37,30 +37,37 @@ internal sealed class FriendInvitationAcceptedEventHandler(
         };
         await Task.WhenAll(cacheSaveTasks);
 
-        await CreateAndSaveNotification(@event, cancellationToken);
+        var invitee = await users.GetAsync(@event.InviteeId, cancellationToken);
+        await CreateAndSaveNotification(@event, invitee, cancellationToken);
+        
         await hubContext
             .Clients
             .User(@event.InviterId.ToString())
             .FriendInvitationAccepted(new FriendInvitationAccepted(
                 @event.InviteeId,
-                @event.Timestamp));
+                invitee.Username,
+                @event.Timestamp,
+                new Dictionary<string, string>
+                {
+                    { nameof(UserNotification.Metadata.UserMedia), invitee.ProfilePicture.MediaUrl }
+                }));
     }
 
     private async Task CreateAndSaveNotification(
         FriendInvitationAcceptedEvent @event,
+        Domain.Entities.User user,
         CancellationToken cancellationToken)
     {
-        var invitee = await users.GetAsync(@event.InviteeId, cancellationToken);
         var notification = new AcceptedFriendInvitationNotification
         {
             Id = guidGenerator.New(),
             UserId = @event.InviterId,
             Type = UserNotificationType.AcceptedFriendInvite,
-            Summary = $"{invitee!.Username} accepted your friend request.",
+            Summary = $"{user.Username} accepted your friend request.",
             CreatedAt = clock.Now,
             Metadata = new UserNotificationMetadata
             {
-                UserMedia = invitee.ProfilePicture
+                UserMedia = user.ProfilePicture
             },
             InviteId = @event.InviteId,
             InviterId = @event.InviterId,

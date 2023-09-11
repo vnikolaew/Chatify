@@ -1,22 +1,13 @@
 "use client";
-import React, {
-   useCallback,
-   useEffect,
-   useMemo,
-   useRef,
-   useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { DefaultElement, Editable, Slate, withReact } from "slate-react";
 import { createEditor, Text, Transforms } from "slate";
 import {
-   Badge,
    Button,
-   Chip,
    Dropdown,
    DropdownItem,
    DropdownMenu,
    DropdownTrigger,
-   Image,
    Link,
    Spacer,
    Spinner,
@@ -24,21 +15,18 @@ import {
 } from "@nextui-org/react";
 import { RightArrow } from "@icons";
 import UploadIcon from "@components/icons/UploadIcon";
-import { ChatGroup, ChatGroupDetailsEntry } from "@openapi";
+import { ChatGroupDetailsEntry } from "@openapi";
 import MessageTextEditorToolbar from "@components/chat-group/messages/editor/MessageTextEditorToolbar";
 import { useSendGroupChatMessageMutation } from "@web/api";
-import { useCurrentChatGroup, useIsChatGroupPrivate } from "@hooks";
+import { useCurrentChatGroup } from "@hooks";
 import * as escaper from "html-escaper";
 import { plateToMarkdown } from "slate-mark";
-import slate from "remark-slate";
 
-import { CustomEditor } from "./editor";
-import { markdownProcessor } from "../../../../utils";
-import { unified } from "unified";
-import markdown from "remark-parse";
-import { useChatifyClientContext } from "../../../../hub/ChatHubConnection";
+import { CodeElement, CustomEditor, Leaf } from "./editor";
+import { markdownProcessor } from "apps/app/utils";
+import { useChatifyClientContext } from "apps/app/hub/ChatHubConnection";
 import { useFileUpload } from "@hooks";
-import ChatMessageAttachmentEntry from "@components/chat-group/messages/editor/ChatMessageAttachmentEntry";
+import ChatMessageAttachmentEntry from "./ChatMessageAttachmentEntry";
 
 export class ChatifyFile {
    public readonly id: string;
@@ -85,59 +73,6 @@ function serializer(node: any) {
          return `<a href="${escaper.escape(node.url)}">${children}</a>`;
       default:
          return children;
-   }
-}
-
-// Define a React component renderer for our code blocks.
-const CodeElement = (props) => {
-   return (
-      <pre {...props.attributes}>
-         <code>{props.children}</code>
-      </pre>
-   );
-};
-
-// Define a React component to render leaves with bold text.
-const Leaf = (props) => {
-   if (props.leaf.type === "link") {
-      return (
-         <Link
-            underline={"hover"}
-            color={"primary"}
-            className={`cursor-pointer`}
-            size={"sm"}
-            href={props.leaf.href}
-         >
-            {props.children}
-         </Link>
-      );
-   }
-   return (
-      <span
-         {...props.attributes}
-         style={{
-            fontWeight: props.leaf.bold ? "bold" : "normal",
-            fontStyle: props.leaf.italic ? "italic" : "normal",
-            textDecoration: props.leaf.strikethrough
-               ? "line-through"
-               : "normal",
-         }}
-      >
-         {props.children}
-      </span>
-   );
-};
-
-function getTextFromNode(node) {
-   if (node.children) {
-      return node.children
-         .filter((n) => n.tag !== "ignore")
-         .map((childNode) => getTextFromNode(childNode))
-         .join("");
-   } else if (node.text) {
-      return node.text;
-   } else {
-      return "";
    }
 }
 
@@ -230,9 +165,8 @@ const MessageTextEditor = ({
             files: attachedFiles.map((_) => _.file),
          },
          {
-            onSuccess: (_, {}) => {
-               clearFiles();
-            },
+            onSuccess: (_, {}) => clearFiles(),
+            onSettled: () => setIsUserTyping(false),
          }
       );
    }
@@ -265,8 +199,6 @@ const MessageTextEditor = ({
                   if (CustomEditor.isVoid(editor) && isUserTyping) {
                      setIsUserTyping(false);
                   } else if (!isUserTyping) setIsUserTyping(true);
-
-                  console.log(CustomEditor.isVoid(editor));
 
                   if (!e.ctrlKey) return;
 

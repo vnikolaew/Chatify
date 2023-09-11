@@ -56,11 +56,7 @@ public sealed class FriendshipsRepository(
         var friends = new List<Domain.Entities.User>();
         foreach ( var idsChunk in friendsIds.Chunk(10) )
         {
-            var usersChunk = await users.GetByIds(idsChunk
-                .Select(_ => Guid.TryParse(_.ToString(), out var id)
-                    ? id
-                    : default), cancellationToken);
-
+            var usersChunk = await users.GetByIds(idsChunk, cancellationToken);
             friends.AddRange(usersChunk ?? new List<Domain.Entities.User>());
         }
 
@@ -103,7 +99,7 @@ public sealed class FriendshipsRepository(
         CancellationToken cancellationToken = default)
     {
         var friendsIds = await cache.GetUserFriendsAsync(userId);
-        return friendsIds.Select(id => Guid.Parse(id.ToString())).ToList();
+        return friendsIds.ToList();
     }
 
     public async Task<List<FriendsRelation>> AllFriendshipsForUser(

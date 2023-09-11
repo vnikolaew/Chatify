@@ -1269,6 +1269,32 @@ paths:
                 $ref: '#/components/schemas/ProblemDetails'
         '204':
           description: No Content
+    delete:
+      tags:
+        - Messages
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '204':
+          description: No Content
   '/share/{messageId}':
     post:
       tags:
@@ -1708,6 +1734,7 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
+        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1738,7 +1765,6 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
-        - Unknown
       type: string
     ApiResponseStatus:
       enum:
@@ -1780,6 +1806,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/User'
+          nullable: true
+        pinnedMessages:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/PinnedMessage'
           nullable: true
         metadata:
           type: object
@@ -2539,6 +2571,19 @@ components:
           type: string
           nullable: true
           readOnly: true
+      additionalProperties: false
+    PinnedMessage:
+      type: object
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        pinnerId:
+          type: string
+          format: uuid
       additionalProperties: false
     ProblemDetails:
       type: object

@@ -1,6 +1,7 @@
 import { HubConnection, HubConnectionState } from "@microsoft/signalr";
 import {
    IAddedToChatGroup,
+   IChatGroupMemberAdded,
    IChatGroupMemberLeft,
    IChatGroupMemberRemoved,
    IChatGroupMemberStartedTyping,
@@ -16,6 +17,9 @@ import {
    IReceiveFriendInvitation,
    IUserStatusChanged,
 } from "./messages";
+import { string } from "yup";
+import { Promise } from "cypress/types/cy-bluebird";
+import { Cookies } from "react-cookie-consent";
 // @ts-ignore
 const Cookies = require("js-cookie");
 
@@ -26,6 +30,7 @@ export enum HubMethods {
    ChatGroupMemberStoppedTyping = "ChatGroupMemberStoppedTyping",
    StopTypingInGroupChat = "StopTypingInGroupChat",
    ChatGroupMemberRemoved = "ChatGroupMemberRemoved",
+   ChatGroupMemberAdded = "ChatGroupMemberAdded",
    ChatGroupMemberLeft = "ChatGroupMemberLeft",
    ChatGroupNewAdminAdded = "ChatGroupNewAdminAdded",
    ChatGroupMessageRemoved = "ChatGroupMessageRemoved",
@@ -176,6 +181,12 @@ export class ChatifyHubClient implements IChatClient {
    ): void {
       this.connection.on(HubMethods.ChatGroupMessageRemoved, callback);
    }
+
+   onChatGroupMemberAdded(
+      callback: (event: IChatGroupMemberAdded) => void
+   ): void {
+      this.connection.on(HubMethods.ChatGroupMemberAdded, callback);
+   }
 }
 
 export interface IChatClient {
@@ -203,6 +214,10 @@ export interface IChatClient {
 
    onChatGroupMemberRemoved(
       callback: (event: IChatGroupMemberRemoved) => void
+   ): void;
+
+   onChatGroupMemberAdded(
+      callback: (event: IChatGroupMemberAdded) => void
    ): void;
 
    onChatGroupMessageEdited(

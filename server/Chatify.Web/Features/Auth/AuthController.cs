@@ -141,6 +141,7 @@ public class AuthController : ApiController
 
     [HttpPost]
     [Route(ConfirmEmailRoute)]
+    [Authorize]
     [ProducesBadRequestApiResponse]
     [ProducesAcceptedApiResponse<ApiResponse<Unit>>]
     public Task<IActionResult> ConfirmEmail(

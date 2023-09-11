@@ -7,61 +7,15 @@ import {
    useDisclosure,
    User,
 } from "@nextui-org/react";
-import { AddUserIcon, PinIcon, PlusIcon } from "@icons";
-import {
-   useAddChatGroupMember,
-   useGetChatGroupPinnedMessages,
-   useGetMyFriendsQuery,
-} from "@web/api";
+import { AddUserIcon, PlusIcon } from "@icons";
+import { useAddChatGroupMember, useGetMyFriendsQuery } from "@web/api";
 import TooltipWithPopoverActionButton from "@components/TooltipWithPopoverActionButton";
-import { useCurrentChatGroup } from "@hooks";
+import { useCurrentChatGroup, useGetNewMemberSuggestions } from "@hooks";
 import SadFaceIcon from "@components/icons/SadFaceIcon";
-import { useGetNewMemberSuggestions } from "@hooks";
 
 export interface AddNewMemberActionButtonProps {}
 
-export const PinnedMessagesActionButton = ({}: {}) => {
-   const { isOpen, onOpenChange } = useDisclosure({ defaultOpen: false });
-   const groupId = useCurrentChatGroup();
-   const {
-      data: pinnedMessages,
-      isLoading,
-      error,
-   } = useGetChatGroupPinnedMessages(
-      { groupId },
-      {
-         enabled: false,
-      }
-   );
-
-   return (
-      <TooltipWithPopoverActionButton
-         isOpen={isOpen}
-         onOpenChange={onOpenChange}
-         popoverContent={
-            true ? (
-               <div className={`flex my-2 flex-col items-start gap-2`}>
-                  {Array.from({ length: 3 }).map((_, i) => (
-                     <div className={`flex items-center gap-1`} key={i}>
-                        <Skeleton className={`w-5 h-5 rounded-full`} />
-                        <div className={`flex flex-col gap-1`}>
-                           <Skeleton className={`w-24 h-2 rounded-full`} />
-                           <Skeleton className={`w-12 h-1 rounded-full`} />
-                        </div>
-                     </div>
-                  ))}
-               </div>
-            ) : (
-               null!
-            )
-         }
-         tooltipContent={"Pinned messages"}
-         icon={<PinIcon fill={"white"} size={24} />}
-      />
-   );
-};
-
-const AddNewMemberActionButton = ({}: AddNewMemberActionButtonProps) => {
+export const AddNewMemberActionButton = ({}: AddNewMemberActionButtonProps) => {
    const { isOpen, onOpenChange } = useDisclosure({ defaultOpen: false });
    return (
       <TooltipWithPopoverActionButton
@@ -69,7 +23,7 @@ const AddNewMemberActionButton = ({}: AddNewMemberActionButtonProps) => {
          onOpenChange={onOpenChange}
          popoverContent={<AddNewMemberPopover />}
          tooltipContent={"Add a new member"}
-         icon={<AddUserIcon fill={"white"} size={24} />}
+         icon={<AddUserIcon fill={"white"} size={20} />}
       />
    );
 };
@@ -172,4 +126,3 @@ const AddNewMemberPopover = () => {
       </div>
    );
 };
-export default AddNewMemberActionButton;

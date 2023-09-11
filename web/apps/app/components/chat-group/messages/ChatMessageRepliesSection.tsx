@@ -6,7 +6,7 @@ import { twMerge } from "tailwind-merge";
 import { ChatGroupMemberInfoCard } from "@components/members";
 import moment from "moment";
 import { useCurrentUserId } from "@hooks";
-import ChatMessageReactionSection from "./ChatMessageReactionSection";
+import { ChatMessageReactionSection } from "@components/chat-group";
 
 export interface ChatMessageRepliesSectionProps {
    messageId: string;
@@ -20,6 +20,7 @@ export const ChatMessageRepliesSection = ({
    const {
       data: replies,
       isLoading,
+      isFetching,
       error,
    } = useGetPaginatedMessageRepliesQuery({
       messageId,
@@ -28,7 +29,7 @@ export const ChatMessageRepliesSection = ({
    });
    const meId = useCurrentUserId();
 
-   if (isLoading)
+   if (isLoading && isFetching)
       return (
          <div className={`flex mb-4 flex-col gap-2 items-start`}>
             {Array.from({ length: total }).map((_, i) => (

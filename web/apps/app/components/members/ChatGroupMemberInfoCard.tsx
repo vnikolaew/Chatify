@@ -27,9 +27,7 @@ export interface ChatGroupMemberInfoCardProps {
    userId: string;
 }
 
-export const ChatGroupMemberInfoCard = ({
-   userId,
-}: ChatGroupMemberInfoCardProps) => {
+const ChatGroupMemberInfoCard = ({ userId }: ChatGroupMemberInfoCardProps) => {
    const chatGroupId = useCurrentChatGroup();
    const meId = useCurrentUserId();
    const {
@@ -249,3 +247,5 @@ export const ChatGroupMemberInfoCard = ({
       </Card>
    );
 };
+
+export default ChatGroupMemberInfoCard;

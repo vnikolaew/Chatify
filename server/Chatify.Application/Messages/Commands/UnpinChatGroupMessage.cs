@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.Messages.Common;
-using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
@@ -12,20 +11,21 @@ using ChatGroupNotFoundError = Chatify.Application.Messages.Common.ChatGroupNotF
 
 namespace Chatify.Application.Messages.Commands;
 
-using PinChatGroupMessageResult = OneOf<MessageNotFoundError, ChatGroupNotFoundError, UserIsNotGroupAdminError, Unit>;
+using UnpinChatGroupMessageResult = OneOf<MessageNotFoundError, ChatGroupNotFoundError, UserIsNotGroupAdminError, Unit>;
 
-public record PinChatGroupMessage(
+public record UnpinChatGroupMessage(
     [Required] Guid MessageId
-) : ICommand<PinChatGroupMessageResult>;
+) : ICommand<UnpinChatGroupMessageResult>;
 
-internal sealed class PinChatGroupMessageHandler(IIdentityContext identityContext,
-        IClock clock,
-        IChatGroupRepository groups,
-        IChatMessageRepository messages)
-    : ICommandHandler<PinChatGroupMessage, PinChatGroupMessageResult>
+internal sealed class UnpinChatGroupMessageHandler(
+    IIdentityContext identityContext,
+    IClock clock,
+    IChatGroupRepository groups,
+    IChatMessageRepository messages
+) : ICommandHandler<UnpinChatGroupMessage, UnpinChatGroupMessageResult>
 {
-    public async Task<PinChatGroupMessageResult> HandleAsync(
-        PinChatGroupMessage command,
+    public async Task<UnpinChatGroupMessageResult> HandleAsync(
+        UnpinChatGroupMessage command,
         CancellationToken cancellationToken = default)
     {
         var message = await messages.GetAsync(command.MessageId, cancellationToken);
@@ -39,7 +39,9 @@ internal sealed class PinChatGroupMessageHandler(IIdentityContext identityContex
 
         await groups.UpdateAsync(group, group =>
         {
-            group.PinnedMessages.Add(new PinnedMessage(message.Id, clock.Now, identityContext.Id));
+            var pinnedMessage = group.PinnedMessages
+                .FirstOrDefault(m => m.MessageId == message.Id);
+            if ( pinnedMessage is not null ) group.PinnedMessages.Remove(pinnedMessage);
             group.UpdatedAt = clock.Now;
         }, cancellationToken);
 

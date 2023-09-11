@@ -41,8 +41,8 @@ public sealed class UserRepository(
         CancellationToken cancellationToken = default)
     {
         var user = await DbMapper.FirstOrDefaultAsync<ChatifyUser>(
-                "SELECT * FROM users WHERE user_handle = ? ALLOW FILTERING;",
-                handle);
+            "SELECT * FROM users WHERE user_handle = ? ALLOW FILTERING;",
+            handle);
         return user.To<Domain.Entities.User>(Mapper);
     }
 
@@ -73,7 +73,8 @@ public sealed class UserRepository(
             var missingUsers = ( await DbMapper.FetchListAsync<ChatifyUser>(
                     new Cql($"WHERE id IN ({string.Join(", ", missingUserIds.Select(_ => "?"))}) ALLOW FILTERING;")
                         .WithArguments(missingUserIds.Cast<object>().ToArray()))
-                ).ToDictionary(_ => _.Id, _ => _);
+                )
+                .ToDictionary(_ => _.Id, _ => _);
 
             foreach ( var id in missingUserIds )
             {

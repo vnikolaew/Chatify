@@ -3,7 +3,7 @@ import React from "react";
 import { ChatifyFile } from "@components/chat-group/messages/editor/MessageTextEditor";
 import { Badge, Button, Chip, Image, Tooltip } from "@nextui-org/react";
 import CrossIcon from "@components/icons/CrossIcon";
-import { normalizeFileName } from "../../../../utils";
+import { normalizeFileName } from "apps/app/utils";
 
 export interface ChatMessageAttachmentEntryProps {
    attachment: ChatifyFile;

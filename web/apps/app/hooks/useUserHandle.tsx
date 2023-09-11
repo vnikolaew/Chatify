@@ -1,3 +1,4 @@
+"use client";
 import { useMemo, useState } from "react";
 
 const USER_HANDLE_REGEX = /^[\w-]+#\d{4}$/;

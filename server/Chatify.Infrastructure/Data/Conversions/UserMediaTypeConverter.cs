@@ -28,7 +28,7 @@ public class UserMediaTypeConverter
         ResolutionContext context)
     {
         destination ??= new UserNotificationMetadata();
-        destination.UserMedia = JsonSerializer.Deserialize<Domain.Entities.Media>(
+        destination.UserMedia = JsonSerializer.Deserialize<Media>(
                 ( source ??= new Dictionary<string, string>() )
                 [nameof(UserNotificationMetadata.UserMedia).Underscore()]);
         return destination;

@@ -2,6 +2,7 @@
 using Cassandra;
 using Chatify.Application.Common.Mappings;
 using Chatify.Infrastructure.Common.Mappings;
+using Chatify.Infrastructure.Data.Extensions;
 using Humanizer;
 using Redis.OM.Modeling;
 using Metadata = System.Collections.Generic.IDictionary<string, string>;
@@ -29,8 +30,8 @@ public record Media : IMapFrom<Domain.Entities.Media>
 
     public static readonly UdtMap<Media> UdtMap = Cassandra.UdtMap
         .For<Media>(nameof(Media).Underscore())
-        .Map(m => m.MediaUrl, nameof(MediaUrl).Underscore())
-        .Map(m => m.Id, nameof(Id).Underscore())
-        .Map(m => m.FileName, nameof(FileName).Underscore())
-        .Map(m => m.Type, nameof(Type).Underscore());
+        .UnderscoreColumn(m => m.MediaUrl)
+        .UnderscoreColumn(m => m.Id)
+        .UnderscoreColumn(m => m.FileName)
+        .UnderscoreColumn(m => m.Type);
 };

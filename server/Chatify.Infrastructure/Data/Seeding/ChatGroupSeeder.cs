@@ -31,7 +31,7 @@ internal sealed class ChatGroupSeeder(IServiceScopeFactory scopeFactory)
             .GetRequiredService<IRedisConnectionProvider>();
         var cache = scope.ServiceProvider.GetRequiredService<IDatabase>();
 
-        var groups = _groupsFaker.Generate(20);
+        var groups = _groupsFaker.Generate(50);
 
         var users = await mapper.FetchListAsync<ChatifyUser>("SELECT * FROM users;");
         var seenUserIds = new HashSet<Guid>();

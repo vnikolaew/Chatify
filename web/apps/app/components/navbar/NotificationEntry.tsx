@@ -49,7 +49,6 @@ export const NotificationEntry = ({
          >
             {startContent}
          </Badge>
-
          <div
             className={`flex h-full grow-[1] flex-col justify-center items-start gap-0`}
          >
@@ -66,6 +65,7 @@ export const NotificationEntry = ({
                         await acceptFriendInvite(
                            {
                               inviteId: (notification as any).inviteId,
+                              userId: notification.userId,
                            },
                            {
                               onSuccess: async (_, { inviteId }) => {

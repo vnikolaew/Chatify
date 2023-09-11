@@ -1,16 +1,16 @@
 import {
    UseQueryOptions,
-   useQuery,
    useQueryClient,
+   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { notificationsClient } from "../../client";
-import { DEFAULT_CACHE_TIME, DEFAULT_STALE_TIME } from "../../../constants";
 import {
    UserNotification,
    UserNotificationCursorPagedApiResponse,
 } from "@openapi";
 import { URLSearchParams } from "next/dist/compiled/@edge-runtime/primitives/url";
+import { CursorPaged } from "../../../../../openapi/common/CursorPaged";
 
 export interface GetPaginatedNotificationsModel {
    pageSize: number;
@@ -20,7 +20,7 @@ export interface GetPaginatedNotificationsModel {
 const getPaginatedNotifications = async ({
    pageSize,
    pagingCursor,
-}: GetPaginatedNotificationsModel): Promise<UserNotification[]> => {
+}: GetPaginatedNotificationsModel): Promise<CursorPaged<UserNotification>> => {
    const params = new URLSearchParams({ pageSize: pageSize.toString() });
    if (pagingCursor) params.set("pagingCursor", pagingCursor);
 
@@ -37,7 +37,7 @@ const getPaginatedNotifications = async ({
       throw new Error("error");
    }
 
-   return data!.data;
+   return data!.data as CursorPaged<UserNotification>;
 };
 
 export const NOTIFICATIONS_KEY = `notifications`;
@@ -52,13 +52,23 @@ export const useGetPaginatedNotificationsQuery = (
          (string | number)[]
       >,
       "initialData"
-   > & { initialData?: (() => undefined) | undefined }
+   > & {
+      initialData?: (() => undefined) | undefined;
+   }
 ) => {
    const client = useQueryClient();
-
-   return useQuery({
+   return useInfiniteQuery<
+      CursorPaged<UserNotification>,
+      Error,
+      CursorPaged<UserNotification>,
+      any
+   >({
       queryKey: [NOTIFICATIONS_KEY, model.pageSize, model.pagingCursor],
       queryFn: () => getPaginatedNotifications(model),
+      getNextPageParam: (lastPage: CursorPaged<UserNotification>) => {
+         return lastPage.pagingCursor;
+      },
+      getPreviousPageParam: (_, allPages: any) => allPages.at(-1)?.pagingCursor,
       ...options,
    });
 };

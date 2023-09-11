@@ -12,13 +12,14 @@ import {
 import { DownloadIcon } from "lucide-react";
 import { useHover } from "@hooks";
 import { downloadImage, normalizeFileName } from "apps/app/utils";
+import { getMediaUrl } from "@web/api";
 
 export interface MessageAttachmentsSectionProps {
    messageId: string;
    attachments: Media[];
 }
 
-const MessageAttachmentsSection = ({
+export const MessageAttachmentsSection = ({
    attachments,
    messageId,
 }: MessageAttachmentsSectionProps) => {
@@ -82,7 +83,7 @@ const MessageAttachment = ({ attachment }: { attachment: Media }) => {
                radius={"md"}
                className={`relative object-cover`}
                removeWrapper
-               src={attachment.mediaUrl}
+               src={getMediaUrl(attachment.mediaUrl)}
             />
          </Card>
          <Chip
@@ -101,5 +102,3 @@ const MessageAttachment = ({ attachment }: { attachment: Media }) => {
       </div>
    );
 };
-
-export default MessageAttachmentsSection;

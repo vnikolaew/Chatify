@@ -85,7 +85,8 @@ internal sealed class SendGroupChatMessageHandler(IDomainRepository<ChatGroup, G
             Content = message.Content,
             GroupId = chatGroup.Id,
             Timestamp = clock.Now,
-            MessageId = message.Id
+            MessageId = message.Id,
+            Attachments = message.Attachments.ToList()
         }, cancellationToken);
 
         return message.Id;

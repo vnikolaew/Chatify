@@ -11,7 +11,7 @@ export interface ChatGroupFeedEntriesProps {
 
 const ChatGroupFeedEntries = ({ feedEntries }: ChatGroupFeedEntriesProps) => {
    return (
-      <ScrollShadow size={60} className={`max-h-[80vh]`}>
+      <ScrollShadow size={60} className={`max-h-[80vh] w-full`}>
          <Reorder.Group
             className={`w-full`}
             onReorder={undefined!}
@@ -29,7 +29,7 @@ const ChatGroupFeedEntries = ({ feedEntries }: ChatGroupFeedEntriesProps) => {
                         staggerChildren: 1,
                         type: `spring`,
                      }}
-                     className={i === length - 1 ? `mb-12` : ``}
+                     className={i === length - 1 ? `mb-12 w-full` : `w-full`}
                      key={(e as ChatGroupFeedEntry)?.chatGroup?.id}
                   >
                      <ChatGroupFeedEntry feedEntry={e} />

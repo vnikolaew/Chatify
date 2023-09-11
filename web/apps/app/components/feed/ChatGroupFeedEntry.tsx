@@ -10,7 +10,12 @@ import {
    getMediaUrl,
    useGetUserDetailsQuery,
 } from "@web/api";
-import { useCurrentChatGroup, useCurrentUserId } from "@hooks";
+import {
+   useCurrentChatGroup,
+   useCurrentUserId,
+   useGetUsersTyping,
+   useIsChatGroupPrivate,
+} from "@hooks";
 
 export interface ChatGroupFeedEntryProps {
    feedEntry: ChatGroupFeedEntry;
@@ -29,6 +34,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
    const client = useQueryClient();
    const meId = useCurrentUserId();
    const groupId = useCurrentChatGroup();
+   const usersTyping = useGetUsersTyping(feedEntry.chatGroup.id);
    const isActive = useMemo(
       () => feedEntry.chatGroup.id === groupId,
       [groupId, feedEntry.chatGroup.id]
@@ -53,6 +59,16 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
       feedEntry?.chatGroup?.adminIds?.filter((id) => id !== meId)?.[0],
       { enabled: isPrivateGroup }
    );
+
+   const messageSummary = useMemo(() => {
+      return usersTyping.size > 0
+         ? `${[...usersTyping].map((_) => _.username).join(", ")} ${
+              usersTyping.size === 1 ? ` is ` : ` are `
+           } currently typing ...`
+         : `${feedEntry.latestMessage?.content?.substring(0, 30)}${
+              feedEntry.latestMessage?.content?.length > 30 ? `...` : ``
+           }` ?? `No messages yet.`;
+   }, [usersTyping, feedEntry?.latestMessage]);
 
    return (
       <Button
@@ -97,13 +113,22 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
                      : "-"}
                </time>
             </div>
-            <div className={`w-full h-4 rounded-full`}>
+            <div className={`w-full flex items-center gap-1 h-4 rounded-full`}>
+               {!(
+                  isPrivateGroup && feedEntry.latestMessage.userId !== meId
+               ) && (
+                  <span className={`text-xs text-default-400 font-semibold`}>
+                     {isPrivateGroup
+                        ? feedEntry?.latestMessage?.userId === meId
+                           ? `You: `
+                           : ``
+                        : `${feedEntry?.messageSender?.username}: `}
+                  </span>
+               )}
                <p
-                  className={`text-small font-normal w-full truncate leading-3 text-default-500`}
+                  className={`text-xs font-normal w-full truncate leading-3 text-default-500`}
                   dangerouslySetInnerHTML={{
-                     __html: feedEntry.latestMessage?.content
-                        ? `${feedEntry.latestMessage.content.substring(0, 40)}`
-                        : "No messages yet.",
+                     __html: messageSummary,
                   }}
                ></p>
             </div>

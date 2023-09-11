@@ -5,3 +5,4 @@ export * from "./useGetUserMembershipDetailsQuery";
 export * from "./useSearchChatGroupsByName";
 export * from "./useSearchChatGroupsByName";
 export * from "./useGetUserMembershipDetailsQuery";
+export * from "./useGetChatGroupPinnedMessages";

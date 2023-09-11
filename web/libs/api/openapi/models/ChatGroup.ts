@@ -4,6 +4,7 @@
 /* eslint-disable */
 
 import type { Media } from './Media';
+import type { PinnedMessage } from './PinnedMessage';
 import type { User } from './User';
 
 export type ChatGroup = {
@@ -14,6 +15,7 @@ export type ChatGroup = {
     picture?: Media;
     adminIds?: Array<string> | null;
     admins?: Array<User> | null;
+    pinnedMessages?: Array<PinnedMessage> | null;
     metadata?: Record<string, string> | null;
     updatedAt?: string | null;
     createdAt?: string;

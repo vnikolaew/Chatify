@@ -1,5 +1,8 @@
+import { Media } from "@openapi";
+
 interface IChatGroupMessage {
    chatGroupId: string;
+   attachments: Media[];
    senderId: string;
    messageId: string;
    senderUsername: string;
@@ -38,6 +41,14 @@ export interface IChatGroupMemberLeft {
 export interface IChatGroupMemberRemoved {
    chatGroupId: string;
    removedById: string;
+   userId: string;
+   username: string;
+   timestamp: string;
+}
+
+export interface IChatGroupMemberAdded {
+   chatGroupId: string;
+   addedById: string;
    userId: string;
    username: string;
    timestamp: string;
@@ -82,12 +93,14 @@ export interface IChatGroupMessageUnReactedTo {
 
 export interface IReceiveFriendInvitation {
    inviterId: string;
+   inviterUsername: string;
    timestamp: string;
    metadata: { [key: string]: string };
 }
 
 export interface IFriendInvitationResponded {
    inviteeId: string;
+   inviteeUsername: string;
    timestamp: string;
    metadata: { [key: string]: string };
 }
@@ -103,6 +116,7 @@ export interface IAddedToChatGroup {
 export interface IChatGroupNewAdminAdded {
    chatGroupId: string;
    adminId: string;
+   adminUsername: string;
    timestamp: string;
    metadata: { [key: string]: string };
 }

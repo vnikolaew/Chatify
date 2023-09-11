@@ -4,12 +4,13 @@ import TooltipButton from "@components/TooltipButton";
 import { PinIcon } from "@icons";
 import CommentIcon from "@components/icons/CommentIcon";
 import ForwardIcon from "@components/icons/ForwardIcon";
-import { useDisclosure } from "@nextui-org/react";
+import { Spinner, useDisclosure } from "@nextui-org/react";
 import VerticalDotsIcon from "@components/icons/VerticalDotsIcon";
 import TooltipWithPopoverActionButton from "@components/TooltipWithPopoverActionButton";
 import { EditIcon } from "lucide-react";
 import ThrashIcon from "@components/icons/ThrashIcon";
 import { usePinGroupChatMessage } from "@web/api";
+import { useCurrentChatGroup } from "@hooks";
 
 export interface ChatMessageActionsToolbarProps {
    showMoreActions: boolean;
@@ -24,9 +25,10 @@ const ChatMessageActionsToolbar = ({
       isOpen: isMoreActionsDropdownMenuOpen,
       onOpenChange: onnMoreActionsDropdownMenuOpenChange,
    } = useDisclosure({ defaultOpen: false });
+   const groupId = useCurrentChatGroup();
    const {
       mutateAsync: pinMessage,
-      isLoading,
+      isLoading: pinLoading,
       error,
    } = usePinGroupChatMessage();
 
@@ -35,18 +37,21 @@ const ChatMessageActionsToolbar = ({
          {
             label: "Pin for this group",
             action: async () => {
-               await pinMessage({ messageId });
+               await pinMessage({ messageId, groupId });
             },
+            loading: pinLoading,
             Icon: PinIcon,
          },
          {
             label: "Reply to this message",
             action: async () => {},
+            loading: false,
             Icon: CommentIcon,
          },
          {
             label: "Forward this message",
             action: async () => {},
+            loading: false,
             Icon: ForwardIcon,
          },
       ];
@@ -56,7 +61,7 @@ const ChatMessageActionsToolbar = ({
       <div
          className={`absolute px-1 border-1 border-default-300 z-10 flex items-center gap-1 text-xs min-h-fit max-h-fit rounded-md bg-zinc-900 -translate-y-1/2 top-0 right-10`}
       >
-         {messageActions.map(({ label, Icon, action }, i) => (
+         {messageActions.map(({ label, Icon, action, loading }, i) => (
             <TooltipButton
                radius={"full"}
                placement={"top"}
@@ -66,13 +71,26 @@ const ChatMessageActionsToolbar = ({
                   variant: `light`,
                   radius: "sm",
                   classNames: {
-                     base: "h-7 w-7 px-0",
+                     base: "h-7 w-7 p-0",
                   },
                }}
                size={"sm"}
-               classNames={{ base: `p-0 px-2 text-[.7rem]` }}
+               classNames={{ base: `p-0 text-[.7rem]` }}
                offset={2}
-               icon={<Icon className={`fill-foreground`} size={14} />}
+               icon={
+                  loading ? (
+                     <Spinner
+                        className={`w-4 h-4`}
+                        classNames={{
+                           base: `w-4 h-4 `,
+                           wrapper: `w-4 h-4`,
+                        }}
+                        color={`white`}
+                     />
+                  ) : (
+                     <Icon className={`fill-foreground`} size={14} />
+                  )
+               }
                content={label}
             />
          ))}

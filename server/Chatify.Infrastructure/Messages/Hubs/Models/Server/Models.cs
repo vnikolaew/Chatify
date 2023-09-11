@@ -43,6 +43,14 @@ public sealed record ChatGroupMemberRemoved(
     DateTime Timestamp
 );
 
+public sealed record ChatGroupMemberAdded(
+    Guid ChatGroupId,
+    Guid AddedById,
+    Guid UserId,
+    string Username,
+    DateTime Timestamp
+);
+
 public sealed record ChatGroupMessageRemoved(
     Guid ChatGroupId,
     Guid MessageId,
@@ -82,27 +90,31 @@ public sealed record ChatGroupMessageUnReactedTo(
 
 public sealed record ReceiveFriendInvitation(
     Guid InviterId,
+    string InviterUsername,
     DateTime Timestamp,
     Dictionary<string, string>? Metadata = default
 );
 
 public record FriendInvitationResponded(
     Guid InviteeId,
+    string InviteeUsername,
     DateTime Timestamp,
     Dictionary<string, string>? Metadata
 );
 
 public sealed record FriendInvitationAccepted(
     Guid InviteeId,
+    string InviteeUsername,
     DateTime Timestamp,
     Dictionary<string, string>? Metadata = default
-) : FriendInvitationResponded(InviteeId, Timestamp, Metadata);
+) : FriendInvitationResponded(InviteeId, InviteeUsername, Timestamp, Metadata);
 
 public sealed record FriendInvitationDeclined(
     Guid InviteeId,
+    string InviteeUsername,
     DateTime Timestamp,
     Dictionary<string, string>? Metadata = default
-) : FriendInvitationResponded(InviteeId, Timestamp, Metadata);
+) : FriendInvitationResponded(InviteeId, InviteeUsername, Timestamp, Metadata);
 
 public sealed record AddedToChatGroup(
     Guid ChatGroupId,
@@ -123,6 +135,7 @@ public sealed record RemovedFromChatGroup(
 public sealed record ChatGroupNewAdminAdded(
     Guid ChatGroupId,
     Guid AdminId,
+    string AdminUsername,
     DateTime Timestamp,
     Dictionary<string, string>? Metadata = default
 );

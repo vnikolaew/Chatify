@@ -1,3 +1,3 @@
 export * from "./useGetPaginatedMessageRepliesQuery";
 export * from "./useGetPaginatedGroupMessagesQuery";
-export * from "./useGetChatGroupPinnedMessages";
+export * from "../../chat-groups/hooks/queries/useGetChatGroupPinnedMessages";

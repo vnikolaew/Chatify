@@ -1,6 +1,7 @@
 ﻿using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Common;
 using Chatify.Domain.Events.Groups;
+using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Messages.Hubs;
@@ -16,7 +17,7 @@ namespace Chatify.Infrastructure.ChatGroups.EventHandlers;
 internal sealed class ChatGroupMemberAddedEventHandler(
         IDatabase cache,
         ILogger<ChatGroupMemberAddedEventHandler> logger,
-        IDomainRepository<ChatGroup, Guid> groups,
+        IUserRepository users,
         ICounterService<ChatGroupMembersCount, Guid> membersCounts,
         IHubContext<ChatifyHub, IChatifyHubClient> chatifyHubContext)
     : IEventHandler<ChatGroupMemberAddedEvent>
@@ -28,6 +29,8 @@ internal sealed class ChatGroupMemberAddedEventHandler(
         var membersCount = await membersCounts.Increment(@event.GroupId, cancellationToken: cancellationToken);
         logger.LogInformation("Incremented Membership count for Chat Group with Id '{Id}' to {Count} ",
             @event.GroupId, membersCount?.MembersCount);
+
+        var member = await users.GetAsync(@event.MemberId, cancellationToken);
 
         // Add user to groups:id:members
         await cache.AddGroupMemberAsync(@event.GroupId, @event.MemberId);
@@ -42,10 +45,11 @@ internal sealed class ChatGroupMemberAddedEventHandler(
         await chatifyHubContext
             .Clients
             .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
-            .AddedToChatGroup(new AddedToChatGroup(
+            .ChatGroupMemberAdded(new ChatGroupMemberAdded(
                 @event.GroupId,
                 @event.AddedById,
-                @event.AddedByUsername,
+                member!.Id,
+                member.Username,
                 @event.Timestamp));
     }
 }

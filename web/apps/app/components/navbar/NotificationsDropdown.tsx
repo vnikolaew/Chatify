@@ -17,7 +17,6 @@ import {
    useMarkNotificationsAsReadMutation,
 } from "@web/api";
 import { NotificationsTab } from "@components/navbar";
-import TooltipButton from "@components/TooltipButton";
 import CheckIcon from "@components/icons/CheckIcon";
 import TooltipWithPopoverActionButton from "@components/TooltipWithPopoverActionButton";
 
@@ -97,7 +96,10 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
                            className={`bg-transparent self-end mr-4 overflow-visible border-none hover:bg-default-200`}
                            onPress={handleMarkNotificationsAsRead}
                            isLoading={markLoading}
-                           isDisabled={!notifications?.length}
+                           isDisabled={
+                              !notifications?.pages.flatMap((_) => _.items)
+                                 ?.length
+                           }
                            variant={"faded"}
                            spinner={<Spinner size={"sm"} color={"danger"} />}
                            size={"sm"}
@@ -141,7 +143,7 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
             }
             tooltipContent={"Notifications"}
             icon={
-               notifications?.length + 1 > 0 ? (
+               notifications?.length > 0 ? (
                   <Badge
                      content={1}
                      size={"sm"}

@@ -22,6 +22,6 @@
          "@openapi": ["libs/api/openapi/index.ts"]
       }
    },
-   "include": [ "apps/**/*", "libs/**/*"],
+   // "include": [ "apps/**/*", "libs/**/*"],
    "exclude": ["node_modules", "tmp"]
 }

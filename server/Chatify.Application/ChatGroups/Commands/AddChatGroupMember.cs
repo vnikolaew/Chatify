@@ -47,16 +47,10 @@ internal sealed class AddChatGroupMemberHandler(
         }
 
         var memberUser = await users.GetAsync(command.NewMemberId, cancellationToken);
-        if ( memberUser is null )
-        {
-            return new UserNotFound();
-        }
+        if ( memberUser is null ) return new UserNotFound();
 
         var isMember = await members.Exists(group.Id, memberUser.Id, cancellationToken);
-        if ( isMember )
-        {
-            return new UserIsAlreadyGroupMemberError(memberUser.Id, group.Id);
-        }
+        if ( isMember ) return new UserIsAlreadyGroupMemberError(memberUser.Id, group.Id);
 
         var member = new ChatGroupMember
         {

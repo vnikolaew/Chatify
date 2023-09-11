@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Linq.Expressions;
+using System.Reflection;
 using Cassandra;
 using Cassandra.Mapping;
 using Chatify.Domain.Common;
@@ -216,4 +217,39 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         => DbMapper
             .FirstOrDefaultAsync<TDataEntity>($"WHERE {_idColumn} = ? ALLOW FILTERING;", id)
             .ToAsync<TDataEntity, TEntity>(Mapper)!;
+
+    private Task<TEntity?> GetAsync(
+        TId id,
+        Expression<Func<TEntity, object>> selection = default!,
+        CancellationToken cancellationToken = default)
+    {
+        var dataEntityExpression = selection
+            .To<Expression<Func<TDataEntity, object>>>(Mapper);
+        var selectedColumns = GetSelectedColumns(dataEntityExpression);
+        var selectAllColumns = new List<string> { "*" };
+
+        return DbMapper
+            .FirstOrDefaultAsync<TDataEntity>(
+                $"SELECT {string.Join(", ", selectedColumns ?? selectAllColumns)} FROM {MappingDefinition.TableName} WHERE {_idColumn} = ? ALLOW FILTERING;",
+                id)
+            .ToAsync<TDataEntity, TEntity>(Mapper)!;
+    }
+
+    private static List<string>? GetSelectedColumns<T>(
+        Expression<Func<T, object>> selection)
+    {
+        if ( selection.Body is not NewExpression newExpression ) return default;
+        var tableConfig = MappingConfiguration.Global.Get<T>();
+
+        var columnNames = newExpression
+            .Arguments
+            .OfType<MemberExpression>()
+            .Select(e => tableConfig
+                .GetColumnDefinition(e.Member as PropertyInfo)
+                ?.ColumnName)
+            .Where(_ => _ is not null)
+            .ToList();
+
+        return columnNames;
+    }
 }

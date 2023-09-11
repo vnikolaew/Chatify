@@ -77,5 +77,5 @@ public sealed class CursorPaged<T> : List<T>
     }
 
     public CursorPaged<TResult> Map<TResult>(Func<T, TResult> map)
-        => new(this.Select(map), PagingCursor);
+        => new(this.Select(map), PagingCursor, PageSize, Total, HasMore);
 }

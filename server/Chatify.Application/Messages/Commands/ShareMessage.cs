@@ -69,7 +69,8 @@ internal sealed class ShareMessageHandler(IIdentityContext identityContext,
             Content = forwardedMessage.Content,
             GroupId = forwardedMessage.ChatGroupId,
             Timestamp = forwardedMessage.CreatedAt.DateTime,
-            MessageId = forwardedMessage.Id
+            MessageId = forwardedMessage.Id,
+            Attachments = forwardedMessage.Attachments.ToList()
         }, cancellationToken);
 
         return Unit.Default;

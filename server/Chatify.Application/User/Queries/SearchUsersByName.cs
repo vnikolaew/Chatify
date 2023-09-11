@@ -21,7 +21,7 @@ internal sealed class SearchUsersByNameHandler
         SearchUsersByName command,
         CancellationToken cancellationToken = default)
     {
-        // Figure put Full-Text search here:
+        // Figure out Full-Text search here:
         var searchUsers = await users.SearchByUsername(command.SearchQuery, cancellationToken);
         return searchUsers is null ? new UserNotFound() : searchUsers;
     }

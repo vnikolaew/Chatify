@@ -19,7 +19,7 @@ import { PlusIcon } from "@icons";
 import HappyFaceIcon from "@components/icons/HappyFaceIcon";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
-import { hexToDecimal } from "../../../utils";
+import { hexToDecimal } from "apps/app/utils";
 
 export interface ChatMessageReactionSectionProps {
    messageId: string;
@@ -27,7 +27,7 @@ export interface ChatMessageReactionSectionProps {
    userReaction: UserMessageReaction;
 }
 
-const ChatMessageReactionSection = ({
+export const ChatMessageReactionSection = ({
    reactionCounts,
    userReaction,
    messageId,
@@ -186,5 +186,3 @@ const ChatMessageReactionSection = ({
       </div>
    );
 };
-
-export default ChatMessageReactionSection;

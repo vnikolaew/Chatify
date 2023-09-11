@@ -13,12 +13,12 @@ using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
+using LanguageExt.Common;
 using OneOf;
 
 namespace Chatify.Application.User.Commands;
 
 using EditUserDetailsResult = OneOf<UserNotFound, FileUploadError, PasswordChangeError, Unit>;
-
 
 public record FileUploadError(string? Message = default) : BaseError(Message);
 
@@ -62,9 +62,9 @@ internal sealed class EditUserDetailsHandler(IDomainRepository<Domain.Entities.U
                     UserId = user.Id,
                     FileUrl = user.ProfilePicture.MediaUrl
                 }, cancellationToken);
-            if ( deleteResult.IsT0 )
+            if ( deleteResult.Value is Error error )
             {
-                return new FileUploadError(deleteResult.AsT0.Message);
+                return new FileUploadError(error.Message);
             }
 
             var uploadResult = await fileUploadService
@@ -107,7 +107,7 @@ internal sealed class EditUserDetailsHandler(IDomainRepository<Domain.Entities.U
             if ( command.PhoneNumbers?.Any() ?? false )
             {
                 user.PhoneNumbers = command.PhoneNumbers
-                    .Select(_ => new PhoneNumber(_))
+                    .Select(n => new PhoneNumber(n))
                     .ToHashSet();
             }
 

@@ -30,7 +30,7 @@ internal sealed class ChatMessageSentEventHandler(
     {
         // Update user caches that serve for feed generation:
         var membersIds = await cache.GetGroupMembersAsync(@event.GroupId);
-        foreach ( var membersId in membersIds.Select(_ => Guid.Parse(_.ToString())) )
+        foreach ( var membersId in membersIds )
         {
             // Update User Feed (Sorted Set):
             await cache.AddUserFeedEntryAsync(
@@ -52,9 +52,7 @@ internal sealed class ChatMessageSentEventHandler(
         await replierInfos.SaveAsync(repliersInfo, cancellationToken);
 
         // Handle update of group attachments "View" table:
-        var message = await messages
-            .GetAsync(@event.MessageId, cancellationToken);
-
+        var message = await messages.GetAsync(@event.MessageId, cancellationToken);
         var groupAttachments = message!
             .Attachments
             .Select(media => new ChatGroupAttachment
@@ -74,7 +72,7 @@ internal sealed class ChatMessageSentEventHandler(
 
         await chatifyHubContext
             .Clients
-            .GroupExcept(ChatifyHub.GetChatGroupId(@event.GroupId), identityContext.WebSocketConnectionId!)
+            .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
             .ReceiveGroupChatMessage(
                 new ReceiveGroupChatMessage(
                     @event.GroupId,
@@ -82,6 +80,7 @@ internal sealed class ChatMessageSentEventHandler(
                     @event.MessageId,
                     identityContext.Username,
                     @event.Content,
-                    @event.Timestamp));
+                    @event.Timestamp,
+                    @event.Attachments));
     }
 }

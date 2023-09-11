@@ -34,8 +34,7 @@ public class NotificationsController : ApiController
 
         return result.Match(
             err => err.ToBadRequest(),
-            notifications => ( IActionResult )
-                Ok(notifications.Map(AsObject)));
+            notifications => Ok(notifications.Map(AsObject)));
     }
 
     [HttpGet]

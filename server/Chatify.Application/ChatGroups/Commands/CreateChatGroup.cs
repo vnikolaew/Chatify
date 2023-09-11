@@ -50,10 +50,10 @@ internal sealed class CreateChatGroupHandler(
             var result = await fileUploadService.UploadAsync(fileUploadRequest, cancellationToken);
             if ( result.Value is Error error ) return new FileUploadError(error.Message);
 
-            var newMedia = result.AsT1!;
+            var newMedia = result.Value as FileUploadResult;
             groupPicture = new Media
             {
-                Id = newMedia.FileId,
+                Id = newMedia!.FileId,
                 FileName = newMedia.FileName,
                 MediaUrl = newMedia.FileUrl,
                 Type = newMedia.FileType

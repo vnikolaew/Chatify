@@ -1,3 +1,4 @@
+"use client";
 import { useGetMyClaimsQuery } from "@web/api";
 
 export function useCurrentUserId() {

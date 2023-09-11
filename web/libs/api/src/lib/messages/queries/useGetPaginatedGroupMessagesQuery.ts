@@ -13,7 +13,6 @@ import {
    // @ts-ignore
 } from "@openapi";
 import { sleep } from "../../utils";
-import { DEFAULT_CACHE_TIME, DEFAULT_STALE_TIME } from "../../constants";
 
 export interface GetPaginatedGroupMessagesModel {
    groupId: string;

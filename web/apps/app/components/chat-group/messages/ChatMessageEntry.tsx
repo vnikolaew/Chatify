@@ -1,20 +1,21 @@
 "use client";
 import { ChatGroupMessageEntry } from "@openapi";
 import { Avatar, Chip, Link, Tooltip } from "@nextui-org/react";
-import { getMediaUrl } from "@web/api";
+import { getMediaUrl, useGetChatGroupDetailsQuery } from "@web/api";
 import { twMerge } from "tailwind-merge";
 import { ChatGroupMemberInfoCard } from "@components/members";
 import moment from "moment/moment";
 import React, { useMemo, useState } from "react";
-import {
-   ChatMessageRepliesSection,
-   ExpandRepliesLink,
-} from "@components/chat-group/messages";
 import { AnimatePresence, motion } from "framer-motion";
-import ChatMessageReactionSection from "@components/chat-group/messages/ChatMessageReactionSection";
-import ChatMessageActionsToolbar from "@components/chat-group/messages/ChatMessageActionsToolbar";
 import { useHover } from "@hooks";
-import MessageAttachmentsSection from "@components/chat-group/messages/MessageAttachmentsSection";
+import {
+   MessageAttachmentsSection,
+   ExpandRepliesLink,
+   ChatMessageReactionSection,
+   ChatMessageActionsToolbar,
+   ChatMessageRepliesSection,
+} from "@components/chat-group/messages";
+import { Pin } from "lucide-react";
 
 export interface ChatMessageEntryProps
    extends React.DetailedHTMLProps<
@@ -36,14 +37,21 @@ export const ChatMessageEntry = ({
    const [repliesExpanded, setRepliesExpanded] = useState(showReplies);
    const [messageSectionRef, showMessageActions] = useHover<HTMLDivElement>();
 
+   const { data: groupDetails } = useGetChatGroupDetailsQuery(
+      message.message.chatGroupId
+   );
+   const isPinned = useMemo(
+      () =>
+         groupDetails?.chatGroup?.pinnedMessages?.some(
+            (m) => m.messageId === message?.message.id
+         ),
+      [groupDetails, message]
+   );
+
    const hasReplies = useMemo(
       () => message.repliersInfo.total > 0,
       [message.repliersInfo.total]
    );
-
-   const hasReactions = useMemo(() => {
-      return Object.entries(message?.message?.reactionCounts ?? {}).length > 0;
-   }, [message?.message?.reactionCounts]);
 
    const hasAttachments = useMemo(() => {
       return message?.message?.attachments?.length > 0 ?? false;
@@ -52,7 +60,9 @@ export const ChatMessageEntry = ({
    return (
       <div
          ref={messageSectionRef}
-         className={`flex relative rounded-lg flex-col gap-2 items-start transition-background duration-100 hover:bg-default-100 ${className}`}
+         className={`flex relative rounded-lg flex-col gap-2 items-start transition-background duration-100 hover:bg-default-100 ${className} ${
+            isPinned && `bg-warning-50 bg-opacity-80`
+         }`}
          {...rest}
       >
          {showMessageActions && (
@@ -60,6 +70,26 @@ export const ChatMessageEntry = ({
                messageId={message.message.id}
                showMoreActions={isMe}
             />
+         )}
+         {isPinned && (
+            <div className={`flex items-center gap-2 mt-2 mx-12`}>
+               <Pin
+                  size={12}
+                  className={`stroke-warning fill-warning -rotate-[30deg]`}
+               />
+               <span className={`text-xs text-default-500`}>
+                  Pinned by{" "}
+                  {
+                     groupDetails?.members?.find(
+                        (m) =>
+                           m.id ===
+                           groupDetails?.chatGroup?.pinnedMessages?.find(
+                              (m) => m.messageId === message.message.id
+                           )?.pinnerId
+                     )?.username
+                  }
+               </span>
+            </div>
          )}
          <div
             className={`flex px-2 py-1 rounded-lg gap-3 items-start transition-background duration-100 hover:bg-default-100 `}

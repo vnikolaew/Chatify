@@ -1,3 +1,4 @@
+"use client";
 import React, { useMemo, useRef, useState } from "react";
 import { ChatifyFile } from "@components/chat-group/messages/editor/MessageTextEditor";
 import { v4 as uuidv4 } from "uuid";

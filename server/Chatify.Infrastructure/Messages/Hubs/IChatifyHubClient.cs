@@ -22,6 +22,8 @@ public interface IChatifyHubClient
     Task ChatGroupMemberRemoved(ChatGroupMemberRemoved chatGroupMemberRemoved);
 
     Task ChatGroupMemberLeft(ChatGroupMemberLeft chatGroupMemberLeft);
+    
+    Task ChatGroupMemberAdded(ChatGroupMemberAdded chatGroupMemberAdded);
 
     Task ChatGroupNewAdminAdded(ChatGroupNewAdminAdded chatGroupMemberLeft);
 
@@ -40,6 +42,7 @@ public interface IChatifyHubClient
     Task FriendInvitationDeclined(FriendInvitationDeclined friendInvitationDeclined);
 
     Task AddedToChatGroup(AddedToChatGroup addedToChatGroup);
+    
     
     Task ChatGroupJoinRequested(ChatGroupUserJoinRequested chatGroupUserJoinRequested);
     

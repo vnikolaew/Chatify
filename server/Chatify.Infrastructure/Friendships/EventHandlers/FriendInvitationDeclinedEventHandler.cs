@@ -23,31 +23,38 @@ internal sealed class FriendInvitationDeclinedEventHandler
         FriendInvitationDeclinedEvent @event,
         CancellationToken cancellationToken = default)
     {
-        await CreateAndSaveNotification(@event, cancellationToken);
+        var invitee = await users.GetAsync(@event.InviteeId, cancellationToken);
+        await CreateAndSaveNotification(@event, invitee!, cancellationToken);
+
         await hubContext
             .Clients
             .User(@event.InviterId.ToString())
             .FriendInvitationDeclined(new FriendInvitationDeclined(
-                @event.InviteeId,
-                @event.Timestamp));
+                invitee!.Id,
+                invitee.Username,
+                @event.Timestamp,
+                new Dictionary<string, string>
+                {
+                    { nameof(UserNotification.Metadata.UserMedia), invitee.ProfilePicture.MediaUrl }
+                }));
     }
-    
+
     private async Task CreateAndSaveNotification(
         FriendInvitationDeclinedEvent @event,
+        Domain.Entities.User invitee,
         CancellationToken cancellationToken)
     {
-        var inviter = await users.GetAsync(@event.InviterId, cancellationToken);
         var notification = new DeclinedFriendInvitationNotification
         {
             Id = guidGenerator.New(),
-            User = inviter,
+            User = invitee,
             UserId = @event.InviteeId,
             Type = UserNotificationType.DeclinedFriendInvite,
-            Summary = $"{inviter.Username} declined your friend request.",
+            Summary = $"{invitee!.Username} declined your friend request.",
             CreatedAt = clock.Now,
             Metadata = new UserNotificationMetadata
             {
-                UserMedia = inviter.ProfilePicture
+                UserMedia = invitee.ProfilePicture
             },
             InviteId = @event.InviteId,
             InviterId = @event.InviterId

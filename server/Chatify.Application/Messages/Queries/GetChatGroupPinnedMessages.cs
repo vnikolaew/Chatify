@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json;
 using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Application.Messages.Common;
@@ -37,13 +36,12 @@ internal sealed class GetChatGroupPinnedMessagesHandler(
         var isMember = await members.Exists(group.Id, identityContext.Id, cancellationToken);
         if ( !isMember ) return new ChatGroups.Commands.UserIsNotMemberError(identityContext.Id, group.Id);
 
-        var pinnedMessageIds = JsonSerializer.Deserialize<HashSet<Guid>>(group.Metadata["pinned_message_ids"]);
-        if ( pinnedMessageIds is null || !pinnedMessageIds.Any() ) return new List<ChatMessage>();
+        if ( !group.PinnedMessages.Any() ) return new List<ChatMessage>();
+        var pinnedMessages =
+            await messages.GetByIds(group.PinnedMessages.Select(_ => _.MessageId),
+                cancellationToken)
+            ?? new List<ChatMessage>();
 
-        var pinnedMessages = await messages
-            .GetByIds(pinnedMessageIds, cancellationToken)
-                             ?? new List<ChatMessage>();
-        
         return pinnedMessages;
     }
 }

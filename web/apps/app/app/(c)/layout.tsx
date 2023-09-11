@@ -1,10 +1,9 @@
 import React, { PropsWithChildren } from "react";
-import ChatGroupMembersSection from "@components/members/ChatGroupMembersSection";
+import { ChatGroupMembersSection } from "@components/members";
 import ChatGroupsFeed from "@components/feed/ChatGroupsFeed";
 import { cookies } from "next/headers";
 import process from "process";
-import { ChatClientProvider } from "../../hub/ChatHubConnection";
-import { ChatifyHubInitializer } from "../../hub";
+import { ChatifyHubInitializer, ChatClientProvider } from "apps/app/hub";
 
 export interface LayoutProps extends PropsWithChildren {
    params: Record<string, any>;

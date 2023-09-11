@@ -30,6 +30,7 @@ using DeleteGroupChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMessag
 using DeleteChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
 using GetMessagesForChatGroupResult = OneOf<UserIsNotMemberError, CursorPaged<ChatGroupMessageEntry>>;
 using PinChatGroupMessageResult = OneOf<MessageNotFoundError, ChatGroupNotFoundError, UserIsNotGroupAdminError, Unit>;
+using UnpinChatGroupMessageResult = OneOf<MessageNotFoundError, ChatGroupNotFoundError, UserIsNotGroupAdminError, Unit>;
 using GetMessageRepliesForChatGroupMessageResult =
     OneOf<MessageNotFoundError, UserIsNotMemberError, CursorPaged<ChatMessageReply>>;
 
@@ -194,6 +195,26 @@ public class MessagesController : ApiController
     {
         var result = await SendAsync<PinChatGroupMessage, PinChatGroupMessageResult>(
             new PinChatGroupMessage(messageId), cancellationToken);
+        return result.Match<IActionResult>(
+            _ => NotFound(),
+            _ => NotFound(),
+            _ => _.ToBadRequest(),
+            _ => NoContent()
+        );
+    }
+
+    [HttpDelete]
+    [Route("pins/{messageId:guid}")]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesNoContentApiResponse]
+    public async Task<IActionResult> UnpinGroupChatMessage(
+        [FromRoute] Guid messageId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await SendAsync<UnpinChatGroupMessage, UnpinChatGroupMessageResult>(
+            new UnpinChatGroupMessage(messageId), cancellationToken);
+
         return result.Match<IActionResult>(
             _ => NotFound(),
             _ => NotFound(),

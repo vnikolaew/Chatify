@@ -12,9 +12,13 @@ import {
 } from "@web/api";
 import { Avatar, AvatarGroup, Skeleton } from "@nextui-org/react";
 import { UserStatus } from "@openapi";
-import AddNewMemberActionButton, {
+import {
    PinnedMessagesActionButton,
-} from "@components/chat-group/AddNewMemberActionButton";
+   AddNewMemberActionButton,
+} from "@components/chat-group";
+import TooltipButton from "@components/TooltipButton";
+import { Edit } from "lucide-react";
+import EditChatGroupActionButton from "@components/chat-group/EditChatGroupActionButton";
 
 export interface ChatGroupTopBarProps {}
 
@@ -33,16 +37,20 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
    });
 
    const isPrivateGroup = useIsChatGroupPrivate(chatGroupDetails);
-   const isUserGroupAdmin = useMemo(() => {
-      return chatGroupDetails?.chatGroup?.adminIds?.some(
-         (id) => id === me?.claims?.nameidentifier
-      );
-   }, [chatGroupDetails?.chatGroup?.adminIds, me?.claims?.nameidentifier]);
-   const membersOnline = useMemo(() => {
-      return chatGroupDetails?.members?.filter(
-         (m) => m.status === UserStatus.ONLINE
-      )?.length;
-   }, [chatGroupDetails?.members]);
+   const isUserGroupAdmin = useMemo(
+      () =>
+         chatGroupDetails?.chatGroup?.adminIds?.some(
+            (id) => id === me?.claims?.nameidentifier
+         ),
+      [chatGroupDetails?.chatGroup?.adminIds, me?.claims?.nameidentifier]
+   );
+   const membersOnline = useMemo(
+      () =>
+         chatGroupDetails?.members?.filter(
+            (m) => m.status === UserStatus.ONLINE
+         )?.length,
+      [chatGroupDetails?.members]
+   );
 
    return (
       <div
@@ -105,7 +113,6 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                                  {chatGroupDetails.members.length} member
                                  {chatGroupDetails.members.length > 1 && `s`}
                               </span>
-
                               <div
                                  className={`bg-default-200 rounded-full w-[4px] h-[4px]`}
                               />
@@ -161,6 +168,9 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
             )}
          </div>
          <div className="mx-2 flex items-center gap-2">
+            {isUserGroupAdmin && (
+               <EditChatGroupActionButton chatGroup={chatGroupDetails} />
+            )}
             <PinnedMessagesActionButton />
             {true && <AddNewMemberActionButton />}
          </div>

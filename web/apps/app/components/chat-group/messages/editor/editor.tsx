@@ -1,5 +1,7 @@
 import { BaseEditor, Editor, Element, Transforms } from "slate";
 import { ReactEditor } from "slate-react";
+import { Link } from "@nextui-org/react";
+import React from "react";
 
 export const CustomEditor = {
    isBoldMarkActive(editor: BaseEditor & ReactEditor) {
@@ -110,6 +112,46 @@ export const CustomEditor = {
       Transforms.insertNodes(editor, link);
       Transforms.collapse(editor, { edge: "end" });
    },
+};
+
+// Define a React component renderer for our code blocks.
+export const CodeElement = (props) => {
+   return (
+      <pre {...props.attributes}>
+         <code>{props.children}</code>
+      </pre>
+   );
+};
+
+// Define a React component to render leaves with bold text.
+export const Leaf = (props) => {
+   if (props.leaf.type === "link") {
+      return (
+         <Link
+            underline={"hover"}
+            color={"primary"}
+            className={`cursor-pointer`}
+            size={"sm"}
+            href={props.leaf.href}
+         >
+            {props.children}
+         </Link>
+      );
+   }
+   return (
+      <span
+         {...props.attributes}
+         style={{
+            fontWeight: props.leaf.bold ? "bold" : "normal",
+            fontStyle: props.leaf.italic ? "italic" : "normal",
+            textDecoration: props.leaf.strikethrough
+               ? "line-through"
+               : "normal",
+         }}
+      >
+         {props.children}
+      </span>
+   );
 };
 
 CustomEditor.serialize.bind(CustomEditor);

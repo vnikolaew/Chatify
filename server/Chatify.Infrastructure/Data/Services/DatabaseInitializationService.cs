@@ -95,7 +95,6 @@ public class DatabaseInitializationService(CassandraOptions cassandraOptions,
     private static async Task DefineUdts(ISession session)
     {
         session.ChangeKeyspace(Constants.KeyspaceName);
-
         session.Execute("""
                         CREATE TYPE IF NOT EXISTS message_replier_info (
                             user_id uuid,
@@ -113,7 +112,8 @@ public class DatabaseInitializationService(CassandraOptions cassandraOptions,
                         """);
         await session.UserDefinedTypes.DefineAsync(
             MessageReplierInfo.UdtMap,
-            Media.UdtMap
+            Media.UdtMap,
+            MessagePin.UdtMap
         );
     }
 
@@ -154,13 +154,13 @@ public class DatabaseInitializationService(CassandraOptions cassandraOptions,
         }
 
         session.Execute("CREATE TYPE IF NOT EXISTS " + options.KeyspaceName +
-                         ".LockoutInfo (EndDate timestamp, Enabled boolean, AccessFailedCount int);");
+                        ".LockoutInfo (EndDate timestamp, Enabled boolean, AccessFailedCount int);");
         session.Execute("CREATE TYPE IF NOT EXISTS " + options.KeyspaceName +
-                         ".PhoneInfo (Number text, ConfirmationTime timestamp);");
+                        ".PhoneInfo (Number text, ConfirmationTime timestamp);");
         session.Execute("CREATE TYPE IF NOT EXISTS " + options.KeyspaceName +
-                         ".LoginInfo (LoginProvider text, ProviderKey text, ProviderDisplayName text);");
+                        ".LoginInfo (LoginProvider text, ProviderKey text, ProviderDisplayName text);");
         session.Execute("CREATE TYPE IF NOT EXISTS " + options.KeyspaceName +
-                         ".TokenInfo (LoginProvider text, Name text, Value text);");
+                        ".TokenInfo (LoginProvider text, Name text, Value text);");
 
         await session.UserDefinedTypes.DefineAsync(
             UdtMap.For<LockoutInfo>(),
@@ -179,10 +179,11 @@ public class DatabaseInitializationService(CassandraOptions cassandraOptions,
         catch ( AlreadyExistsException )
         {
         }
+
         session.Execute("CREATE TABLE IF NOT EXISTS " + options.KeyspaceName +
-                         ".userclaims ( UserId uuid,  Type text,  Value text,  PRIMARY KEY (UserId, Type, Value));");
+                        ".userclaims ( UserId uuid,  Type text,  Value text,  PRIMARY KEY (UserId, Type, Value));");
         session.Execute("CREATE TABLE IF NOT EXISTS " + options.KeyspaceName +
-                         ".roleclaims ( RoleId uuid,  Type text,  Value text,  PRIMARY KEY (RoleId, Type, Value));");
+                        ".roleclaims ( RoleId uuid,  Type text,  Value text,  PRIMARY KEY (RoleId, Type, Value));");
 
         var usersTableName = usersTable.GetTable().Name;
         var rolesTableName = rolesTable.GetTable().Name;
@@ -203,16 +204,16 @@ public class DatabaseInitializationService(CassandraOptions cassandraOptions,
             .SetValue(null, rolesTableName);
 
         session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS users_by_email AS SELECT * FROM " +
-                         options.KeyspaceName + "." + usersTableName +
-                         " WHERE NormalizedEmail IS NOT NULL AND id IS NOT NULL AND username IS NOT NULL AND created_at IS NOT NULL PRIMARY KEY (NormalizedEmail, id)");
+                        options.KeyspaceName + "." + usersTableName +
+                        " WHERE NormalizedEmail IS NOT NULL AND id IS NOT NULL AND username IS NOT NULL AND created_at IS NOT NULL PRIMARY KEY (NormalizedEmail, id)");
         session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS users_by_username AS SELECT * FROM " +
-                         options.KeyspaceName + "." + usersTableName +
-                         " WHERE NormalizedUserName IS NOT NULL AND Id IS NOT NULL AND username IS NOT NULL AND created_at IS NOT NULL PRIMARY KEY (NormalizedUserName, Id)");
+                        options.KeyspaceName + "." + usersTableName +
+                        " WHERE NormalizedUserName IS NOT NULL AND Id IS NOT NULL AND username IS NOT NULL AND created_at IS NOT NULL PRIMARY KEY (NormalizedUserName, Id)");
         session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS roles_by_name AS SELECT * FROM " +
-                         options.KeyspaceName + "." + rolesTableName +
-                         " WHERE NormalizedName IS NOT NULL AND Id IS NOT NULL PRIMARY KEY (NormalizedName, Id)");
+                        options.KeyspaceName + "." + rolesTableName +
+                        " WHERE NormalizedName IS NOT NULL AND Id IS NOT NULL PRIMARY KEY (NormalizedName, Id)");
         session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS userclaims_by_type_and_value AS SELECT * FROM " +
-                         options.KeyspaceName +
-                         ".userclaims WHERE Type IS NOT NULL AND Value IS NOT NULL AND userid IS NOT NULL PRIMARY KEY ((Type, Value), UserId)");
+                        options.KeyspaceName +
+                        ".userclaims WHERE Type IS NOT NULL AND Value IS NOT NULL AND userid IS NOT NULL PRIMARY KEY ((Type, Value), UserId)");
     }
 }

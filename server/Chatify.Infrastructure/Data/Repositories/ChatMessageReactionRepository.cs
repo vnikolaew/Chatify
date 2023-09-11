@@ -7,6 +7,7 @@ using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Services;
 using Humanizer;
 using StackExchange.Redis;
+using Guid = System.Guid;
 using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
@@ -99,16 +100,18 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
         IEnumerable<Guid> messageIds,
         CancellationToken cancellationToken = default)
     {
-        var reactionCodes = await cache.GetUserReactionsAsync(
-                userId,
-                messageIds.Select(id => new RedisValue(id.ToString())).ToArray()
-            );
+        var messageIdValues = messageIds
+            .Select(id => new RedisValue(id.ToString()))
+            .ToArray();
 
+        var reactionCodes = await cache.GetUserReactionsAsync(
+            userId,
+            messageIdValues
+        );
+        
         return messageIds
-            .Select((id,
-                    i) =>
-                new KeyValuePair<Guid, long?>(id, reactionCodes[i].ToLong()))
-            .ToDictionary(_ => _.Key, _ => _.Value);
+            .Zip(reactionCodes)
+            .ToDictionary(pair => pair.Item1, pair => pair.Item2 ?? null);
     }
 
     public Task<ChatMessageReaction?> ByMessageAndUser(Guid messageId,

@@ -11,7 +11,7 @@ export interface ChatGroupMemberEntryProps {
    onHover?: React.MouseEventHandler<HTMLDivElement>;
 }
 
-export const ChatGroupMemberEntry = ({
+const ChatGroupMemberEntry = ({
    member,
    onHover,
    category,
@@ -77,3 +77,5 @@ export const ChatGroupMemberEntry = ({
       </Tooltip>
    );
 };
+
+export default ChatGroupMemberEntry;

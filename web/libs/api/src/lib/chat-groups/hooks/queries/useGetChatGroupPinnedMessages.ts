@@ -1,4 +1,3 @@
-import { messagesClient } from "../client";
 import {
    UseQueryOptions,
    useQueryClient,
@@ -10,7 +9,9 @@ import {
    ChatMessageListApiResponse,
    // @ts-ignore
 } from "@openapi";
-import { sleep } from "../../utils";
+// @ts-ignore
+import { sleep } from "../../../utils";
+import { chatGroupsClient } from "../../client";
 
 export interface GetChatGroupPinnedMessagesModel {
    groupId: string;
@@ -21,9 +22,12 @@ const getChatGroupPinnedMessages = async (
 ): Promise<ChatMessage[]> => {
    const { groupId } = model;
    const { status, data } =
-      await messagesClient.get<ChatMessageListApiResponse>(`${groupId}/pins`, {
-         headers: {},
-      });
+      await chatGroupsClient.get<ChatMessageListApiResponse>(
+         `${groupId}/pins`,
+         {
+            headers: {},
+         }
+      );
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");

@@ -1,35 +1,38 @@
-﻿using System.Text.Json;
-using Chatify.Domain.Entities;
-using UserNotification = Chatify.Infrastructure.Data.Models.UserNotification;
+﻿using System.Linq.Expressions;
+using System.Reflection;
+using Cassandra.Mapping;
+using Chatify.Infrastructure.Data.Mappings;
+using Chatify.Infrastructure.Data.Models;
 
 internal class Program
 {
+    private static string TranslateSelectToCql<T>(
+        Expression<Func<T, object>> selection)
+    {
+        if ( selection.Body is not NewExpression newExpression ) return string.Empty;
+        var tableConfig = MappingConfiguration.Global.Get<T>();
+
+        var columnNames = newExpression
+            .Arguments
+            .OfType<MemberExpression>()
+            .Select(e => tableConfig
+                .GetColumnDefinition(e.Member as PropertyInfo)
+                ?.ColumnName)
+            .Where(_ => _ is not null)
+            .ToList();
+
+        return $"SELECT {string.Join(", ", columnNames)} FROM {tableConfig.TableName} ALLOW FILTERING;";
+    }
+
     public static async Task Main(string[] args)
     {
-        var media = JsonSerializer.Serialize(new Media()
+        MappingConfiguration.Global.Define<UserMapping>();
+        Expression<Func<ChatifyUser, object>> expr = u => new
         {
-            Id = Guid.NewGuid(),
-            MediaUrl = "dfsfdsfdjA;"
-        });
-        var notification = new UserNotification
-        {
-            Type = ( sbyte )UserNotificationType.IncomingFriendInvite,
-            Summary = "sdewwefsdf",
-            Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
-            CreatedAt = DateTimeOffset.Now,
-            Metadata = new Dictionary<string, string>
-            {
-                { "user_media", media },
-                { "invite_id", Guid.NewGuid().ToString() },
-            },
+            id = u.Id,
+            u.Email,
+            u.Status
         };
-
-        // var profile = new MappingProfile(typeof(UserNotification).Assembly);
-
-        // var mapper = new MapperConfiguration(cfg =>
-        //         cfg.AddProfile(profile))
-        //     .CreateMapper();
-        // var x = mapper.Map<Chatify.Domain.Entities.UserNotification>(notification);
+        Console.WriteLine(TranslateSelectToCql(expr));
     }
 }

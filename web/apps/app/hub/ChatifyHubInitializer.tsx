@@ -6,34 +6,58 @@ import {
    ChatGroupDetailsEntry,
    ChatGroupFeedEntry,
    ChatGroupMessageEntry,
+   ChatMessageReaction,
    CursorPaged,
+   UserNotification,
+   UserNotificationType,
    UserStatus,
 } from "@openapi";
 import {
+   GET_ALL_REACTIONS_KEY,
    GET_PAGINATED_GROUP_MESSAGES_KEY,
    GetMyClaimsResponse,
+   NOTIFICATIONS_KEY,
+   USER_DETAILS_KEY,
 } from "@web/api";
-import { produce } from "immer";
-import { useCurrentUserId } from "@hooks";
-import { sendError } from "next/dist/server/api-utils";
+import { enableMapSet, produce } from "immer";
 
 export interface ChatifyHubInitializerProps {}
+
+export interface IUserTyping {
+   userId: string;
+   username: string;
+   groupId: string;
+}
 
 export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
    const client = useChatifyClientContext();
    const queryClient = useQueryClient();
 
    useEffect(() => {
-      console.log(`Running Hub initializer effect ...`);
+      enableMapSet();
       client.onReceiveChatGroupMessage((message) => {
          // Update client cache with new message:
          const meId = queryClient.getQueryData<GetMyClaimsResponse>([
             `me`,
             `claims`,
          ]).claims.nameidentifier;
-         console.log(`Sender ID: ${message.senderId}`);
-         console.log(`Sender ID: ${meId}`);
-         if (message.senderId === meId) return;
+         if (message.senderId === meId) {
+            // Only update message attachments:
+            queryClient.setQueryData<
+               InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+            >(
+               GET_PAGINATED_GROUP_MESSAGES_KEY(message.chatGroupId),
+               (messages) => {
+                  return produce(messages, (draft) => {
+                     (
+                        draft!.pages[0] as CursorPaged<ChatGroupMessageEntry>
+                     ).items[0].message.attachments = message.attachments;
+                     return draft;
+                  });
+               }
+            );
+            return;
+         }
 
          console.log(`New message: `, message);
 
@@ -61,6 +85,7 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                         userId: message.senderId,
                         createdAt: new Date(message.timestamp).toString(),
                         reactionCounts: {},
+                        attachments: message.attachments,
                      },
                      forwardedMessage: {},
                      repliersInfo: {
@@ -91,6 +116,7 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                   userId: message.senderId,
                   createdAt: new Date(message.timestamp).toString(),
                   reactionCounts: {},
+                  attachments: message.attachments,
                };
 
                return [
@@ -128,90 +154,284 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
          }
       });
 
-      client.onChatGroupMemberStartedTyping((event) => {
-         console.log(`Member started typing: `, event);
-         queryClient.setQueryData<Set<string>>(
-            [`chat-group`, event.chatGroupId, "typing"],
-            (old) =>
-               produce(old, (draft) => {
-                  if (!draft) draft = new Set<string>();
-                  draft.add(event.userId);
+      client.onChatGroupMemberStartedTyping(
+         ({ chatGroupId, userId, username }) => {
+            console.log(`Member started typing: `, userId);
+            queryClient.setQueryData<Set<IUserTyping>>(
+               [`chat-group`, chatGroupId, "typing"],
+               (old) =>
+                  produce(old, (draft) => {
+                     if (!draft) draft = new Set<IUserTyping>();
+                     draft.add({ userId, username, groupId: chatGroupId });
+                     return draft;
+                  })
+            );
+         }
+      );
+
+      client.onChatGroupMemberStoppedTyping(
+         ({ chatGroupId, userId, timestamp, username }) => {
+            console.log(`Member stopped typing: `, userId);
+            queryClient.setQueryData<Set<IUserTyping>>(
+               [`chat-group`, chatGroupId, "typing"],
+               (old) =>
+                  produce(old, (draft) => {
+                     if (!draft) draft = new Set<IUserTyping>();
+                     for (const element of draft) {
+                        if (element.userId === userId) {
+                           draft.delete(element);
+                           return draft;
+                        }
+                     }
+                     return draft;
+                  })
+            );
+         }
+      );
+
+      client.onChatGroupMessageUnReactedTo((event) => {
+         queryClient.setQueryData<
+            InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+         >(GET_PAGINATED_GROUP_MESSAGES_KEY(event.chatGroupId), (old) => {
+            return produce(old, (draft) => {
+               const message = draft.pages
+                  .flatMap((_) => _.items)
+                  .find(
+                     (m) => m.message.id === event.messageId
+                  ) as ChatGroupMessageEntry;
+
+               if (
+                  message.message.reactionCounts[
+                     event.reactionType.toString()
+                  ] > 0
+               ) {
+                  message.message.reactionCounts[
+                     event.reactionType.toString()
+                  ]--;
+               }
+               return draft;
+            });
+         });
+
+         queryClient.setQueryData<ChatMessageReaction[]>(
+            GET_ALL_REACTIONS_KEY(event.messageId),
+            (old) => {
+               return produce(old, (draft) => {
+                  draft = draft.filter((r) => r.id !== event.messageReactionId);
                   return draft;
-               })
+               });
+            }
          );
       });
 
-      client.onChatGroupMemberStoppedTyping((event) => {
-         console.log(`Member stoppted typing: `, event);
-         queryClient.setQueryData<Set<string>>(
-            [`chat-group`, event.chatGroupId, "typing"],
-            (old) =>
-               produce(old, (draft) => {
-                  draft.delete(event.userId);
+      client.onChatGroupMessageReactedTo((event) => {
+         queryClient.setQueryData<
+            InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+         >(GET_PAGINATED_GROUP_MESSAGES_KEY(event.chatGroupId), (old) => {
+            return produce(old, (draft) => {
+               const message = draft.pages
+                  .flatMap((_) => _.items)
+                  .find(
+                     (m) => m.message.id === event.messageId
+                  ) as ChatGroupMessageEntry;
+
+               // string -> number
+               message.message.reactionCounts[
+                  event.reactionType.toString()
+               ] ??= 0;
+               message.message.reactionCounts[event.reactionType.toString()]++;
+               return draft;
+            });
+         });
+
+         queryClient.setQueryData<ChatMessageReaction[]>(
+            GET_ALL_REACTIONS_KEY(event.messageId),
+            (old) => {
+               return produce(old, (draft) => {
+                  draft?.push({
+                     messageId: event.messageId,
+                     reactionCode: event.reactionType,
+                     userId: event.userId,
+                     chatGroupId: event.chatGroupId,
+                     createdAt: event.timestamp,
+                     id: event.messageReactionId,
+                  });
                   return draft;
-               })
+               });
+            }
+         );
+      });
+
+      client.onChatGroupNewAdminAdded((event) => {
+         queryClient.setQueryData<ChatGroupDetailsEntry>(
+            [`chat-group`, event.chatGroupId],
+            (old) => {
+               return produce(old, (draft) => {
+                  const existing = draft.members.find(
+                     (m) => m.id === event.adminId
+                  );
+                  if (existing) {
+                     draft.chatGroup.adminIds.push(existing.id);
+                     draft.chatGroup.admins.push(existing);
+                  } else {
+                     draft.chatGroup.adminIds.push(event.adminId);
+                  }
+
+                  return draft;
+               });
+            }
          );
       });
 
       client.onChatGroupMessageRemoved((event) => {
-         const message = queryClient
-            .getQueryData<InfiniteData<CursorPaged<ChatGroupMessageEntry>>>(
-               GET_PAGINATED_GROUP_MESSAGES_KEY(event.chatGroupId)
-            )
-            .pages.flatMap((p) => p.items)
-            .find((m) => m.message.id === event.messageId);
+         queryClient.setQueryData<
+            InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+         >(GET_PAGINATED_GROUP_MESSAGES_KEY(event.chatGroupId), (messages) => {
+            return produce(messages, (draft) => {
+               const message = draft.pages
+                  .flatMap((p) => p.items)
+                  .find((m) => m.message.id === event.messageId);
 
-         if (message) {
-            queryClient.setQueryData<
-               InfiniteData<CursorPaged<ChatGroupMessageEntry>>
-            >(
-               GET_PAGINATED_GROUP_MESSAGES_KEY(event.chatGroupId),
-               (messages) => {
-                  return produce(messages, (draft) => {
-                     const message = draft.pages
-                        .flatMap((p) => p.items)
-                        .find((m) => m.message.id === event.messageId);
-
-                     message.message.metadata.deleted = true as any;
-                     message.message.metadata.updatedAt = event.timestamp;
-                     return draft;
-                  });
+               if (message) {
+                  message.message.metadata.deleted = true as any;
+                  message.message.metadata.updatedAt = event.timestamp;
                }
-            );
-         }
+
+               return draft;
+            });
+         });
       });
 
       client.onChatGroupMessageEdited((event) => {
-         const message = queryClient
-            .getQueryData<InfiniteData<CursorPaged<ChatGroupMessageEntry>>>(
-               GET_PAGINATED_GROUP_MESSAGES_KEY(event.chatGroupId)
-            )
-            .pages.flatMap((p) => p.items)
-            .find((m) => m.message.id === event.messageId);
-         if (message) {
-            queryClient.setQueryData<
-               InfiniteData<CursorPaged<ChatGroupMessageEntry>>
-            >(
-               GET_PAGINATED_GROUP_MESSAGES_KEY(event.chatGroupId),
-               (messages) => {
-                  return produce(messages, (draft) => {
-                     const message = draft.pages
-                        .flatMap((p) => p.items)
-                        .find((m) => m.message.id === event.messageId);
+         queryClient.setQueryData<
+            InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+         >(GET_PAGINATED_GROUP_MESSAGES_KEY(event.chatGroupId), (messages) => {
+            return produce(messages, (draft) => {
+               const message = draft.pages
+                  .flatMap((p) => p.items)
+                  .find((m) => m.message.id === event.messageId);
 
-                     message.message.metadata.edited = true as any;
-                     message.message.metadata.updatedAt = event.timestamp;
-                     message.message.content = event.newContent;
-                     return draft;
-                  });
+               if (message) {
+                  message.message.metadata.edited = true as any;
+                  message.message.metadata.updatedAt = event.timestamp;
+                  message.message.content = event.newContent;
                }
-            );
-         }
+               return draft;
+            });
+         });
       });
 
-      client.onTest((groupId, value) =>
-         console.log(`New message: ${value} from group ${groupId}.`)
-      );
+      client.onFriendInvitationAccepted((event) => {
+         queryClient.setQueriesData<CursorPaged<UserNotification>>(
+            { queryKey: [NOTIFICATIONS_KEY], exact: false },
+            (old) => {
+               if (old.pagingCursor) return old;
+               return produce(old, (draft) => {
+                  draft?.items?.unshift({
+                     type: UserNotificationType.ACCEPTED_FRIEND_INVITE,
+                     createdAt: new Date().toISOString(),
+                     userId: event.inviteeId,
+                     read: false,
+                     metadata: event.metadata,
+                     summary: `${event.inviteeUsername} accepted your friend request.`,
+                     user: {
+                        id: event.inviteeId,
+                        username: event.inviteeUsername,
+                     },
+                  });
+               });
+            }
+         );
+      });
+
+      client.onFriendInvitationDeclined((event) => {
+         queryClient.setQueriesData<CursorPaged<UserNotification>>(
+            { queryKey: [NOTIFICATIONS_KEY], exact: false },
+            (old) => {
+               if (old.pagingCursor) return old;
+               return produce(old, (draft) => {
+                  draft?.items?.unshift({
+                     type: UserNotificationType.DECLINED_FRIEND_INVITE,
+                     createdAt: new Date().toISOString(),
+                     userId: event.inviteeId,
+                     read: false,
+                     metadata: event.metadata,
+                     summary: `${event.inviteeUsername} declined your friend request.`,
+                     user: {
+                        id: event.inviteeId,
+                        username: event.inviteeUsername,
+                     },
+                  });
+               });
+            }
+         );
+      });
+
+      client.onFriendInvitationReceived((event) => {
+         queryClient.setQueriesData<CursorPaged<UserNotification>>(
+            { queryKey: [NOTIFICATIONS_KEY], exact: false },
+            (old) => {
+               if (old.pagingCursor) return old;
+               return produce(old, (draft) => {
+                  draft?.items?.unshift({
+                     type: UserNotificationType.INCOMING_FRIEND_INVITE,
+                     createdAt: new Date().toISOString(),
+                     userId: event.inviterId,
+                     read: false,
+                     metadata: event.metadata,
+                     user: {
+                        id: event.inviterId,
+                        username: event.inviterUsername,
+                     },
+                  });
+               });
+            }
+         );
+      });
+
+      client.onChatGroupMemberLeft((event) => {
+         queryClient.setQueryData<ChatGroupDetailsEntry>(
+            [`chat-group`, event.chatGroupId],
+            (old) => {
+               return produce(old, (draft) => {
+                  draft.members = draft.members.filter(
+                     (m) => m.id !== event.userId
+                  );
+                  return draft;
+               });
+            }
+         );
+      });
+
+      client.onChatGroupMemberAdded((event) => {
+         queryClient.setQueryData<ChatGroupDetailsEntry>(
+            [`chat-group`, event.chatGroupId],
+            (old) => {
+               queryClient.getQueryData([USER_DETAILS_KEY, event.userId]);
+               return produce(old, (draft) => {
+                  draft.members.push({
+                     username: event.username,
+                     id: event.userId,
+                  });
+                  return draft;
+               });
+            }
+         );
+      });
+
+      client.onChatGroupMemberRemoved((event) => {
+         queryClient.setQueryData<ChatGroupDetailsEntry>(
+            [`chat-group`, event.chatGroupId],
+            (old) => {
+               return produce(old, (draft) => {
+                  draft.members = draft.members.filter(
+                     (m) => m.id !== event.userId
+                  );
+                  return draft;
+               });
+            }
+         );
+      });
 
       client
          .start()

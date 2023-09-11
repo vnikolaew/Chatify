@@ -32,6 +32,8 @@ using Chatify.Shared.Infrastructure.Events;
 using Chatify.Shared.Infrastructure.Serialization;
 using Chatify.Shared.Infrastructure.Time;
 using LanguageExt.UnitsOfMeasure;
+using MessagePack;
+using MessagePack.Resolvers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
@@ -127,11 +129,22 @@ public static class DependencyInjection
                 opts.KeepAliveInterval = 30.Seconds();
                 opts.AddFilter<ConnectionIdCookieHubFilter>();
             })
+            .AddJsonProtocol()
+            // .AddMessagePackProtocol(opts => {
+            //     StaticCompositeResolver.Instance.Register(
+            //         StandardResolver.Instance);
+            //
+            //     opts.SerializerOptions = MessagePackSerializerOptions
+            //         .Standard
+            //         .WithSecurity(MessagePackSecurity.TrustedData)
+            //         .WithCompression(MessagePackCompression.Lz4Block)
+            //         .WithResolver(StaticCompositeResolver.Instance);
+            // })
             .AddHubOptions<ChatifyHub>(opts =>
             {
                 opts.EnableDetailedErrors = false;
                 opts.MaximumParallelInvocationsPerClient = 10;
-            }).AddJsonProtocol();
+            });
 
         return services;
     }

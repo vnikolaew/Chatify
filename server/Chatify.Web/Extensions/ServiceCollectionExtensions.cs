@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.RateLimiting;
+using AutoMapper.Extensions.ExpressionMapping;
 using Chatify.Application.ChatGroups.Queries.Models;
 using Chatify.Domain.Entities;
 using Chatify.Infrastructure;
@@ -23,9 +24,11 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddMappers(this IServiceCollection services)
         => services.AddAutoMapper(config =>
         {
-            config.AddMaps(
-                typeof(IAssemblyMarker),
-                typeof(Application.IAssemblyMarker));
+            config
+                .AddExpressionMapping()
+                .AddMaps(
+                    typeof(IAssemblyMarker),
+                    typeof(Application.IAssemblyMarker));
             config.AllowNullDestinationValues = true;
         });
 

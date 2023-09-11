@@ -17,6 +17,7 @@ const hubConnection = new HubConnectionBuilder()
          HttpTransportType.WebSockets |
          HttpTransportType.LongPolling,
    })
+   // .withHubProtocol(new MessagePackHubProtocol())
    .configureLogging(LogLevel.Information)
    .withAutomaticReconnect({
       nextRetryDelayInMilliseconds(retryContext: RetryContext): number | null {

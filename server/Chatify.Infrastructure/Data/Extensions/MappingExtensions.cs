@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Cassandra;
 using Cassandra.Mapping;
 using Humanizer;
 
@@ -6,6 +7,19 @@ namespace Chatify.Infrastructure.Data.Extensions;
 
 public static class MappingExtensions
 {
+    
+    public static UdtMap<T> UnderscoreColumn<T, TProp>(
+        this UdtMap<T> map,
+        Expression<Func<T, TProp>> expression
+        ) where T : new()
+    {
+        var underscoreColumnName = ( expression.Body as MemberExpression )?.Member.Name ??
+                                   throw new ArgumentException("Expression must be a member expression.",
+                                       nameof(expression));
+
+        map.Map(expression, underscoreColumnName.Underscore().ToLower());
+        return map;
+    }
     public static Map<T> UnderscoreColumn<T, TProp>(
         this Map<T> map,
         Expression<Func<T, TProp>> expression,

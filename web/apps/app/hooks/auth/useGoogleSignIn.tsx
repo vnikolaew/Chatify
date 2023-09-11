@@ -1,4 +1,5 @@
-﻿import { useGoogleLogin } from "@react-oauth/google";
+﻿"use client";
+import { useGoogleLogin } from "@react-oauth/google";
 import { useGoogleSignUpMutation } from "@web/api";
 
 export function useGoogleSignIn(

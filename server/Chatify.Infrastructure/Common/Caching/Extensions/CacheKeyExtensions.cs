@@ -22,10 +22,12 @@ public static class CacheKeyExtensions
 
 public static class RedisOperationExtensions
 {
-    public static Task<RedisValue[]> GetGroupMembersAsync(
+    public static async Task<Guid[]> GetGroupMembersAsync(
         this IDatabase cache,
         Guid groupId)
-        => cache.SetMembersAsync(groupId.GetGroupMembersKey());
+        => ( await cache.SetMembersAsync(groupId.GetGroupMembersKey()) )
+            .Select(_ => Guid.Parse(_.ToString()))
+            .ToArray();
 
     public static Task<bool> AddGroupMemberAsync(
         this IDatabase cache,
@@ -33,7 +35,7 @@ public static class RedisOperationExtensions
         Guid userId
     )
         => cache.SetAddAsync(groupId.GetGroupMembersKey(), userId.ToString());
-    
+
     public static Task<bool> RemoveGroupMemberAsync(
         this IDatabase cache,
         Guid groupId,
@@ -41,21 +43,25 @@ public static class RedisOperationExtensions
     )
         => cache.SetRemoveAsync(groupId.GetGroupMembersKey(), userId.ToString());
 
-    public static Task<RedisValue[]> GetMessageReactionsAsync(
+    public static async Task<Guid[]> GetMessageReactionsAsync(
         this IDatabase cache,
         Guid messageId)
-        => cache.SetMembersAsync(messageId.GetMessageReactionsKey());
+        => ( await cache.SetMembersAsync(messageId.GetMessageReactionsKey()) )
+            .Select(_ => Guid.Parse(_.ToString()))
+            .ToArray();
 
-    public static Task<RedisValue[]> GetUserFeedAsync(
+    public static async Task<Guid[]> GetUserFeedAsync(
         this IDatabase cache,
         Guid userId,
         int offset,
         int limit
     )
-        => cache.SortedSetRangeByRankAsync(
-            userId.GetUserFeedKey(),
-            offset, limit + offset, Order.Descending
-        );
+        => ( await cache.SortedSetRangeByRankAsync(
+                userId.GetUserFeedKey(),
+                offset, limit + offset, Order.Descending
+            ) )
+            .Select(_ => Guid.Parse(_.ToString()))
+            .ToArray();
 
     public static Task<bool> AddUserFeedEntryAsync(
         this IDatabase cache,
@@ -67,7 +73,7 @@ public static class RedisOperationExtensions
             userId.GetUserFeedKey(),
             new RedisValue(groupId.ToString()),
             timestamp.Ticks);
-    
+
     public static Task<bool> RemoveUserFeedEntryAsync(
         this IDatabase cache,
         Guid userId,
@@ -77,16 +83,21 @@ public static class RedisOperationExtensions
             userId.GetUserFeedKey(),
             groupId.ToString());
 
-    public static Task<RedisValue[]> GetUserFriendsAsync(
+    public static async Task<Guid[]> GetUserFriendsAsync(
         this IDatabase cache,
         Guid userId)
-        => cache.SortedSetRangeByScoreAsync(userId.GetUserFriendsKey(), order: Order.Descending);
+        => ( await cache.SortedSetRangeByScoreAsync(
+                userId.GetUserFriendsKey(), order: Order.Descending) )
+            .Select(_ => Guid.Parse(_.ToString()))
+            .ToArray();
 
-    public static Task<RedisValue[]> GetUserReactionsAsync(
+    public static async Task<long?[]> GetUserReactionsAsync(
         this IDatabase cache,
         Guid userId,
         RedisValue[] fields)
-        => cache.HashGetAsync(userId.GetUserReactionsKey(), fields);
+        => ( await cache.HashGetAsync(userId.GetUserReactionsKey(), fields) )
+            .Select<RedisValue, long?>(r => r.HasValue && r.TryParse(out long value) ? value : default)
+            .ToArray();
 
     public static Task<bool> AddUserReactionAsync(
         this IDatabase cache,

@@ -13,6 +13,7 @@
       "@emoji-mart/data": "^1.1.2",
       "@emoji-mart/react": "^1.1.1",
       "@microsoft/signalr": "^7.0.5",
+      "@microsoft/signalr-protocol-msgpack": "^7.0.10",
       "@nextui-org/react": "^2.1.0",
       "@nx/next": "16.6.0",
       "@react-oauth/google": "^0.11.1",

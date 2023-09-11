@@ -84,7 +84,6 @@ internal sealed class EditChatGroupDetailsHandler(IDomainRepository<ChatGroup, G
             group.Picture = groupPicture;
             group.UpdatedAt = clock.Now;
         }, cancellationToken);
-
         return Unit.Default;
     }
 }

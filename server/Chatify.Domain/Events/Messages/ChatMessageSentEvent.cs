@@ -1,4 +1,5 @@
 ﻿using Chatify.Domain.Common;
+using Chatify.Domain.Entities;
 
 namespace Chatify.Domain.Events.Messages;
 
@@ -12,5 +13,7 @@ public class ChatMessageSentEvent : IDomainEvent
 
     public DateTime Timestamp { get; set; }
 
+    public List<Media> Attachments { get; set; } = new();
+    
     public string Content { get; set; } = default!;
 }

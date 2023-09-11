@@ -12,6 +12,12 @@ CREATE TYPE IF NOT EXISTS media (
     metadata map<text, text>
     );
 
+CREATE TYPE IF NOT EXISTS message_pin (
+    message_id uuid,
+    pinner_id uuid,
+    created_at timestamp,
+    );
+
 CREATE TYPE IF NOT EXISTS message_replier_info (
     user_id uuid,
     username text,
@@ -62,15 +68,16 @@ CREATE TABLE IF NOT EXISTS friends
 
 CREATE TABLE IF NOT EXISTS chat_groups
 (
-    id         uuid,
-    creator_id uuid,
-    name       text,
-    about      text,
-    picture    media,
-    metadata   map<text, text>,
-    updated_at timestamp,
-    admin_ids  set<uuid>,
-    created_at timestamp,
+    id              uuid,
+    creator_id      uuid,
+    name            text,
+    about           text,
+    picture         media,
+    metadata        map<text, text>,
+    pinned_messages map<uuid, frozen<message_pin>>,
+    updated_at      timestamp,
+    admin_ids       set<uuid>,
+    created_at      timestamp,
     PRIMARY KEY ( (id), created_at )
 ) WITH CLUSTERING ORDER BY (created_at DESC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
@@ -95,6 +102,15 @@ CREATE TABLE IF NOT EXISTS chat_messages
     updated         boolean,
     PRIMARY KEY ( (chat_group_id), created_at)
 ) WITH CLUSTERING ORDER BY (created_at DESC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS chat_messages_by_id
+AS
+SELECT *
+FROM chat_messages
+WHERE id IS NOT NULL
+  AND chat_group_id IS NOT NULL
+  AND created_at IS NOT NULL
+PRIMARY KEY ( id, chat_group_id, created_at );
 
 CREATE INDEX IF NOT EXISTS chat_messages_id_idx ON chat_messages (id);
 
