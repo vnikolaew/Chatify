@@ -63,6 +63,7 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
       await sleep(2000);
    };
 
+   console.log(notifications?.pages?.[0]);
    return (
       <div className={`flex items-center gap-4`}>
          <TooltipWithPopoverActionButton
@@ -125,7 +126,9 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
                   >
                      <Tab title={"All"} key={NotificationTab.ALL}>
                         <NotificationsTab
-                           notifications={notifications}
+                           notifications={
+                              notifications?.pages?.[0]?.items ?? []
+                           }
                            loading={isLoading}
                         />
                      </Tab>

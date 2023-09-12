@@ -44,12 +44,13 @@ public static class ServiceCollectionExtensions
             .AddControllers(opts => { opts.Filters.Add<GlobalExceptionFilter>(); })
             .AddJsonOptions(opts =>
             {
-                opts.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                opts.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
                 opts.JsonSerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
 
                 opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 opts.JsonSerializerOptions.Converters.Add(new IPAddressConverter());
                 opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<ChatGroupMessageEntry>());
+                opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<UserNotification>());
             })
             .ConfigureApiBehaviorOptions(opts => opts.SuppressModelStateInvalidFilter = true);
 

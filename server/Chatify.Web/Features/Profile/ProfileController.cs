@@ -13,6 +13,7 @@ using OneOf;
 namespace Chatify.Web.Features.Profile;
 
 using ChangeUserStatusResult = OneOf<UserNotFound, Unit>;
+using ChangeUserPasswordResult = OneOf<UserNotFound, PasswordChangeError, Unit>;
 using GetUserDetailsResult = OneOf<UserNotFound, NotFriendsError, UserDetailsEntry>;
 using EditUserDetailsResult =
     OneOf<UserNotFound, FileUploadError, PasswordChangeError, Unit>;
@@ -49,6 +50,24 @@ public class ProfileController : ApiController
         return result.Match<IActionResult>(
             _ => NotFound(),
             _ => _.ToBadRequest(),
+            _ => _.ToBadRequest(),
+            Accepted);
+    }
+
+    [HttpPut]
+    [Route("password")]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse]
+    public async Task<IActionResult> ChangeUserPassword(
+        [FromBody] ChangeUserPassword request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await SendAsync<ChangeUserPassword, ChangeUserPasswordResult>(
+            request, cancellationToken);
+
+        return result.Match<IActionResult>(
+            _ => NotFound(),
             _ => _.ToBadRequest(),
             Accepted);
     }

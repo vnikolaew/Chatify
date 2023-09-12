@@ -7,4 +7,5 @@ export { useHover } from "./useHover";
 export { useFileUpload } from "./useFileUpload";
 export { useUserHandle } from "./useUserHandle";
 export { useUserEmail } from "./useUserEmail";
+export { usePassword } from "./usePassword";
 export { useInterval } from "./useInterval";

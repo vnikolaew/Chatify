@@ -381,6 +381,7 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
       });
 
       client.onFriendInvitationReceived((event) => {
+         console.log(`New friend invite: `, event);
          queryClient.setQueriesData<CursorPaged<UserNotification>>(
             { queryKey: [NOTIFICATIONS_KEY], exact: false },
             (old) => {

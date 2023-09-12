@@ -8,6 +8,7 @@ import {
    User,
    UserDetailsEntry,
    UserStatus,
+   // @ts-ignore
 } from "@openapi";
 import { produce } from "immer";
 

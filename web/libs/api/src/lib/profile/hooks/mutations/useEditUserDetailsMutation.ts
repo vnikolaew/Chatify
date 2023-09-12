@@ -2,12 +2,18 @@ import { profileClient } from "../../client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 
+export interface NewPasswordInput {
+   oldPassword: string;
+   newPassword: string;
+}
+
 export interface EditUserDetailsModel {
    username?: string;
+   email?: string;
    displayName?: string;
    profilePicture?: File;
    phoneNumbers?: string[];
-   newPasswordInput: { oldPassword: string; newPassword: string };
+   newPasswordInput?: NewPasswordInput;
 }
 
 const editUserDetails = async (model: EditUserDetailsModel) => {

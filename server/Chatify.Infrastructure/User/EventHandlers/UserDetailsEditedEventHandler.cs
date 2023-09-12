@@ -1,26 +1,28 @@
-﻿using AutoMapper;
-using Chatify.Domain.Events.Users;
-using Chatify.Domain.Repositories;
-using Chatify.Infrastructure.Common.Caching.Extensions;
-using Chatify.Infrastructure.Common.Mappings;
+﻿using Chatify.Domain.Events.Users;
+using Chatify.Infrastructure.Data.Models;
 using Chatify.Shared.Abstractions.Events;
-using StackExchange.Redis;
+using Redis.OM.Contracts;
+using Redis.OM.Searching;
+using IMapper = Cassandra.Mapping.IMapper;
 
 namespace Chatify.Infrastructure.User.EventHandlers;
 
-internal sealed class UserDetailsEditedEventHandler(IDatabase cache,
-        IUserRepository users,
-        IMapper mapper)
+internal sealed class UserDetailsEditedEventHandler(
+        IRedisConnectionProvider connectionProvider,
+        IMapper dbMapper
+    )
     : IEventHandler<UserDetailsEditedEvent>
 {
+    private readonly IRedisCollection<ChatifyUser> _cacheUsers = connectionProvider.RedisCollection<ChatifyUser>();
+
     public async Task HandleAsync(
         UserDetailsEditedEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var user = await users.GetAsync(@event.UserId, cancellationToken);
+        var user = await dbMapper.FirstOrDefaultAsync<ChatifyUser>("WHERE id = ?;", @event.UserId);
         if ( user is null ) return;
 
         // Invalidate stale User cache info:
-        await cache.SetAsync($"user:{user.Id}", user.To<Domain.Entities.User>(mapper));
+        await _cacheUsers.UpdateAsync(user);
     }
 }

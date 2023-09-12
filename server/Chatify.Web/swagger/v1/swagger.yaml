@@ -1446,6 +1446,36 @@ paths:
                 $ref: '#/components/schemas/ProblemDetails'
         '202':
           description: Accepted
+  /api/Profile/password:
+    put:
+      tags:
+        - Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeUserPassword'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/ChangeUserPassword'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/ChangeUserPassword'
+      responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitApiResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '202':
+          description: Accepted
   '/api/Profile/{userId}/details':
     get:
       tags:
@@ -1734,7 +1764,6 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
-        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1765,12 +1794,23 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
+        - Unknown
       type: string
     ApiResponseStatus:
       enum:
         - Success
         - Failure
       type: string
+    ChangeUserPassword:
+      type: object
+      properties:
+        oldPassword:
+          type: string
+          nullable: true
+        newPassword:
+          type: string
+          nullable: true
+      additionalProperties: false
     ChangeUserStatus:
       type: object
       properties:

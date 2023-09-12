@@ -6,6 +6,7 @@ import {
 import { HttpStatusCode } from "axios";
 import { profileClient } from "../../client";
 import { UserDetailsEntry, UserDetailsEntryApiResponse } from "@openapi";
+import { sleep } from "../../../utils";
 
 // @ts-ignore
 
@@ -27,6 +28,7 @@ export const getUserDetails = async (
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
    }
+   await sleep(1000);
 
    return data.data!;
 };

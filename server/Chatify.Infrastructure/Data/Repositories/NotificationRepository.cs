@@ -31,12 +31,14 @@ public sealed class NotificationRepository(
             pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE user_id = ?",
             new object[] { userId });
 
+        var total = await DbMapper.FirstOrDefaultAsync<long>(
+            "SELECT COUNT(*) FROM user_notifications WHERE user_id = ?;", userId);
+
         var newCursor = pagingCursorHelper.ToPagingCursor(notificationsPage.PagingState);
-        return new CursorPaged<UserNotification>(
-            notificationsPage
-                .Select(_ => _.To<UserNotification>(Mapper))
-                .ToList(),
-            newCursor);
+        
+        return notificationsPage
+            .Select(_ => _.To<UserNotification>(Mapper))
+            .ToCursorPaged(newCursor, notificationsPage.PagingState is not null, total);
     }
 
     public async Task<List<UserNotification>> AllForUserAsync(
