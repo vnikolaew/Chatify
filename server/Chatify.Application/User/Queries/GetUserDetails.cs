@@ -35,6 +35,7 @@ internal sealed class GetUserDetailsHandler(IIdentityContext identityContext,
         CancellationToken cancellationToken = default)
     {
         var user = await users.GetAsync(query.UserId, cancellationToken);
+
         if ( user is null ) return new UserNotFound();
         if ( query.UserId == identityContext.Id ) return new UserDetailsEntry(user);
 

@@ -218,7 +218,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
             .FirstOrDefaultAsync<TDataEntity>($"WHERE {_idColumn} = ? ALLOW FILTERING;", id)
             .ToAsync<TDataEntity, TEntity>(Mapper)!;
 
-    private Task<TEntity?> GetAsync(
+    public Task<TEntity?> GetAsync(
         TId id,
         Expression<Func<TEntity, object>> selection = default!,
         CancellationToken cancellationToken = default)
@@ -238,9 +238,26 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
     private static List<string>? GetSelectedColumns<T>(
         Expression<Func<T, object>> selection)
     {
-        if ( selection.Body is not NewExpression newExpression ) return default;
         var tableConfig = MappingConfiguration.Global.Get<T>();
 
+        if ( selection.Body is UnaryExpression
+            {
+                Operand: MemberInitExpression memberInitExpression
+            } )
+        {
+            return memberInitExpression
+                .Bindings
+                .OfType<MemberAssignment>()
+                .Select(a => a.Member)
+                .OfType<PropertyInfo>()
+                .Select(pi => tableConfig
+                    .GetColumnDefinition(pi)
+                    ?.ColumnName)
+                .Where(_ => _ is not null)
+                .ToList();
+        }
+
+        if ( selection.Body is not NewExpression newExpression ) return default;
         var columnNames = newExpression
             .Arguments
             .OfType<MemberExpression>()

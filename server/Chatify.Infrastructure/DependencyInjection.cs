@@ -208,7 +208,9 @@ public static class DependencyInjection
             .AddSingleton<IConnectionMultiplexer>(connectionMultiplexer)
             .AddScoped<ICacheService, RedisCacheService>()
             .AddSingleton<IDatabase>(sp =>
-                sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase());
+                sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase())
+            .AddSingleton<IServer>(sp =>
+                sp.GetRequiredService<IConnectionMultiplexer>().GetServer(endpoint));
     }
 
     public static IServiceCollection AddCounters(this IServiceCollection services)

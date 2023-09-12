@@ -9,6 +9,15 @@ public static class RedisCacheExtensions
 {
     private static readonly ISerializer Serializer = new SystemTextJsonSerializer();
 
+    public static async Task<long> DeleteAllKeysByPattern(
+        this IDatabase cache,
+        IServer server,
+        string pattern)
+    {
+        var keys = server.Keys(pattern: pattern).ToArray();
+        return await cache.KeyDeleteAsync(keys);
+    }
+
     public static async Task<T?> GetAsync<T>(this IDatabase database,
         string key)
     {

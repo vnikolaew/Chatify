@@ -60,8 +60,6 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
       [messages?.pages, isLoading, isFetchingNextPage, error]
    );
 
-   const fetchMoreMessages = async () => await fetchNextPage();
-
    const handleMessageSectionScroll: UIEventHandler<HTMLDivElement> =
       useCallback(
          async (e) => {
@@ -226,17 +224,6 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                   />
                </div>
             </Fragment>
-         )}
-         {hasNextPage && (
-            <div className={`mt-4`}>
-               <Button
-                  onPress={fetchMoreMessages}
-                  variant={"light"}
-                  color={"primary"}
-               >
-                  Fetch more
-               </Button>
-            </div>
          )}
       </section>
    );

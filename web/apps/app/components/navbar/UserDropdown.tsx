@@ -34,7 +34,7 @@ import { ExitIcon, PlusIcon, ProfileIcon, RightArrow } from "@icons";
 import ChatBubbleIcon from "@components/icons/ChatBubbleIcon";
 import { useRouter } from "next/navigation";
 
-const USER_STATUSES = new Set<{
+export const USER_STATUSES = new Set<{
    status: UserStatus;
    color: ButtonProps["color"];
 }>([
@@ -156,11 +156,14 @@ export const UserDropdown = ({}: UserDropdownProps) => {
             <DropdownSection showDivider>
                <DropdownItem
                   textValue={"profile"}
+                  as={Link}
+                  // @ts-ignore
+                  href={`/profile`}
                   classNames={{
                      description: "text-[.75rem] text-default-300",
                   }}
                   description={"Manage your profile settings"}
-                  className={`flex px-3 py-2 items-center gap-3`}
+                  className={`flex px-3 py-2 text-foreground items-center gap-3`}
                   startContent={<ProfileIcon size={18} />}
                   key={"profile"}
                >

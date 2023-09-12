@@ -16,8 +16,6 @@ import {
    PinnedMessagesActionButton,
    AddNewMemberActionButton,
 } from "@components/chat-group";
-import TooltipButton from "@components/TooltipButton";
-import { Edit } from "lucide-react";
 import EditChatGroupActionButton from "@components/chat-group/EditChatGroupActionButton";
 
 export interface ChatGroupTopBarProps {}
@@ -172,7 +170,7 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                <EditChatGroupActionButton chatGroup={chatGroupDetails} />
             )}
             <PinnedMessagesActionButton />
-            {true && <AddNewMemberActionButton />}
+            {isUserGroupAdmin && <AddNewMemberActionButton />}
          </div>
       </div>
    );

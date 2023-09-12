@@ -18,8 +18,7 @@ public sealed class FriendshipsRepository(
         Mapper dbMapper,
         IEntityChangeTracker changeTracker,
         IDatabase cache,
-        IUserRepository users,
-        IRedisConnectionProvider connectionProvider)
+        IUserRepository users)
     : BaseCassandraRepository<FriendsRelation, Models.FriendsRelation, Guid>(mapper, dbMapper,
             changeTracker,
             nameof(FriendsRelation.Id).Underscore()),
@@ -52,7 +51,7 @@ public sealed class FriendshipsRepository(
     {
         var friendsIds = await cache.GetUserFriendsAsync(userId);
 
-        // Chunk Ids to ease cache server processing:
+        // Process Ids on chunks to ease cache server processing:
         var friends = new List<Domain.Entities.User>();
         foreach ( var idsChunk in friendsIds.Chunk(10) )
         {

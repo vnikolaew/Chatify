@@ -22,7 +22,7 @@ public sealed partial class UserSeeder(IServiceScopeFactory factory)
     private readonly Faker<ChatifyUser> _userFaker = new Faker<ChatifyUser>()
         .RuleFor(u => u.Id, f => Guid.NewGuid())
         .RuleFor(u => u.UserName, f => $"{f.Person.FirstName}_${f.Person.LastName}".ToLower())
-        .RuleFor(u => u.Status, f => f.PickRandom(Enum.GetValues<UserStatus>()))
+        .RuleFor(u => u.Status, f => ( sbyte )f.PickRandom(Enum.GetValues<UserStatus>()))
         .RuleFor(u => u.ProfilePicture, f => new Media { MediaUrl = f.Internet.Avatar(), Id = Guid.NewGuid() })
         .RuleFor(u => u.PhoneNumbers,
             f => new HashSet<string> { f.Phone.PhoneNumber(), f.Phone.PhoneNumber() })
@@ -77,7 +77,7 @@ public sealed partial class UserSeeder(IServiceScopeFactory factory)
             var index = 1;
             foreach ( var user in users )
             {
-                user.UserHandle = $"{username}#{(index++).ToString().PadLeft(4, '0')}";
+                user.UserHandle = $"{username}#{( index++ ).ToString().PadLeft(4, '0')}";
                 _ = await userManager
                     .CreateAsync(user, $"{user.UserName.Titleize()}123!");
 

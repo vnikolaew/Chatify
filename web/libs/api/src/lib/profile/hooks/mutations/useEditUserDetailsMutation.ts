@@ -25,7 +25,7 @@ const editUserDetails = async (model: EditUserDetailsModel) => {
 export const useEditUserDetailsMutation = () => {
    const client = useQueryClient();
 
-   return useMutation(editUserDetails, {
+   return useMutation<any, Error, EditUserDetailsModel, any>(editUserDetails, {
       onError: console.error,
       onSuccess: (data) =>
          console.log("User details edited successfully: " + data),

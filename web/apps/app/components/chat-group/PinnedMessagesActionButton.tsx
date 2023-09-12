@@ -84,12 +84,15 @@ export const PinnedMessagesPopover = ({
    };
 
    return isLoading && isFetching ? (
-      <div className={`flex my-2 flex-col items-start gap-2`}>
+      <div className={`flex my-2 flex-col items-start gap-4`}>
          {Array.from({ length: 3 }).map((_, i) => (
-            <div className={`flex items-center gap-1`} key={i}>
-               <Skeleton className={`w-5 h-5 rounded-full`} />
-               <div className={`flex flex-col gap-1`}>
-                  <Skeleton className={`w-24 h-2 rounded-full`} />
+            <div className={`flex flex-col items-start gap-1`} key={i}>
+               <div className={`flex items-center gap-2`}>
+                  <Skeleton className={`w-8 h-8 rounded-full`} />
+                  <Skeleton className={`w-20 h-3 rounded-full`} />
+               </div>
+               <div className={`flex flex-col gap-2 w-full`}>
+                  <Skeleton className={`w-48 h-4 rounded-full`} />
                   <Skeleton className={`w-12 h-1 rounded-full`} />
                </div>
             </div>

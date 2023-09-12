@@ -14,7 +14,6 @@ import {
    useCurrentChatGroup,
    useCurrentUserId,
    useGetUsersTyping,
-   useIsChatGroupPrivate,
 } from "@hooks";
 
 export interface ChatGroupFeedEntryProps {
@@ -71,7 +70,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
          : `${feedEntry.latestMessage?.content?.substring(0, 30)}${
               feedEntry.latestMessage?.content?.length > 30 ? `...` : ``
            }` ?? `No messages yet.`;
-   }, [usersTyping, feedEntry.latestMessage.content, meId]);
+   }, [usersTyping, feedEntry?.latestMessage?.content, meId]);
 
    return (
       <Button

@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import TooltipButton from "@components/TooltipButton";
 import { PinIcon } from "@icons";
 import CommentIcon from "@components/icons/CommentIcon";

@@ -40,7 +40,7 @@ public class ChatifyUser() :
     // A user handle with the following format: username#0000
     [Searchable] public string UserHandle { get; set; } = default!;
 
-    [Indexed] public UserStatus Status { get; set; }
+    [Indexed] public sbyte Status { get; set; }
 
     private readonly IList<string> _phoneNumbers = new List<string>();
 
