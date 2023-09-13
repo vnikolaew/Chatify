@@ -1,7 +1,11 @@
 import { chatGroupsClient } from "../../client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
-import { ChatGroupAttachmentCursorPagedApiResponse } from "@openapi";
+import {
+   ChatGroupAttachment,
+   ChatGroupAttachmentCursorPagedApiResponse,
+   CursorPaged,
+} from "@openapi";
 
 export interface GetChatGroupAttachmentsModel {
    groupId: string;
@@ -9,7 +13,9 @@ export interface GetChatGroupAttachmentsModel {
    pagingCursor: string;
 }
 
-const getChatGroupAttachments = async (model: GetChatGroupAttachmentsModel) => {
+const getChatGroupAttachments = async (
+   model: GetChatGroupAttachmentsModel
+): Promise<CursorPaged<ChatGroupAttachment>> => {
    const { groupId, ...request } = model;
    const { status, data } =
       await chatGroupsClient.get<ChatGroupAttachmentCursorPagedApiResponse>(
@@ -24,7 +30,7 @@ const getChatGroupAttachments = async (model: GetChatGroupAttachmentsModel) => {
       throw new Error("error");
    }
 
-   return data.data!;
+   return data.data as CursorPaged<ChatGroupAttachment>;
 };
 
 export const useGetChatGroupAttachmentsQuery = (
@@ -32,10 +38,9 @@ export const useGetChatGroupAttachmentsQuery = (
 ) => {
    const client = useQueryClient();
 
-   useQuery({
+   return useQuery({
       queryKey: [`chat-groups`, model.groupId, `attachments`],
       queryFn: () => getChatGroupAttachments(model),
       refetchInterval: 5 * 60 * 1000,
-      cacheTime: 60 * 60 * 1000,
    });
 };

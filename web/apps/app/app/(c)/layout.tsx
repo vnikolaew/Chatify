@@ -1,5 +1,5 @@
 import React, { PropsWithChildren } from "react";
-import { ChatGroupMembersSection } from "@components/members";
+import { ChatGroupSidebar } from "@components/members";
 import ChatGroupsFeed from "@components/feed/ChatGroupsFeed";
 import { cookies } from "next/headers";
 import process from "process";
@@ -24,7 +24,7 @@ const Layout = async ({ children, params }: LayoutProps) => {
             </div>
             <div className={`grow-[5]`}>{children}</div>
             <div className={`grow-[2]`}>
-               <ChatGroupMembersSection />
+               <ChatGroupSidebar />
             </div>
          </ChatClientProvider>
       </div>

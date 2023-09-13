@@ -17,7 +17,15 @@ export interface EditUserDetailsModel {
 }
 
 const editUserDetails = async (model: EditUserDetailsModel) => {
-   const { status, data } = await profileClient.patch(`details`, model, {
+   const { profilePicture, ...rest } = model;
+   const formData = new FormData();
+
+   Object.entries(rest).forEach(([key, value]) => formData.append(key, value));
+   if (profilePicture) {
+      formData.append(`profilePicture`, profilePicture, profilePicture?.name);
+   }
+
+   const { status, data } = await profileClient.patchForm(`details`, formData, {
       headers: {},
    });
 

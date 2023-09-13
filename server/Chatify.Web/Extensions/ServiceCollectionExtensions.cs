@@ -13,6 +13,9 @@ using Chatify.Infrastructure;
 using Chatify.Web.Common;
 using Chatify.Web.Middleware;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.OpenApi.Models;
 
@@ -37,6 +40,12 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IAuthorizationMiddlewareResultHandler,
                 AuthorizationResultMiddlewareHandler>()
             .AddMappers()
+            .AddSingleton<IActionContextAccessor, ActionContextAccessor>()
+            .AddScoped<IUrlHelper>(x =>
+            {
+                var factory = x.GetRequiredService<IUrlHelperFactory>();
+                return factory.GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext!);
+            })
             .AddCors()
             .AddProblemDetails(opts => { opts.CustomizeProblemDetails = _ => { }; })
             .AddConfiguredSwagger()
@@ -51,6 +60,7 @@ public static class ServiceCollectionExtensions
                 opts.JsonSerializerOptions.Converters.Add(new IPAddressConverter());
                 opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<ChatGroupMessageEntry>());
                 opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<UserNotification>());
+                opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<ChatGroupAttachment>());
             })
             .ConfigureApiBehaviorOptions(opts => opts.SuppressModelStateInvalidFilter = true);
 

@@ -14,6 +14,8 @@ using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
 using LanguageExt.Common;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using OneOf;
 
 namespace Chatify.Application.User.Commands;
@@ -24,22 +26,17 @@ public record FileUploadError(string? Message = default) : BaseError(Message);
 
 public record PasswordChangeError(string? Message = default) : BaseError(Message);
 
-public record NewPasswordInput(
-    [Password] string OldPassword,
-    [Password] string NewPassword);
-
 public record EditUserDetails(
     string? Username,
     [MinLength(3), MaxLength(50)] string? DisplayName,
     InputFile? ProfilePicture,
-    ISet<string>? PhoneNumbers,
-    NewPasswordInput? NewPasswordInput) : ICommand<EditUserDetailsResult>;
+    System.Collections.Generic.HashSet<string>? PhoneNumbers) : ICommand<EditUserDetailsResult>;
 
 internal sealed class EditUserDetailsHandler(IDomainRepository<Domain.Entities.User, Guid> users,
         IIdentityContext identityContext,
         IClock clock,
+        IUrlHelper urlHelper,
         IFileUploadService fileUploadService,
-        IAuthenticationService authenticationService,
         IEventDispatcher eventDispatcher)
     : ICommandHandler<EditUserDetails, EditUserDetailsResult>
 {
@@ -56,15 +53,18 @@ internal sealed class EditUserDetailsHandler(IDomainRepository<Domain.Entities.U
 
         if ( command.ProfilePicture is not null )
         {
-            var deleteResult = await fileUploadService.DeleteAsync(
-                new SingleFileDeleteRequest
-                {
-                    UserId = user.Id,
-                    FileUrl = user.ProfilePicture.MediaUrl
-                }, cancellationToken);
-            if ( deleteResult.Value is Error error )
+            if ( urlHelper.IsLocalUrl(user.ProfilePicture.MediaUrl) )
             {
-                return new FileUploadError(error.Message);
+                var deleteResult = await fileUploadService.DeleteAsync(
+                    new SingleFileDeleteRequest
+                    {
+                        UserId = user.Id,
+                        FileUrl = user.ProfilePicture.MediaUrl
+                    }, cancellationToken);
+                if ( deleteResult.Value is Error error )
+                {
+                    return new FileUploadError(error.Message);
+                }
             }
 
             var uploadResult = await fileUploadService
@@ -77,29 +77,14 @@ internal sealed class EditUserDetailsHandler(IDomainRepository<Domain.Entities.U
 
             if ( uploadResult.Value is FileUploadResult res )
             {
-                user.ProfilePicture = new Media
+                newProfilePicture = new Media
                 {
+                    FileName = res.FileName,
                     MediaUrl = res.FileUrl,
                     Id = res.FileId,
-                    FileName = res.FileUrl,
                     Type = res.FileType
                 };
-
-                newProfilePicture.MediaUrl = res.FileUrl;
-                newProfilePicture.Id = res.FileId;
             }
-        }
-
-        if ( command.NewPasswordInput is not null )
-        {
-            var result = await authenticationService.ChangePasswordAsync(
-                user.Id,
-                command.NewPasswordInput.OldPassword,
-                command.NewPasswordInput.NewPassword,
-                cancellationToken);
-
-            if ( result.Value is UserNotFound userNotFound ) return userNotFound;
-            if ( result.Value is PasswordChangeError passwordChangeError ) return passwordChangeError;
         }
 
         await users.UpdateAsync(user, user =>

@@ -59,12 +59,13 @@ public class ChatGroupAttachmentRepository(IMapper mapper,
         var attachmentsPage = await DbMapper.FetchPageAsync<Models.ChatGroupAttachment>(
             pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?",
             new object[] { groupId });
-
-        return new CursorPaged<ChatGroupAttachment>(
-            attachmentsPage
-                .AsQueryable()
-                .To<ChatGroupAttachment>(Mapper)
-                .ToList(),
-            pagingCursorHelper.ToPagingCursor(attachmentsPage.PagingState));
+        
+        var total = await DbMapper.FirstOrDefaultAsync<long>(
+            "SELECT COUNT(*) FROM chat_group_attachments WHERE chat_group_id = ?;", groupId);
+        
+        var newCursor = pagingCursorHelper.ToPagingCursor(attachmentsPage.PagingState);
+        return attachmentsPage
+            .Select(_ => _.To<ChatGroupAttachment>(Mapper))
+            .ToCursorPaged(newCursor, attachmentsPage.PagingState is not null, total);
     }
 }

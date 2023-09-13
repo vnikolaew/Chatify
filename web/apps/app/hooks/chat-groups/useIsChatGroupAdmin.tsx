@@ -1,5 +1,5 @@
 import { useGetChatGroupDetailsQuery, useGetMyClaimsQuery } from "@web/api";
-import { useIsUserLoggedIn } from "../useIsUserLoggedIn";
+import { useIsUserLoggedIn } from "../auth/useIsUserLoggedIn";
 
 export function useIsChatGroupAdmin(chatGroupId: string) {
    const { isUserLoggedIn } = useIsUserLoggedIn();

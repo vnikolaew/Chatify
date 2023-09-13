@@ -1,4 +1,5 @@
-﻿using Chatify.Application.Common.Mappings;
+﻿using AutoMapper;
+using Chatify.Application.Common.Mappings;
 
 namespace Chatify.Infrastructure.Data.Models;
 
@@ -19,4 +20,9 @@ public class ChatGroupAttachment : IMapFrom<Domain.Entities.ChatGroupAttachment>
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public DateTime? UpdatedAt { get; set; }
+
+    public void Mapping(Profile profile)
+        => profile
+            .CreateMap<ChatGroupAttachment, Domain.Entities.ChatGroupAttachment>()
+            .ReverseMap();
 }

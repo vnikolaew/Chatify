@@ -3,6 +3,7 @@ import React, { Fragment, useEffect, useMemo, useState } from "react";
 import { useCurrentUserId, useFileUpload, useUserEmail } from "@hooks";
 import {
    ChangeUserStatusModel,
+   getMediaUrl,
    useChangeUserStatusMutation,
    useEditUserDetailsMutation,
    useGetUserDetailsQuery,
@@ -25,12 +26,15 @@ import { USER_STATUSES } from "@components/navbar";
 import TooltipButton from "@components/TooltipButton";
 import { UserStatus } from "@openapi";
 import ChangePasswordModal from "./ChangePasswordModal";
+import Toast from "@components/common/Toast";
 
 export interface PageProps {}
 
 const Page = ({}: PageProps) => {
    const meId = useCurrentUserId();
    const { data: meDetails, isLoading, error } = useGetUserDetailsQuery(meId);
+   const [editUserDetailsSuccess, setEditUserDetailsSuccess] = useState(false);
+
    const { userEmail, setUserEmail, validationState, errorMessage } =
       useUserEmail();
    const [phoneNumber, setPhoneNumber] = useState(``);
@@ -87,11 +91,14 @@ const Page = ({}: PageProps) => {
    }, [meDetails]);
 
    async function handleSaveChanges() {
-      await editDetails({
-         phoneNumbers: [phoneNumber],
-         profilePicture: attachedFiles?.[0]?.file,
-         email: userEmail,
-      });
+      await editDetails(
+         {
+            phoneNumbers: [phoneNumber],
+            profilePicture: attachedFiles?.[0]?.file,
+            email: userEmail,
+         },
+         { onSuccess: (_) => setEditUserDetailsSuccess(true) }
+      );
    }
 
    return (
@@ -124,7 +131,9 @@ const Page = ({}: PageProps) => {
                            radius={`sm`}
                            src={
                               attachedFilesUrls.get(attachedFiles?.[0]?.id) ??
-                              meDetails?.user?.profilePicture.mediaUrl
+                              getMediaUrl(
+                                 meDetails?.user?.profilePicture.mediaUrl
+                              )
                            }
                         />
                         <Button
@@ -342,6 +351,18 @@ const Page = ({}: PageProps) => {
                isOpen={changePasswordModalOpen}
                onOpenChange={setChangePasswordModalOpen}
             />
+            {true && (
+               <Toast
+                  isOpen={editUserDetailsSuccess}
+                  onOpenChange={setEditUserDetailsSuccess}
+                  size={`md`}
+                  className={`min-w-[300px] bg-success-300`}
+                  shadow={`md`}
+                  header={`Success!`}
+               >
+                  Your profile was successfully edited.
+               </Toast>
+            )}
             <div className={`flex justify-end mt-8`}>
                <Button
                   isLoading={editLoading}

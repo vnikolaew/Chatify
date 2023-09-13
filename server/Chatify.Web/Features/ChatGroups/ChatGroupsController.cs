@@ -145,7 +145,7 @@ public class ChatGroupsController : ApiController
     [ProducesBadRequestApiResponse]
     [ProducesOkApiResponse<CursorPaged<ChatGroupAttachment>>]
     public async Task<IActionResult> Attachments(
-        [FromBody] GetChatGroupSharedAttachmentsRequest request,
+        [FromQuery] GetChatGroupSharedAttachmentsRequest request,
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
     {

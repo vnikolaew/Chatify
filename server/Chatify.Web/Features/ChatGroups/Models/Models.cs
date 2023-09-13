@@ -19,12 +19,12 @@ public static class Models
     }
     
     public record GetChatGroupSharedAttachmentsRequest(
-        Guid GroupId,
+        Guid? GroupId,
         int PageSize,
         string PagingCursor)
     {
         public GetChatGroupSharedAttachments ToCommand()
-            => new(GroupId, PageSize, PagingCursor);
+            => new(GroupId ?? Guid.Empty, PageSize, PagingCursor);
     }
 
     public record EditChatGroupDetailsRequest(

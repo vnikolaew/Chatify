@@ -6,6 +6,7 @@ using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
 using Chatify.Web.Common.Attributes;
 using Chatify.Web.Extensions;
+using Chatify.Web.Features.Profile.Models;
 using LanguageExt;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
@@ -41,11 +42,11 @@ public class ProfileController : ApiController
     [ProducesNotFoundApiResponse]
     [ProducesAcceptedApiResponse]
     public async Task<IActionResult> ChangeUserDetails(
-        [FromBody] EditUserDetails request,
+        [FromForm] Requests.EditUserDetailsRequest request,
         CancellationToken cancellationToken = default)
     {
         var result = await SendAsync<EditUserDetails, EditUserDetailsResult>(
-            request, cancellationToken);
+            request.ToCommand(), cancellationToken);
 
         return result.Match<IActionResult>(
             _ => NotFound(),

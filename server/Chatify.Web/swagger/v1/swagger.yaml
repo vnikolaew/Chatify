@@ -537,6 +537,23 @@ paths:
       tags:
         - ChatGroups
       parameters:
+        - name: GroupId
+          in: query
+          style: form
+          schema:
+            type: string
+            format: uuid
+        - name: PageSize
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int32
+        - name: PagingCursor
+          in: query
+          style: form
+          schema:
+            type: string
         - name: groupId
           in: path
           required: true
@@ -544,17 +561,6 @@ paths:
           schema:
             type: string
             format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetChatGroupSharedAttachmentsRequest'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/GetChatGroupSharedAttachmentsRequest'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/GetChatGroupSharedAttachmentsRequest'
       responses:
         '400':
           description: Bad Request
@@ -1422,15 +1428,31 @@ paths:
         - Profile
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/EditUserDetails'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/EditUserDetails'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/EditUserDetails'
+              type: object
+              properties:
+                Username:
+                  type: string
+                DisplayName:
+                  type: string
+                ProfilePicture:
+                  type: string
+                  format: binary
+                PhoneNumbers:
+                  uniqueItems: true
+                  type: array
+                  items:
+                    type: string
+            encoding:
+              Username:
+                style: form
+              DisplayName:
+                style: form
+              ProfilePicture:
+                style: form
+              PhoneNumbers:
+                style: form
       responses:
         '400':
           description: Bad Request
@@ -1764,6 +1786,7 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
+        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1794,7 +1817,6 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
-        - Unknown
       type: string
     ApiResponseStatus:
       enum:
@@ -2309,26 +2331,6 @@ components:
           type: string
           nullable: true
       additionalProperties: false
-    EditUserDetails:
-      type: object
-      properties:
-        username:
-          type: string
-          nullable: true
-        displayName:
-          type: string
-          nullable: true
-        profilePicture:
-          $ref: '#/components/schemas/InputFile'
-        phoneNumbers:
-          uniqueItems: true
-          type: array
-          items:
-            type: string
-          nullable: true
-        newPasswordInput:
-          $ref: '#/components/schemas/NewPasswordInput'
-      additionalProperties: false
     Email:
       type: object
       properties:
@@ -2413,19 +2415,6 @@ components:
           type: string
           format: date-time
       additionalProperties: false
-    GetChatGroupSharedAttachmentsRequest:
-      type: object
-      properties:
-        groupId:
-          type: string
-          format: uuid
-        pageSize:
-          type: integer
-          format: int32
-        pagingCursor:
-          type: string
-          nullable: true
-      additionalProperties: false
     GoogleSignUp:
       type: object
       properties:
@@ -2494,19 +2483,6 @@ components:
           format: int64
           deprecated: true
       additionalProperties: false
-    InputFile:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/Stream'
-        fileName:
-          type: string
-          nullable: true
-        sizeInBytes:
-          type: integer
-          format: int64
-          readOnly: true
-      additionalProperties: false
     LeaveChatGroup:
       type: object
       properties:
@@ -2572,16 +2548,6 @@ components:
           type: string
           nullable: true
         profilePictureUrl:
-          type: string
-          nullable: true
-      additionalProperties: false
-    NewPasswordInput:
-      type: object
-      properties:
-        oldPassword:
-          type: string
-          nullable: true
-        newPassword:
           type: string
           nullable: true
       additionalProperties: false
@@ -2733,35 +2699,6 @@ components:
         content:
           type: string
           nullable: true
-      additionalProperties: false
-    Stream:
-      type: object
-      properties:
-        canRead:
-          type: boolean
-          readOnly: true
-        canWrite:
-          type: boolean
-          readOnly: true
-        canSeek:
-          type: boolean
-          readOnly: true
-        canTimeout:
-          type: boolean
-          readOnly: true
-        length:
-          type: integer
-          format: int64
-          readOnly: true
-        position:
-          type: integer
-          format: int64
-        readTimeout:
-          type: integer
-          format: int32
-        writeTimeout:
-          type: integer
-          format: int32
       additionalProperties: false
     Unit:
       type: object

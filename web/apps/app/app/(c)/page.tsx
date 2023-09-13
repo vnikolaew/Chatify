@@ -55,8 +55,9 @@ function IndexPage(props) {
          className={`flex min-h-[60vh] text-xl flex-col items-center shadow-gray-300 w-full rounded-md mb-6`}
       >
          <ChatGroupTopBar />
-         {true && chatGroupDetails && (
+         {isNew && chatGroupDetails && (
             <Toast
+               className={`bg-success-300`}
                header={"Success!"}
                isOpen={isSuccessModalOpen}
                onOpenChange={onSuccessModalOpenChange}

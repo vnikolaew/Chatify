@@ -3,7 +3,6 @@ using Chatify.Infrastructure.Common.Caching.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Octokit;
 using StackExchange.Redis;
 
 namespace Chatify.Infrastructure.Data.Seeding;
