@@ -15,7 +15,7 @@ import { useGetMyClaimsQuery } from "@web/api";
 import { useIsUserLoggedIn } from "@hooks";
 import { NotificationsDropdown, UserDropdown } from "@components/navbar";
 import { ExitIcon } from "@icons";
-import TooltipButton from "@components/TooltipButton";
+import TooltipButton from "@components/common/TooltipButton";
 import LogoutIcon from "@components/icons/LogoutIcon";
 import SignOutButton from "@components/navbar/SignOutButton";
 import AddNewFriendButton from "@components/navbar/AddNewFriendButton";

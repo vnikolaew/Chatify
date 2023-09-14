@@ -1,26 +1,15 @@
 "use client";
-import React, { Fragment } from "react";
+import React from "react";
 import Link from "next/link";
 import { useGetChatGroupDetailsQuery, useGetMyClaimsQuery } from "@web/api";
 import { useIsUserLoggedIn } from "@hooks";
-import {
-   Button,
-   Modal,
-   ModalBody,
-   ModalContent,
-   ModalHeader,
-   useDisclosure,
-} from "@nextui-org/react";
+import { useDisclosure } from "@nextui-org/react";
 import { useCurrentChatGroup } from "@hooks";
 import ChatGroupTopBar from "@components/chat-group/ChatGroupTopBar";
 import { useSearchParams } from "next/navigation";
-import CrossIcon from "@components/icons/CrossIcon";
 import { ChatMessagesSection } from "@components/chat-group";
 import { useChatifyClientContext } from "../../hub/ChatHubConnection";
-import { X } from "lucide-react";
 import Toast from "@components/common/Toast";
-
-export const revalidate = 0;
 
 function IndexPage(props) {
    const params = useSearchParams();

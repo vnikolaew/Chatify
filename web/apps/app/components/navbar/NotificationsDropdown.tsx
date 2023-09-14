@@ -18,7 +18,7 @@ import {
 } from "@web/api";
 import { NotificationsTab } from "@components/navbar";
 import CheckIcon from "@components/icons/CheckIcon";
-import TooltipWithPopoverActionButton from "@components/TooltipWithPopoverActionButton";
+import TooltipWithPopoverActionButton from "@components/common/TooltipWithPopoverActionButton";
 
 export interface NotificationsDropdownProps {}
 

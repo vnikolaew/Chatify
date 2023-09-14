@@ -15,7 +15,7 @@ import {
    Tooltip,
    useDisclosure,
 } from "@nextui-org/react";
-import TooltipWithPopoverActionButton from "@components/TooltipWithPopoverActionButton";
+import TooltipWithPopoverActionButton from "@components/common/TooltipWithPopoverActionButton";
 import { PinIcon } from "@icons";
 import React, { Fragment, useMemo, useState } from "react";
 import { useCurrentChatGroup } from "@hooks";

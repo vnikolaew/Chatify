@@ -13,29 +13,29 @@ using OneOf;
 
 namespace Chatify.Application.Messages.Commands;
 
-using ShareMessageResult =
+using ForwardMessageResult =
     OneOf<MessageNotFoundError, UserIsNotMessageSenderError, ChatGroupNotFoundError, UserIsNotMemberError, Unit>;
 
-public record ShareMessage(
+public record ForwardMessage(
     [Required] Guid MessageId,
     [Required] Guid GroupId,
     [Required, MinLength(1), MaxLength(500)]
     string Content
-) : ICommand<ShareMessageResult>;
+) : ICommand<ForwardMessageResult>;
 
-internal sealed class ShareMessageHandler(IIdentityContext identityContext,
+internal sealed class ForwardMessageHandler(IIdentityContext identityContext,
         IClock clock,
         IChatGroupRepository groups,
         IChatGroupMemberRepository members,
         IChatMessageRepository messages,
         IGuidGenerator guidGenerator,
         IEventDispatcher eventDispatcher)
-    : ICommandHandler<ShareMessage, ShareMessageResult>
+    : ICommandHandler<ForwardMessage, ForwardMessageResult>
 {
     public const string SharedMessageIdKey = "shared-message-id";
 
-    public async Task<ShareMessageResult> HandleAsync(
-        ShareMessage command,
+    public async Task<ForwardMessageResult> HandleAsync(
+        ForwardMessage command,
         CancellationToken cancellationToken = default)
     {
         var message = await messages.GetAsync(command.MessageId, cancellationToken);

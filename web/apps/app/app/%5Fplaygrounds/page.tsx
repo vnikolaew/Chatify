@@ -1,6 +1,6 @@
 import React, { PropsWithChildren } from "react";
 import Link from "next/link";
-import Divider from "../../components/Divider";
+import Divider from "@components/common/Divider";
 import * as fs from "fs";
 import * as path from "path";
 

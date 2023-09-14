@@ -1301,7 +1301,7 @@ paths:
                 $ref: '#/components/schemas/ProblemDetails'
         '204':
           description: No Content
-  '/share/{messageId}':
+  '/api/Messages/forward/{messageId}':
     post:
       tags:
         - Messages
@@ -1317,13 +1317,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ShareMessage'
+              $ref: '#/components/schemas/ForwardMessage'
           text/json:
             schema:
-              $ref: '#/components/schemas/ShareMessage'
+              $ref: '#/components/schemas/ForwardMessage'
           application/*+json:
             schema:
-              $ref: '#/components/schemas/ShareMessage'
+              $ref: '#/components/schemas/ForwardMessage'
       responses:
         '400':
           description: Bad Request
@@ -1786,6 +1786,7 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
+        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1816,7 +1817,6 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
-        - Unknown
       type: string
     ApiResponseStatus:
       enum:
@@ -2346,6 +2346,19 @@ components:
           type: string
           nullable: true
       additionalProperties: false
+    ForwardMessage:
+      type: object
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        groupId:
+          type: string
+          format: uuid
+        content:
+          type: string
+          nullable: true
+      additionalProperties: false
     FriendInvitation:
       type: object
       properties:
@@ -2685,19 +2698,6 @@ components:
           type: object
           additionalProperties:
             type: string
-          nullable: true
-      additionalProperties: false
-    ShareMessage:
-      type: object
-      properties:
-        messageId:
-          type: string
-          format: uuid
-        groupId:
-          type: string
-          format: uuid
-        content:
-          type: string
           nullable: true
       additionalProperties: false
     Unit:

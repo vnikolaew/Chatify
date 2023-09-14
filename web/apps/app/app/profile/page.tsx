@@ -23,10 +23,9 @@ import {
 } from "@nextui-org/react";
 import { Lock, Mail, Pen, Phone, X } from "lucide-react";
 import { USER_STATUSES } from "@components/navbar";
-import TooltipButton from "@components/TooltipButton";
+import { TooltipButton, Toast } from "@components/common";
 import { UserStatus } from "@openapi";
 import ChangePasswordModal from "./ChangePasswordModal";
-import Toast from "@components/common/Toast";
 
 export interface PageProps {}
 

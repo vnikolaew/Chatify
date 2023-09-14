@@ -1,11 +1,11 @@
 "use client";
 import { ChatGroupMessageEntry } from "@openapi";
-import { Avatar, Chip, Link, Tooltip } from "@nextui-org/react";
+import { Avatar, Chip, Link, Tooltip, useDisclosure } from "@nextui-org/react";
 import { getMediaUrl, useGetChatGroupDetailsQuery } from "@web/api";
 import { twMerge } from "tailwind-merge";
 import { ChatGroupMemberInfoCard } from "@components/members";
 import moment from "moment/moment";
-import React, { useMemo, useState } from "react";
+import React, { Fragment, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useHover } from "@hooks";
 import {
@@ -16,6 +16,7 @@ import {
    ChatMessageRepliesSection,
 } from "@components/chat-group/messages";
 import { Pin } from "lucide-react";
+import ForwardChatMessageModal from "@components/chat-group/messages/ForwardChatMessageModal";
 
 export interface ChatMessageEntryProps
    extends React.DetailedHTMLProps<
@@ -37,9 +38,16 @@ export const ChatMessageEntry = ({
    const [repliesExpanded, setRepliesExpanded] = useState(showReplies);
    const [messageSectionRef, showMessageActions] = useHover<HTMLDivElement>();
 
+   const {
+      isOpen: forwardMessageModalOpen,
+      onOpenChange: onForwardMessageModalOpenChange,
+      onOpen,
+   } = useDisclosure();
+
    const { data: groupDetails } = useGetChatGroupDetailsQuery(
       message.message.chatGroupId
    );
+
    const isPinned = useMemo(
       () =>
          groupDetails?.chatGroup?.pinnedMessages?.some(
@@ -66,11 +74,19 @@ export const ChatMessageEntry = ({
          {...rest}
       >
          {showMessageActions && (
-            <ChatMessageActionsToolbar
-               messageId={message.message.id}
-               showMoreActions={isMe}
-            />
+            <Fragment>
+               <ChatMessageActionsToolbar
+                  messageId={message.message.id}
+                  onOpenForwardMessageModal={onOpen}
+                  showMoreActions={isMe}
+               />
+            </Fragment>
          )}
+         <ForwardChatMessageModal
+            message={message?.message}
+            isOpen={forwardMessageModalOpen}
+            onOpenChange={onForwardMessageModalOpenChange}
+         />
          {isPinned && (
             <div className={`flex items-center gap-2 mt-2 mx-12`}>
                <Pin

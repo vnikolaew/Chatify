@@ -1,6 +1,6 @@
 "use client";
 import React, { Fragment, useState } from "react";
-import TooltipButton from "@components/TooltipButton";
+import { TooltipButton } from "@components/common";
 import { Edit } from "lucide-react";
 import {
    Button,

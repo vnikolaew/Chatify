@@ -1,5 +1,5 @@
 "use client";
-import TooltipButton from "@components/TooltipButton";
+import TooltipButton from "@components/common/TooltipButton";
 import React from "react";
 import { useSignOutMutation } from "@web/api";
 import LogoutIcon from "@components/icons/LogoutIcon";

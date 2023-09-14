@@ -6,3 +6,4 @@ export * from "./useEditGroupChatMessageReplyMutation";
 export * from "./useSendGroupChatMessageReplyMutation";
 export * from "./usePinGroupChatMessage";
 export * from "./useUnpinGroupChatMessage";
+export * from "./useForwardChatMessage";

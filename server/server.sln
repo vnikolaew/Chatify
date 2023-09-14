@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chatify.IntegrationTesting"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chatify.IntegrationTesting.NUnit", "Chatify.IntegrationTesting.NUnit\Chatify.IntegrationTesting.NUnit.csproj", "{47A7A492-6A37-4BBF-97DB-1B0DDF66F2C6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chatify.GraphQL", "Chatify.GraphQL\Chatify.GraphQL.csproj", "{356D9138-A74A-479C-97AA-4FC7693C1551}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -181,6 +183,22 @@ Global
 		{47A7A492-6A37-4BBF-97DB-1B0DDF66F2C6}.Release|x64.Build.0 = Release|Any CPU
 		{47A7A492-6A37-4BBF-97DB-1B0DDF66F2C6}.Release|x86.ActiveCfg = Release|Any CPU
 		{47A7A492-6A37-4BBF-97DB-1B0DDF66F2C6}.Release|x86.Build.0 = Release|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Debug|x64.Build.0 = Debug|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Debug|x86.Build.0 = Debug|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Release|Any CPU.Build.0 = Release|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Release|ARM64.Build.0 = Release|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Release|x64.ActiveCfg = Release|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Release|x64.Build.0 = Release|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Release|x86.ActiveCfg = Release|Any CPU
+		{356D9138-A74A-479C-97AA-4FC7693C1551}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

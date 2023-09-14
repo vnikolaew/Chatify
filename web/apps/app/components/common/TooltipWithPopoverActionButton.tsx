@@ -7,9 +7,8 @@ import {
    PopoverProps,
    PopoverTrigger,
    TooltipProps,
-   useDisclosure,
 } from "@nextui-org/react";
-import TooltipButton from "@components/TooltipButton";
+import { TooltipButton } from "@components/common";
 
 export interface TooltipWithPopoverActionButtonProps {
    popoverContent: React.ReactNode;

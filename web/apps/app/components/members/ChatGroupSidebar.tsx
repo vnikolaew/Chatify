@@ -5,12 +5,14 @@ import { ScrollShadow, Tab, Tabs } from "@nextui-org/react";
 import ChatGroupMembersTab from "@components/members/ChatGroupMembersTab";
 import ChatGroupAttachmentsTab from "@components/members/ChatGroupAttachmentsTab";
 import { Image as ImageIcon, Users } from "lucide-react";
+import { useURLParamState } from "@hooks";
 
 export interface ChatGroupSidebarProps {}
 
 const ChatGroupSidebar = ({}: ChatGroupSidebarProps) => {
    const params = useSearchParams();
    const chatGroupId = params.get("c");
+   const [selectedTab, setSelectedTab] = useURLParamState(`tab`, `members`);
 
    return (
       <ScrollShadow
@@ -36,7 +38,10 @@ const ChatGroupSidebar = ({}: ChatGroupSidebarProps) => {
                      panel: `w-full pb-6 rounded-medium`,
                      tabList: `w-full`,
                   }}
-                  variant={`light`}
+                  selectedKey={selectedTab}
+                  // @ts-ignore
+                  onSelectionChange={setSelectedTab}
+                  variant={`underlined`}
                   size={`md`}
                   color={`primary`}
                >

@@ -69,14 +69,14 @@ internal sealed class GetMessagesByChatGroupHandler(
             cancellationToken);
 
         var forwardedMessages = groupMessages
-            .Where(m => m.Metadata.ContainsKey(ShareMessageHandler.SharedMessageIdKey))
+            .Where(m => m.Metadata.ContainsKey(ForwardMessageHandler.SharedMessageIdKey))
             .ToList();
 
         var originMessages = new Dictionary<Guid, ChatMessage>();
         if ( forwardedMessages.Any() )
         {
             var forwardedMessagesIds = forwardedMessages
-                .Select(m => m.Metadata[ShareMessageHandler.SharedMessageIdKey])
+                .Select(m => m.Metadata[ForwardMessageHandler.SharedMessageIdKey])
                 .Select(Guid.Parse);
 
             originMessages = ( await messages.GetByIds(forwardedMessagesIds, cancellationToken) )
@@ -105,7 +105,7 @@ internal sealed class GetMessagesByChatGroupHandler(
                         ? new UserMessageReaction(code.Value)
                         : null,
                     ForwardedMessage =
-                        message.Metadata.TryGetValue(ShareMessageHandler.SharedMessageIdKey, out var messageId)
+                        message.Metadata.TryGetValue(ForwardMessageHandler.SharedMessageIdKey, out var messageId)
                             ? originMessages[Guid.Parse(messageId)]
                             : default,
                     RepliersInfo = repliersSummary?.ToEntry() ?? new MessageRepliersInfoEntry(0, null!, new List<MessageReplierInfoEntry>()),

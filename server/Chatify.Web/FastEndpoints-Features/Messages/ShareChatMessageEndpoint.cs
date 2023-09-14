@@ -10,13 +10,13 @@ using ShareMessageResult =
     OneOf.OneOf<MessageNotFoundError, UserIsNotMessageSenderError, ChatGroupNotFoundError, UserIsNotMemberError, Unit>;
 
 [HttpPost("/share/{messageId:guid}")]
-public sealed class ShareChatMessageEndpoint : BaseMessagesEndpoint<ShareMessage, IResult>
+public sealed class ShareChatMessageEndpoint : BaseMessagesEndpoint<ForwardMessage, IResult>
 {
-    public override async Task<IResult> HandleAsync(ShareMessage req,
+    public override async Task<IResult> HandleAsync(ForwardMessage req,
         CancellationToken ct)
     {
         var messageId = Route<Guid>("messageId");
-        var result = await SendAsync<ShareMessage, ShareMessageResult>(
+        var result = await SendAsync<ForwardMessage, ShareMessageResult>(
             req with { MessageId = messageId }, ct);
 
         return result.Match<IResult>(

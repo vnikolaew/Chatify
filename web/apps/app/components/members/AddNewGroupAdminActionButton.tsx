@@ -1,5 +1,5 @@
 "use client";
-import TooltipWithPopoverActionButton from "@components/TooltipWithPopoverActionButton";
+import TooltipWithPopoverActionButton from "@components/common/TooltipWithPopoverActionButton";
 import React, { Fragment, useCallback } from "react";
 import { PlusIcon } from "@icons";
 import {

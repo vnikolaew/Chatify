@@ -9,7 +9,7 @@ import {
 } from "@nextui-org/react";
 import { AddUserIcon, PlusIcon } from "@icons";
 import { useAddChatGroupMember, useGetMyFriendsQuery } from "@web/api";
-import TooltipWithPopoverActionButton from "@components/TooltipWithPopoverActionButton";
+import TooltipWithPopoverActionButton from "@components/common/TooltipWithPopoverActionButton";
 import { useCurrentChatGroup, useGetNewMemberSuggestions } from "@hooks";
 import SadFaceIcon from "@components/icons/SadFaceIcon";
 

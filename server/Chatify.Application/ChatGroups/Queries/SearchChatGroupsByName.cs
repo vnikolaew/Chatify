@@ -16,7 +16,9 @@ public record SearchChatGroupsByName(
 ) : IQuery<SearchChatGroupsByNameResult>;
 
 internal sealed class
-    SearchChatGroupsByNameHandler(IChatGroupMemberRepository members,
+    SearchChatGroupsByNameHandler(
+        IChatGroupMemberRepository members,
+        IFriendshipsRepository friendships,
         IIdentityContext identityContext,
         IChatGroupRepository groups)
     : IQueryHandler<SearchChatGroupsByName, SearchChatGroupsByNameResult>
@@ -28,10 +30,30 @@ internal sealed class
         var groupIds = ( await members
                 .GroupsIdsByUser(identityContext.Id, cancellationToken) )
             .ToHashSet();
-        
+
+        var friends = await friendships
+            .AllForUser(identityContext.Id, cancellationToken);
+
+        var friendsRelations = await friendships
+            .AllFriendshipsForUser(identityContext.Id, cancellationToken);
+
+        var friendIds = friends
+            .Where(f => f.Username
+                .Contains(query.NameSearchQuery, StringComparison.InvariantCultureIgnoreCase))
+            .Select(f => f.Id)
+            .ToHashSet();
+
+        // Include groups from friends as well:
+        var friendGroups = await groups.GetByIds(
+            friendsRelations
+                .Where(r => friendIds.Contains(r.FriendOneId)
+                            || friendIds.Contains(r.FriendTwoId))
+                .Select(_ => _.GroupId), cancellationToken);
+
         // Do an in-memory search (at least for now) as RedisSearch supports FT of full words only:
         return ( await groups.GetByIds(groupIds, cancellationToken) )
             .Where(g => g.Name.Contains(query.NameSearchQuery, StringComparison.InvariantCultureIgnoreCase))
+            .Concat(friendGroups)
             .ToList();
     }
 }

@@ -21,7 +21,7 @@ using UserIsNotMemberError = Chatify.Application.Messages.Common.UserIsNotMember
 namespace Chatify.Web.Features.Messages;
 
 using SendGroupChatMessageResult = OneOf<ChatGroupNotFoundError, UserIsNotMemberError, Guid>;
-using ShareMessageResult =
+using ForwardMessageResult =
     OneOf<MessageNotFoundError, UserIsNotMessageSenderError, ChatGroupNotFoundError, UserIsNotMemberError, Unit>;
 using ReplyToChatMessageResult = OneOf<UserIsNotMemberError, MessageNotFoundError, Guid>;
 using EditGroupChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
@@ -224,16 +224,16 @@ public class MessagesController : ApiController
     }
 
     [HttpPost]
-    [Route("/share/{messageId:guid}")]
+    [Route("forward/{messageId:guid}")]
     [ProducesBadRequestApiResponse]
     [ProducesNotFoundApiResponse]
     [ProducesAcceptedApiResponse]
-    public async Task<IActionResult> ShareChatMessage(
-        [FromBody] ShareMessage request,
+    public async Task<IActionResult> ForwardChatMessage(
+        [FromBody] ForwardMessage request,
         [FromRoute] Guid messageId,
         CancellationToken cancellationToken = default)
     {
-        var result = await SendAsync<ShareMessage, ShareMessageResult>(
+        var result = await SendAsync<ForwardMessage, ForwardMessageResult>(
             request with { MessageId = messageId }, cancellationToken);
         return result.Match<IActionResult>(
             _ => NotFound(),

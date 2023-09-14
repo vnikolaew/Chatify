@@ -1,20 +1,12 @@
 "use client";
-import React, { Fragment, useMemo, useState } from "react";
-import TooltipButton from "@components/TooltipButton";
+import React, { useMemo } from "react";
+import TooltipButton from "@components/common/TooltipButton";
 import { PinIcon } from "@icons";
 import CommentIcon from "@components/icons/CommentIcon";
 import ForwardIcon from "@components/icons/ForwardIcon";
-import {
-   Modal,
-   ModalBody,
-   ModalContent,
-   ModalFooter,
-   ModalHeader,
-   Spinner,
-   useDisclosure,
-} from "@nextui-org/react";
+import { Spinner, useDisclosure } from "@nextui-org/react";
 import VerticalDotsIcon from "@components/icons/VerticalDotsIcon";
-import TooltipWithPopoverActionButton from "@components/TooltipWithPopoverActionButton";
+import TooltipWithPopoverActionButton from "@components/common/TooltipWithPopoverActionButton";
 import { EditIcon } from "lucide-react";
 import ThrashIcon from "@components/icons/ThrashIcon";
 import { usePinGroupChatMessage } from "@web/api";
@@ -22,11 +14,13 @@ import { useCurrentChatGroup } from "@hooks";
 
 export interface ChatMessageActionsToolbarProps {
    showMoreActions: boolean;
+   onOpenForwardMessageModal: () => void;
    messageId: string;
 }
 
 const ChatMessageActionsToolbar = ({
    showMoreActions,
+   onOpenForwardMessageModal,
    messageId,
 }: ChatMessageActionsToolbarProps) => {
    const {
@@ -39,11 +33,6 @@ const ChatMessageActionsToolbar = ({
       isLoading: pinLoading,
       error,
    } = usePinGroupChatMessage();
-   const {
-      isOpen: forwardMessageModalOpen,
-      onOpenChange: onForwardMessageModalOpenChange,
-      onOpen,
-   } = useDisclosure();
 
    const messageActions = useMemo(() => {
       return [
@@ -63,35 +52,20 @@ const ChatMessageActionsToolbar = ({
          },
          {
             label: "Forward this message",
-            action: async () => onOpen(),
+            action: async () => {
+               console.log(`Opening modal ...`);
+               onOpenForwardMessageModal();
+            },
             loading: false,
             Icon: ForwardIcon,
          },
       ];
-   }, [pinMessage, messageId, groupId, pinLoading, onOpen]);
+   }, [pinMessage, messageId, groupId, pinLoading]);
 
    return (
       <div
          className={`absolute px-1 border-1 border-default-300 z-10 flex items-center gap-1 text-xs min-h-fit max-h-fit rounded-md bg-zinc-900 -translate-y-1/2 top-0 right-10`}
       >
-         <Modal
-            shadow={"md"}
-            radius={"sm"}
-            placement={`center`}
-            size={`sm`}
-            onOpenChange={onForwardMessageModalOpenChange}
-            isOpen={forwardMessageModalOpen}
-         >
-            <ModalContent>
-               {(onClose) => (
-                  <Fragment>
-                     <ModalHeader></ModalHeader>
-                     <ModalBody></ModalBody>
-                     <ModalFooter></ModalFooter>
-                  </Fragment>
-               )}
-            </ModalContent>
-         </Modal>
          {messageActions.map(({ label, Icon, action, loading }, i) => (
             <TooltipButton
                radius={"full"}
