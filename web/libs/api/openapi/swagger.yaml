@@ -1786,7 +1786,6 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
-        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1817,6 +1816,7 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
+        - Unknown
       type: string
     ApiResponseStatus:
       enum:

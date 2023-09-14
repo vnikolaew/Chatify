@@ -39,7 +39,7 @@ internal sealed class
 
         var friendIds = friends
             .Where(f => f.Username
-                .Contains(query.NameSearchQuery, StringComparison.InvariantCultureIgnoreCase))
+                .Contains(query.NameSearchQuery ?? string.Empty, StringComparison.InvariantCultureIgnoreCase))
             .Select(f => f.Id)
             .ToHashSet();
 
@@ -52,7 +52,7 @@ internal sealed class
 
         // Do an in-memory search (at least for now) as RedisSearch supports FT of full words only:
         return ( await groups.GetByIds(groupIds, cancellationToken) )
-            .Where(g => g.Name.Contains(query.NameSearchQuery, StringComparison.InvariantCultureIgnoreCase))
+            .Where(g => g.Name.Contains(query.NameSearchQuery ?? string.Empty, StringComparison.InvariantCultureIgnoreCase))
             .Concat(friendGroups)
             .ToList();
     }
