@@ -2,11 +2,12 @@
 using LanguageExt;
 using LanguageExt.Common;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using OneOf;
 
 namespace Chatify.Infrastructure.FileStorage;
 
-public class LocalFileSystemUploadService(IWebHostEnvironment environment) : IFileUploadService
+public class LocalFileSystemUploadService(IWebHostEnvironment environment, IUrlHelper urlHelper) : IFileUploadService
 {
     private readonly string _fileStorageBaseFolder = Path.Combine(environment.ContentRootPath, "Files");
     private const long MaxFileUploadSizeLimit = 50 * 1024 * 1024;
@@ -56,6 +57,8 @@ public class LocalFileSystemUploadService(IWebHostEnvironment environment) : IFi
         SingleFileDeleteRequest singleFileDeleteRequest,
         CancellationToken cancellationToken = default)
     {
+        if ( !urlHelper.IsLocalUrl(singleFileDeleteRequest.FileUrl) ) return Unit.Default;
+        
         var filePath = Path.Combine(_fileStorageBaseFolder, singleFileDeleteRequest.FileUrl);
         if ( !File.Exists(filePath) ) return Error.New("Specified file not found.");
 

@@ -39,6 +39,7 @@
       "react-dom": "^18.2.0",
       "react-github-login": "^1.0.3",
       "react-quill": "^2.0.0",
+      "react-resizable-panels": "^0.0.55",
       "react-use-cookie": "^1.4.0",
       "rehype-stringify": "^10.0.0",
       "remark-parse": "^10.0.2",

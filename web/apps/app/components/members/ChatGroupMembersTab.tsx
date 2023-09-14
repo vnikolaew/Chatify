@@ -46,7 +46,7 @@ const ChatGroupMembersTab = ({ chatGroupId }: ChatGroupMembersTabProps) => {
          {Object.entries(membersByCategory).map(([category, members], id) => (
             <div key={id} className={`my-2 w-full`}>
                <div
-                  className={`w-full flex items-center justify-between gap-2 mt-2 px-4`}
+                  className={`w-full flex items-center justify-between gap-2 mt-4 px-4`}
                >
                   <h2 className={`text-xs uppercase text-default-400`}>
                      {category} - {members.length}

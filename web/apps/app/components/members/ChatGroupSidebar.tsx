@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { ScrollShadow, Tab, Tabs } from "@nextui-org/react";
 import ChatGroupMembersTab from "@components/members/ChatGroupMembersTab";
 import ChatGroupAttachmentsTab from "@components/members/ChatGroupAttachmentsTab";
+import { Image as ImageIcon, Users } from "lucide-react";
 
 export interface ChatGroupSidebarProps {}
 
@@ -27,16 +28,42 @@ const ChatGroupSidebar = ({}: ChatGroupSidebarProps) => {
          ) : (
             <Fragment>
                <Tabs
-                  className={`px-4 text-foreground w-full mx-auto py-2`}
+                  className={`w-full`}
                   defaultSelectedKey={`members`}
+                  classNames={{
+                     tab: `my-2`,
+                     base: `border-b-1 px-4 text-foreground w-full mx-auto py-2 border-default-200 rounded-medium`,
+                     panel: `w-full pb-6 rounded-medium`,
+                     tabList: `w-full`,
+                  }}
                   variant={`light`}
                   size={`md`}
                   color={`primary`}
                >
-                  <Tab className={`w-full`} title={`Members`} key={`members`}>
+                  <Tab
+                     className={`w-full`}
+                     title={
+                        <div className={`flex items-center gap-2`}>
+                           <Users size={12} />
+                           <span>Members</span>
+                        </div>
+                     }
+                     key={`members`}
+                  >
                      <ChatGroupMembersTab chatGroupId={chatGroupId} />
                   </Tab>
-                  <Tab title={`Media`} key={`media`}>
+                  <Tab
+                     aria-label={`sfdfsd`}
+                     aria-labelledby={`sdfsdjfk`}
+                     title={
+                        <div className={`flex items-center gap-2`}>
+                           <ImageIcon size={12} />
+                           <span>Shared Media</span>
+                        </div>
+                     }
+                     className={`mx-0`}
+                     key={`media`}
+                  >
                      <ChatGroupAttachmentsTab chatGroupId={chatGroupId} />
                   </Tab>
                </Tabs>

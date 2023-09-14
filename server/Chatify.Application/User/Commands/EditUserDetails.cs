@@ -35,7 +35,6 @@ public record EditUserDetails(
 internal sealed class EditUserDetailsHandler(IDomainRepository<Domain.Entities.User, Guid> users,
         IIdentityContext identityContext,
         IClock clock,
-        IUrlHelper urlHelper,
         IFileUploadService fileUploadService,
         IEventDispatcher eventDispatcher)
     : ICommandHandler<EditUserDetails, EditUserDetailsResult>
@@ -53,19 +52,13 @@ internal sealed class EditUserDetailsHandler(IDomainRepository<Domain.Entities.U
 
         if ( command.ProfilePicture is not null )
         {
-            if ( urlHelper.IsLocalUrl(user.ProfilePicture.MediaUrl) )
-            {
-                var deleteResult = await fileUploadService.DeleteAsync(
-                    new SingleFileDeleteRequest
-                    {
-                        UserId = user.Id,
-                        FileUrl = user.ProfilePicture.MediaUrl
-                    }, cancellationToken);
-                if ( deleteResult.Value is Error error )
+            var deleteResult = await fileUploadService.DeleteAsync(
+                new SingleFileDeleteRequest
                 {
-                    return new FileUploadError(error.Message);
-                }
-            }
+                    UserId = user.Id,
+                    FileUrl = user.ProfilePicture.MediaUrl
+                }, cancellationToken);
+            if ( deleteResult.Value is Error error ) return new FileUploadError(error.Message);
 
             var uploadResult = await fileUploadService
                 .UploadAsync(

@@ -19,7 +19,7 @@ const ChatGroupMemberEntry = ({
    const { data: me } = useGetMyClaimsQuery();
    const isMe = useMemo(
       () => member.id === me?.claims?.nameidentifier,
-      [member, me]
+      [member.id, me?.claims?.nameidentifier]
    );
 
    const innerDiv = (
