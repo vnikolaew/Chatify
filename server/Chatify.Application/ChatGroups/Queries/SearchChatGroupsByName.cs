@@ -4,7 +4,6 @@ using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
-using LanguageExt.Common;
 using OneOf;
 
 namespace Chatify.Application.ChatGroups.Queries;
@@ -39,7 +38,7 @@ internal sealed class
 
         var friendIds = friends
             .Where(f => f.Username
-                .Contains(query.NameSearchQuery ?? string.Empty, StringComparison.InvariantCultureIgnoreCase))
+                .Contains(query.NameSearchQuery, StringComparison.InvariantCultureIgnoreCase))
             .Select(f => f.Id)
             .ToHashSet();
 
@@ -52,8 +51,9 @@ internal sealed class
 
         // Do an in-memory search (at least for now) as RedisSearch supports FT of full words only:
         return ( await groups.GetByIds(groupIds, cancellationToken) )
-            .Where(g => g.Name.Contains(query.NameSearchQuery ?? string.Empty, StringComparison.InvariantCultureIgnoreCase))
+            .Where(g => g.Name.Contains(query.NameSearchQuery, StringComparison.InvariantCultureIgnoreCase))
             .Concat(friendGroups)
+            .DistinctBy(g => g.Id)
             .ToList();
     }
 }

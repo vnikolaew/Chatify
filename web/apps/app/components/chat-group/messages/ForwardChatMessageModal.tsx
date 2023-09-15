@@ -3,6 +3,7 @@ import React, {
    Fragment,
    useCallback,
    useEffect,
+   useMemo,
    useRef,
    useState,
 } from "react";
@@ -10,6 +11,7 @@ import {
    Avatar,
    Button,
    Chip,
+   Divider,
    Input,
    Modal,
    ModalBody,
@@ -18,7 +20,13 @@ import {
    ModalHeader,
    Spinner,
 } from "@nextui-org/react";
-import { useForwardChatMessage, useSearchChatGroupsByName } from "@web/api";
+import {
+   getMediaUrl,
+   useForwardChatMessage,
+   useGetUserDetailsQuery,
+   useSearchChatGroupsByName,
+} from "@web/api";
+import { useClickAway } from "@uidotdev/usehooks";
 import { ChatGroup, ChatMessage } from "@openapi";
 import { useDebounce } from "@hooks";
 import ChatGroupSearchEntries from "@components/chat-group/messages/ChatGroupSearchEntries";
@@ -52,11 +60,24 @@ const ForwardChatMessageModal = ({
       { query: debouncedSearch },
       { enabled: debouncedSearch?.length >= 2 }
    );
+   const { data: sender } = useGetUserDetailsQuery(message.userId);
    const [selectedGroups, setSelectedGroups] = useState([]);
-   const inputRef = useRef<HTMLInputElement>();
    const focusInput = useCallback(() => inputRef.current?.focus(), []);
    const [isInputFocused, setIsInputFocused] = useState(false);
-   useEffect(() => focusInput(), []);
+   const [isDatalistOpen, setIsDatalistOpen] = useState(false);
+   const inputRef = useClickAway<HTMLInputElement>(() =>
+      setIsDatalistOpen(false)
+   );
+
+   const isDropdownOpen = useMemo(
+      () => (searchEntries?.length > 0 ?? false) && isDatalistOpen,
+      [searchEntries, isDatalistOpen]
+   );
+
+   // useEffect(() => focusInput(), []);
+   useEffect(() => {
+      if (isInputFocused) setIsDatalistOpen(true);
+   }, [isInputFocused]);
 
    return (
       <Modal
@@ -135,18 +156,47 @@ const ForwardChatMessageModal = ({
                            placeholder={`Search for a group or a person`}
                            type={`text`}
                         />
-                        {(searchEntries?.length > 0 ?? false) &&
-                           isInputFocused && (
-                              <ChatGroupSearchEntries
-                                 loading={searchLoading && searchFetching}
-                                 onSelect={(group) => {
-                                    setSelectedGroups((g) => [...g, group]);
-                                    // setGroupSearchQuery(``);
-                                    focusInput();
-                                 }}
-                                 entries={searchEntries}
+                        {isDropdownOpen && (
+                           <ChatGroupSearchEntries
+                              loading={searchLoading && searchFetching}
+                              onSelect={(group) => {
+                                 setSelectedGroups((g) => [...g, group]);
+                                 focusInput();
+                              }}
+                              entries={searchEntries}
+                           />
+                        )}
+                     </div>
+                     <div
+                        className={`flex mt-2 items-center justify-start w-full gap-4`}
+                     >
+                        <Divider
+                           className={`h-20 w-[2px] rounded-full bg-foreground-300`}
+                           orientation={`vertical`}
+                        />
+                        <div className={`flex flex-col items-start gap-2`}>
+                           <div className={`flex items-center gap-4`}>
+                              <Avatar
+                                 className={`w-6 h-6`}
+                                 radius={`sm`}
+                                 size={`sm`}
+                                 src={getMediaUrl(
+                                    sender?.user?.profilePicture?.mediaUrl
+                                 )}
                               />
-                           )}
+                              <span
+                                 className={`text-small text-foreground-600`}
+                              >
+                                 {sender?.user?.username}
+                              </span>
+                           </div>
+                           <p
+                              dangerouslySetInnerHTML={{
+                                 __html: message.content,
+                              }}
+                              className={`text-xs w-2/3 text-default-400`}
+                           ></p>
+                        </div>
                      </div>
                   </ModalBody>
                   <ModalFooter className={`mt-4`}>

@@ -9,9 +9,8 @@ import {
    ChatGroupAttachment,
    ChatGroupAttachmentCursorPagedApiResponse,
    CursorPaged,
-   UserNotification,
 } from "@openapi";
-import addNewFriendButton from "../../../../../../../apps/app/components/navbar/AddNewFriendButton";
+import { sleep } from "../../../utils";
 
 export interface GetChatGroupAttachmentsModel {
    groupId: string;
@@ -35,6 +34,7 @@ const getChatGroupAttachments = async (
             params,
          }
       );
+   await sleep(1000);
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
    }

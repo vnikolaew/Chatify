@@ -33,13 +33,24 @@ const ChatGroupAttachmentsTab = ({
       pagingCursor: null!,
    });
 
-   console.log(attachments);
    return (
       <div>
          <div className={`my-2 px-4 mx-auto grid gap-1 max-w-fit grid-cols-2`}>
-            {isLoading && isFetching
+            {(isLoading && isFetching) || true
                ? Array.from({ length: 10 }).map((_, i) => (
-                    <Skeleton className={`w-10 h-30 rounded-medium`} key={i} />
+                    <div
+                       className={`flex flex-col items-start m-2 gap-2`}
+                       key={i}
+                    >
+                       <Skeleton
+                          className={`w-28 h-36 rounded-medium`}
+                          key={i}
+                       />
+                       <div className={`w-full`}>
+                          <Skeleton className={`w-3/5 h-3 rounded-full`} />
+                          <Skeleton className={`w-4/5 mt-1 h-2 rounded-full`} />
+                       </div>
+                    </div>
                  ))
                : attachments.pages
                     .flatMap((p) => p.items)

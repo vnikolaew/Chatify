@@ -4,8 +4,6 @@ import { ChatGroup, UserStatus } from "@openapi";
 import React, { Fragment, useCallback, useMemo } from "react";
 import { useCurrentUserId } from "@hooks";
 import { getMediaUrl, useGetMyFriendsQuery } from "@web/api";
-import { Simulate } from "react-dom/test-utils";
-import load = Simulate.load;
 
 export interface ChatGroupSearchEntriesProps {
    entries: ChatGroup[];
@@ -84,6 +82,7 @@ const ChatGroupSearchEntries = ({
       (chatGroup: ChatGroup) => (
          <ListboxItem
             // variant={`faded`} color={`primary`}
+            textValue={chatGroup.id}
             className={`z-[100] px-2 gap-4`}
             startContent={
                loading ? (
@@ -141,17 +140,11 @@ const ChatGroupSearchEntries = ({
 
    return (
       <Listbox
-         // color={`primary`}
          variant={`solid`}
          className={`absolute max-h-[200px] overflow-y-scroll rounded-medium bg-default-100 bg-opacity-100 z-[100] bottom-0 translate-y-[105%]`}
-         // @ts-ignore
-         items={
-            loading
-               ? Array.from({ length: 5 }).map((_, i) => ({ id: i }))
-               : entries
-         }
          onAction={(id) => {
             const group = entries.find((e) => e.id === id);
+            console.log(group);
             onSelect?.({
                ...group,
                picture: { ...group.picture, mediaUrl: getGroupMediaUrl(group) },
@@ -163,7 +156,12 @@ const ChatGroupSearchEntries = ({
          }}
          aria-label={`Search entries`}
       >
-         {renderSearchEntry}
+         {(loading
+            ? Array.from({ length: 5 }).map<ChatGroup>(
+                 (_, i) => ({ id: i } as unknown as ChatGroup)
+              )
+            : entries
+         ).map(renderSearchEntry)}
       </Listbox>
    );
 };
