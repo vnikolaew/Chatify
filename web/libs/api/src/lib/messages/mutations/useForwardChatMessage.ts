@@ -1,15 +1,22 @@
 import { messagesClient } from "../client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+   InfiniteData,
+   useMutation,
+   useQueryClient,
+} from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 //@ts-ignore
-import { ChatGroupDetailsEntry, ChatGroupMessageEntry } from "@openapi";
-import { produce } from "immer";
+import { ChatGroupMessageEntry, CursorPaged, UserDetailsEntry } from "@openapi";
 import { GetMyClaimsResponse } from "../../auth";
+import { queryClient } from "../../queryClient";
+import { produce } from "immer";
+import { GET_PAGINATED_GROUP_MESSAGES_KEY } from "../queries";
 
 export interface ForwardChatMessageModel {
    messageId: string;
-   content: string;
    groupId: string;
+   content: string;
+   groupIds: string[];
 }
 
 const forwardChatMessage = async (model: ForwardChatMessageModel) => {
@@ -37,27 +44,71 @@ export const useForwardChatMessage = () => {
    return useMutation<any, Error, ForwardChatMessageModel, any>(
       forwardChatMessage,
       {
-         onError: (error, { messageId, groupId }) => {},
-         onMutate: ({ messageId, groupId }) => {
+         onError: (error, { messageId, groupIds }) => {
+            groupIds.forEach((groupId) => {
+               queryClient.setQueryData<
+                  InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+               >(GET_PAGINATED_GROUP_MESSAGES_KEY(groupId), (old) => {
+                  return produce(
+                     old,
+                     (
+                        draft: InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+                     ) => {
+                        draft?.pages?.[0]?.items?.shift();
+                     }
+                  );
+               });
+            });
+            console.error(error);
+         },
+         onMutate: ({ messageId, groupIds, groupId, content }) => {
             const meId = client.getQueryData<GetMyClaimsResponse>([
                `me`,
                `claims`,
             ])?.claims["nameidentifier"];
+            const me = client.getQueryData<UserDetailsEntry>([
+               `user-details`,
+               meId,
+            ]);
 
-            let pinnedMessage: ChatGroupMessageEntry;
-            client.setQueryData<ChatGroupDetailsEntry>(
-               [`chat-group`, groupId],
-               (old: ChatGroupDetailsEntry) => {
-                  return produce(old, (draft: ChatGroupDetailsEntry) => {
-                     draft.chatGroup?.pinnedMessages?.push({
-                        messageId,
-                        createdAt: new Date().toISOString(),
-                        pinnerId: meId,
-                     });
-                     return draft;
-                  });
-               }
-            );
+            const forwardedMessage = queryClient
+               .getQueryData<InfiniteData<CursorPaged<ChatGroupMessageEntry>>>(
+                  GET_PAGINATED_GROUP_MESSAGES_KEY(groupId)
+               )
+               ?.pages.flatMap((_) => _.items)
+               .find((m) => m.message?.id === messageId);
+
+            // Retrieve all groups with the ids:
+            groupIds.forEach((groupId) => {
+               queryClient.setQueryData<
+                  InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+               >(GET_PAGINATED_GROUP_MESSAGES_KEY(groupId), (old) => {
+                  return produce(
+                     old,
+                     (
+                        draft: InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+                     ) => {
+                        draft.pages[0].items.unshift({
+                           message: {
+                              userId: meId,
+                              chatGroupId: groupId,
+                              content,
+                              createdAt: new Date().toISOString(),
+                              attachments: [],
+                           },
+                           repliersInfo: { total: 0, replierInfos: [] },
+                           senderInfo: {
+                              userId: meId,
+                              username: me.user?.username,
+                              profilePictureUrl:
+                                 me.user?.profilePicture?.mediaUrl,
+                           },
+                           forwardedMessage,
+                        });
+                     }
+                  );
+               });
+            });
          },
          onSuccess: (data) =>
             console.log("Chat message forwarded successfully: " + data),

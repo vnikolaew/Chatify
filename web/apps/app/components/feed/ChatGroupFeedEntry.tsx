@@ -6,8 +6,10 @@ import moment from "moment";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+   GET_PAGINATED_GROUP_MESSAGES_KEY,
    getChatGroupDetails,
    getMediaUrl,
+   getPaginatedGroupMessages,
    useGetUserDetailsQuery,
 } from "@web/api";
 import {
@@ -45,6 +47,20 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
             getChatGroupDetails({ chatGroupId: id }),
          staleTime: 30 * 60 * 1000,
       });
+      await client.prefetchInfiniteQuery(
+         GET_PAGINATED_GROUP_MESSAGES_KEY(feedEntry.chatGroup.id),
+         {
+            queryFn: ({ queryKey: [_, groupId] }) =>
+               getPaginatedGroupMessages({
+                  groupId,
+                  pageSize: 5,
+                  pagingCursor: null!,
+               }),
+            getNextPageParam: (lastPage) => lastPage.pagingCursor,
+            getPreviousPageParam: (_, allPages) =>
+               allPages.at(-1)?.pagingCursor,
+         }
+      );
    };
    const isPrivateGroup = useMemo(
       () => feedEntry?.chatGroup?.metadata?.private === "true",

@@ -4,16 +4,21 @@ import { ChatGroup, UserStatus } from "@openapi";
 import React, { Fragment, useCallback, useMemo } from "react";
 import { useCurrentUserId } from "@hooks";
 import { getMediaUrl, useGetMyFriendsQuery } from "@web/api";
+import { Check } from "lucide-react";
 
 export interface ChatGroupSearchEntriesProps {
    entries: ChatGroup[];
    loading?: boolean;
+   selectedEntries?: ChatGroup[];
+   setSelectedEntries?: (entries: ChatGroup[]) => void;
    onSelect?: (chatGroup: ChatGroup) => void;
 }
 
 const ChatGroupSearchEntries = ({
    entries,
    loading,
+   selectedEntries,
+   setSelectedEntries,
    onSelect,
 }: ChatGroupSearchEntriesProps) => {
    const meId = useCurrentUserId();
@@ -41,6 +46,25 @@ const ChatGroupSearchEntries = ({
             : chatGroup?.name;
       },
       [friends, meId]
+   );
+
+   const normalizeGroup = useCallback(
+      (chatGroup: ChatGroup) => {
+         return {
+            ...chatGroup,
+            picture: {
+               ...chatGroup.picture,
+               mediaUrl: getGroupMediaUrl(chatGroup),
+            },
+            name: getGroupName(chatGroup),
+         };
+      },
+      [getGroupMediaUrl, getGroupName]
+   );
+
+   const isSelected = useCallback(
+      (group: ChatGroup) => selectedEntries.some((e) => e.id === group.id),
+      [selectedEntries]
    );
 
    const friendStatuses = useMemo(
@@ -83,6 +107,7 @@ const ChatGroupSearchEntries = ({
          <ListboxItem
             // variant={`faded`} color={`primary`}
             textValue={chatGroup.id}
+            // selectedIcon={<Check size={12} className={`stroke-primary `} />}
             className={`z-[100] px-2 gap-4`}
             startContent={
                loading ? (
@@ -105,7 +130,11 @@ const ChatGroupSearchEntries = ({
                </div>
             ) : (
                <div className={`flex items-center gap-2`}>
-                  <span className={`text-foreground text-small`}>
+                  <span
+                     className={`text-foreground text-small ${
+                        isSelected(chatGroup) && `text-primary`
+                     }`}
+                  >
                      {getGroupName(chatGroup)}
                   </span>
                   {chatGroup?.metadata?.private === "true" && (
@@ -115,7 +144,11 @@ const ChatGroupSearchEntries = ({
                               friendStatuses[chatGroup.id]
                            )}`}
                         />
-                        <span className={`font-light ml-2 text-small`}>
+                        <span
+                           className={`font-light ml-2 text-small ${
+                              isSelected(chatGroup) && `text-primary`
+                           }`}
+                        >
                            {
                               friends?.find(
                                  (f) => f.username === getGroupName(chatGroup)
@@ -135,24 +168,31 @@ const ChatGroupSearchEntries = ({
          friendStatuses,
          friends,
          loading,
+         isSelected,
       ]
    );
 
    return (
       <Listbox
          variant={`solid`}
+         selectionMode={`multiple`}
+         onSelectionChange={(keys) =>
+            setSelectedEntries(
+               entries
+                  .filter((e) => [...keys].some((_) => _ === e.id))
+                  .map(normalizeGroup)
+            )
+         }
+         selectedKeys={selectedEntries?.map((_) => _.id)}
          className={`absolute max-h-[200px] overflow-y-scroll rounded-medium bg-default-100 bg-opacity-100 z-[100] bottom-0 translate-y-[105%]`}
          onAction={(id) => {
             const group = entries.find((e) => e.id === id);
             console.log(group);
-            onSelect?.({
-               ...group,
-               picture: { ...group.picture, mediaUrl: getGroupMediaUrl(group) },
-               name: getGroupName(group),
-            });
+            onSelect?.(normalizeGroup(group));
          }}
          itemClasses={{
             base: `gap-4`,
+            selectedIcon: `text-primary`,
          }}
          aria-label={`Search entries`}
       >

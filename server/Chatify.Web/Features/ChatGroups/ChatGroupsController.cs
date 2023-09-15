@@ -129,11 +129,11 @@ public class ChatGroupsController : ApiController
     [ProducesBadRequestApiResponse]
     [ProducesOkApiResponse<List<ChatGroup>>]
     public async Task<IActionResult> Search(
-        [FromQuery(Name = "q")] string nameQuery,
+        [FromQuery(Name = "q")] string? nameQuery,
         CancellationToken cancellationToken = default)
     {
         var result = await QueryAsync<SearchChatGroupsByName, SearchChatGroupsByNameResult>(
-            new SearchChatGroupsByName(nameQuery), cancellationToken);
+            new SearchChatGroupsByName(nameQuery ?? string.Empty), cancellationToken);
 
         return result.Match(
             err => err.ToBadRequest(),

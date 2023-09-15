@@ -5,7 +5,7 @@ namespace Chatify.Domain.Repositories;
 
 public interface IChatGroupRepository : IDomainRepository<ChatGroup, Guid>
 {
-    Task<List<ChatGroup>> GetByIds(
+    Task<List<ChatGroup?>> GetByIds(
         IEnumerable<Guid> groupIds,
         CancellationToken cancellationToken = default);
     

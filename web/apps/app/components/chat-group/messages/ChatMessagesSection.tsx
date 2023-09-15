@@ -98,7 +98,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
    }, []);
 
    useEffect(() => {
-      if (messages?.pages.length > 1) {
+      if (messages?.pages?.length > 1) {
          messagesSectionRef.current?.scrollTo({
             top: 20,
             behavior: "smooth",

@@ -2352,9 +2352,12 @@ components:
         messageId:
           type: string
           format: uuid
-        groupId:
-          type: string
-          format: uuid
+        groupIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          nullable: true
         content:
           type: string
           nullable: true

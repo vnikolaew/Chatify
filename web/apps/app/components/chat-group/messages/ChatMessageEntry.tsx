@@ -1,6 +1,13 @@
 "use client";
 import { ChatGroupMessageEntry } from "@openapi";
-import { Avatar, Chip, Link, Tooltip, useDisclosure } from "@nextui-org/react";
+import {
+   Avatar,
+   Chip,
+   Divider,
+   Link,
+   Tooltip,
+   useDisclosure,
+} from "@nextui-org/react";
 import { getMediaUrl, useGetChatGroupDetailsQuery } from "@web/api";
 import { twMerge } from "tailwind-merge";
 import { ChatGroupMemberInfoCard } from "@components/members";
@@ -17,6 +24,7 @@ import {
 } from "@components/chat-group/messages";
 import { Pin } from "lucide-react";
 import ForwardChatMessageModal from "@components/chat-group/messages/ForwardChatMessageModal";
+import ForwardedChatMessageEntry from "@components/chat-group/messages/ForwardedChatMessageEntry";
 
 export interface ChatMessageEntryProps
    extends React.DetailedHTMLProps<
@@ -64,6 +72,10 @@ export const ChatMessageEntry = ({
    const hasAttachments = useMemo(() => {
       return message?.message?.attachments?.length > 0 ?? false;
    }, [message?.message?.attachments?.length]);
+
+   const isForwardedMessage = useMemo(() => {
+      return !!message?.forwardedMessage;
+   }, [message?.forwardedMessage]);
 
    return (
       <div
@@ -168,6 +180,9 @@ export const ChatMessageEntry = ({
                      messageId={message.message.id}
                      attachments={message.message.attachments}
                   />
+               )}
+               {isForwardedMessage && (
+                  <ForwardedChatMessageEntry message={message} />
                )}
                {
                   <ChatMessageReactionSection

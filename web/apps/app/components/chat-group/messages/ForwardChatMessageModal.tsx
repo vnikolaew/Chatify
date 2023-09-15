@@ -4,7 +4,6 @@ import React, {
    useCallback,
    useEffect,
    useMemo,
-   useRef,
    useState,
 } from "react";
 import {
@@ -61,17 +60,20 @@ const ForwardChatMessageModal = ({
       { enabled: debouncedSearch?.length >= 2 }
    );
    const { data: sender } = useGetUserDetailsQuery(message.userId);
-   const [selectedGroups, setSelectedGroups] = useState([]);
-   const focusInput = useCallback(() => inputRef.current?.focus(), []);
+   const [selectedGroups, setSelectedGroups] = useState<ChatGroup[]>([]);
    const [isInputFocused, setIsInputFocused] = useState(false);
    const [isDatalistOpen, setIsDatalistOpen] = useState(false);
    const inputRef = useClickAway<HTMLInputElement>(() =>
       setIsDatalistOpen(false)
    );
+   const focusInput = useCallback(
+      () => inputRef.current?.focus(),
+      [inputRef?.current]
+   );
 
    const isDropdownOpen = useMemo(
       () => (searchEntries?.length > 0 ?? false) && isDatalistOpen,
-      [searchEntries, isDatalistOpen]
+      [isDatalistOpen, searchEntries?.length]
    );
 
    // useEffect(() => focusInput(), []);
@@ -116,20 +118,20 @@ const ForwardChatMessageModal = ({
                                           }}
                                           startContent={
                                              <Avatar
-                                                src={group.picture.mediaUrl}
+                                                src={group?.picture?.mediaUrl}
                                                 className={`w-4 h-4`}
                                              />
                                           }
                                           endContent={
                                              <X
                                                 onClick={(_) => {
-                                                   focusInput();
                                                    setSelectedGroups((g) =>
                                                       g.filter(
                                                          (g) =>
                                                             g.id !== group.id
                                                       )
                                                    );
+                                                   focusInput();
                                                 }}
                                                 className={`stroke-default-400 mr-1 transition-all duration-100 hover:stroke-default-600 cursor-pointer`}
                                                 size={12}
@@ -159,11 +161,15 @@ const ForwardChatMessageModal = ({
                         {isDropdownOpen && (
                            <ChatGroupSearchEntries
                               loading={searchLoading && searchFetching}
+                              setSelectedEntries={setSelectedGroups}
+                              selectedEntries={selectedGroups}
                               onSelect={(group) => {
                                  setSelectedGroups((g) => [...g, group]);
                                  focusInput();
                               }}
-                              entries={searchEntries}
+                              entries={searchEntries.filter(
+                                 (e) => e.id !== message.chatGroupId
+                              )}
                            />
                         )}
                      </div>
@@ -222,8 +228,10 @@ const ForwardChatMessageModal = ({
                            await forwardMessage({
                               messageId: message.id,
                               groupId: message.chatGroupId,
+                              groupIds: selectedGroups.map((_) => _.id),
                               content: ``,
                            });
+                           console.log(selectedGroups);
                            onClose();
                         }}
                      >

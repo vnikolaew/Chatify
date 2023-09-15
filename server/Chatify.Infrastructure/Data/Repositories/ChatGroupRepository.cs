@@ -24,7 +24,7 @@ public sealed class ChatGroupRepository(
     private readonly IRedisCollection<Models.ChatGroup> _cacheGroups =
         connectionProvider.RedisCollection<Models.ChatGroup>();
 
-    public async Task<List<ChatGroup>> GetByIds(
+    public async Task<List<ChatGroup?>> GetByIds(
         IEnumerable<Guid> groupIds,
         CancellationToken cancellationToken = default)
     {
@@ -52,8 +52,8 @@ public sealed class ChatGroupRepository(
 
         return groups
             .Values
-            .Where(_ => _ is not null)
-            .ToList<ChatGroup>(Mapper);
+            .Select(g => g?.To<ChatGroup>(Mapper))
+            .ToList();
     }
 
     public async Task<List<ChatGroup>> SearchByName(
