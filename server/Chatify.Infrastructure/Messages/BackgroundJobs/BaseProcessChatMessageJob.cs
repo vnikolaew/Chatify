@@ -35,6 +35,7 @@ internal abstract class BaseProcessChatMessageJob<TMessage>(IOpenGraphMetadataEn
         {
             // _logger.LogInformation("Message with {Id} not found. ", MessageId);
             return;
+            
         }
 
         var markDownObjects = ParseMarkdownContent(message.Content).ToList();

@@ -11,7 +11,7 @@
       <PackageReference Include="AutoMapper" Version="12.0.1" />
       <PackageReference Include="CassandraCSharpDriver" Version="3.19.2" />
       <PackageReference Include="Castle.Core" Version="5.1.1" />
-      <PackageReference Include="Markdig" Version="0.32.0" />
+      <PackageReference Include="Markdig" Version="0.33.0" />
       <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.7.0-2.final" />
       <PackageReference Include="OpenGraph-Net" Version="4.0.2-alpha.0.6" />
       <PackageReference Include="Telegram.Bot" Version="19.0.0" />

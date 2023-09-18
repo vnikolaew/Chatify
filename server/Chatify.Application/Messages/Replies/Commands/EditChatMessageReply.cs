@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common.Contracts;
 using Chatify.Application.Messages.Commands;
 using Chatify.Application.Messages.Common;
 using Chatify.Domain.Common;
@@ -23,7 +24,8 @@ public record EditChatMessageReply(
         IEnumerable<AttachmentOperation>? AttachmentOperations = default)
     : ICommand<EditChatMessageReplyResult>;
 
-internal sealed class EditChatMessageReplyHandler(IChatGroupMemberRepository members,
+internal sealed class EditChatMessageReplyHandler(
+        IChatGroupMemberRepository members,
         IIdentityContext identityContext,
         IDomainRepository<ChatMessageReply, Guid> messageReplies,
         IEventDispatcher eventDispatcher,
@@ -31,8 +33,6 @@ internal sealed class EditChatMessageReplyHandler(IChatGroupMemberRepository mem
         IAttachmentOperationHandler attachmentOperationHandler)
     : ICommandHandler<EditChatMessageReply, EditChatMessageReplyResult>
 {
-    private readonly IChatGroupMemberRepository _members = members;
-
     public async Task<EditChatMessageReplyResult> HandleAsync(
         EditChatMessageReply command,
         CancellationToken cancellationToken = default)
@@ -49,7 +49,12 @@ internal sealed class EditChatMessageReplyHandler(IChatGroupMemberRepository mem
             if ( command.AttachmentOperations is not null )
             {
                 await attachmentOperationHandler
-                    .HandleAsync(replyMessage, command.AttachmentOperations, cancellationToken);
+                    .HandleAsync(replyMessage,
+                        command.AttachmentOperations.Select(o =>
+                            o is AddAttachmentOperation ao
+                                ? ao with { Location = FolderConstants.ChatGroups.Media.Root }
+                                : o),
+                        cancellationToken);
             }
         }, cancellationToken);
 

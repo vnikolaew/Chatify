@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Chatify.Application.Authentication.Commands;
-using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Application.User.Common;
@@ -14,8 +12,6 @@ using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
 using LanguageExt.Common;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
 using OneOf;
 
 namespace Chatify.Application.User.Commands;
@@ -46,7 +42,7 @@ internal sealed class EditUserDetailsHandler(IDomainRepository<Domain.Entities.U
         var user = await users.GetAsync(identityContext.Id, cancellationToken);
         if ( user is null ) return new UserNotFound();
 
-        var newProfilePicture = user.ProfilePicture;
+        Media? newProfilePicture = null;
         var newUsername = command.Username ?? user.Username;
         var newDisplayName = command.DisplayName ?? user.DisplayName;
 
@@ -61,7 +57,7 @@ internal sealed class EditUserDetailsHandler(IDomainRepository<Domain.Entities.U
             if ( deleteResult.Value is Error error ) return new FileUploadError(error.Message);
 
             var uploadResult = await fileUploadService
-                .UploadAsync(
+                .UploadUserProfilePictureAsync(
                     new SingleFileUploadRequest
                     {
                         UserId = identityContext.Id,
@@ -92,13 +88,13 @@ internal sealed class EditUserDetailsHandler(IDomainRepository<Domain.Entities.U
             user.Username = newUsername;
             user.DisplayName = newDisplayName;
             user.UpdatedAt = clock.Now;
-            user.ProfilePicture = newProfilePicture;
+            if ( newProfilePicture is not null ) user.ProfilePicture = newProfilePicture;
         }, cancellationToken);
 
         await eventDispatcher.PublishAsync(new UserDetailsEditedEvent
         {
             UserId = user.Id,
-            ProfilePicture = user.ProfilePicture,
+            ProfilePicture = newProfilePicture,
             PhoneNumbers = command.PhoneNumbers,
             DisplayName = user.DisplayName
         }, cancellationToken);

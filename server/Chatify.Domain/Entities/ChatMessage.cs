@@ -31,6 +31,8 @@ public class ChatMessage
 
     private readonly HashSet<Media> _attachments = new();
 
+    public Guid? ForwardedMessageId { get; set; }
+    
     public IReadOnlyCollection<Media> Attachments
     {
         get => _attachments.ToList().AsReadOnly();

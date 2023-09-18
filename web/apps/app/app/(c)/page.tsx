@@ -32,13 +32,6 @@ function IndexPage(props) {
       enabled: !!chatGroupId && isUserLoggedIn,
    });
 
-   const handleSignalRTest = async () => {
-      await client.test(
-         chatGroupId,
-         `Test value from ${me.claims.nameidentifier}`
-      );
-   };
-
    return (
       <div
          className={`flex min-h-[60vh] text-xl flex-col items-center shadow-gray-300 w-full rounded-md mb-6`}

@@ -2,8 +2,8 @@
 import React, { Fragment } from "react";
 import { useSearchParams } from "next/navigation";
 import { ScrollShadow, Tab, Tabs } from "@nextui-org/react";
-import ChatGroupMembersTab from "@components/members/ChatGroupMembersTab";
-import ChatGroupAttachmentsTab from "@components/members/ChatGroupAttachmentsTab";
+import ChatGroupMembersTab from "@components/sidebar/members/ChatGroupMembersTab";
+import ChatGroupAttachmentsTab from "@components/sidebar/attachments/ChatGroupAttachmentsTab";
 import { Image as ImageIcon, Users } from "lucide-react";
 import { useURLParamState } from "@hooks";
 

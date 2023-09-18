@@ -25,6 +25,7 @@ using Chatify.Infrastructure.Mailing;
 using Chatify.Infrastructure.Messages;
 using Chatify.Infrastructure.Messages.BackgroundJobs;
 using Chatify.Infrastructure.Messages.Hubs;
+using Chatify.Infrastructure.Messages.Services;
 using Chatify.Shared.Abstractions.Serialization;
 using Chatify.Shared.Abstractions.Time;
 using Chatify.Shared.Infrastructure.Contexts;
@@ -113,6 +114,7 @@ public static class DependencyInjection
             .AddTransient<IPagingCursorHelper, CassandraPagingCursorHelper>()
             .AddTransient<ISerializer, SystemTextJsonSerializer>()
             .AddSingleton<IOpenGraphMetadataEnricher, OpenGraphMetadataEnricher>()
+            .AddSingleton<IMessageContentNormalizer, MessageContentNormalizer>()
             .AddScoped<IChatGroupsFeedService, ChatGroupsFeedService>()
             .AddNotifications()
             .AddCounters();

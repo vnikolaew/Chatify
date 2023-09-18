@@ -20,7 +20,7 @@ export interface GetPaginatedGroupMessagesModel {
    pagingCursor?: string;
 }
 
-const getPaginatedGroupMessages = async (
+export const getPaginatedGroupMessages = async (
    model: GetPaginatedGroupMessagesModel
 ): Promise<CursorPaged<ChatGroupMessageEntry>> => {
    const { groupId, pageSize, pagingCursor } = model;

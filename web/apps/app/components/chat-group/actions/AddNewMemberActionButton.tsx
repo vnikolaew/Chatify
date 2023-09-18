@@ -1,7 +1,5 @@
 "use client";
-import TooltipWithPopoverActionButton from "@components/common/TooltipWithPopoverActionButton";
 import React, { Fragment, useCallback } from "react";
-import { PlusIcon } from "@icons";
 import {
    Button,
    CircularProgress,
@@ -9,65 +7,53 @@ import {
    useDisclosure,
    User,
 } from "@nextui-org/react";
-import { useAddChatGroupAdmin, useGetChatGroupDetailsQuery } from "@web/api";
-import { useCurrentChatGroup, useGetNewAdminSuggestions } from "@hooks";
+import { AddUserIcon, PlusIcon } from "@icons";
+import { useAddChatGroupMember, useGetMyFriendsQuery } from "@web/api";
+import TooltipWithPopoverActionButton from "@components/common/TooltipWithPopoverActionButton";
+import { useCurrentChatGroup, useGetNewMemberSuggestions } from "@hooks";
 import SadFaceIcon from "@components/icons/SadFaceIcon";
 
-export interface AddNewGroupAdminActionButtonProps {}
+export interface AddNewMemberActionButtonProps {}
 
-const AddNewGroupAdminActionButton =
-   ({}: AddNewGroupAdminActionButtonProps) => {
-      const { isOpen, onOpenChange } = useDisclosure({ defaultOpen: false });
+export const AddNewMemberActionButton = ({}: AddNewMemberActionButtonProps) => {
+   const { isOpen, onOpenChange } = useDisclosure({ defaultOpen: false });
+   return (
+      <TooltipWithPopoverActionButton
+         isOpen={isOpen}
+         onOpenChange={onOpenChange}
+         popoverContent={<AddNewMemberPopover />}
+         tooltipContent={"Add a new member"}
+         icon={<AddUserIcon fill={"white"} size={20} />}
+      />
+   );
+};
 
-      return (
-         <TooltipWithPopoverActionButton
-            isOpen={isOpen}
-            onOpenChange={onOpenChange}
-            popoverContent={<AddNewAdminPopover />}
-            popoverProps={{
-               classNames: {
-                  base: `pl-4 pr-0`,
-               },
-            }}
-            chipProps={{
-               classNames: {
-                  content: `w-8 h-8 p-0 flex items-center justify-center`,
-               },
-               className: `w-8 h-8 p-0`,
-            }}
-            tooltipContent={"Add a new member"}
-            icon={<PlusIcon className={"fill-foreground"} size={16} />}
-         />
-      );
-   };
-
-const AddNewAdminPopover = () => {
+const AddNewMemberPopover = () => {
+   const { data: friends, isLoading, error } = useGetMyFriendsQuery();
    const groupId = useCurrentChatGroup();
-   const { isLoading } = useGetChatGroupDetailsQuery(groupId);
    const {
-      mutateAsync: addNewAdmin,
+      mutateAsync: addNewMember,
       error: addMemberError,
       isLoading: addMemberLoading,
-   } = useAddChatGroupAdmin();
+   } = useAddChatGroupMember();
 
-   // Count only users that are friends but not group members:
-   const addAdminSuggestedUsers = useGetNewAdminSuggestions(groupId);
+   // Count only users that are friends but not group sidebar:
+   const addMemberSuggestedUsers = useGetNewMemberSuggestions(groupId);
 
-   const handleAddNewAdmin = useCallback(
-      async (newAdminId: string) => {
+   const handleAddNewMember = useCallback(
+      async (friendId: string) => {
          console.log("click");
-         await addNewAdmin({
+         await addNewMember({
+            newMemberId: friendId,
             chatGroupId: groupId,
-            newAdminId,
+            membershipType: 0,
          });
       },
-      [addNewAdmin, groupId]
+      [addNewMember, groupId]
    );
 
    return (
-      <div
-         className={`flex max-h-[300px] overflow-y-scroll py-4 flex-col items-start gap-3`}
-      >
+      <div className={`flex py-4 flex-col items-start gap-3`}>
          {isLoading && (
             <Fragment>
                {Array.from({ length: 5 }).map((_, i) => (
@@ -89,32 +75,34 @@ const AddNewAdminPopover = () => {
                ))}
             </Fragment>
          )}
-         {addAdminSuggestedUsers?.length === 0 && !isLoading && (
+         {addMemberSuggestedUsers?.length === 0 && !isLoading && (
             <div
                className={`text-default-300 my-2 gap-1 flex-col flex items-center w-full`}
             >
                <SadFaceIcon className={`fill-default-300`} size={20} />
-               <span>You have no suggestions for new members </span>
+               <span className={`text-xs`}>
+                  You have no suggestions for new members{" "}
+               </span>
             </div>
          )}
-         {addAdminSuggestedUsers?.map((user, i) => (
+         {addMemberSuggestedUsers?.map((friend, i) => (
             <div
                className={`flex w-full items-center justify-between gap-4`}
-               key={user.id}
+               key={friend.id}
             >
                <User
                   avatarProps={{
                      color: "danger",
-                     src: user.profilePicture.mediaUrl,
+                     src: friend.profilePicture.mediaUrl,
                      size: "sm",
-                     name: user.username,
+                     name: friend.username,
                   }}
-                  name={user.username}
-                  key={user.id}
+                  name={friend.username}
+                  key={friend.id}
                />
                <Button
                   radius={"full"}
-                  onPress={() => handleAddNewAdmin(user.id)}
+                  onPress={() => handleAddNewMember(friend.id)}
                   size={"sm"}
                   className={`bg-transparent hover:bg-default-300 duration-300 transition-background`}
                   startContent={
@@ -138,5 +126,3 @@ const AddNewAdminPopover = () => {
       </div>
    );
 };
-
-export default AddNewGroupAdminActionButton;

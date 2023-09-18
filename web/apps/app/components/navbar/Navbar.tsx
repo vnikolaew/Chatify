@@ -67,10 +67,10 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
                <h2 className={`ml-2 text-foreground`}>Chatify</h2>
             </Link>
          </NavbarBrand>
-         <NavbarContent justify={"end"} className={`flex gap-4`}>
+         <NavbarContent justify={"end"} className={`flex gap-1`}>
             {data?.claims && Object.keys(data?.claims).length ? (
                <Fragment>
-                  <NavbarItem>
+                  <NavbarItem className={`mr-4`}>
                      <UserDropdown />
                   </NavbarItem>
                   <NavbarItem>

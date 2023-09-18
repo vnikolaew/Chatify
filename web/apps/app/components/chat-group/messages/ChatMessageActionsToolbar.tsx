@@ -4,29 +4,25 @@ import TooltipButton from "@components/common/TooltipButton";
 import { PinIcon } from "@icons";
 import CommentIcon from "@components/icons/CommentIcon";
 import ForwardIcon from "@components/icons/ForwardIcon";
-import { Spinner, useDisclosure } from "@nextui-org/react";
-import VerticalDotsIcon from "@components/icons/VerticalDotsIcon";
-import TooltipWithPopoverActionButton from "@components/common/TooltipWithPopoverActionButton";
-import { EditIcon } from "lucide-react";
-import ThrashIcon from "@components/icons/ThrashIcon";
+import { Spinner } from "@nextui-org/react";
 import { usePinGroupChatMessage } from "@web/api";
 import { useCurrentChatGroup } from "@hooks";
+import ChatMessageMoreActionsButton from "@components/chat-group/messages/ChatMessageMoreActionsButton";
+import { EditIcon } from "lucide-react";
 
 export interface ChatMessageActionsToolbarProps {
    showMoreActions: boolean;
    onOpenForwardMessageModal: () => void;
    messageId: string;
+   onEditMessageChange?: (editing: boolean) => void;
 }
 
 const ChatMessageActionsToolbar = ({
-   showMoreActions,
-   onOpenForwardMessageModal,
-   messageId,
-}: ChatMessageActionsToolbarProps) => {
-   const {
-      isOpen: isMoreActionsDropdownMenuOpen,
-      onOpenChange: onnMoreActionsDropdownMenuOpenChange,
-   } = useDisclosure({ defaultOpen: false });
+                                      showMoreActions,
+                                      onOpenForwardMessageModal,
+   onEditMessageChange,
+                                      messageId,
+                                   }: ChatMessageActionsToolbarProps) => {
    const groupId = useCurrentChatGroup();
    const {
       mutateAsync: pinMessage,
@@ -42,13 +38,14 @@ const ChatMessageActionsToolbar = ({
                await pinMessage({ messageId, groupId });
             },
             loading: pinLoading,
-            Icon: PinIcon,
+            Icon: <PinIcon className={`fill-foreground`} size={14} />,
          },
          {
             label: "Reply to this message",
-            action: async () => {},
+            action: async () => {
+            },
             loading: false,
-            Icon: CommentIcon,
+            Icon: <CommentIcon className={`fill-foreground`} size={14} />,
          },
          {
             label: "Forward this message",
@@ -57,7 +54,16 @@ const ChatMessageActionsToolbar = ({
                onOpenForwardMessageModal();
             },
             loading: false,
-            Icon: ForwardIcon,
+            Icon: <ForwardIcon className={`fill-foreground`} size={14} />,
+         },
+         {
+            label: "Edit",
+            action: async () => {
+               console.log(`Editing message ...`);
+               onEditMessageChange(true)
+            },
+            loading: false,
+            Icon: <EditIcon className={`stroke-foreground`} size={14} />,
          },
       ];
    }, [pinMessage, messageId, groupId, pinLoading]);
@@ -69,6 +75,7 @@ const ChatMessageActionsToolbar = ({
          {messageActions.map(({ label, Icon, action, loading }, i) => (
             <TooltipButton
                radius={"full"}
+               key={label}
                placement={"top"}
                onClick={action}
                chipProps={{
@@ -93,67 +100,18 @@ const ChatMessageActionsToolbar = ({
                         color={`white`}
                      />
                   ) : (
-                     <Icon className={`fill-foreground`} size={14} />
+                     Icon
                   )
                }
                content={label}
             />
          ))}
          {showMoreActions && (
-            <TooltipWithPopoverActionButton
-               popoverContent={<MoreMessageActionsDropdown />}
-               tooltipContent={"More actions"}
-               icon={
-                  <VerticalDotsIcon className={`fill-foreground`} size={14} />
-               }
-               isOpen={isMoreActionsDropdownMenuOpen}
-               popoverProps={{
-                  offset: 0,
-                  classNames: {
-                     base: `p-0 rounded-md`,
-                  },
-               }}
-               tooltipProps={{
-                  placement: "top",
-                  classNames: { base: `p-0 px-2 text-[.7rem]` },
-               }}
-               chipProps={{
-                  color: `default`,
-                  variant: `light`,
-                  radius: "sm",
-                  classNames: {
-                     base: "h-7 w-7 px-0",
-                  },
-               }}
-               onOpenChange={onnMoreActionsDropdownMenuOpenChange}
-            />
+            <ChatMessageMoreActionsButton  />
          )}
       </div>
    );
 };
 
-const MoreMessageActionsDropdown = () => {
-   return (
-      <div
-         className={`flex z-30 cursor-pointer my-2 min-w-[150px] py-1 w-full text-xs flex-col items-start gap-1`}
-      >
-         <div
-            className={`text-foreground py-1 group flex items-center justify-between px-2 w-full hover:bg-primary`}
-         >
-            <span>Edit message</span>
-            <EditIcon className={`invisible group-hover:visible`} size={12} />
-         </div>
-         <div
-            className={`text-danger flex items-center font-light group py-1 transition-all duration-[50ms] hover:text-foreground justify-between px-2 w-full hover:bg-danger`}
-         >
-            <span className={`group-hover:font-normal`}>Delete message</span>
-            <ThrashIcon
-               className={`invisible fill-foreground group-hover:visible`}
-               size={14}
-            />
-         </div>
-      </div>
-   );
-};
 
 export default ChatMessageActionsToolbar;

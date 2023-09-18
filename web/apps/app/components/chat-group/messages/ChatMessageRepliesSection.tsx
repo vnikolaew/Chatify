@@ -3,10 +3,10 @@ import React from "react";
 import { getMediaUrl, useGetPaginatedMessageRepliesQuery } from "@web/api";
 import { Avatar, Divider, Link, Skeleton, Tooltip } from "@nextui-org/react";
 import { twMerge } from "tailwind-merge";
-import { ChatGroupMemberInfoCard } from "@components/members";
 import moment from "moment";
 import { useCurrentUserId } from "@hooks";
 import { ChatMessageReactionSection } from "@components/chat-group";
+import ChatGroupMemberInfoCard from "@components/sidebar/members/ChatGroupMemberInfoCard";
 
 export interface ChatMessageRepliesSectionProps {
    messageId: string;

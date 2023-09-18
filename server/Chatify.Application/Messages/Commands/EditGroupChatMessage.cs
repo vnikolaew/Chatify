@@ -1,16 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Application.Messages.Common;
+using Chatify.Application.Messages.Contracts;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
-using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
 using OneOf;
+using static Chatify.Application.Common.Contracts.FolderConstants;
 using MessageNotFoundError = Chatify.Application.Messages.Common.MessageNotFoundError;
 
 namespace Chatify.Application.Messages.Commands;
@@ -19,7 +21,8 @@ using EditGroupChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMessageS
 
 public abstract record AttachmentOperation;
 
-public record AddAttachmentOperation(InputFile InputFile) : AttachmentOperation;
+public record AddAttachmentOperation(InputFile InputFile,
+    string? Location = default) : AttachmentOperation;
 
 public record DeleteAttachmentOperation(Guid AttachmentId) : AttachmentOperation;
 
@@ -31,6 +34,7 @@ public record EditGroupChatMessage(
     : ICommand<EditGroupChatMessageResult>;
 
 internal sealed class EditGroupChatMessageHandler(IIdentityContext identityContext,
+        IMessageContentNormalizer contentNormalizer,
         IDomainRepository<ChatMessage, Guid> messages,
         IEventDispatcher eventDispatcher,
         IClock clock,
@@ -49,12 +53,17 @@ internal sealed class EditGroupChatMessageHandler(IIdentityContext identityConte
         await messages.UpdateAsync(message, async chatMessage =>
         {
             chatMessage.UpdatedAt = clock.Now;
-            chatMessage.Content = command.NewContent;
+            chatMessage.Content = contentNormalizer.Normalize(command.NewContent);
 
-            if ( command.AttachmentOperations?.Any() ?? false)
+            if ( command.AttachmentOperations?.Any() ?? false )
             {
                 await attachmentOperationHandler
-                    .HandleAsync(message, command.AttachmentOperations, cancellationToken);
+                    .HandleAsync(message,
+                        command.AttachmentOperations.Select(o =>
+                            o is AddAttachmentOperation ao
+                                ? ao with { Location = FolderConstants.ChatGroups.Media.Root }
+                                : o),
+                        cancellationToken);
             }
         }, cancellationToken);
 

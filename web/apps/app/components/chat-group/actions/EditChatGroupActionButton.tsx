@@ -68,7 +68,7 @@ const EditChatGroupActionButton = ({
                      <ModalFooter>
                         <Button
                            variant={`shadow`}
-                           size={`sm`}
+                           size={`md`}
                            color={`danger`}
                            className={``}
                            onPress={onClose}
@@ -76,12 +76,12 @@ const EditChatGroupActionButton = ({
                            Cancel
                         </Button>
                         <Button
-                           size={`sm`}
+                           size={`md`}
                            variant={`shadow`}
                            onPress={onClose}
                            isDisabled={!isDirty}
                            color={`default`}
-                           className={``}
+                           className={`ml-2`}
                         >
                            Save changes
                         </Button>

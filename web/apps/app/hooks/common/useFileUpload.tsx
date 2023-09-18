@@ -3,8 +3,8 @@ import React, { useMemo, useRef, useState } from "react";
 import { ChatifyFile } from "@components/chat-group/messages/editor/MessageTextEditor";
 import { v4 as uuidv4 } from "uuid";
 
-export function useFileUpload() {
-   const [attachedFiles, setAttachedFiles] = useState<ChatifyFile[]>([]);
+export function useFileUpload(initialFiles?: ChatifyFile[]) {
+   const [attachedFiles, setAttachedFiles] = useState<ChatifyFile[]>(() => initialFiles ?? []);
 
    // Mapping of File ID -> File Object URL
    const attachedFilesUrls = useMemo<Map<string, string>>(
@@ -13,9 +13,9 @@ export function useFileUpload() {
             attachedFiles.map((file) => [
                file.id,
                URL.createObjectURL(file.file),
-            ])
+            ]),
          ),
-      [attachedFiles]
+      [attachedFiles],
    );
    const fileUploadRef = useRef<HTMLInputElement>(null!);
 
@@ -25,10 +25,10 @@ export function useFileUpload() {
    const clearFiles = () => setAttachedFiles([]);
 
    const handleFileUpload: React.ChangeEventHandler<HTMLInputElement> = async ({
-      target: { files },
-   }) => {
+                                                                                  target: { files },
+                                                                               }) => {
       const newFiles = Array.from({ length: files.length }).map((_, i) =>
-         files.item(i)
+         files.item(i),
       );
       setAttachedFiles((files) => [
          ...files,

@@ -24,22 +24,29 @@ export interface SendGroupChatMessageModel {
    metadata?: Record<string, string>;
 }
 
-const sendGroupChatMessage = async (
-   model: SendGroupChatMessageModel
-): Promise<string> => {
+export function toFormData(model: SendGroupChatMessageModel) {
    const { chatGroupId, ...request } = model;
 
    const formData = new FormData();
+
    formData.append("content", request.content);
+   formData.append("groupId", chatGroupId);
+
    (request.files ?? []).forEach((file, i) =>
       formData.append(`files`, file, file.name)
    );
    if (request.metadata)
       formData.append("metadata", JSON.stringify(request.metadata));
 
+   return formData;
+}
+
+const sendGroupChatMessage = async (
+   model: SendGroupChatMessageModel
+): Promise<string> => {
    const { status, data } = await messagesClient.postForm<ObjectApiResponse>(
-      `${chatGroupId}`,
-      formData,
+      `${model.chatGroupId}`,
+      toFormData(model),
       {
          headers: {},
       }
@@ -100,7 +107,7 @@ export const useSendGroupChatMessageMutation = () => {
                         createdAt: new Date().toString(),
                         reactionCounts: {},
                      },
-                     forwardedMessage: {},
+                     forwardedMessage: null!,
                      repliersInfo: {
                         replierInfos: [],
                         total: 0,

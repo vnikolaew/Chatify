@@ -7,7 +7,10 @@ using OneOf;
 
 namespace Chatify.Infrastructure.FileStorage;
 
-public class LocalFileSystemUploadService(IWebHostEnvironment environment, IUrlHelper urlHelper) : IFileUploadService
+public class LocalFileSystemUploadService(
+    IWebHostEnvironment environment,
+    IUrlHelper urlHelper,
+    IGuidGenerator guidGenerator) : IFileUploadService
 {
     private readonly string _fileStorageBaseFolder = Path.Combine(environment.ContentRootPath, "Files");
     private const long MaxFileUploadSizeLimit = 50 * 1024 * 1024;
@@ -30,24 +33,33 @@ public class LocalFileSystemUploadService(IWebHostEnvironment environment, IUrlH
 
         if ( !AllowedFileTypes.Contains(fileExtension) )
         {
-            return Error.New($"Files with extension {fileExtension} are not allowed.");
+            return Error.New($"Files with extension `{fileExtension}` are not allowed.");
         }
 
-        var newFileId = Guid.NewGuid();
+        var newFileId = guidGenerator.New();
         var newFileName = singleFileUploadRequest.UserId.HasValue
             ? $"{singleFileUploadRequest.UserId}_{newFileId}_{fileNameWithoutExtension}.{fileExtension}"
             : $"{newFileId}_{fileNameWithoutExtension}.{fileExtension}";
 
         if ( !Directory.Exists(_fileStorageBaseFolder) ) Directory.CreateDirectory(_fileStorageBaseFolder);
 
-        await using var fileStream = File.Open(Path.Combine(_fileStorageBaseFolder, newFileName), FileMode.CreateNew,
+        var newFileLocation = Path.Combine(
+            _fileStorageBaseFolder,
+            singleFileUploadRequest.Location?.Trim() ?? string.Empty,
+            newFileName);
+
+        await using var fileStream = File.Open(
+            newFileLocation,
+            FileMode.CreateNew,
             FileAccess.Write);
         await file.Data.CopyToAsync(fileStream, cancellationToken);
 
         return new FileUploadResult
         {
             FileId = newFileId,
-            FileUrl = newFileName,
+            FileUrl = Path.Combine(
+                singleFileUploadRequest.Location?.Trim() ?? string.Empty,
+                newFileName),
             FileName = newFileName,
             FileType = fileExtension
         };
@@ -58,7 +70,7 @@ public class LocalFileSystemUploadService(IWebHostEnvironment environment, IUrlH
         CancellationToken cancellationToken = default)
     {
         if ( !urlHelper.IsLocalUrl(singleFileDeleteRequest.FileUrl) ) return Unit.Default;
-        
+
         var filePath = Path.Combine(_fileStorageBaseFolder, singleFileDeleteRequest.FileUrl);
         if ( !File.Exists(filePath) ) return Error.New("Specified file not found.");
 
@@ -75,7 +87,8 @@ public class LocalFileSystemUploadService(IWebHostEnvironment environment, IUrlH
             .Select(f => UploadAsync(new SingleFileUploadRequest
             {
                 File = f,
-                UserId = multipleFileUploadRequest.UserId
+                UserId = multipleFileUploadRequest.UserId,
+                Location = multipleFileUploadRequest.Location
             }, cancellationToken)).ToList();
 
         var uploadResults = await Task.WhenAll(uploadTasks);

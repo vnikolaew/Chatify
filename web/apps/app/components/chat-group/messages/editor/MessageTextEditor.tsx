@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { HTMLAttributes, useCallback, useEffect, useMemo, useState } from "react";
 import { DefaultElement, Editable, Slate, withReact } from "slate-react";
 import { createEditor, Text, Transforms } from "slate";
 import {
@@ -17,8 +17,12 @@ import { RightArrow } from "@icons";
 import UploadIcon from "@components/icons/UploadIcon";
 import { ChatGroupDetailsEntry } from "@openapi";
 import MessageTextEditorToolbar from "@components/chat-group/messages/editor/MessageTextEditorToolbar";
-import { useSendGroupChatMessageMutation } from "@web/api";
-import { useCurrentChatGroup } from "@hooks";
+import {
+   useDraftChatMessage,
+   useGetDraftedMessageForGroup,
+   useSendGroupChatMessageMutation,
+} from "@web/api";
+import { useCurrentChatGroup, useOnWindowLocationChange } from "@hooks";
 import * as escaper from "html-escaper";
 import { plateToMarkdown } from "slate-mark";
 
@@ -27,6 +31,10 @@ import { markdownProcessor } from "apps/app/utils";
 import { useChatifyClientContext } from "apps/app/hub/ChatHubConnection";
 import { useFileUpload } from "@hooks";
 import ChatMessageAttachmentEntry from "./ChatMessageAttachmentEntry";
+import { ChatGroupChangedEvent } from "../../../../app/(c)/MainLayout";
+import { unified } from "unified";
+import markdown from "remark-parse";
+import slate from "remark-slate";
 
 export class ChatifyFile {
    public readonly id: string;
@@ -38,8 +46,10 @@ export class ChatifyFile {
    }
 }
 
-export interface MessageTextEditorProps {
+export interface MessageTextEditorProps extends HTMLAttributes<HTMLDivElement> {
    chatGroup: ChatGroupDetailsEntry;
+   initialContent?: string;
+   initialAttachments?: Map<string, ChatifyFile>; // File URL -> File instance
    placeholder?: string;
 }
 
@@ -77,9 +87,12 @@ function serializer(node: any) {
 }
 
 const MessageTextEditor = ({
-   chatGroup,
-   placeholder,
-}: MessageTextEditorProps) => {
+                              chatGroup,
+                              initialAttachments, initialContent,
+                              placeholder,
+                              className,
+                              ...props
+                           }: MessageTextEditorProps) => {
    const [editor] = useState(() => withReact(createEditor()));
    const hubClient = useChatifyClientContext();
    const [isUserTyping, setIsUserTyping] = useState(false);
@@ -90,8 +103,27 @@ const MessageTextEditor = ({
       handleFileUpload,
       handleRemoveFile,
       clearFiles,
-   } = useFileUpload();
+   } = useFileUpload([...(initialAttachments?.values() ?? [])]);
+
    const groupId = useCurrentChatGroup();
+   const {
+      data: draftedMessage,
+      error: draftMessageError,
+      isLoading: draftMessageLoading,
+   } = useGetDraftedMessageForGroup(groupId, {
+      suspense: true,
+      refetchOnMount: `always`,
+      onError: console.error,
+   });
+
+   const {
+      mutateAsync: draftChatMessage,
+      isLoading: draftLoading,
+      error: draftError,
+   } = useDraftChatMessage();
+   useOnWindowLocationChange(async (e: ChatGroupChangedEvent) => {
+      await handleDraftMessage(e.from);
+   });
 
    useEffect(() => {
       if (isUserTyping) {
@@ -140,15 +172,26 @@ const MessageTextEditor = ({
       }
    }, []);
 
-   const initialValue = useMemo(
-      () => [
-         {
-            type: "paragraph",
-            children: [{ text: "" }],
-         },
-      ],
-      []
-   );
+   console.log(`Initial editor content: ${initialContent}`);
+   const initialValue = useMemo(() => {
+      if (!draftedMessage || !initialContent) {
+         return [
+            {
+               type: "paragraph",
+               children: [{ text: "" }],
+            },
+         ];
+      } else {
+         const result = unified()
+            //@ts-ignore
+            .use(markdown)
+            .use(slate)
+            .processSync(initialContent ?? draftedMessage.content);
+         console.log(`Result: `, {result});
+         return result.result;
+      }
+   }, [draftedMessage, groupId, initialContent]);
+
    // Define a leaf rendering function that is memoized with `useCallback`.
    const renderLeaf = useCallback((props) => {
       return <Leaf {...props} />;
@@ -158,7 +201,41 @@ const MessageTextEditor = ({
       const content = plateToMarkdown(editor.children);
       CustomEditor.clear(editor);
 
+      console.log(`Content: ${content}`);
+      const result = unified().use(markdown).use(slate).processSync(content);
+      const result2 = unified()
+         .use(markdown)
+         .use(slate)
+         .processSync(`**sdfsfsfs**`);
+
+      console.log(result.result);
+      console.log(result2);
+
       await sendMessage(
+         {
+            content: markdownProcessor.processSync(content).value as string,
+            chatGroupId: groupId,
+            files: attachedFiles.map((_) => _.file),
+         },
+         {
+            onSuccess: (_, {}) => {
+               clearFiles();
+               CustomEditor.clear(editor);
+            },
+            onSettled: () => {
+               setIsUserTyping(false);
+            },
+         },
+      );
+   }
+
+   async function handleDraftMessage(groupId: string) {
+      const content = plateToMarkdown(editor.children);
+      CustomEditor.clear(editor);
+
+      if (content?.trim()?.length === 0) return;
+
+      await draftChatMessage(
          {
             content: markdownProcessor.processSync(content).value as string,
             chatGroupId: groupId,
@@ -167,7 +244,7 @@ const MessageTextEditor = ({
          {
             onSuccess: (_, {}) => clearFiles(),
             onSettled: () => setIsUserTyping(false),
-         }
+         },
       );
    }
 
@@ -180,7 +257,7 @@ const MessageTextEditor = ({
          editor={editor}
          initialValue={initialValue}
       >
-         <div className={`relative h-fit w-5/6 mr-12`}>
+         <div className={`relative h-fit w-5/6 mr-12 ${className}`} {...props}>
             <Editable
                placeholder={placeholder}
                className={`bg-zinc-900 !break-words !whitespace-nowrap ${
@@ -314,13 +391,13 @@ const MessageTextEditor = ({
                      size={"md"}
                      {...(!isLoading
                         ? {
-                             endContent: (
-                                <RightArrow
-                                   className={`fill-white group-hover:fill-white`}
-                                   size={20}
-                                />
-                             ),
-                          }
+                           endContent: (
+                              <RightArrow
+                                 className={`fill-white group-hover:fill-white`}
+                                 size={20}
+                              />
+                           ),
+                        }
                         : {})}
                   >
                      {isLoading ? "Sending" : "Send"}

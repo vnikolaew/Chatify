@@ -1,8 +1,8 @@
 "use client";
 import React, { useMemo } from "react";
-import AddNewGroupAdminActionButton from "@components/members/AddNewGroupAdminActionButton";
+import AddNewGroupAdminActionButton from "@components/sidebar/members/AddNewGroupAdminActionButton";
 import { Skeleton } from "@nextui-org/react";
-import { ChatGroupMemberEntry } from "@components/members/index";
+import ChatGroupMemberEntry from "./ChatGroupMemberEntry";
 import {
    getUserDetails,
    useGetChatGroupDetailsQuery,

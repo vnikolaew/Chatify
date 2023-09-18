@@ -26,6 +26,8 @@
         <Folder Include="FastEndpoints-Features\JoinRequests\" />
         <Folder Include="FastEndpoints-Features\Profile\" />
         <Folder Include="FastEndpoints-Features\Reactions\" />
+        <Folder Include="Files\ChatGroups\Media\" />
+        <Folder Include="Files\Users\ProfilePictures\" />
         <Folder Include="swagger\v1"/>
     </ItemGroup>
     <ItemGroup>

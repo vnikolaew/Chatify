@@ -1,16 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
+using Chatify.Application.Messages.Commands.Common;
 using Chatify.Application.Messages.Common;
+using Chatify.Application.Messages.Contracts;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
 using Chatify.Domain.Repositories;
-using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
-using LanguageExt.Common;
 using OneOf;
 
 namespace Chatify.Application.Messages.Commands;
@@ -22,19 +22,21 @@ public record SendGroupChatMessage(
     [Required, MinLength(1), MaxLength(500)]
     string Content,
     [Required] IEnumerable<InputFile>? Attachments = default
-) : ICommand<SendGroupChatMessageResult>;
+) : SendChatMessageBase<SendGroupChatMessageResult>(Content, Attachments);
 
 internal sealed class SendGroupChatMessageHandler(IDomainRepository<ChatGroup, Guid> groups,
         IIdentityContext identityContext,
+        IMessageContentNormalizer contentNormalizer,
         IClock clock,
+        
         IChatGroupMemberRepository members,
         IChatMessageRepository messages,
         IGuidGenerator guidGenerator,
         IEventDispatcher eventDispatcher,
         IFileUploadService fileUploadService)
-    : ICommandHandler<SendGroupChatMessage, SendGroupChatMessageResult>
+    : SendChatMessageBaseHandler<SendGroupChatMessage, SendGroupChatMessageResult>(fileUploadService, identityContext)
 {
-    public async Task<SendGroupChatMessageResult> HandleAsync(
+    public override async Task<SendGroupChatMessageResult> HandleAsync(
         SendGroupChatMessage command,
         CancellationToken cancellationToken = default)
     {
@@ -51,20 +53,7 @@ internal sealed class SendGroupChatMessageHandler(IDomainRepository<ChatGroup, G
         var uploadedFileResults = await HandleFileUploads(
             command.Attachments,
             cancellationToken);
-
-        var uploadedFiles = uploadedFileResults
-            .Where(r => r.IsT1)
-            .Select(r => r.AsT1)
-            .ToList();
-
-        var attachments = uploadedFiles
-            .Select(r => new Media
-            {
-                Id = r.FileId,
-                MediaUrl = r.FileUrl,
-                Type = r.FileType,
-                FileName = r.FileName
-            }).ToList();
+        var attachments = GetMediae(uploadedFileResults);
 
         var messageId = guidGenerator.New();
         var message = new ChatMessage
@@ -75,7 +64,7 @@ internal sealed class SendGroupChatMessageHandler(IDomainRepository<ChatGroup, G
             CreatedAt = clock.Now,
             ChatGroupId = chatGroup.Id,
             Attachments = attachments,
-            Content = command.Content
+            Content = contentNormalizer.Normalize(command.Content)
         };
 
         await messages.SaveAsync(message, cancellationToken);
@@ -90,20 +79,5 @@ internal sealed class SendGroupChatMessageHandler(IDomainRepository<ChatGroup, G
         }, cancellationToken);
 
         return message.Id;
-    }
-
-    private async Task<List<OneOf<Error, FileUploadResult>>> HandleFileUploads(
-        IEnumerable<InputFile>? inputFiles,
-        CancellationToken cancellationToken)
-    {
-        if ( inputFiles is null || !inputFiles.Any() ) return new List<OneOf<Error, FileUploadResult>>();
-
-        var uploadRequest = new MultipleFileUploadRequest
-        {
-            Files = inputFiles,
-            UserId = identityContext.Id
-        };
-
-        return await fileUploadService.UploadManyAsync(uploadRequest, cancellationToken);
     }
 }

@@ -39,6 +39,7 @@ internal sealed class EditChatGroupDetailsHandler(IDomainRepository<ChatGroup, G
 
         var isMember = await members.Exists(group.Id, identityContext.Id, cancellationToken);
         if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, group.Id);
+        
         if ( !group.AdminIds.Contains(identityContext.Id) )
             return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
 
@@ -57,7 +58,7 @@ internal sealed class EditChatGroupDetailsHandler(IDomainRepository<ChatGroup, G
                 if ( deleteResult.Value is Error error ) return new FileUploadError(error.Message);
             }
 
-            var result = await fileUploadService.UploadAsync(
+            var result = await fileUploadService.UploadChatGroupMediaAsync(
                 new SingleFileUploadRequest
                 {
                     UserId = identityContext.Id,

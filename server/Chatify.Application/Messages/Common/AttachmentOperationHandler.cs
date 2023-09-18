@@ -4,6 +4,7 @@ using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Time;
+using LanguageExt;
 
 namespace Chatify.Application.Messages.Common;
 
@@ -32,11 +33,12 @@ public class AttachmentOperationHandler(IFileUploadService fileUploadService,
         CancellationToken cancellationToken = default)
     {
         var uploadResult = await fileUploadService.UploadAsync(
-                new SingleFileUploadRequest
-                {
-                    UserId = identityContext.Id,
-                    File = addAttachmentOperation.InputFile
-                }, cancellationToken);
+            new SingleFileUploadRequest
+            {
+                UserId = identityContext.Id,
+                File = addAttachmentOperation.InputFile,
+                Location = addAttachmentOperation.Location
+            }, cancellationToken);
         if ( uploadResult.IsT0 ) return;
 
         var fileUploadResult = uploadResult.AsT1;
@@ -48,7 +50,7 @@ public class AttachmentOperationHandler(IFileUploadService fileUploadService,
             Type = fileUploadResult.FileType,
         };
         message.AddAttachment(newMedia);
-        
+
         // Add attachment to Attachments "View" table:
         var attachment = new ChatGroupAttachment
         {
@@ -78,12 +80,12 @@ public class AttachmentOperationHandler(IFileUploadService fileUploadService,
                 FileUrl = media.MediaUrl,
                 UserId = identityContext.Id
             }, cancellationToken);
-        
-        deleteResult.MapT1(async _ =>
+
+        if ( deleteResult.Value is Unit)
         {
             message.DeleteAttachment(media.Id);
             await attachments.DeleteAsync(media.Id, cancellationToken);
-        });
+        }
     }
 
     public async Task HandleAsync(

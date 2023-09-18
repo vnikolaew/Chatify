@@ -2,6 +2,7 @@
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Application.Messages.Common;
+using Chatify.Application.Messages.Contracts;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
@@ -25,6 +26,7 @@ public record ReplyToChatMessage(
 ) : ICommand<ReplyToChatMessageResult>;
 
 internal sealed class ReplyToChatMessageHandler(IChatGroupMemberRepository members,
+        IMessageContentNormalizer contentNormalizer,
         IIdentityContext identityContext,
         IDomainRepository<ChatMessage, Guid> messages,
         IEventDispatcher eventDispatcher,
@@ -52,7 +54,7 @@ internal sealed class ReplyToChatMessageHandler(IChatGroupMemberRepository membe
             ChatGroupId = command.GroupId,
             UserId = identityContext.Id,
             ReplyToId = message.Id,
-            Content = command.Content,
+            Content = contentNormalizer.Normalize(command.Content),
             CreatedAt = clock.Now,
             ReactionCounts = new Dictionary<long, long>()
         };

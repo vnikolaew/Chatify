@@ -1,6 +1,7 @@
 "use client";
 import React, {
    Fragment,
+   Suspense,
    UIEventHandler,
    useCallback,
    useEffect,
@@ -13,7 +14,7 @@ import {
    useGetChatGroupDetailsQuery,
    useGetPaginatedGroupMessagesQuery,
 } from "@web/api";
-import { Button, ScrollShadow, Tooltip } from "@nextui-org/react";
+import { Button, ScrollShadow, Skeleton, Tooltip } from "@nextui-org/react";
 import { ChatMessageEntry } from "@components/chat-group";
 import DownArrow from "@components/icons/DownArrow";
 import StartupRocketIcon from "@components/icons/StartupRocketIcon";
@@ -210,18 +211,24 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                <div
                   className={`mt-4 w-full flex flex-col items-start gap-8 mx-4`}
                >
-                  <MessageTextEditor
-                     chatGroup={groupDetails}
-                     placeholder={
-                        isPrivate
-                           ? `Message ${
-                                groupDetails?.members?.find(
-                                   (_) => _.id !== meId
-                                )?.username
-                             }`
-                           : `Message in ${groupDetails?.chatGroup.name}`
+                  <Suspense
+                     fallback={
+                        <Skeleton className={`w-full h-16 rounded-small`} />
                      }
-                  />
+                  >
+                     <MessageTextEditor
+                        chatGroup={groupDetails}
+                        placeholder={
+                           isPrivate
+                              ? `Message ${
+                                   groupDetails?.members?.find(
+                                      (_) => _.id !== meId
+                                   )?.username
+                                }`
+                              : `Message in ${groupDetails?.chatGroup.name}`
+                        }
+                     />
+                  </Suspense>
                </div>
             </Fragment>
          )}

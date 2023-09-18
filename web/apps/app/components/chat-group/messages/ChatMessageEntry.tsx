@@ -1,20 +1,18 @@
 "use client";
 import { ChatGroupMessageEntry } from "@openapi";
 import {
-   Avatar,
+   Avatar, Button,
    Chip,
-   Divider,
    Link,
    Tooltip,
    useDisclosure,
 } from "@nextui-org/react";
 import { getMediaUrl, useGetChatGroupDetailsQuery } from "@web/api";
 import { twMerge } from "tailwind-merge";
-import { ChatGroupMemberInfoCard } from "@components/members";
 import moment from "moment/moment";
 import React, { Fragment, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useHover } from "@hooks";
+import { useCurrentChatGroup, useCurrentUserId, useHover } from "@hooks";
 import {
    MessageAttachmentsSection,
    ExpandRepliesLink,
@@ -25,6 +23,8 @@ import {
 import { Pin } from "lucide-react";
 import ForwardChatMessageModal from "@components/chat-group/messages/ForwardChatMessageModal";
 import ForwardedChatMessageEntry from "@components/chat-group/messages/ForwardedChatMessageEntry";
+import ChatGroupMemberInfoCard from "@components/sidebar/members/ChatGroupMemberInfoCard";
+import MessageTextEditor, { ChatifyFile } from "./editor/MessageTextEditor";
 
 export interface ChatMessageEntryProps
    extends React.DetailedHTMLProps<
@@ -37,14 +37,16 @@ export interface ChatMessageEntryProps
 }
 
 export const ChatMessageEntry = ({
-   message,
-   isMe,
-   showReplies = false,
-   className,
-   ...rest
-}: ChatMessageEntryProps) => {
+                                    message,
+                                    isMe,
+                                    showReplies = false,
+                                    className,
+                                    ...rest
+                                 }: ChatMessageEntryProps) => {
    const [repliesExpanded, setRepliesExpanded] = useState(showReplies);
-   const [messageSectionRef, showMessageActions] = useHover<HTMLDivElement>();
+   const [messageSectionRef, showMessageActions, setShowMessageActions] = useHover<HTMLDivElement>();
+   const meId = useCurrentUserId();
+   const [isEditingMessage, setIsEditingMessage] = useState(false);
 
    const {
       isOpen: forwardMessageModalOpen,
@@ -53,20 +55,20 @@ export const ChatMessageEntry = ({
    } = useDisclosure();
 
    const { data: groupDetails } = useGetChatGroupDetailsQuery(
-      message.message.chatGroupId
+      message.message.chatGroupId,
    );
 
    const isPinned = useMemo(
       () =>
          groupDetails?.chatGroup?.pinnedMessages?.some(
-            (m) => m.messageId === message?.message.id
+            (m) => m.messageId === message?.message.id,
          ),
-      [groupDetails?.chatGroup?.pinnedMessages, message?.message.id]
+      [groupDetails?.chatGroup?.pinnedMessages, message?.message.id],
    );
 
    const hasReplies = useMemo(
       () => message.repliersInfo.total > 0,
-      [message.repliersInfo.total]
+      [message.repliersInfo.total],
    );
 
    const hasAttachments = useMemo(() => {
@@ -86,13 +88,12 @@ export const ChatMessageEntry = ({
          {...rest}
       >
          {showMessageActions && (
-            <Fragment>
-               <ChatMessageActionsToolbar
-                  messageId={message.message.id}
-                  onOpenForwardMessageModal={onOpen}
-                  showMoreActions={isMe}
-               />
-            </Fragment>
+            <ChatMessageActionsToolbar
+               onEditMessageChange={setIsEditingMessage}
+               messageId={message.message.id}
+               onOpenForwardMessageModal={onOpen}
+               showMoreActions={isMe}
+            />
          )}
          <ForwardChatMessageModal
             message={message?.message}
@@ -106,16 +107,20 @@ export const ChatMessageEntry = ({
                   className={`stroke-warning fill-warning -rotate-[30deg]`}
                />
                <span className={`text-xs text-default-500`}>
-                  Pinned by{" "}
-                  {
-                     groupDetails?.members?.find(
-                        (m) =>
-                           m.id ===
-                           groupDetails?.chatGroup?.pinnedMessages?.find(
-                              (m) => m.messageId === message.message.id
-                           )?.pinnerId
-                     )?.username
-                  }
+                  Pinned by{" "}<b>
+            {
+               groupDetails?.chatGroup?.pinnedMessages?.find(
+                  (m) => m.messageId === message.message.id,
+               )?.pinnerId === meId ? `you` :
+                  groupDetails?.members?.find(
+                     (m) =>
+                        m.id ===
+                        groupDetails?.chatGroup?.pinnedMessages?.find(
+                           (m) => m.messageId === message.message.id,
+                        )?.pinnerId,
+                  )?.username
+            }
+            </b>
                </span>
             </div>
          )}
@@ -133,7 +138,7 @@ export const ChatMessageEntry = ({
             />
             <div
                className={twMerge(
-                  `flex flex-col justify-evenly self-start items-start gap-0`
+                  `flex flex-col justify-evenly self-start items-start gap-0`,
                )}
             >
                <div className={twMerge(`items-center flex gap-2`)}>
@@ -165,24 +170,41 @@ export const ChatMessageEntry = ({
                   </Tooltip>
                   <time className={`text-xs font-light text-default-500`}>
                      {moment(new Date(message.message.createdAt)).format(
-                        "HH:MM DD/MM/YYYY"
+                        "HH:MM DD/MM/YYYY",
                      )}
                   </time>
                </div>
+               {isEditingMessage ? (
+                  <div className={`flex flex-col gap-1 w-full min-w-[700px]`}>
+                     <span className={`text-small`}>
+                      Editing message ...
+                     </span>
+                     <MessageTextEditor
+                        className={`mt-2`}
+                        initialAttachments={new Map<string, ChatifyFile>(message?.message?.attachments?.map(a => {
+                           return [a.mediaUrl, new ChatifyFile(new File([], a.fileName, { type: a.type })!, a.id)]!;
+                        }))} initialContent={message?.message?.content} chatGroup={groupDetails} />
+                     <Button className={`self-end`} size={`sm`} color={`danger`} variant={`solid`}
+                             onPress={_ => setIsEditingMessage(false)}>Cancel</Button>
+                  </div>
+               ) : (
+                  <Fragment>
                <span
                   className={`max-w-[500px] leading-5 text-[0.8rem] text-foreground-500 mt-1 ${
                      !hasReplies && `mb-0`
                   }`}
                   dangerouslySetInnerHTML={{ __html: message.message.content }}
                ></span>
-               {hasAttachments && (
-                  <MessageAttachmentsSection
-                     messageId={message.message.id}
-                     attachments={message.message.attachments}
-                  />
-               )}
-               {isForwardedMessage && (
-                  <ForwardedChatMessageEntry message={message} />
+                     {hasAttachments && (
+                        <MessageAttachmentsSection
+                           messageId={message.message.id}
+                           attachments={message.message.attachments}
+                        />
+                     )}
+                     {isForwardedMessage && (
+                        <ForwardedChatMessageEntry message={message} />
+                     )}
+                  </Fragment>
                )}
                {
                   <ChatMessageReactionSection
@@ -237,7 +259,7 @@ export const ChatMessageEntry = ({
                         <span className={`text-xs text-default-400 ml-2`}>
                            Last reply{" "}
                            {moment(
-                              new Date(message.repliersInfo.lastUpdatedAt)
+                              new Date(message.repliersInfo.lastUpdatedAt),
                            ).fromNow()}
                         </span>
                      </div>

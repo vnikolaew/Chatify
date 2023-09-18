@@ -4,6 +4,7 @@ using Chatify.Application.ChatGroups.Queries;
 using Chatify.Application.ChatGroups.Queries.Models;
 using Chatify.Application.Messages.Commands;
 using Chatify.Application.Messages.Common;
+using Chatify.Application.Messages.Queries;
 using Chatify.Application.Messages.Replies.Commands;
 using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Entities;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using OneOf;
 using static Chatify.Web.Features.Messages.Models.Models;
 using ChatGroupNotFoundError = Chatify.Application.Messages.Common.ChatGroupNotFoundError;
+using Error = LanguageExt.Common.Error;
 using UserIsNotMemberError = Chatify.Application.Messages.Common.UserIsNotMemberError;
 
 namespace Chatify.Web.Features.Messages;
@@ -33,6 +35,9 @@ using PinChatGroupMessageResult = OneOf<MessageNotFoundError, ChatGroupNotFoundE
 using UnpinChatGroupMessageResult = OneOf<MessageNotFoundError, ChatGroupNotFoundError, UserIsNotGroupAdminError, Unit>;
 using GetMessageRepliesForChatGroupMessageResult =
     OneOf<MessageNotFoundError, UserIsNotMemberError, CursorPaged<ChatMessageReply>>;
+using GetDraftedMessagesResult = OneOf<Error, List<ChatMessageDraft>>;
+using DraftChatMessageResult = OneOf<ChatGroupNotFoundError, UserIsNotMemberError, Guid>;
+using GetDraftedMessageForGroupResult = OneOf<MessageNotFoundError, ChatMessageDraft?>;
 
 public class MessagesController : ApiController
 {
@@ -242,5 +247,47 @@ public class MessagesController : ApiController
             _ => _.ToBadRequest(),
             Accepted
         );
+    }
+
+    [HttpGet]
+    [Route("drafts")]
+    [ProducesNotFoundApiResponse]
+    [ProducesOkApiResponse<List<ChatMessageDraft>>]
+    public async Task<IActionResult> DraftedMessages(
+        CancellationToken cancellationToken = default)
+    {
+        var result = await QueryAsync<GetDraftedMessages, GetDraftedMessagesResult>(
+            new GetDraftedMessages(), cancellationToken);
+        return result.Match<IActionResult>(_ => NotFound(), Ok);
+    }
+
+    [HttpGet]
+    [Route("drafts/{groupId:guid}")]
+    [ProducesNotFoundApiResponse]
+    [ProducesOkApiResponse<List<ChatMessageDraft>>]
+    public async Task<IActionResult> DraftedForGroup(
+        Guid groupId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await QueryAsync<GetDraftedMessageForGroup, GetDraftedMessageForGroupResult>(
+            new GetDraftedMessageForGroup(groupId), cancellationToken);
+        return result.Match<IActionResult>(_ => NotFound(), Ok);
+    }
+
+
+    [HttpPost]
+    [Route("drafts")]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse<Guid>]
+    public async Task<IActionResult> DraftMessage(
+        [FromForm] DraftChatMessage draftChatMessage,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await SendAsync<DraftChatMessage, DraftChatMessageResult>(
+            draftChatMessage, cancellationToken);
+        return result.Match<IActionResult>(
+            _ => NotFound(),
+            _ => _.ToBadRequest(),
+            Ok);
     }
 }

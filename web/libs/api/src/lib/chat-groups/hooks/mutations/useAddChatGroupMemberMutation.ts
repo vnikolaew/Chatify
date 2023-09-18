@@ -9,7 +9,7 @@ export interface AddChatGroupMemberModel {
 }
 
 const addChatGroupMember = async (model: AddChatGroupMemberModel) => {
-   // const { status, data } = await chatGroupsClient.post(`members`, model, {
+   // const { status, data } = await chatGroupsClient.post(`sidebar`, model, {
    //    headers: {},
    // });
    //

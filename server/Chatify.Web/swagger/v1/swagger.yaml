@@ -1339,6 +1339,87 @@ paths:
                 $ref: '#/components/schemas/ProblemDetails'
         '202':
           description: Accepted
+  /api/Messages/drafts:
+    get:
+      tags:
+        - Messages
+      responses:
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageDraftListApiResponse'
+    post:
+      tags:
+        - Messages
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                GroupId:
+                  type: string
+                  format: uuid
+                Content:
+                  type: string
+                Attachments:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/InputFile'
+            encoding:
+              GroupId:
+                style: form
+              Content:
+                style: form
+              Attachments:
+                style: form
+      responses:
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                type: string
+                format: uuid
+  '/api/Messages/drafts/{groupId}':
+    get:
+      tags:
+        - Messages
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageDraftListApiResponse'
   /api/Notifications:
     get:
       tags:
@@ -1786,6 +1867,7 @@ components:
       additionalProperties: false
     AddressFamily:
       enum:
+        - Unknown
         - Unspecified
         - Unix
         - InterNetwork
@@ -1816,7 +1898,6 @@ components:
         - Max
         - Packet
         - ControllerAreaNetwork
-        - Unknown
       type: string
     ApiResponseStatus:
       enum:
@@ -2140,6 +2221,10 @@ components:
         content:
           type: string
           nullable: true
+        forwardedMessageId:
+          type: string
+          format: uuid
+          nullable: true
         attachments:
           type: array
           items:
@@ -2162,6 +2247,74 @@ components:
           additionalProperties:
             type: string
           nullable: true
+      additionalProperties: false
+    ChatMessageDraft:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        chatGroupId:
+          type: string
+          format: uuid
+        chatGroup:
+          $ref: '#/components/schemas/ChatGroup'
+        userId:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/User'
+        content:
+          type: string
+          nullable: true
+        forwardedMessageId:
+          type: string
+          format: uuid
+          nullable: true
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Media'
+          nullable: true
+        reactionCounts:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
+      additionalProperties: false
+    ChatMessageDraftListApiResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApiResponseStatus'
+        errors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessageDraft'
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
       additionalProperties: false
     ChatMessageListApiResponse:
       type: object
@@ -2260,6 +2413,10 @@ components:
         content:
           type: string
           nullable: true
+        forwardedMessageId:
+          type: string
+          format: uuid
+          nullable: true
         attachments:
           type: array
           items:
@@ -2349,6 +2506,14 @@ components:
     ForwardMessage:
       type: object
       properties:
+        content:
+          type: string
+          nullable: true
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/InputFile'
+          nullable: true
         messageId:
           type: string
           format: uuid
@@ -2357,9 +2522,6 @@ components:
           items:
             type: string
             format: uuid
-          nullable: true
-        content:
-          type: string
           nullable: true
       additionalProperties: false
     FriendInvitation:
@@ -2498,6 +2660,19 @@ components:
           type: integer
           format: int64
           deprecated: true
+      additionalProperties: false
+    InputFile:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Stream'
+        fileName:
+          type: string
+          nullable: true
+        sizeInBytes:
+          type: integer
+          format: int64
+          readOnly: true
       additionalProperties: false
     LeaveChatGroup:
       type: object
@@ -2702,6 +2877,35 @@ components:
           additionalProperties:
             type: string
           nullable: true
+      additionalProperties: false
+    Stream:
+      type: object
+      properties:
+        canRead:
+          type: boolean
+          readOnly: true
+        canWrite:
+          type: boolean
+          readOnly: true
+        canSeek:
+          type: boolean
+          readOnly: true
+        canTimeout:
+          type: boolean
+          readOnly: true
+        length:
+          type: integer
+          format: int64
+          readOnly: true
+        position:
+          type: integer
+          format: int64
+        readTimeout:
+          type: integer
+          format: int32
+        writeTimeout:
+          type: integer
+          format: int32
       additionalProperties: false
     Unit:
       type: object

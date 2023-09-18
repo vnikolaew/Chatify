@@ -88,7 +88,7 @@ export const useForwardChatMessage = () => {
                      (
                         draft: InfiniteData<CursorPaged<ChatGroupMessageEntry>>
                      ) => {
-                        draft.pages[0].items.unshift({
+                        draft?.pages?.[0]?.items?.unshift({
                            message: {
                               userId: meId,
                               chatGroupId: groupId,

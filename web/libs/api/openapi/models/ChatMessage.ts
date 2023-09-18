@@ -14,6 +14,7 @@ export type ChatMessage = {
     userId?: string;
     user?: User;
     content?: string | null;
+    forwardedMessageId?: string | null;
     attachments?: Array<Media> | null;
     reactionCounts?: Record<string, number> | null;
     createdAt?: string;

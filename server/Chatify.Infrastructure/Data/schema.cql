@@ -114,6 +114,33 @@ PRIMARY KEY ( id, chat_group_id, created_at );
 
 CREATE INDEX IF NOT EXISTS chat_messages_id_idx ON chat_messages (id);
 
+
+CREATE TABLE IF NOT EXISTS chat_message_drafts
+(
+    id              uuid,
+    chat_group_id   uuid,
+    user_id         uuid,
+    content         text,
+    attachments     set<frozen<media>>,
+    metadata        map<text, text>,
+    reaction_counts map<bigint, bigint>,
+    created_at      timestamp,
+    updated_at      timestamp,
+    updated         boolean,
+    PRIMARY KEY ( (user_id), chat_group_id)
+) WITH CLUSTERING ORDER BY (chat_group_id ASC) AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS chat_message_drafts_by_id
+AS
+SELECT *
+FROM chat_message_drafts
+WHERE id IS NOT NULL
+  AND chat_group_id IS NOT NULL
+  AND user_id IS NOT NULL
+PRIMARY KEY ( id, user_id, chat_group_id );
+
+CREATE INDEX IF NOT EXISTS chat_message_draft_id_idx ON chat_message_drafts (id);
+
 CREATE TABLE IF NOT EXISTS chat_messages_reply_count
 (
     message_id  uuid,

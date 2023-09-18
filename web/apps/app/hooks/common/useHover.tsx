@@ -1,9 +1,10 @@
 "use client";
-import React, { MutableRefObject, useEffect, useRef, useState } from "react";
+import React, { Dispatch, MutableRefObject, SetStateAction, useEffect, useRef, useState } from "react";
 
 export function useHover<TRef extends HTMLElement>(): [
    MutableRefObject<TRef>,
-   boolean
+   boolean,
+   Dispatch<SetStateAction<boolean>>
 ] {
    const [hovering, setHovering] = useState(false);
    const ref = useRef<TRef>(null!);
@@ -21,8 +22,8 @@ export function useHover<TRef extends HTMLElement>(): [
          setHovering(false);
       };
 
-      node.addEventListener("mouseenter", handleMouseEnter);
-      node.addEventListener("mouseleave", handleMouseLeave);
+      node.addEventListener("mouseenter", handleMouseEnter, {passive: true});
+      node.addEventListener("mouseleave", handleMouseLeave, { passive: true});
 
       return () => {
          node.removeEventListener("mouseenter", handleMouseEnter);
@@ -30,5 +31,5 @@ export function useHover<TRef extends HTMLElement>(): [
       };
    }, []);
 
-   return [ref, hovering];
+   return [ref, hovering, setHovering];
 }

@@ -44,10 +44,10 @@ internal sealed class CreateChatGroupHandler(
             var fileUploadRequest = new SingleFileUploadRequest
             {
                 File = command.InputFile,
-                UserId = identityContext.Id
+                UserId = identityContext.Id,
             };
 
-            var result = await fileUploadService.UploadAsync(fileUploadRequest, cancellationToken);
+            var result = await fileUploadService.UploadChatGroupMediaAsync(fileUploadRequest, cancellationToken);
             if ( result.Value is Error error ) return new FileUploadError(error.Message);
 
             var newMedia = result.Value as FileUploadResult;

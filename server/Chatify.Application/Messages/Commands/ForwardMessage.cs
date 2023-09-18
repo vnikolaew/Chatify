@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Common.Contracts;
+using Chatify.Application.Common.Models;
+using Chatify.Application.Messages.Commands.Common;
 using Chatify.Application.Messages.Common;
+using Chatify.Application.Messages.Contracts;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
 using Chatify.Domain.Repositories;
-using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
@@ -18,60 +20,69 @@ using ForwardMessageResult =
 
 public record ForwardMessage(
     [Required] Guid MessageId,
-    [Required] Guid GroupId,
+    [Required] List<Guid> GroupIds,
     [Required, MinLength(1), MaxLength(500)]
-    string Content
-) : ICommand<ForwardMessageResult>;
+    string Content,
+    IEnumerable<InputFile>? Attachments = default
+) : SendChatMessageBase<ForwardMessageResult>(Content, Attachments);
 
-internal sealed class ForwardMessageHandler(IIdentityContext identityContext,
+internal sealed class ForwardMessageHandler(
+        IIdentityContext identityContext,
+        IMessageContentNormalizer contentNormalizer,
+        IFileUploadService fileUploadService,
         IClock clock,
         IChatGroupRepository groups,
         IChatGroupMemberRepository members,
         IChatMessageRepository messages,
         IGuidGenerator guidGenerator,
         IEventDispatcher eventDispatcher)
-    : ICommandHandler<ForwardMessage, ForwardMessageResult>
+    : SendChatMessageBaseHandler<ForwardMessage, ForwardMessageResult>(fileUploadService, identityContext)
 {
-    public const string SharedMessageIdKey = "shared-message-id";
-
-    public async Task<ForwardMessageResult> HandleAsync(
+    public override async Task<ForwardMessageResult> HandleAsync(
         ForwardMessage command,
         CancellationToken cancellationToken = default)
     {
         var message = await messages.GetAsync(command.MessageId, cancellationToken);
         if ( message is null ) return new MessageNotFoundError(command.MessageId);
 
-        if ( message.UserId != identityContext.Id )
-            return new UserIsNotMessageSenderError(message.Id, identityContext.Id);
-
-        var forwardToGroup = await groups.GetAsync(command.GroupId, cancellationToken);
-        if ( forwardToGroup is null ) return new ChatGroupNotFoundError();
-
-        var isMember = await members.Exists(forwardToGroup.Id, identityContext.Id, cancellationToken);
-        if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, forwardToGroup.Id);
-
-        var messageId = guidGenerator.New();
-        var forwardedMessage = new ChatMessage
+        foreach ( var groupId in command.GroupIds )
         {
-            Id = messageId,
-            UserId = identityContext.Id,
-            ChatGroup = forwardToGroup,
-            Content = command.Content,
-            CreatedAt = clock.Now,
-            Metadata = new Dictionary<string, string> { { SharedMessageIdKey, message.Id.ToString() } },
-            ChatGroupId = forwardToGroup.Id
-        };
+            var forwardToGroup = await groups.GetAsync(groupId, cancellationToken);
+            if ( forwardToGroup is null ) return new ChatGroupNotFoundError();
 
-        await messages.SaveAsync(forwardedMessage, cancellationToken);
-        await eventDispatcher.PublishAsync(new ChatMessageSentEvent
-        {
-            UserId = forwardedMessage.UserId,
-            Content = forwardedMessage.Content,
-            GroupId = forwardedMessage.ChatGroupId,
-            Timestamp = forwardedMessage.CreatedAt.DateTime,
-            MessageId = forwardedMessage.Id,
-            Attachments = forwardedMessage.Attachments.ToList()
-        }, cancellationToken);
+            var isMember = await members.Exists(forwardToGroup.Id, identityContext.Id, cancellationToken);
+            if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, forwardToGroup.Id);
+
+            // TODO: Handle file uploads:
+            var uploadedFileResults = await HandleFileUploads(
+                command.Attachments,
+                cancellationToken);
+            var attachments = GetMediae(uploadedFileResults);
+
+            var messageId = guidGenerator.New();
+            var forwardedMessage = new ChatMessage
+            {
+                Id = messageId,
+                Attachments = attachments,
+                UserId = identityContext.Id,
+                ChatGroup = forwardToGroup,
+                Content = contentNormalizer.Normalize(command.Content),
+                CreatedAt = clock.Now,
+                ForwardedMessageId = message.Id,
+                ChatGroupId = forwardToGroup.Id
+            };
+
+            await messages.SaveAsync(forwardedMessage, cancellationToken);
+            await eventDispatcher.PublishAsync(new ChatMessageSentEvent
+            {
+                UserId = forwardedMessage.UserId,
+                Content = forwardedMessage.Content,
+                GroupId = forwardedMessage.ChatGroupId,
+                Timestamp = forwardedMessage.CreatedAt.DateTime,
+                MessageId = forwardedMessage.Id,
+                Attachments = forwardedMessage.Attachments.ToList()
+            }, cancellationToken);
+        }
 
         return Unit.Default;
     }
