@@ -27,8 +27,8 @@ function formatDate(dateTime: string) {
    return date.isSame(new Date(), "date")
       ? date.format("HH:MM A")
       : date.isSame(new Date(), "year")
-      ? date.format("MMM D")
-      : date.format("M/D/YY");
+         ? date.format("MMM D")
+         : date.format("M/D/YY");
 }
 
 const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
@@ -38,7 +38,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
    const usersTyping = useGetUsersTyping(feedEntry.chatGroup.id);
    const isActive = useMemo(
       () => feedEntry.chatGroup.id === groupId,
-      [groupId, feedEntry.chatGroup.id]
+      [groupId, feedEntry.chatGroup.id],
    );
 
    const handlePrefetchGroupDetails = async () => {
@@ -59,12 +59,12 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
             getNextPageParam: (lastPage) => lastPage.pagingCursor,
             getPreviousPageParam: (_, allPages) =>
                allPages.at(-1)?.pagingCursor,
-         }
+         },
       );
    };
    const isPrivateGroup = useMemo(
       () => feedEntry?.chatGroup?.metadata?.private === "true",
-      [feedEntry?.chatGroup?.metadata?.private]
+      [feedEntry?.chatGroup?.metadata?.private],
    );
    const {
       data: user,
@@ -72,20 +72,20 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
       error,
    } = useGetUserDetailsQuery(
       feedEntry?.chatGroup?.adminIds?.filter((id) => id !== meId)?.[0],
-      { enabled: isPrivateGroup }
+      { enabled: isPrivateGroup },
    );
 
    const messageSummary = useMemo(() => {
       return [...usersTyping].filter((_) => _.userId !== meId).length > 0
          ? `${[...usersTyping]
-              .filter((u) => u.userId !== meId)
-              .map((_) => _.username)
-              .join(", ")} ${
-              usersTyping.size === 1 ? ` is ` : ` are `
-           } currently typing ...`
+            .filter((u) => u.userId !== meId)
+            .map((_) => _.username)
+            .join(", ")} ${
+            usersTyping.size === 1 ? ` is ` : ` are `
+         } currently typing ...`
          : `${feedEntry.latestMessage?.content?.substring(0, 30)}${
-              feedEntry.latestMessage?.content?.length > 30 ? `...` : ``
-           }` ?? `No messages yet.`;
+         feedEntry.latestMessage?.content?.length > 30 ? `...` : ``
+      }` ?? `No messages yet.`;
    }, [usersTyping, feedEntry?.latestMessage?.content, meId]);
 
    return (
@@ -113,7 +113,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
             src={getMediaUrl(
                isPrivateGroup
                   ? user?.user?.profilePicture?.mediaUrl
-                  : feedEntry?.chatGroup?.picture?.mediaUrl
+                  : feedEntry?.chatGroup?.picture?.mediaUrl,
             )}
          />
          <div
@@ -131,28 +131,63 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
                      : "-"}
                </time>
             </div>
-            <div className={`w-full flex items-center gap-1 h-4 rounded-full`}>
-               {!(
-                  isPrivateGroup && feedEntry.latestMessage.userId !== meId
-               ) && (
-                  <span className={`text-xs text-default-400 font-semibold`}>
-                     {isPrivateGroup
-                        ? feedEntry?.latestMessage?.userId === meId
-                           ? `You: `
-                           : ``
-                        : `${feedEntry?.messageSender?.username}: `}
-                  </span>
-               )}
-               <p
-                  className={`text-xs font-normal w-full truncate leading-3 text-default-500`}
-                  dangerouslySetInnerHTML={{
-                     __html: messageSummary,
-                  }}
-               ></p>
-            </div>
+            <ChatFeedEntryMessageSummary
+               meId={meId}
+               feedEntry={feedEntry}
+               isPrivateGroup={isPrivateGroup}
+               messageSummary={messageSummary} />
          </div>
       </Button>
    );
+};
+
+interface ChatFeedEntryMessageSummaryProps {
+   feedEntry?: ChatGroupFeedEntry;
+   meId: string;
+   isPrivateGroup: boolean;
+   messageSummary: string;
+}
+
+
+const ChatFeedEntryMessageSummary = ({
+                                        messageSummary,
+                                        feedEntry,
+                                        meId,
+                                        isPrivateGroup,
+                                     }: ChatFeedEntryMessageSummaryProps) => {
+   return (
+      <div className={`w-full flex items-center gap-1 h-4 rounded-full`}>
+         {isPrivateGroup && feedEntry.latestMessage.userId === meId && (
+            <span className={`text-xs text-default-400 font-semibold`}>
+                     You:
+                  </span>
+         )}
+         {isPrivateGroup && feedEntry.latestMessage.userId !== meId && (
+            <span className={`text-xs text-default-400 font-semibold`}>
+                  </span>
+         )}
+
+         {!isPrivateGroup && feedEntry.latestMessage.userId === meId && (
+            <span className={`text-xs text-default-400 font-semibold`}>
+                     You:
+                  </span>
+         )}
+
+         {!isPrivateGroup && feedEntry.latestMessage.userId !== meId && (
+            <span className={`text-xs text-default-400 font-semibold`}>
+                     {feedEntry.messageSender?.username}:
+                  </span>
+         )}
+
+         <p
+            className={`text-xs font-normal w-full truncate leading-3 text-default-500`}
+            dangerouslySetInnerHTML={{
+               __html: messageSummary,
+            }}
+         ></p>
+      </div>
+   );
+
 };
 
 export default ChatGroupFeedEntry;

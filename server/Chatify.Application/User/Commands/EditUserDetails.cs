@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Application.User.Common;
-using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Users;
+using Chatify.Domain.Repositories;
 using Chatify.Domain.ValueObjects;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
@@ -28,7 +29,9 @@ public record EditUserDetails(
     InputFile? ProfilePicture,
     System.Collections.Generic.HashSet<string>? PhoneNumbers) : ICommand<EditUserDetailsResult>;
 
-internal sealed class EditUserDetailsHandler(IDomainRepository<Domain.Entities.User, Guid> users,
+internal sealed class EditUserDetailsHandler(
+        IUserRepository users,
+        IAuthenticationService authenticationService,
         IIdentityContext identityContext,
         IClock clock,
         IFileUploadService fileUploadService,
@@ -76,6 +79,8 @@ internal sealed class EditUserDetailsHandler(IDomainRepository<Domain.Entities.U
             }
         }
 
+        await authenticationService.SignOutAsync(cancellationToken);
+
         await users.UpdateAsync(user, user =>
         {
             if ( command.PhoneNumbers?.Any() ?? false )
@@ -90,7 +95,8 @@ internal sealed class EditUserDetailsHandler(IDomainRepository<Domain.Entities.U
             user.UpdatedAt = clock.Now;
             if ( newProfilePicture is not null ) user.ProfilePicture = newProfilePicture;
         }, cancellationToken);
-
+        
+        await authenticationService.RefreshUserClaimsAsync(user, cancellationToken);
         await eventDispatcher.PublishAsync(new UserDetailsEditedEvent
         {
             UserId = user.Id,

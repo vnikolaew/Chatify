@@ -93,7 +93,7 @@ public sealed class AuthenticationService(
             {
                 new(nameof(ChatifyUser.DisplayName), chatifyUser.DisplayName),
                 new(Locale, identityContext.UserLocale ?? string.Empty),
-                new("location", identityContext.UserLocation?.ToString() ?? string.Empty),
+                new(Location, identityContext.UserLocation?.ToString() ?? string.Empty),
                 new(External.Constants.ClaimNames.Picture, chatifyUser.ProfilePicture.MediaUrl)
             });
 
@@ -135,6 +135,29 @@ public sealed class AuthenticationService(
                 AuthenticationProvider = RegularLogin
             }
             : Error.New($"Error during sign-in: {result}");
+    }
+
+    public async Task<OneOf<Error, Unit>> RefreshUserClaimsAsync(
+        Domain.Entities.User user,
+        CancellationToken cancellationToken = default)
+    {
+        await signInManager.SignOutAsync();
+        var chatifyUser = await userManager.FindByIdAsync(user.Id.ToString());
+        if ( chatifyUser is null ) return UserNotFoundError;
+
+        await userManager.AddClaimsAsync(
+            chatifyUser,
+            new List<Claim>
+            {
+                new(nameof(ChatifyUser.DisplayName), chatifyUser.DisplayName),
+                new(Locale, identityContext.UserLocale ?? string.Empty),
+                new(Location, identityContext.UserLocation?.ToString() ?? string.Empty),
+                new(External.Constants.ClaimNames.Picture, chatifyUser.ProfilePicture.MediaUrl)
+            });
+
+        await signInManager.SignInAsync(chatifyUser,
+            isPersistent: true, RegularLogin);
+        return Unit.Default;
     }
 
     public async Task<OneOf<Error, Unit>> SignOutAsync(
@@ -248,7 +271,7 @@ public sealed class AuthenticationService(
         {
             return await SignInWithLoginProvider(existingUser, Github);
         }
-        
+
         // Get count of users having the same username:
         var usersWithSameUserName = await users.GetAllWithUsername(
             userInfo.Name.Underscore(), cancellationToken);
@@ -326,7 +349,7 @@ public sealed class AuthenticationService(
         {
             return await SignInWithLoginProvider(existingUser, Facebook);
         }
-        
+
         // Get count of users having the same username:
         var usersWithSameUserName = await users.GetAllWithUsername(
             userInfo.Name.Underscore(), cancellationToken);

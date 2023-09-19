@@ -49,7 +49,7 @@ internal sealed class DraftChatMessageHandler(
             cancellationToken);
         if ( !userIsGroupMember ) return new UserIsNotMemberError(identityContext.Id, command.GroupId);
 
-        // TODO: Handle file uploads:
+        // Handle file uploads:
         var uploadedFileResults = await HandleFileUploads(
             command.Attachments,
             cancellationToken);

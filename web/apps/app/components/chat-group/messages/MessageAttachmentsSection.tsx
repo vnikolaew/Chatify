@@ -81,7 +81,7 @@ const MessageAttachment = ({ attachment }: { attachment: Media }) => {
                alt={attachment.fileName}
                shadow={"md"}
                radius={"md"}
-               className={`relative object-cover`}
+               className={`relative object-cover max-w-96`}
                removeWrapper
                src={getMediaUrl(attachment.mediaUrl)}
             />

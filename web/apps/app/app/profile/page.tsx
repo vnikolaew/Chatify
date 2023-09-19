@@ -96,7 +96,10 @@ const Page = ({}: PageProps) => {
             profilePicture: attachedFiles?.[0]?.file,
             email: userEmail,
          },
-         { onSuccess: (_) => setEditUserDetailsSuccess(true) }
+         { onSuccess: (_) => {
+               setEditUserDetailsSuccess(true);
+            }
+         }
       );
    }
 
@@ -104,7 +107,7 @@ const Page = ({}: PageProps) => {
       <section
          className={`w-full mt-2 min-h-[70vh] flex flex-col items-center`}
       >
-         <div className={`flex w-1/4 min-w-[400px] flex-col gap-4 mt-4`}>
+         <div className={`flex w-1/3 min-w-[400px] flex-col gap-4 mt-4`}>
             <div className={`flex items-center gap-6`}>
                {isLoading ? (
                   <div className={`flex items-center gap-4`}>
@@ -125,8 +128,8 @@ const Page = ({}: PageProps) => {
                               />
                            }
                            color={"default"}
-                           size={`lg`}
-                           className={`w-30 h-30`}
+                           // size={`md`}
+                           className={`w-52 h-52 aspect-square object-cover`}
                            radius={`sm`}
                            src={
                               attachedFilesUrls.get(attachedFiles?.[0]?.id) ??

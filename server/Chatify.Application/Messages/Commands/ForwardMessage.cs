@@ -53,7 +53,7 @@ internal sealed class ForwardMessageHandler(
             var isMember = await members.Exists(forwardToGroup.Id, identityContext.Id, cancellationToken);
             if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, forwardToGroup.Id);
 
-            // TODO: Handle file uploads:
+            // Handle file uploads:
             var uploadedFileResults = await HandleFileUploads(
                 command.Attachments,
                 cancellationToken);

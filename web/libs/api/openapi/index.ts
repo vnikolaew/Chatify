@@ -70,5 +70,6 @@ export type { UserMessageReaction } from './models/UserMessageReaction';
 export type { UserNotification } from './models/UserNotification';
 export type { UserNotificationCursorPagedApiResponse } from './models/UserNotificationCursorPagedApiResponse';
 export type { UserNotificationMetadata } from './models/UserNotificationMetadata';
+export type {CursorPaged  } from './common/CursorPaged';
 export { UserNotificationType } from './models/UserNotificationType';
 export { UserStatus } from './models/UserStatus';

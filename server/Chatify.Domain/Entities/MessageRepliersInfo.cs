@@ -8,6 +8,8 @@ public class MessageRepliersInfo
     public Guid MessageId { get; set; }
 
     public DateTime? LastUpdatedAt { get; set; } = default;
+    
+    public DateTimeOffset CreatedAt { get; set; }
 
     public long Total { get; set; }
 

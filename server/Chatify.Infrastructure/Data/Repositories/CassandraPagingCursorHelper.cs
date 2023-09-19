@@ -34,9 +34,9 @@ public class CassandraPagingCursorHelper : IPagingCursorHelper
         {
             return default;
         }
-        
-        var pagingStateOne = ToPagingState(pagingCursorOne)!;
-        var pagingStateTwo = ToPagingState(pagingCursorTwo)!;
+
+        var pagingStateOne = ToPagingState(pagingCursorOne) ?? Array.Empty<byte>();
+        var pagingStateTwo = ToPagingState(pagingCursorTwo) ?? Array.Empty<byte>();
 
         int psOneLength = pagingStateOne.Length;
         var psOneLengthBytes = BitConverter.GetBytes(psOneLength);
@@ -82,6 +82,11 @@ public class CassandraPagingCursorHelper : IPagingCursorHelper
         {
             var psLength = BitConverter.ToInt32(pagingStatesSpan[currIdx..( currIdx + 4 )]);
             currIdx += 4;
+            if ( psLength == 0 )
+            {
+                cursors.Add(ToPagingCursor(null)!);
+            }
+
             var pagingState = pagingStatesSpan[currIdx..( currIdx + psLength )];
             currIdx += psLength;
 

@@ -41,8 +41,12 @@ export const useEditUserDetailsMutation = () => {
 
    return useMutation<any, Error, EditUserDetailsModel, any>(editUserDetails, {
       onError: console.error,
-      onSuccess: (data) =>
-         console.log("User details edited successfully: " + data),
-      onSettled: (res) => console.log(res),
+      onSuccess: (data) => {
+         console.log("User details edited successfully: " + data);
+      },
+      onSettled: async (res) => {
+         console.log(res);
+         await client.refetchQueries([`me`, `claims`], { exact: true, type: "all" });
+      },
    });
 };

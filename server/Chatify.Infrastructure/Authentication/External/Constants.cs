@@ -6,6 +6,7 @@ public static class Constants
     {
         public static readonly string Picture = nameof(Picture).ToLower();
         public static readonly string Locale = nameof(Locale).ToLower();
+        public static readonly string Location = nameof(Location).ToLower();
     }
     
     public static class AuthProviders

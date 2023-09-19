@@ -48,6 +48,7 @@ internal sealed class ChatMessageSentEventHandler(
             Total = 0,
             ChatGroupId = @event.GroupId,
             ReplierInfos = new HashSet<MessageReplierInfo>()
+            
         };
         await replierInfos.SaveAsync(repliersInfo, cancellationToken);
 

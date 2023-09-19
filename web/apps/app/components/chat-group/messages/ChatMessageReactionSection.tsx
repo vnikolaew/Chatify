@@ -14,7 +14,7 @@ import {
    useUnreactToGroupMessageMutation,
 } from "@web/api";
 import { ChatMessageReaction, UserMessageReaction } from "@openapi";
-import { useCurrentChatGroup, useCurrentUserId, useHover } from "@hooks";
+import { useCurrentChatGroup, useCurrentUserId } from "@hooks";
 import { PlusIcon } from "@icons";
 import HappyFaceIcon from "@components/icons/HappyFaceIcon";
 import Picker from "@emoji-mart/react";
@@ -95,48 +95,52 @@ export const ChatMessageReactionSection = ({
    };
    return (
       <div className={`items-center mt-1 flex gap-1`}>
-         {Object.entries(reactionCounts).map(([reactionCode, count], i) => (
-            <Tooltip
-               showArrow
-               delay={100}
-               closeDelay={100}
-               offset={2}
-               size={"sm"}
-               placement={"top"}
-               key={i}
-               content={
-                  reactionsLoading ? (
-                     <Spinner size={"sm"} color={"danger"} />
-                  ) : (
-                     <ReactionsSummaryTooltipContent
-                        reactions={reactionsByCode[reactionCode]}
-                     />
-                  )
-               }
-            >
-               <Button
-                  className={`px-2 min-w-fit max-w-fit w-fit items-center justify-center h-5 py-0`}
-                  onMouseEnter={handleFetchReactions}
-                  onPress={(_) => handleReactToMessage(Number(reactionCode))}
+         {Object.entries(reactionCounts ?? {}).map(
+            ([reactionCode, count], i) => (
+               <Tooltip
+                  showArrow
+                  delay={100}
+                  closeDelay={100}
+                  offset={2}
                   size={"sm"}
-                  color={
-                     hasUserReacted(Number(reactionCode))
-                        ? "primary"
-                        : "default"
-                  }
-                  variant={
-                     hasUserReacted(Number(reactionCode)) ? "solid" : `bordered`
+                  placement={"top"}
+                  key={i}
+                  content={
+                     reactionsLoading ? (
+                        <Spinner size={"sm"} color={"danger"} />
+                     ) : (
+                        <ReactionsSummaryTooltipContent
+                           reactions={reactionsByCode[reactionCode]}
+                        />
+                     )
                   }
                >
-                  <span
-                     className={`text-xs text-foreground-700`}
-                     dangerouslySetInnerHTML={{
-                        __html: `&#${reactionCode}; ${count}`,
-                     }}
-                  />
-               </Button>
-            </Tooltip>
-         ))}
+                  <Button
+                     className={`px-2 min-w-fit max-w-fit w-fit items-center justify-center h-5 py-0`}
+                     onMouseEnter={handleFetchReactions}
+                     onPress={(_) => handleReactToMessage(Number(reactionCode))}
+                     size={"sm"}
+                     color={
+                        hasUserReacted(Number(reactionCode))
+                           ? "primary"
+                           : "default"
+                     }
+                     variant={
+                        hasUserReacted(Number(reactionCode))
+                           ? "solid"
+                           : `bordered`
+                     }
+                  >
+                     <span
+                        className={`text-xs text-foreground-700`}
+                        dangerouslySetInnerHTML={{
+                           __html: `&#${reactionCode}; ${count}`,
+                        }}
+                     />
+                  </Button>
+               </Tooltip>
+            )
+         )}
          <Tooltip
             showArrow
             delay={100}

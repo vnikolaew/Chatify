@@ -29,28 +29,18 @@ internal sealed class CompositeSeeder(IServiceScopeFactory scopeFactory) : ISeed
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         await using var scope = scopeFactory.CreateAsyncScope();
+
+        await PurgeCache(scope.ServiceProvider);
+        await PurgeDatabaseTables(scope.ServiceProvider);
+        await SeedCoreAsync(scope, cancellationToken);
+    }
+
+    private static async Task SeedCoreAsync(
+        AsyncServiceScope scope,
+        CancellationToken cancellationToken
+    )
+    {
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<CompositeSeeder>>();
-
-        var purgeCache = scope.ServiceProvider
-            .GetRequiredService<IConfiguration>()
-            .GetSection("Redis")
-            .GetValue<bool>("PurgeCache");
-        if ( purgeCache )
-        {
-            var server = scope.ServiceProvider.GetRequiredService<IServer>();
-            var cache = scope.ServiceProvider.GetRequiredService<IDatabase>();
-            await PurgeCacheEntries(cache, server, false);
-        }
-
-        var purgeDb = scope.ServiceProvider
-            .GetRequiredService<IConfiguration>()
-            .GetSection("Cassandra")
-            .GetValue<bool>("PurgeDb");
-        if ( purgeDb )
-        {
-            var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
-            await PurgeDbTables(mapper, TablesToBeTruncated);
-        }
 
         var seeders = scope.ServiceProvider
             .GetServices<ISeeder>()
@@ -69,6 +59,38 @@ internal sealed class CompositeSeeder(IServiceScopeFactory scopeFactory) : ISeed
         logger.LogInformation("Database seeding done");
     }
 
+    private static async Task PurgeDatabaseTables(IServiceProvider serviceProvider)
+    {
+        var purgeDb = serviceProvider
+            .GetRequiredService<IConfiguration>()
+            .GetSection("Cassandra")
+            .GetValue<bool>("PurgeDb");
+        if ( purgeDb )
+        {
+            var mapper = serviceProvider.GetRequiredService<IMapper>();
+            await PurgeDbTables(mapper, TablesToBeTruncated);
+        }
+    }
+
+    private static async Task PurgeCache(IServiceProvider serviceProvider)
+    {
+        var cacheConfig = serviceProvider
+            .GetRequiredService<IConfiguration>()
+            .GetSection("Redis");
+
+        var purgeCache = cacheConfig.GetValue<bool>("PurgeCache");
+        if ( purgeCache )
+        {
+            var server = serviceProvider.GetRequiredService<IServer>();
+            var cache = serviceProvider.GetRequiredService<IDatabase>();
+
+            var keysSection = cacheConfig
+                .GetSection("PurgeKeyPatterns");
+            var keyPatterns = keysSection.Get<string[]>();
+            await PurgeCacheEntries(cache, server, keyPatterns ?? new string[] { }, false);
+        }
+    }
+
     private static async Task PurgeDbTables(
         IMapper mapper,
         string[] tables)
@@ -83,11 +105,13 @@ internal sealed class CompositeSeeder(IServiceScopeFactory scopeFactory) : ISeed
     private static async Task PurgeCacheEntries(
         IDatabase cache,
         IServer server,
+        IEnumerable<string> keyPatterns,
         bool deleteJsonDocuments = false)
     {
-        await cache.DeleteAllKeysByPattern(server, "user:*");
-        await cache.DeleteAllKeysByPattern(server, "message:*");
-        await cache.DeleteAllKeysByPattern(server, "groups:*");
+        foreach ( var keyPattern in keyPatterns )
+        {
+            await cache.DeleteAllKeysByPattern(server, keyPattern);
+        }
 
         if ( deleteJsonDocuments )
         {

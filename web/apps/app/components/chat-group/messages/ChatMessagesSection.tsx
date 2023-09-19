@@ -15,13 +15,13 @@ import {
    useGetPaginatedGroupMessagesQuery,
 } from "@web/api";
 import { Button, ScrollShadow, Skeleton, Tooltip } from "@nextui-org/react";
-import { ChatMessageEntry } from "@components/chat-group";
 import DownArrow from "@components/icons/DownArrow";
 import StartupRocketIcon from "@components/icons/StartupRocketIcon";
 import { LoadingChatMessageEntry } from "@components/chat-group/messages/LoadingChatMessageEntry";
 import MessageTextEditor from "@components/chat-group/messages/editor/MessageTextEditor";
 import MembersTypingSection from "@components/chat-group/messages/MembersTypingSection";
 import { useCurrentUserId, useIsChatGroupPrivate } from "@hooks";
+import ChatMessageEntries from "@components/chat-group/messages/ChatMessageEntries";
 
 export interface ChatMessagesSectionProps {
    groupId: string;
@@ -48,7 +48,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
          pageSize: 5,
          pagingCursor: null!,
       },
-      { enabled: !!groupId }
+      { enabled: !!groupId },
    );
    const meId = useCurrentUserId();
    const isPrivate = useIsChatGroupPrivate(groupDetails);
@@ -58,7 +58,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
          !isLoading &&
          !isFetchingNextPage &&
          !error,
-      [messages?.pages, isLoading, isFetchingNextPage, error]
+      [messages?.pages, isLoading, isFetchingNextPage, error],
    );
 
    const handleMessageSectionScroll: UIEventHandler<HTMLDivElement> =
@@ -67,7 +67,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
             if (
                Math.round(
                   messagesSectionRef.current?.scrollTop +
-                     messagesSectionRef.current?.getBoundingClientRect().height
+                  messagesSectionRef.current?.getBoundingClientRect().height,
                ) >=
                messagesSectionRef.current?.scrollHeight - 20
             ) {
@@ -88,7 +88,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                await fetchNextPage();
             }
          },
-         [messages?.pages, hasNextPage, fetchNextPage]
+         [messages?.pages, hasNextPage, fetchNextPage],
       );
 
    const handleScrollDown = useCallback(() => {
@@ -148,6 +148,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                   )}
                   <ScrollShadow
                      onScroll={handleMessageSectionScroll}
+                     id={`scroll-shadow`}
                      size={20}
                      ref={messagesSectionRef}
                      className={`w-full relative`}
@@ -185,23 +186,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                                  key={i}
                               />
                            ))}
-                        {messages?.pages
-                           ?.flatMap((p) => p.items)
-                           .reverse()
-                           ?.map((message, i, arr) => {
-                              const isMe = message.senderInfo.userId === meId;
-                              const isLatest = i === arr.length - 1;
-                              return (
-                                 <ChatMessageEntry
-                                    message={message}
-                                    key={i}
-                                    isMe={isMe}
-                                    {...(isLatest && { className: `mb-4` })}
-                                    {...(i === 0 && { ref: firstMessageRef })}
-                                    {...(i === 0 && { showReplies: true })}
-                                 />
-                              );
-                           })}
+                        <ChatMessageEntries messages={messages} firstMessageRef={firstMessageRef} />
                         <div className={`mb-4`}>
                            <MembersTypingSection />
                         </div>
@@ -221,10 +206,10 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                         placeholder={
                            isPrivate
                               ? `Message ${
-                                   groupDetails?.members?.find(
-                                      (_) => _.id !== meId
-                                   )?.username
-                                }`
+                                 groupDetails?.members?.find(
+                                    (_) => _.id !== meId,
+                                 )?.username
+                              }`
                               : `Message in ${groupDetails?.chatGroup.name}`
                         }
                      />
