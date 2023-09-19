@@ -8,7 +8,7 @@ namespace Chatify.Web.Common.Attributes;
 public class ProducesBadRequestApiResponseAttribute : ProducesResponseTypeAttribute
 {
     public ProducesBadRequestApiResponseAttribute()
-        : base(typeof(ApiResponse<Unit>), (int) HttpStatusCode.BadRequest)
+        : base(typeof(ApiResponse<Unit>), ( int )HttpStatusCode.BadRequest)
     {
     }
 }
@@ -17,7 +17,7 @@ public class ProducesBadRequestApiResponseAttribute : ProducesResponseTypeAttrib
 public class ProducesCreatedAtApiResponseAttribute : ProducesResponseTypeAttribute
 {
     public ProducesCreatedAtApiResponseAttribute()
-        : base(typeof(ApiResponse<object>), (int) HttpStatusCode.Created)
+        : base(typeof(ApiResponse<object>), ( int )HttpStatusCode.Created)
     {
     }
 }
@@ -25,8 +25,8 @@ public class ProducesCreatedAtApiResponseAttribute : ProducesResponseTypeAttribu
 [AttributeUsage(AttributeTargets.Method)]
 public class ProducesNotFoundApiResponseAttribute : ProducesResponseTypeAttribute
 {
-    public ProducesNotFoundApiResponseAttribute ()
-        : base((int) HttpStatusCode.NotFound)
+    public ProducesNotFoundApiResponseAttribute()
+        : base(( int )HttpStatusCode.NotFound)
     {
     }
 }
@@ -34,17 +34,17 @@ public class ProducesNotFoundApiResponseAttribute : ProducesResponseTypeAttribut
 [AttributeUsage(AttributeTargets.Method)]
 public class ProducesNoContentApiResponseAttribute : ProducesResponseTypeAttribute
 {
-    public ProducesNoContentApiResponseAttribute  ()
-        : base((int) HttpStatusCode.NoContent)
+    public ProducesNoContentApiResponseAttribute()
+        : base(( int )HttpStatusCode.NoContent)
     {
     }
 }
 
 [AttributeUsage(AttributeTargets.Method)]
-public class ProducesOkApiResponseAttribute<TData> : ProducesResponseTypeAttribute
+public class ProducesOkApiResponseAttribute<TData> : ProducesResponseTypeAttribute where TData : notnull
 {
     public ProducesOkApiResponseAttribute()
-        : base(typeof(ApiResponse<TData>), (int) HttpStatusCode.OK)
+        : base(typeof(ApiResponse<TData>), ( int )HttpStatusCode.OK)
     {
     }
 }
@@ -52,8 +52,8 @@ public class ProducesOkApiResponseAttribute<TData> : ProducesResponseTypeAttribu
 [AttributeUsage(AttributeTargets.Method)]
 public class ProducesAcceptedApiResponseAttribute : ProducesResponseTypeAttribute
 {
-    public ProducesAcceptedApiResponseAttribute ()
-        : base((int) HttpStatusCode.Accepted)
+    public ProducesAcceptedApiResponseAttribute()
+        : base(( int )HttpStatusCode.Accepted)
     {
     }
 }
@@ -61,8 +61,8 @@ public class ProducesAcceptedApiResponseAttribute : ProducesResponseTypeAttribut
 [AttributeUsage(AttributeTargets.Method)]
 public class ProducesAcceptedApiResponseAttribute<TData> : ProducesResponseTypeAttribute
 {
-    public ProducesAcceptedApiResponseAttribute ()
-        : base(typeof(TData), (int) HttpStatusCode.Accepted)
+    public ProducesAcceptedApiResponseAttribute()
+        : base(typeof(TData), ( int )HttpStatusCode.Accepted)
     {
     }
 }
@@ -70,8 +70,8 @@ public class ProducesAcceptedApiResponseAttribute<TData> : ProducesResponseTypeA
 [AttributeUsage(AttributeTargets.Method)]
 public class ProducesRedirectApiResponseAttribute : ProducesResponseTypeAttribute
 {
-    public ProducesRedirectApiResponseAttribute ()
-        : base((int) HttpStatusCode.Redirect)
+    public ProducesRedirectApiResponseAttribute()
+        : base(( int )HttpStatusCode.Redirect)
     {
     }
 }

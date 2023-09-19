@@ -9,6 +9,7 @@ namespace Chatify.Web.Extensions;
 public static class ApplicationBuilderExtensions
 {
     private const string StaticFilesDirectoryName = "Files";
+    private const string ConsentCookieName = "Cookie-Consent";
 
     public static IApplicationBuilder UseDevelopmentSwagger(
         this IApplicationBuilder app,
@@ -43,7 +44,7 @@ public static class ApplicationBuilderExtensions
                 CheckConsentNeeded = _ => true,
                 ConsentCookie = new CookieBuilder
                 {
-                    Name = "Cookie-Consent",
+                    Name = ConsentCookieName,
                     Expiration = TimeSpan.FromHours(24 * 30 * 6),
                     MaxAge = TimeSpan.FromHours(24 * 30 * 6),
                     HttpOnly = false,
@@ -56,7 +57,7 @@ public static class ApplicationBuilderExtensions
     public static IApplicationBuilder UseCachedStaticFiles(
         this IApplicationBuilder app,
         IWebHostEnvironment environment,
-        PathString path)
+        string? path = "/static")
         => app.UseStaticFiles(new StaticFileOptions
         {
             HttpsCompression = HttpsCompressionMode.Compress,

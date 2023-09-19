@@ -16,9 +16,14 @@ public static class Extensions
             .AddTransient(sp => sp.GetRequiredService<ContextAccessor>().Context);
 
     public static IApplicationBuilder UseContext(this IApplicationBuilder app)
-        => app.Use((ctx, next) =>
+        => app.UseMiddleware<ContextMiddleware>();
+
+    public sealed class ContextMiddleware : IMiddleware
+    {
+        public Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            ctx.RequestServices.GetRequiredService<ContextAccessor>().Context = new Context(ctx);
-            return next();
-        });
+            context.RequestServices.GetRequiredService<ContextAccessor>().Context = new Context(context);
+            return next(context);
+        }
+    }
 }

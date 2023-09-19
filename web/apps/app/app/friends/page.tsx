@@ -65,7 +65,6 @@ const FriendsPage = ({}: PageProps) => {
       await sendFriendInvite({ userId });
    };
 
-   console.log(user);
    // @ts-ignore
    return (
       <section

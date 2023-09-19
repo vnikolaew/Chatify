@@ -17,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
         .AddMappers()
         .AddApplication(builder.Configuration)
         .AddInfrastructure(builder.Configuration);
+    
 }
 
 var app = builder.Build();
@@ -24,7 +25,7 @@ var app = builder.Build();
     app
         .UseHttpsRedirection()
         .UseConfiguredCors()
-        .UseCachedStaticFiles(app.Environment, "/static")
+        .UseCachedStaticFiles(app.Environment)
         .UseDevelopmentSwagger(app.Environment)
         .UseConfiguredCookiePolicy()
         .UseRouting()

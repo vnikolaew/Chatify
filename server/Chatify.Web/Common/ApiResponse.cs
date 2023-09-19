@@ -27,13 +27,13 @@ public class ApiResponse<T> where T : notnull
         };
 
     public static ApiResponse<T> Failure(
-        string?[] errors,
+        string[]? errors,
         string? message = default,
         DateTime? timestamp = default)
         => new()
         {
             Message = message,
-            Errors = errors.ToArray(),
+            Errors = errors?.ToArray(),
             Timestamp = timestamp ?? DateTime.Now,
             Status = ApiResponseStatus.Failure
         };

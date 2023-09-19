@@ -9,6 +9,4 @@ public interface IPagingCursorHelper
     public byte[]? ToPagingState(string pagingCursor);
     
     public string? ToPagingCursor(byte[]? pagingState);
-
-    public string CombineCursors(params string[] pagingCursors);
 }
