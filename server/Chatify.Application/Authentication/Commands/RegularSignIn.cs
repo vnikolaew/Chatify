@@ -15,7 +15,7 @@ public sealed record RegularSignIn(
     [Required] bool RememberMe
     ) : ICommand<RegularSignInResult>;
 
-internal sealed class RegularSignInHandler(
+public sealed class RegularSignInHandler(
         IAuthenticationService authService,
         IEventDispatcher eventDispatcher)
     : ICommandHandler<RegularSignIn, RegularSignInResult>

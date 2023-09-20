@@ -30,7 +30,13 @@ public static class ApplicationBuilderExtensions
             policy
                 .AllowAnyHeader()
                 .AllowAnyMethod()
-                .WithOrigins("http://localhost:4200")
+                .WithOrigins(
+                    "http://localhost:4200",
+                    "http://localhost:4200/",
+                    "https://localhost:3000",
+                    "https://localhost:3000/",
+                    "http://localhost:3000"
+                    )
                 .AllowCredentials());
 
     public static IApplicationBuilder UseConfiguredCookiePolicy(

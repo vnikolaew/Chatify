@@ -8,7 +8,7 @@ using Humanizer;
 namespace Chatify.Application.Common.Behaviours.Caching;
 
 [Decorator]
-internal sealed class CachedQueryHandlerDecorator<TQuery, TResult>(IQueryHandler<TQuery, TResult> inner,
+public sealed class CachedQueryHandlerDecorator<TQuery, TResult>(IQueryHandler<TQuery, TResult> inner,
         ICacheService cache,
         IIdentityContext identityContext)
     : IQueryHandler<TQuery, TResult>

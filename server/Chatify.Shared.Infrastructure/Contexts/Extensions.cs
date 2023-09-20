@@ -10,13 +10,15 @@ public static class Extensions
     public static IServiceCollection AddContexts(this IServiceCollection services)
         => services
             .AddSingleton<ContextAccessor>()
+            .AddSingleton<ContextMiddleware>()
             .AddHttpContextAccessor()
             .AddScoped<IIdentityContext, IdentityContext>(sp =>
                 new IdentityContext(sp.GetRequiredService<IHttpContextAccessor>().HttpContext!))
             .AddTransient(sp => sp.GetRequiredService<ContextAccessor>().Context);
 
     public static IApplicationBuilder UseContext(this IApplicationBuilder app)
-        => app.UseMiddleware<ContextMiddleware>();
+        => app
+            .UseMiddleware<ContextMiddleware>();
 
     public sealed class ContextMiddleware : IMiddleware
     {

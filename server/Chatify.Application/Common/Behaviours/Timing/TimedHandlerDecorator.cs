@@ -1,14 +1,14 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Reflection;
-using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Shared.Abstractions.Queries;
 using Chatify.Shared.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Chatify.Application.Common.Behaviours.Timing;
 
-internal sealed class TimedHandlerDecorator<TQuery, TResult>(IQueryHandler<TQuery, TResult> inner,
+[Decorator]
+public sealed class TimedHandlerDecorator<TQuery, TResult>(IQueryHandler<TQuery, TResult> inner,
         ILogger<TimedHandlerDecorator<TQuery, TResult>> logger)
     : IQueryHandler<TQuery, TResult>
     where TQuery : class, IQuery<TResult>

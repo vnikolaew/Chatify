@@ -15,8 +15,9 @@ namespace Chatify.Infrastructure.Messages.Hubs;
 using SendGroupChatMessageResult = Either<Error, Guid>;
 
 // [Authorize]
-public sealed class ChatifyHub(IChatGroupMemberRepository members,
-        ILogger<ChatifyHub> logger, IIdentityContext identityContext)
+public sealed class ChatifyHub(
+    IChatGroupMemberRepository members,
+        IIdentityContext identityContext)
     : Hub<IChatifyHubClient>
 {
     public const string Endpoint = "/api/chat";

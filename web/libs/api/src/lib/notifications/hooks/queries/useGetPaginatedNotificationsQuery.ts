@@ -8,9 +8,8 @@ import { notificationsClient } from "../../client";
 import {
    UserNotification,
    UserNotificationCursorPagedApiResponse,
+   CursorPaged
 } from "@openapi";
-import { URLSearchParams } from "next/dist/compiled/@edge-runtime/primitives/url";
-import { CursorPaged } from "../../../../../openapi/common/CursorPaged";
 
 export interface GetPaginatedNotificationsModel {
    pageSize: number;

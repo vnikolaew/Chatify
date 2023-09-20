@@ -17,7 +17,6 @@ var builder = WebApplication.CreateBuilder(args);
         .AddMappers()
         .AddApplication(builder.Configuration)
         .AddInfrastructure(builder.Configuration);
-    
 }
 
 var app = builder.Build();

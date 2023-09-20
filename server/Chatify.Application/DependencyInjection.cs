@@ -32,12 +32,12 @@ public static class DependencyInjection
             .AddScoped<IAttachmentOperationHandler, AttachmentOperationHandler>()
             .AddSingleton<IDispatcher, InMemoryDispatcher>();
 
-        services.TryDecorate(typeof(ICommandHandler<>), typeof(RequestValidationDecorator<>));
-        services.TryDecorate(typeof(ICommandHandler<,>), typeof(RequestValidationDecorator<,>));
-        services.TryDecorate(typeof(ICommandHandler<>), typeof(LoggingHandlerDecorator<>));
-        services.TryDecorate(typeof(ICommandHandler<,>), typeof(LoggingHandlerDecorator<,>));
+        // services.TryDecorate(typeof(ICommandHandler<>), typeof(RequestValidationDecorator<>));
+        // services.TryDecorate(typeof(ICommandHandler<,>), typeof(RequestValidationDecorator<,>));
+        // services.TryDecorate(typeof(ICommandHandler<>), typeof(LoggingHandlerDecorator<>));
+        // services.TryDecorate(typeof(ICommandHandler<,>), typeof(LoggingHandlerDecorator<,>));
 
-        services.TryDecorate(typeof(IQueryHandler<,>), typeof(TimedHandlerDecorator<,>));
+        services.AddScoped(typeof(TimedHandlerDecorator<,>));
         if ( configuration.GetOptions<CachingOptions>().Enabled )
         {
             services.TryDecorate(typeof(IQueryHandler<,>), typeof(CachedQueryHandlerDecorator<,>));
