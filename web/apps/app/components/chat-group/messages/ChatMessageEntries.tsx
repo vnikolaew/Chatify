@@ -47,9 +47,8 @@ const ChatMessageEntries = ({ messages, firstMessageRef }: ChatMessageEntriesPro
             return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
          });
       return toPairs(groupedMessages)
-         .sort(([dateA], [dateB]) => {
-            return parseDate(dateB).getTime() - parseDate(dateA).getTime();
-         });
+         .map(([date, entry]) => [parseDate(date), entry] as const)
+         .sort(([dateA], [dateB]) => dateB.getTime() - dateA.getTime());
 
    }, [messages]);
    console.log(`All messages: `, { messages });
@@ -58,9 +57,9 @@ const ChatMessageEntries = ({ messages, firstMessageRef }: ChatMessageEntriesPro
    return (
       <div className={`flex flex-col gap-4 items-center w-full`}>
          {messagesByDate.reverse().map(([date, messages], dateIndex, arr2) => (
-            <div className={`flex w-full items-start flex-col gap-2`} key={date}>
-               <Chip className={`text-xs px-4 self-center`} size={`sm`} content={date} color={`default`}
-                     variant={`shadow`}>{moment(date, "DD-M-YYYY").format("dddd, MMMM Do")}</Chip>
+            <div className={`flex w-full items-start flex-col gap-2`} key={date.toISOString()}>
+               <Chip className={`text-xs px-4 self-center`} size={`sm`} content={date.toISOString()} color={`default`}
+                     variant={`shadow`}>{moment(date, "DD-M-YYYY").format(date.getFullYear() === new Date().getFullYear() ?  "dddd, MMMM Do" : `MMMM Do, YYYY`)}</Chip>
                {messages?.map((message, i, arr) => {
                   const isMe = message.senderInfo.userId === meId;
                   const isLatest = i === arr.length - 1 && dateIndex === arr2.length - 1;
