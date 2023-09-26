@@ -22,6 +22,7 @@ import { PlusIcon, RightArrow } from "@icons";
 import { useCurrentChatGroup, useCurrentUserId } from "@hooks";
 import moment from "moment";
 import { FriendInvitationStatus, UserStatus } from "@openapi";
+import { useTranslations } from "next-intl";
 
 export interface ChatGroupMemberInfoCardProps {
    userId: string;
@@ -47,6 +48,7 @@ const ChatGroupMemberInfoCard = ({ userId }: ChatGroupMemberInfoCardProps) => {
       error: friendInviteError,
       isLoading: friendInviteLoading,
    } = useSendFriendInviteMutation();
+   const t = useTranslations(`Sidebar.MemberInfo`);
 
    const { data: chatGroupDetails } = useGetChatGroupDetailsQuery(chatGroupId, {
       networkMode: "offlineFirst",
@@ -74,6 +76,7 @@ const ChatGroupMemberInfoCard = ({ userId }: ChatGroupMemberInfoCardProps) => {
       }
       return "default";
    }, [userDetails]);
+   const ts = useTranslations(`Sidebar.StatusTypes`);
 
    if (isLoading && isFetching) {
       return <Spinner size={"sm"} color={"danger"} />;
@@ -119,14 +122,14 @@ const ChatGroupMemberInfoCard = ({ userId }: ChatGroupMemberInfoCardProps) => {
                      radius={"full"}
                      color={statusColor}
                   />
-                  {userDetails.user.status}
+                  {ts(userDetails.user.status)}
                </div>
             </div>
          </CardHeader>
          <CardBody className={`flex justify-center`}>
             <div className={`mb-4 items-start flex-col flex gap-1`}>
                <span className={`text-foreground text-xs uppercase`}>
-                  Member since
+                  {t(`MemberSince`)}
                </span>
                <div className={`flex items-center gap-4`}>
                   <div className={`flex items-center gap-1`}>
@@ -171,7 +174,7 @@ const ChatGroupMemberInfoCard = ({ userId }: ChatGroupMemberInfoCardProps) => {
             </div>
             <div className={`my-0 items-start flex-col flex gap-1`}>
                <span className={`text-foreground text-xs uppercase`}>
-                  Roles
+                  {t(`Roles`)}
                </span>
                <span className={`text-default-300 text-xs`}>
                   {chatGroupDetails.chatGroup.adminIds.some(
@@ -240,7 +243,7 @@ const ChatGroupMemberInfoCard = ({ userId }: ChatGroupMemberInfoCardProps) => {
                   color={"warning"}
                   size={"sm"}
                >
-                  {"DM"}
+                  {t(`DM`)}
                </Button>
             )}
          </CardBody>

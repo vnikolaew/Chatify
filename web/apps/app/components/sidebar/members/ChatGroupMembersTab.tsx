@@ -11,6 +11,7 @@ import {
 } from "@web/api";
 import { useCurrentUserId } from "@hooks";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 
 export interface ChatGroupMembersTabProps {
    chatGroupId: string;
@@ -20,6 +21,7 @@ const ChatGroupMembersTab = ({ chatGroupId }: ChatGroupMembersTabProps) => {
    const { data, error, isLoading } = useGetChatGroupDetailsQuery(chatGroupId, {
       enabled: !!chatGroupId,
    });
+   const t = useTranslations(`Sidebar.StatusTypes`);
 
    const meId = useCurrentUserId();
    const isCurrentUserGroupAdmin = useMemo(
@@ -31,6 +33,7 @@ const ChatGroupMembersTab = ({ chatGroupId }: ChatGroupMembersTabProps) => {
       data?.members,
       data?.chatGroup?.adminIds
    );
+   console.log({membersByCategory});
 
    const handlePrefetchUserDetails = async (userId: string) => {
       console.log(`Fetching data for user ${userId} ...`);
@@ -49,7 +52,7 @@ const ChatGroupMembersTab = ({ chatGroupId }: ChatGroupMembersTabProps) => {
                   className={`w-full flex items-center justify-between gap-2 mt-4 px-4`}
                >
                   <h2 className={`text-xs uppercase text-default-400`}>
-                     {category} - {members.length}
+                     {t(`${category[0].toUpperCase()}${category.slice(1)}`)} - {members.length}
                   </h2>
                   {category === "admins" && true && (
                      <AddNewGroupAdminActionButton />

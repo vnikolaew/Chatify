@@ -3,6 +3,7 @@ using System.Reflection;
 using Cassandra.Mapping;
 using Chatify.Infrastructure.Data.Mappings;
 using Chatify.Infrastructure.Data.Models;
+using Playgrounds;
 
 internal class Program
 {
@@ -26,13 +27,6 @@ internal class Program
 
     public static async Task Main(string[] args)
     {
-        MappingConfiguration.Global.Define<UserMapping>();
-        Expression<Func<ChatifyUser, object>> expr = u => new
-        {
-            id = u.Id,
-            u.Email,
-            u.Status
-        };
-        Console.WriteLine(TranslateSelectToCql(expr));
+        await TelegramPlayground.Run();
     }
 }

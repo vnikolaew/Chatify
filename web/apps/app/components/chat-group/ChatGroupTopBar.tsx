@@ -17,6 +17,7 @@ import {
   AddNewMemberActionButton,
   PinnedMessagesActionButton
 } from "@components/chat-group/actions";
+import { useTranslations } from "next-intl";
 
 export interface ChatGroupTopBarProps {
 }
@@ -24,6 +25,7 @@ export interface ChatGroupTopBarProps {
 const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
   const { isUserLoggedIn } = useIsUserLoggedIn();
   const chatGroupId = useCurrentChatGroup();
+  const t = useTranslations('MainArea.TopBar');
   const { data: me, error: meError } = useGetMyClaimsQuery({
     enabled: isUserLoggedIn
   });
@@ -105,12 +107,11 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                                   0,
                                   30
                                 )}...`
-                                : `No description.`}
+                                : t(`ChatGroupNoDescription`)}
                            </span>
                   <div className={`flex items-center gap-3`}>
                               <span className={`text-xs text-default-400`}>
-                                 {chatGroupDetails.members.length} member
-                                {chatGroupDetails.members.length > 1 && `s`}
+                                {t(`MembersCount`, {count: chatGroupDetails.members.length})}
                               </span>
                     <div
                       className={`bg-default-200 rounded-full w-[4px] h-[4px]`}
@@ -147,10 +148,7 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                           ))}
                       </AvatarGroup>
                       <span className={`text-xs text-success-300`}>
-                                    {membersOnline === 0
-                                      ? `No members `
-                                      : `${membersOnline} `}{" "}
-                        online
+                        {t(`MembersOnline`, {count: membersOnline})}
                                  </span>
                     </div>
                   </div>

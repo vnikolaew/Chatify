@@ -12,17 +12,20 @@ import { useAddChatGroupMember, useGetMyFriendsQuery } from "@web/api";
 import TooltipWithPopoverActionButton from "@components/common/TooltipWithPopoverActionButton";
 import { useCurrentChatGroup, useGetNewMemberSuggestions } from "@hooks";
 import SadFaceIcon from "@components/icons/SadFaceIcon";
+import { useTranslations } from "next-intl";
 
 export interface AddNewMemberActionButtonProps {}
 
 export const AddNewMemberActionButton = ({}: AddNewMemberActionButtonProps) => {
    const { isOpen, onOpenChange } = useDisclosure({ defaultOpen: false });
+   const t = useTranslations('MainArea.TopBar.Popups');
+
    return (
       <TooltipWithPopoverActionButton
          isOpen={isOpen}
          onOpenChange={onOpenChange}
          popoverContent={<AddNewMemberPopover />}
-         tooltipContent={"Add a new member"}
+         tooltipContent={t(`AddNewMember`)}
          icon={<AddUserIcon fill={"white"} size={20} />}
       />
    );

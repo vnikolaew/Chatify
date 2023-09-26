@@ -33,6 +33,7 @@ import { UserStatus } from "@openapi";
 import { ExitIcon, PlusIcon, ProfileIcon, RightArrow } from "@icons";
 import ChatBubbleIcon from "@components/icons/ChatBubbleIcon";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export const USER_STATUSES = new Set<{
   status: UserStatus;
@@ -74,6 +75,7 @@ export const UserDropdown = ({}: UserDropdownProps) => {
   const [loadingAction, setLoadingAction] = useState<string>(null!);
   const [isStatusPopoverOpen, setIsStatusPopoverOpen] = useState(false);
   const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
+  const t = useTranslations(`MainNavbar`);
 
   useEffect(() => {
     if (!isDropdownMenuOpen) setIsStatusPopoverOpen(false);
@@ -168,12 +170,12 @@ export const UserDropdown = ({}: UserDropdownProps) => {
             classNames={{
               description: "text-[.75rem] text-default-300"
             }}
-            description={"Manage your profile settings"}
+            description={t(`Profile.description`)}
             className={` flex px-3 py-2 text-foreground items-center gap-3`}
             startContent={<ProfileIcon size={18} />}
             key={"profile"}
           >
-            <span className={`text-sm`}>Profile</span>
+            <span className={`text-sm`}>{t(`Profile.title`)}</span>
           </DropdownItem>
           <DropdownItem
             as={Link}
@@ -188,14 +190,14 @@ export const UserDropdown = ({}: UserDropdownProps) => {
               description:
                 "text-[.75rem] text-default-300 hover:text-default-300"
             }}
-            description={"Create a new chat group"}
+            description={t(`CreateChatGroup.description`)}
             startContent={
               <ChatBubbleIcon className={`fill-foreground`} size={20} />
             }
             className={`px-3 py-2 text-foreground `}
             key={"create-chat-group"}
           >
-            <span className={`text-small`}>Create chat group</span>
+            <span className={`text-small`}>{t(`CreateChatGroup.title`)}</span>
           </DropdownItem>
           <DropdownItem textValue={"rsdff"} key={"status-2"}>
             <Popover
@@ -219,7 +221,7 @@ export const UserDropdown = ({}: UserDropdownProps) => {
                     />
                   }
                 >
-                  Change your status
+                  {t(`ChangeStatus.title`)}
                 </Button>
               </PopoverTrigger>
               <PopoverContent>
@@ -283,7 +285,7 @@ export const UserDropdown = ({}: UserDropdownProps) => {
             className={`px-3 py-2`}
             key={"darkMode"}
           >
-            <span className={`text-small`}>Dark Mode</span>
+            <span className={`text-small`}>{t(`DarkMode.title`)}</span>
           </DropdownItem>
         </DropdownSection>
         <DropdownSection>
@@ -297,7 +299,7 @@ export const UserDropdown = ({}: UserDropdownProps) => {
             variant={"bordered"}
             key={"sign-out"}
           >
-            <span className={`text-small`}>Sign Out</span>
+            <span className={`text-small`}>{t(`SignOut.title`)}</span>
           </DropdownItem>
         </DropdownSection>
         <DropdownSection>
