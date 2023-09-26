@@ -6,6 +6,7 @@ import ChatGroupMembersTab from "@components/sidebar/members/ChatGroupMembersTab
 import ChatGroupAttachmentsTab from "@components/sidebar/attachments/ChatGroupAttachmentsTab";
 import { Image as ImageIcon, Users } from "lucide-react";
 import { useURLParamState } from "@hooks";
+import { useTranslations } from "next-intl";
 
 export interface ChatGroupSidebarProps {}
 
@@ -13,6 +14,7 @@ const ChatGroupSidebar = ({}: ChatGroupSidebarProps) => {
    const params = useSearchParams();
    const chatGroupId = params.get("c");
    const [selectedTab, setSelectedTab] = useURLParamState(`tab`, `members`);
+   const t = useTranslations(`Sidebar`);
 
    return (
       <ScrollShadow
@@ -50,7 +52,7 @@ const ChatGroupSidebar = ({}: ChatGroupSidebarProps) => {
                      title={
                         <div className={`flex items-center gap-2`}>
                            <Users size={12} />
-                           <span>Members</span>
+                           <span>{t(`Members.title`)}</span>
                         </div>
                      }
                      key={`members`}
@@ -63,7 +65,7 @@ const ChatGroupSidebar = ({}: ChatGroupSidebarProps) => {
                      title={
                         <div className={`flex items-center gap-2`}>
                            <ImageIcon size={12} />
-                           <span>Shared Media</span>
+                           <span>{t(`SharedMedia.title`)}</span>
                         </div>
                      }
                      className={`mx-0`}

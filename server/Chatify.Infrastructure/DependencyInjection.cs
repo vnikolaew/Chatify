@@ -127,7 +127,6 @@ public static class DependencyInjection
             .AddSignalR(opts =>
             {
                 opts.KeepAliveInterval = 30.Seconds();
-                opts.AddFilter<ConnectionIdCookieHubFilter>();
             })
             .AddJsonProtocol()
             // .AddMessagePackProtocol(opts => {

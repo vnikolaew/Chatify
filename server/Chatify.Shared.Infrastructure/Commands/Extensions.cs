@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using Chatify.Shared.Abstractions.Commands;
 using Microsoft.Extensions.DependencyInjection;
-using Scrutor;
 
 namespace Chatify.Shared.Infrastructure.Commands;
 

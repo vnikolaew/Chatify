@@ -20,7 +20,9 @@ import {
 import { FriendInvitationStatus, UserStatus } from "@openapi";
 import moment from "moment";
 
-export interface PageProps {}
+
+export interface PageProps {
+}
 
 const FriendsPage = ({}: PageProps) => {
    const { validationState, userHandle, setUserHandle, errorMessage } =
@@ -34,8 +36,9 @@ const FriendsPage = ({}: PageProps) => {
    } = useFindUserByHandleQuery(userHandle, { enabled: false });
    const noUserFound = useMemo(
       () => !isLoading && !isFetching && !user,
-      [isLoading, isFetching, user]
+      [isLoading, isFetching, user],
    );
+
 
    const {
       mutateAsync: sendFriendInvite,
@@ -68,7 +71,7 @@ const FriendsPage = ({}: PageProps) => {
    // @ts-ignore
    return (
       <section
-         className={`w-full min-h-[60vh] mt-12 flex flex-col items-center`}
+         className={`w-full min-h-[70vh] mt-12 flex flex-col items-center`}
       >
          <div className="flex flex-col w-1/3 gap-2">
             <h1 className={`text-2xl text-foreground`}>Find new friends</h1>
@@ -112,12 +115,12 @@ const FriendsPage = ({}: PageProps) => {
                   color={"primary"}
                   size={"md"}
                >
-                  {isLoading && isFetching ? "Searching ..." : "Find users"}
+                  {isLoading && isFetching ? `Searching ...` : `Search`}
                </Button>
             </div>
             {user && (
                <div
-                  className={`w-full mt-12 border-b-1 border-b-default-100  rounded-md pb-2 px-6 transition-background duration-100 self-center flex items-center justify-between`}
+                  className={`w-full mt-12 border-b-1  border-b-default-100  rounded-md pb-4 px-6 transition-background duration-100 self-center flex items-center justify-between`}
                >
                   <div className={` flex items-center gap-4`}>
                      <Badge
@@ -136,28 +139,28 @@ const FriendsPage = ({}: PageProps) => {
                         />
                      </Badge>
                      <div
-                        className={`flex flex-col items-start justify-evenly gap-1 `}
+                        className={`flex flex-col items-start justify-evenly gap-0 `}
                      >
                         <h2 className={`text-foreground text-small`}>
                            {user.user?.displayName}
                         </h2>
-                        <h3 className={`text-default-300 text-xs`}>
+                        <h3 className={`text-default-400 text-xs`}>
                            {user.user?.userHandle}{" "}
                            {user.friendInvitation?.status ===
                               FriendInvitationStatus.PENDING &&
                               ` - Sent you an invite ${moment(
-                                 new Date(user.friendInvitation.createdAt)
+                                 new Date(user.friendInvitation.createdAt),
                               ).fromNow()}`}
                            {user.friendsRelation &&
                               ` - Friends since ${moment(
-                                 new Date(user.friendsRelation.createdAt)
+                                 new Date(user.friendsRelation.createdAt),
                               ).format("DD/MM/YYYY")}`}
                         </h3>
                      </div>
                   </div>
                   {user?.friendInvitation &&
                      user.friendInvitation?.status ===
-                        FriendInvitationStatus.PENDING && (
+                     FriendInvitationStatus.PENDING && (
                         <FriendInvitationSection
                            userId={user?.user.id}
                            inviteId={user.friendInvitation?.id}
@@ -183,9 +186,9 @@ const FriendsPage = ({}: PageProps) => {
                         isLoading={inviteLoading}
                         spinner={<Spinner color={`white`} size={`sm`} />}
                         isDisabled={inviteLoading}
-                        size={"sm"}
-                        variant={`flat`}
-                        color={`danger`}
+                        size={"md"}
+                        variant={`light`}
+                        color={`warning`}
                      >
                         {inviteLoading ? "Loading ..." : "Send request"}
                      </Button>
@@ -217,9 +220,9 @@ interface FriendInvitationSectionProps {
 }
 
 const FriendInvitationSection = ({
-   inviteId,
-   userId,
-}: FriendInvitationSectionProps) => {
+                                    inviteId,
+                                    userId,
+                                 }: FriendInvitationSectionProps) => {
    const {
       mutateAsync: acceptInvite,
       isLoading: acceptLoading,

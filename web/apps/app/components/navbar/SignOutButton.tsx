@@ -3,11 +3,14 @@ import TooltipButton from "@components/common/TooltipButton";
 import React from "react";
 import { useSignOutMutation } from "@web/api";
 import LogoutIcon from "@components/icons/LogoutIcon";
+import { useTranslations } from "next-intl";
 
 export interface SignOutButtonProps {}
 
 const SignOutButton = ({}: SignOutButtonProps) => {
    const { mutateAsync: signOut } = useSignOutMutation();
+   const t = useTranslations('MainNavbar.Popups');
+
    const handleSignOut = async () => {
       await signOut({});
       window.location.reload();
@@ -29,7 +32,7 @@ const SignOutButton = ({}: SignOutButtonProps) => {
                size={16}
             />
          }
-         content={"Sign out"}
+         content={t(`SignOut`)}
       />
    );
 };

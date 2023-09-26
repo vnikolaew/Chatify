@@ -15,6 +15,7 @@ import { useIsUserLoggedIn, useDebounce, useCurrentChatGroup } from "@hooks";
 import { useSearchChatGroupsByName } from "@web/api";
 import { HamburgerMenuIcon, NotSentIcon, SearchIcon } from "@icons";
 import ChatGroupFeedEntries from "@components/feed/ChatGroupFeedEntries";
+import { useTranslations } from "next-intl";
 
 export interface ChatGroupsFeedProps {}
 
@@ -22,6 +23,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
    const { isUserLoggedIn } = useIsUserLoggedIn();
    const [searchTerm, setSearchTerm] = useState("");
    const debouncedSearch = useDebounce(searchTerm, 2000);
+   const t = useTranslations('FeedSidebar');
    const {
       data: searchEntries,
       isLoading: searchLoading,
@@ -102,7 +104,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                         size={20}
                      />
                   }
-                  placeholder={"Search"}
+                  placeholder={t(`SearchPlaceholder`)}
                />
             </div>
          </section>

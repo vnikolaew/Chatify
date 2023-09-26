@@ -19,6 +19,7 @@ import {
 import { NotificationsTab } from "@components/navbar";
 import CheckIcon from "@components/icons/CheckIcon";
 import TooltipWithPopoverActionButton from "@components/common/TooltipWithPopoverActionButton";
+import { useTranslations } from "next-intl";
 
 export interface NotificationsDropdownProps {}
 
@@ -62,6 +63,7 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
       // await markAsRead({}, {});
       await sleep(2000);
    };
+   const t = useTranslations('MainNavbar.Popups');
 
    console.log(notifications?.pages?.[0]);
    return (
@@ -144,7 +146,7 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
                   </Tabs>
                </div>
             }
-            tooltipContent={"Notifications"}
+            tooltipContent={t(`Notifications`)}
             icon={
                notifications?.length > 0 ? (
                   <Badge

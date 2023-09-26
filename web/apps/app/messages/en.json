@@ -1,0 +1,85 @@
+{
+   "Index": {
+      "title": "Hello world!"
+   },
+   "MainNavbar": {
+      "Profile": {
+         "title": "Profile",
+         "description": "Manage your profile settings"
+      },
+      "CreateChatGroup": {
+         "title": "Create chat group",
+         "description": "Create a new chat group"
+      },
+      "ChangeStatus": {
+         "title": "Change your status",
+         "away": "Away",
+         "offline": "Offline",
+         "online": "Online"
+      },
+      "DarkMode": {
+         "title": "Dark Mode"
+      },
+      "SignOut": {
+         "title": "Sign Out"
+      },
+      "Popups": {
+         "AddNewFriend": "Add a new friend",
+         "Notifications": "Notifications",
+         "SignOut": "Sign Out"
+      }
+   },
+   "Footer": {
+      "title": "Footer Area"
+   },
+   "FeedSidebar": {
+      "SearchPlaceholder": "Search"
+   },
+   "MainArea": {
+      "TopBar": {
+         "ChatGroupNoDescription": "No description.",
+         "MembersCount": "{count, plural, =0 {No members} =1 {1 Member} other {# members}}",
+         "MembersOnline": "{count} online",
+         "Popups": {
+            "EditChatGroup": "Edit Chat Group",
+            "PinnedMessages": "Pinned messages",
+            "AddNewMember": "Add a new member"
+         }
+      },
+      "ChatMessages": {
+         "ConversationBeginningMessage": "You've scrolled to the beginning of this conversation.\n",
+         "RepliesCount": "{count, plural, =0 {No replies} =1 {1 reply} other {# replies}}",
+         "ScrollToBottom": "Scroll to bottom",
+         "Popups": {
+            "PinForThisGroup": "Pin for this group",
+            "ReplyToThisMessage": "Reply to this message",
+            "ForwardThisMessage": "Forward this message",
+            "Edit": "Edit",
+            "MoreActions": "More actions"
+         }
+      }
+   },
+   "Sidebar": {
+      "Members": {
+         "title": "Members"
+      },
+      "SharedMedia": {
+         "title": "Shared Media",
+         "AttachmentDescription": "Shared by <nameBold> {name} </nameBold> on {date}"
+      },
+      "Popups": {
+         "AddNewAdmin": "Add a new admin"
+      },
+      "StatusTypes": {
+         "Online": "Online",
+         "Admins": "Admins",
+         "Offline": "Offline",
+         "Away": "Away"
+      },
+      "MemberInfo": {
+         "MemberSince": "Member Since",
+         "Roles": "Roles",
+         "DM": "DM"
+      }
+   }
+}

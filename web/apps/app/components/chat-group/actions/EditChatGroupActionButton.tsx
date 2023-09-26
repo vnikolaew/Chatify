@@ -14,6 +14,7 @@ import {
 } from "@nextui-org/react";
 import { ChatGroupDetailsEntry } from "@openapi";
 import { useIsChatGroupPrivate } from "@hooks";
+import { useTranslations } from "next-intl";
 
 export interface EditChatGroupActionButtonProps {
    chatGroup: ChatGroupDetailsEntry;
@@ -25,6 +26,7 @@ const EditChatGroupActionButton = ({
    const { isOpen, onOpen, onOpenChange } = useDisclosure();
    const isPrivate = useIsChatGroupPrivate(chatGroup);
    const [isDirty, setIsDirty] = useState(false);
+   const t = useTranslations('MainArea.TopBar.Popups');
 
    return (
       <Fragment>
@@ -36,7 +38,7 @@ const EditChatGroupActionButton = ({
             }}
             onClick={onOpenChange}
             icon={<Edit className={`stroke-default-400`} size={20} />}
-            content={`Edit chat group`}
+            content={t(`EditChatGroup`)}
          />
          <Modal size={`md`} onOpenChange={onOpenChange} isOpen={isOpen}>
             <ModalContent className={`px-2 py-2`}>

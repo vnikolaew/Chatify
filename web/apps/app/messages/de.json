@@ -1,0 +1,85 @@
+{
+   "Index": {
+      "title": "Hallo Welt!"
+   },
+   "MainNavbar": {
+      "Profile": {
+         "title": "Profil",
+         "description": "Verwalten Sie Ihre Profil-Einstellungen"
+      },
+      "CreateChatGroup": {
+         "title": "Chat-Gruppe erstellen",
+         "description": "Eine neue Chat-Gruppe erstellen"
+      },
+      "ChangeStatus": {
+         "title": "Ihren Status ändern",
+         "away": "Abwesend",
+         "offline": "Offline",
+         "online": "Online"
+      },
+      "DarkMode": {
+         "title": "Dunkler Modus"
+      },
+      "SignOut": {
+         "title": "Abmelden"
+      },
+      "Popups": {
+         "AddNewFriend": "Einen neuen Freund hinzufügen",
+         "Notifications": "Benachrichtigungen",
+         "SignOut": "Abmelden"
+      }
+   },
+   "Footer": {
+      "title": "Fußzeile Bereich"
+   },
+   "FeedSidebar": {
+      "SearchPlaceholder": "Suche"
+   },
+   "MainArea": {
+      "TopBar": {
+         "ChatGroupNoDescription": "Keine Beschreibung.",
+         "MembersCount": "{count, plural, =0 {Keine Mitglieder} =1 {1 Mitglied} other {# Mitglieder}}",
+         "MembersOnline": "{count} online",
+         "Popups": {
+            "EditChatGroup": "Chat-Gruppe bearbeiten",
+            "PinnedMessages": "Gepinnte Nachrichten",
+            "AddNewMember": "Neues Mitglied hinzufügen"
+         }
+      },
+      "ChatMessages": {
+         "ConversationBeginningMessage": "Sie haben bis zum Anfang dieses Gesprächs gescrollt.\n",
+         "RepliesCount": "{count, plural, =0 {Keine Antworten} =1 {1 Antwort} other {# Antworten}}",
+         "ScrollToBottom": "Zum Ende scrollen",
+         "Popups": {
+            "PinForThisGroup": "Für diese Gruppe pinnen",
+            "ReplyToThisMessage": "Auf diese Nachricht antworten",
+            "ForwardThisMessage": "Diese Nachricht weiterleiten",
+            "Edit": "Bearbeiten",
+            "MoreActions": "Weitere Aktionen"
+         }
+      }
+   },
+   "Sidebar": {
+      "Members": {
+         "title": "Mitglieder"
+      },
+      "SharedMedia": {
+         "title": "Geteilte Medien",
+         "AttachmentDescription": "Geteilt von <nameBold> {name} </nameBold> am {date}"
+      },
+      "Popups": {
+         "AddNewAdmin": "Neuen Administrator hinzufügen"
+      },
+      "StatusTypes": {
+         "Online": "Online",
+         "Admins": "Administratoren",
+         "Offline": "Offline",
+         "Away": "Abwesend"
+      },
+      "MemberInfo": {
+         "MemberSince": "Mitglied seit",
+         "Roles": "Rollen",
+         "DM": "DM"
+      }
+   }
+}

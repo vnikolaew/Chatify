@@ -2,10 +2,12 @@
 import React from "react";
 import { Button, Link, Tooltip } from "@nextui-org/react";
 import { AddUserIcon } from "@icons";
+import { useTranslations } from "next-intl";
 
 export interface AddNewFriendButtonProps {}
 
 const AddNewFriendButton = ({}: AddNewFriendButtonProps) => {
+   const t = useTranslations('MainNavbar.Popups');
    return (
       <div>
          <Tooltip
@@ -17,7 +19,7 @@ const AddNewFriendButton = ({}: AddNewFriendButtonProps) => {
             }}
             shadow={`sm`}
             size={`sm`}
-            content={"Add a new friend"}
+            content={t(`AddNewFriend`)}
          >
             <Button
                as={Link}

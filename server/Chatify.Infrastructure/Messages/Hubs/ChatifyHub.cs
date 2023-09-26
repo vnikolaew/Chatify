@@ -16,7 +16,7 @@ using SendGroupChatMessageResult = Either<Error, Guid>;
 
 // [Authorize]
 public sealed class ChatifyHub(
-    IChatGroupMemberRepository members,
+        IChatGroupMemberRepository members,
         IIdentityContext identityContext)
     : Hub<IChatifyHubClient>
 {
@@ -24,19 +24,25 @@ public sealed class ChatifyHub(
 
     public static string GetChatGroupId(Guid groupId)
         => $"chat-groups:{groupId.ToString()}";
-    
 
-    private Guid UserId => Guid.TryParse(Context.User!
-        .Claims
-        .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)!
-        .Value, out var userId)
+
+    private Guid? UserId => Guid.TryParse(Context.User?
+        .Claims?
+        .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?
+        .Value ?? string.Empty, out var userId)
         ? userId
-        : Guid.Empty;
+        : default;
 
     public override async Task OnConnectedAsync()
     {
+        if ( !UserId.HasValue )
+        {
+            await base.OnConnectedAsync();
+            return;
+        }
+
         var groupIds = await GetService<IChatGroupMemberRepository>()
-            .GroupsIdsByUser(UserId);
+            .GroupsIdsByUser(UserId.Value);
 
         var joinGroupsTasks = groupIds
             .Chunk(10)
@@ -82,7 +88,7 @@ public sealed class ChatifyHub(
         CancellationToken cancellationToken = default)
     {
         var groupIds = await GetService<IChatGroupMemberRepository>()
-            .GroupsIdsByUser(UserId, cancellationToken);
+            .GroupsIdsByUser(UserId.Value, cancellationToken);
 
         var joinGroupsTasks = groupIds.Select(id => Groups.AddToGroupAsync(
             Context.ConnectionId,
@@ -99,7 +105,7 @@ public sealed class ChatifyHub(
         CancellationToken cancellationToken = default)
     {
         var isGroupMember = await GetService<IChatGroupMemberRepository>()
-            .Exists(request.ChatGroupId, UserId, cancellationToken);
+            .Exists(request.ChatGroupId, UserId.Value, cancellationToken);
         if ( !isGroupMember ) return Error.New("");
 
         await Groups.AddToGroupAsync(Context.ConnectionId,
@@ -115,14 +121,14 @@ public sealed class ChatifyHub(
         DateTime timestamp)
     {
         var isGroupMember = await GetService<IChatGroupMemberRepository>()
-            .Exists(groupId, UserId);
+            .Exists(groupId, UserId.Value);
         if ( !isGroupMember ) return Error.New("");
-        
+
         await Clients
             .Group(GetChatGroupId(groupId))
             .ChatGroupMemberStartedTyping(new ChatGroupMemberStartedTyping(
                 groupId,
-                UserId,
+                UserId.Value,
                 Username,
                 timestamp));
 
@@ -133,17 +139,17 @@ public sealed class ChatifyHub(
     public async Task<Either<Error, Unit>> StopTypingInGroupChat(
         Guid groupId,
         DateTime timestamp
-      )
+    )
     {
         var isGroupMember = await GetService<IChatGroupMemberRepository>()
-            .Exists(groupId, UserId);
+            .Exists(groupId, UserId.Value);
         if ( !isGroupMember ) return Error.New("");
 
         await Clients
             .Group(GetChatGroupId(groupId))
             .ChatGroupMemberStoppedTyping(new ChatGroupMemberStoppedTyping(
                 groupId,
-                UserId,
+                UserId.Value,
                 Username,
                 timestamp));
 

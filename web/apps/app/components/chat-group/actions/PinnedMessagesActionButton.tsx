@@ -28,11 +28,13 @@ import {
 import { User as TUser } from "@openapi";
 import { X } from "lucide-react";
 import moment from "moment/moment";
+import { useTranslations } from "next-intl";
 
 export const PinnedMessagesActionButton = ({}: {}) => {
    const { isOpen, onOpenChange, onOpen } = useDisclosure({
       defaultOpen: false,
    });
+   const t = useTranslations('MainArea.TopBar.Popups');
 
    return (
       <TooltipWithPopoverActionButton
@@ -43,7 +45,7 @@ export const PinnedMessagesActionButton = ({}: {}) => {
          isOpen={isOpen}
          onOpenChange={onOpenChange}
          popoverContent={<PinnedMessagesPopover onOpen={onOpen} />}
-         tooltipContent={"Pinned messages"}
+         tooltipContent={t(`PinnedMessages`)}
          icon={<PinIcon fill={"white"} size={20} />}
       />
    );

@@ -8,7 +8,6 @@ import { useCurrentChatGroup } from "@hooks";
 import ChatGroupTopBar from "@components/chat-group/ChatGroupTopBar";
 import { useSearchParams } from "next/navigation";
 import { ChatMessagesSection } from "@components/chat-group";
-import { useChatifyClientContext } from "../../hub/ChatHubConnection";
 import Toast from "@components/common/Toast";
 
 function IndexPage(props) {
@@ -16,7 +15,6 @@ function IndexPage(props) {
    const isNew = params.get("new") === "true";
    const { data: me } = useGetMyClaimsQuery();
 
-   const client = useChatifyClientContext();
    const {
       isOpen: isSuccessModalOpen,
       onOpenChange: onSuccessModalOpenChange,

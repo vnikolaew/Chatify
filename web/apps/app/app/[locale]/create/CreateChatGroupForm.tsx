@@ -26,7 +26,8 @@ import { User as TUser } from "@openapi";
 import * as yup from "yup";
 import { useQueryClient } from "@tanstack/react-query";
 
-export interface CreateChatGroupFormProps {}
+export interface CreateChatGroupFormProps {
+}
 
 const createChatGroupSchema = yup.object({
    about: yup.string().max(300, "About must be less than 300 characters."),
@@ -75,14 +76,13 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
    } = useGetMyFriendsQuery();
    const client = useQueryClient();
 
-   const handleSubmit = async (model: CreateChatGroupModel) => {
+   const handleSubmit = async (model: CreateChatGroupModel) =>
       await createChatGroup(model, {
          onSuccess: (data) => {
             client.refetchQueries({ exact: true, queryKey: [`feed`] });
             router.push(`/?c=${(data as any)?.data?.groupId}&new=true`);
          },
       });
-   };
 
    return (
       <Formik<CreateChatGroupModel>
@@ -93,16 +93,16 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
          onSubmit={handleSubmit}
       >
          {({
-            values,
-            errors,
-            touched,
-            setFieldValue,
-            handleChange,
-            handleSubmit,
-            isSubmitting,
-            getFieldProps,
-            setFieldTouched,
-         }) => (
+              values,
+              errors,
+              touched,
+              setFieldValue,
+              handleChange,
+              handleSubmit,
+              isSubmitting,
+              getFieldProps,
+              setFieldTouched,
+           }) => (
             <form
                onSubmit={handleSubmit}
                className={`w-[320px] flex flex-col gap-3 mt-6`}
@@ -230,7 +230,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                                  }}
                                  size={`sm`}
                                  src={getMediaUrl(
-                                    user.data.profilePicture.mediaUrl
+                                    user.data.profilePicture.mediaUrl,
                                  )}
                               />
                            }

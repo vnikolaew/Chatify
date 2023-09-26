@@ -14,11 +14,9 @@ import NextLink from "next/link";
 import { useGetMyClaimsQuery } from "@web/api";
 import { useIsUserLoggedIn } from "@hooks";
 import { NotificationsDropdown, UserDropdown } from "@components/navbar";
-import { ExitIcon } from "@icons";
-import TooltipButton from "@components/common/TooltipButton";
-import LogoutIcon from "@components/icons/LogoutIcon";
 import SignOutButton from "@components/navbar/SignOutButton";
 import AddNewFriendButton from "@components/navbar/AddNewFriendButton";
+import { useTranslations, useLocalizedRouter } from "next-intl";
 
 const NAV_LINKS: (LinkProps & { label: string })[] = [
    {
@@ -42,6 +40,7 @@ const NAV_LINKS: (LinkProps & { label: string })[] = [
 const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
    const pathname = usePathname();
    const { isUserLoggedIn } = useIsUserLoggedIn();
+   const t = useTranslations(`Index`);
 
    const { data, isLoading, error } = useGetMyClaimsQuery({
       enabled: isUserLoggedIn,
