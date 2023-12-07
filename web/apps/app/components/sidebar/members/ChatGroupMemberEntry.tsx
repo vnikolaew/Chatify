@@ -25,7 +25,7 @@ const ChatGroupMemberEntry = ({
   const innerDiv = (
     <div
       onMouseEnter={onHover}
-      className={`w-4/5 py-1 px-3 ml-4 mt-2 rounded-md transition-background duration-100 hover:bg-default-100 cursor-pointer flex items-center gap-3`}
+      className={`w-5/6 py-1 px-3 mx-4 mt-2 rounded-md transition-background duration-100 hover:bg-default-100 cursor-pointer flex items-center gap-3`}
     >
       <Badge
         color={

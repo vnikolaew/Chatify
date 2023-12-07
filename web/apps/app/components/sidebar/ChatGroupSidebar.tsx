@@ -5,14 +5,14 @@ import { ScrollShadow, Tab, Tabs } from "@nextui-org/react";
 import ChatGroupMembersTab from "@components/sidebar/members/ChatGroupMembersTab";
 import ChatGroupAttachmentsTab from "@components/sidebar/attachments/ChatGroupAttachmentsTab";
 import { Image as ImageIcon, Users } from "lucide-react";
-import { useURLParamState } from "@hooks";
+import { useSearchParam, useURLParamState } from "@hooks";
 import { useTranslations } from "next-intl";
+import { Divider } from "@components/common";
 
 export interface ChatGroupSidebarProps {}
 
 const ChatGroupSidebar = ({}: ChatGroupSidebarProps) => {
-   const params = useSearchParams();
-   const chatGroupId = params.get("c");
+   const chatGroupId = useSearchParam(`c`);
    const [selectedTab, setSelectedTab] = useURLParamState(`tab`, `members`);
    const t = useTranslations(`Sidebar`);
 
@@ -40,7 +40,7 @@ const ChatGroupSidebar = ({}: ChatGroupSidebarProps) => {
                      panel: `w-full pb-6 rounded-medium`,
                      tabList: `w-full`,
                   }}
-                  selectedKey={selectedTab}
+                  selectedKey={selectedTab!}
                   // @ts-ignore
                   onSelectionChange={setSelectedTab}
                   variant={`underlined`}

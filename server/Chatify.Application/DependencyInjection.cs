@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Chatify.Application.Common.Behaviours;
 using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Application.Messages.Common;
@@ -33,6 +34,7 @@ public static class DependencyInjection
         // services.TryDecorate(typeof(ICommandHandler<,>), typeof(RequestValidationDecorator<,>));
         // services.TryDecorate(typeof(ICommandHandler<>), typeof(LoggingHandlerDecorator<>));
         // services.TryDecorate(typeof(ICommandHandler<,>), typeof(LoggingHandlerDecorator<,>));
+        services.TryDecorate(typeof(IQueryHandler<,>), typeof(ActivitySourceHandlerDecorator<, >));
 
         services.AddScoped(typeof(TimedHandlerDecorator<,>));
         if ( configuration.GetOptions<CachingOptions>().Enabled )

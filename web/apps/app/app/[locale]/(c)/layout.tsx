@@ -9,9 +9,9 @@ export interface LayoutProps extends PropsWithChildren {
 }
 
 const Layout = async ({ children, params }: LayoutProps) => {
-   const isUserLoggedIn = !!cookies().has(
-      process.env.NEXT_PUBLIC_APPLICATION_COOKIE_NAME
-   );
+   // const isUserLoggedIn = !!cookies().has(
+   //    process.env.NEXT_PUBLIC_APPLICATION_COOKIE_NAME
+   // );
    // if (!isUserLoggedIn) return redirect(`/signin`, RedirectType.push);
 
    return (

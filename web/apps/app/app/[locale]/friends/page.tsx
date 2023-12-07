@@ -19,6 +19,7 @@ import {
 } from "@web/api";
 import { FriendInvitationStatus, UserStatus } from "@openapi";
 import moment from "moment";
+import { useTranslations } from "next-intl";
 
 
 export interface PageProps {
@@ -67,6 +68,7 @@ const FriendsPage = ({}: PageProps) => {
       console.log(userId);
       await sendFriendInvite({ userId });
    };
+   const t = useTranslations(`Friends`);
 
    // @ts-ignore
    return (
@@ -74,9 +76,9 @@ const FriendsPage = ({}: PageProps) => {
          className={`w-full min-h-[70vh] mt-12 flex flex-col items-center`}
       >
          <div className="flex flex-col w-1/3 gap-2">
-            <h1 className={`text-2xl text-foreground`}>Find new friends</h1>
+            <h1 className={`text-2xl text-foreground`}>{t(`Title`)}</h1>
             <h2 className={`text-default-400 font-normal text-small`}>
-               You can add a new Chatify friend with their handle.
+               {t(`Description`)}
             </h2>
             <div className={`w-full mt-2 flex flex-col items-center gap-1`}>
                <Input
@@ -91,7 +93,7 @@ const FriendsPage = ({}: PageProps) => {
                   }
                   variant={"flat"}
                   description={
-                     "Use a handle to find the user you are searching for."
+                     t(`DescriptionTwo`)
                   }
                   classNames={{
                      input: `pl-3`,
@@ -115,7 +117,7 @@ const FriendsPage = ({}: PageProps) => {
                   color={"primary"}
                   size={"md"}
                >
-                  {isLoading && isFetching ? `Searching ...` : `Search`}
+                  {isLoading && isFetching ? t(`Searching`) : t(`Search`)}
                </Button>
             </div>
             {user && (
@@ -190,7 +192,7 @@ const FriendsPage = ({}: PageProps) => {
                         variant={`light`}
                         color={`warning`}
                      >
-                        {inviteLoading ? "Loading ..." : "Send request"}
+                        {inviteLoading ? "Loading ..." : t("SendRequest")}
                      </Button>
                   )}
                </div>

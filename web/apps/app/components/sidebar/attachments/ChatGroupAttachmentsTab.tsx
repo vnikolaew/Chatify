@@ -23,7 +23,7 @@ const ChatGroupAttachmentsTab = ({
 
    return (
       <div>
-         <div className={`my-2 px-4 mx-auto grid gap-1 max-w-fit grid-cols-2`}>
+         <div className={`my-2  mx-auto grid gap-2 max-w-fit grid-cols-2`}>
             {isLoading && isFetching
                ? Array.from({ length: 10 }).map((_, i) => (
                     <div

@@ -17,7 +17,6 @@ const ChatMessageMoreActionsButton = ({ }: ChatMessageMoreActionsButtonProps) =>
    } = useDisclosure({ defaultOpen: false });
    const [popoverOpen, setPopoverOpen] = useState(false);
 
-   console.log(popoverOpen);
    return (
       <>
          <Popover placement={`bottom`} isOpen={popoverOpen}>

@@ -11,7 +11,7 @@ const Layout = async ({ children }: LayoutProps) => {
    const isUserLoggedIn = !!cookies().has(
       process.env.NEXT_PUBLIC_APPLICATION_COOKIE_NAME
    );
-   if (isUserLoggedIn) return redirect(`/`, RedirectType.push);
+   // if (isUserLoggedIn) return redirect(`/`, RedirectType.push);
 
    return (
       <section>

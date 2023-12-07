@@ -31,10 +31,13 @@ import { markdownProcessor } from "apps/app/utils";
 import { useChatifyClientContext } from "apps/app/hub/ChatHubConnection";
 import { useFileUpload } from "@hooks";
 import ChatMessageAttachmentEntry from "./ChatMessageAttachmentEntry";
-import { ChatGroupChangedEvent } from "../../../../app/(c)/MainLayout";
 import { unified } from "unified";
 import markdown from "remark-parse";
 import slate from "remark-slate";
+import { useTranslations } from "next-intl";
+import { useReplyToMessageContext } from "@components/chat-group";
+import ReplyToMessagePreview from "@components/chat-group/messages/editor/ReplyToMessagePreview";
+import { ChatGroupChangedEvent } from "../../../../app/[locale]/(c)/MainLayout";
 
 export class ChatifyFile {
    public readonly id: string;
@@ -94,6 +97,7 @@ const MessageTextEditor = ({
                               ...props
                            }: MessageTextEditorProps) => {
    const [editor] = useState(() => withReact(createEditor()));
+   const [replyTo] = useReplyToMessageContext();
    const hubClient = useChatifyClientContext();
    const [isUserTyping, setIsUserTyping] = useState(false);
    const {
@@ -104,6 +108,7 @@ const MessageTextEditor = ({
       handleRemoveFile,
       clearFiles,
    } = useFileUpload([...(initialAttachments?.values() ?? [])]);
+   const t = useTranslations(`MainArea.ChatMessages.MessageTextEditor`);
 
    const groupId = useCurrentChatGroup();
    const {
@@ -172,7 +177,6 @@ const MessageTextEditor = ({
       }
    }, []);
 
-   console.log(`Initial editor content: ${initialContent}`);
    const initialValue = useMemo(() => {
       if (!draftedMessage || !initialContent) {
          return [
@@ -187,10 +191,10 @@ const MessageTextEditor = ({
             .use(markdown)
             .use(slate)
             .processSync(initialContent ?? draftedMessage.content);
-         console.log(`Result: `, {result});
+         console.log(`Result: `, { result });
          return result.result;
       }
-   }, [draftedMessage, groupId, initialContent]);
+   }, [draftedMessage, initialContent]);
 
    // Define a leaf rendering function that is memoized with `useCallback`.
    const renderLeaf = useCallback((props) => {
@@ -229,24 +233,28 @@ const MessageTextEditor = ({
       );
    }
 
-   async function handleDraftMessage(groupId: string) {
-      const content = plateToMarkdown(editor.children);
-      CustomEditor.clear(editor);
+   const handleDraftMessage = useCallback(async (groupId: string) => {
+            const content = plateToMarkdown(editor.children);
+            CustomEditor.clear(editor);
 
-      if (content?.trim()?.length === 0) return;
+            if (content?.trim()?.length === 0) return;
 
-      await draftChatMessage(
-         {
-            content: markdownProcessor.processSync(content).value as string,
-            chatGroupId: groupId,
-            files: attachedFiles.map((_) => _.file),
-         },
-         {
-            onSuccess: (_, {}) => clearFiles(),
-            onSettled: () => setIsUserTyping(false),
-         },
-      );
-   }
+            await draftChatMessage(
+               {
+                  content: markdownProcessor.processSync(content).value as string,
+                  chatGroupId: groupId,
+                  files: attachedFiles.map((_) => _.file),
+               },
+               {
+                  onSuccess: (_, {}) => clearFiles(),
+                  onSettled: () => setIsUserTyping(false),
+               },
+            );
+         }
+         ,
+         [editor, draftChatMessage, attachedFiles, clearFiles],
+      )
+   ;
 
    return (
       <Slate
@@ -259,7 +267,7 @@ const MessageTextEditor = ({
       >
          <div className={`relative h-fit w-5/6 mr-12 ${className}`} {...props}>
             <Editable
-               placeholder={placeholder}
+               placeholder={replyTo ? `Reply ...` : placeholder}
                className={`bg-zinc-900 !break-words !whitespace-nowrap ${
                   attachedFilesUrls?.size
                      ? `!min-h-[180px] !max-h-[180px]`
@@ -303,6 +311,9 @@ const MessageTextEditor = ({
                   }
                }}
             />
+            {replyTo && (
+               <ReplyToMessagePreview replyToId={replyTo} />
+            )}
             <MessageTextEditorToolbar />
             <input
                name={"file-upload"}
@@ -343,8 +354,8 @@ const MessageTextEditor = ({
                      <DropdownItem
                         key={MessageAction.FileUpload}
                         description={
-                           <span>
-                              Choose one or more <br /> from your device
+                           <span dangerouslySetInnerHTML={{ __html: t(`FileUpload.Description`) }}
+                                 className={`text-[.7rem] leading-3`}>
                            </span>
                         }
                         startContent={
@@ -354,7 +365,7 @@ const MessageTextEditor = ({
                            />
                         }
                      >
-                        Upload File
+                        {t(`FileUpload.Title`)}
                      </DropdownItem>
                   </DropdownMenu>
                </Dropdown>
@@ -400,7 +411,7 @@ const MessageTextEditor = ({
                         }
                         : {})}
                   >
-                     {isLoading ? "Sending" : "Send"}
+                     {isLoading ? t("Sending") : t("Send")}
                   </Button>
                </Tooltip>
             </div>

@@ -42,7 +42,7 @@ const nextConfig = {
          },
       ]);
    },
-   experimental: { appDir: true },
+   experimental: { typedRoutes: true, },
    reactStrictMode: false,
    optimizeFonts: true,
    poweredByHeader: true,

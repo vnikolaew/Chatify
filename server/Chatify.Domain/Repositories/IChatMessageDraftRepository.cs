@@ -8,7 +8,7 @@ public interface IChatMessageDraftRepository : IDomainRepository<ChatMessageDraf
     Task<List<ChatMessageDraft>> AllForUser(Guid userId,
         CancellationToken cancellationToken = default);
     
-    Task<ChatMessageDraft?> ForForUserAndGroup(
+    Task<ChatMessageDraft?> ForUserAndGroup(
         Guid userId,
         Guid groupId,
         CancellationToken cancellationToken = default);

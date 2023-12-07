@@ -25,7 +25,7 @@ internal sealed class ChatMessageDraftRepository(IMapper mapper,
         return drafts.ToList<ChatMessageDraft>(Mapper);
     }
 
-    public Task<ChatMessageDraft?> ForForUserAndGroup(
+    public Task<ChatMessageDraft?> ForUserAndGroup(
         Guid userId,
         Guid groupId,
         CancellationToken cancellationToken = default)

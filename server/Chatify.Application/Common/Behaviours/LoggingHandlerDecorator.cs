@@ -8,7 +8,8 @@ using Guid = System.Guid;
 namespace Chatify.Application.Common.Behaviours;
 
 [Decorator]
-public sealed class LoggingHandlerDecorator<TCommand>(ICommandHandler<TCommand> inner,
+public sealed class LoggingHandlerDecorator<TCommand>(
+        ICommandHandler<TCommand> inner,
         ILogger<LoggingHandlerDecorator<TCommand>> logger,
         IIdentityContext identityContext)
     : ICommandHandler<TCommand>

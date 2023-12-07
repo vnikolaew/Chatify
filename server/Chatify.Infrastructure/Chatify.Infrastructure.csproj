@@ -18,6 +18,12 @@
       <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="8.0.0-preview.7.23375.9" />
       <PackageReference Include="Octokit" Version="7.1.0" />
       <PackageReference Include="OpenGraph-Net" Version="4.0.2-alpha.0.6" />
+      <PackageReference Include="OpenTelemetry" Version="1.6.0" />
+      <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.6.0" />
+      <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.6.0" />
+      <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.5.1-beta.1" />
+      <PackageReference Include="OpenTelemetry.Instrumentation.Cassandra" Version="1.0.0-beta.1" />
+      <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="1.0.0-rc9.10" />
       <PackageReference Include="Quartz.AspNetCore" Version="3.7.0" />
       <PackageReference Include="Redis.OM" Version="0.5.3" />
       <PackageReference Include="ReverseMarkdown" Version="3.25.0" />

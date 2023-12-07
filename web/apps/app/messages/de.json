@@ -1,85 +1,109 @@
 {
-   "Index": {
-      "title": "Hallo Welt!"
-   },
-   "MainNavbar": {
-      "Profile": {
-         "title": "Profil",
-         "description": "Verwalten Sie Ihre Profil-Einstellungen"
-      },
-      "CreateChatGroup": {
-         "title": "Chat-Gruppe erstellen",
-         "description": "Eine neue Chat-Gruppe erstellen"
-      },
-      "ChangeStatus": {
-         "title": "Ihren Status ändern",
-         "away": "Abwesend",
-         "offline": "Offline",
-         "online": "Online"
-      },
-      "DarkMode": {
-         "title": "Dunkler Modus"
-      },
-      "SignOut": {
-         "title": "Abmelden"
-      },
+  "Index": {
+    "title": "Hallo Welt!"
+  },
+  "Friends": {
+    "Title": "Finde neue Freunde",
+    "Description": "Du kannst einen neuen Chatify-Freund mit seinem Handle hinzufügen.",
+    "DescriptionTwo": "Verwende ein Handle, um den Benutzer zu finden, den du suchst.",
+    "Search": "Suche",
+    "Searching": "Suche ...",
+    "SendRequest": "Send request"
+  },
+  "MainNavbar": {
+    "Profile": {
+      "title": "Profil",
+      "description": "Verwalte deine Profileinstellungen"
+    },
+    "CreateChatGroup": {
+      "title": "Chatgruppe erstellen",
+      "description": "Eine neue Chatgruppe erstellen"
+    },
+    "ChangeStatus": {
+      "title": "Ändere deinen Status",
+      "away": "Abwesend",
+      "offline": "Offline",
+      "online": "Online"
+    },
+    "DarkMode": {
+      "title": "Dunkler Modus"
+    },
+    "SignOut": {
+      "title": "Abmelden"
+    },
+    "Popups": {
+      "AddNewFriend": "Neuen Freund hinzufügen",
+      "Notifications": "Benachrichtigungen",
+      "SignOut": "Abmelden"
+    }
+  },
+  "Footer": {
+    "title": "Fußzeilenbereich"
+  },
+  "FeedSidebar": {
+    "SearchPlaceholder": "Suche"
+  },
+  "MainArea": {
+    "TopBar": {
+      "ChatGroupNoDescription": "Keine Beschreibung.",
+      "MembersCount": "{count, plural, =0 {Keine Mitglieder} =1 {1 Mitglied} other {# Mitglieder}}",
+      "MembersOnline": "{count} online",
       "Popups": {
-         "AddNewFriend": "Einen neuen Freund hinzufügen",
-         "Notifications": "Benachrichtigungen",
-         "SignOut": "Abmelden"
+        "EditChatGroup": "Chatgruppe bearbeiten",
+        "PinnedMessages": "Gepinnte Nachrichten",
+        "AddNewMember": "Neues Mitglied hinzufügen"
       }
-   },
-   "Footer": {
-      "title": "Fußzeile Bereich"
-   },
-   "FeedSidebar": {
-      "SearchPlaceholder": "Suche"
-   },
-   "MainArea": {
-      "TopBar": {
-         "ChatGroupNoDescription": "Keine Beschreibung.",
-         "MembersCount": "{count, plural, =0 {Keine Mitglieder} =1 {1 Mitglied} other {# Mitglieder}}",
-         "MembersOnline": "{count} online",
-         "Popups": {
-            "EditChatGroup": "Chat-Gruppe bearbeiten",
-            "PinnedMessages": "Gepinnte Nachrichten",
-            "AddNewMember": "Neues Mitglied hinzufügen"
-         }
-      },
-      "ChatMessages": {
-         "ConversationBeginningMessage": "Sie haben bis zum Anfang dieses Gesprächs gescrollt.\n",
-         "RepliesCount": "{count, plural, =0 {Keine Antworten} =1 {1 Antwort} other {# Antworten}}",
-         "ScrollToBottom": "Zum Ende scrollen",
-         "Popups": {
-            "PinForThisGroup": "Für diese Gruppe pinnen",
-            "ReplyToThisMessage": "Auf diese Nachricht antworten",
-            "ForwardThisMessage": "Diese Nachricht weiterleiten",
-            "Edit": "Bearbeiten",
-            "MoreActions": "Weitere Aktionen"
-         }
-      }
-   },
-   "Sidebar": {
-      "Members": {
-         "title": "Mitglieder"
-      },
-      "SharedMedia": {
-         "title": "Geteilte Medien",
-         "AttachmentDescription": "Geteilt von <nameBold> {name} </nameBold> am {date}"
-      },
+    },
+    "ChatMessages": {
+      "ConversationBeginningMessage": "Du hast bis zum Anfang dieses Gesprächs gescrollt.\n",
+      "RepliesCount": "{count, plural, =0 {Keine Antworten} =1 {1 Antwort} other {# Antworten}}",
+      "ScrollToBottom": "Zum Ende scrollen",
       "Popups": {
-         "AddNewAdmin": "Neuen Administrator hinzufügen"
+        "PinForThisGroup": "Für diese Gruppe pinnen",
+        "ReplyToThisMessage": "Auf diese Nachricht antworten",
+        "ForwardThisMessage": "Diese Nachricht weiterleiten",
+        "Edit": "Bearbeiten",
+        "MoreActions": "Weitere Aktionen"
       },
-      "StatusTypes": {
-         "Online": "Online",
-         "Admins": "Administratoren",
-         "Offline": "Offline",
-         "Away": "Abwesend"
-      },
-      "MemberInfo": {
-         "MemberSince": "Mitglied seit",
-         "Roles": "Rollen",
-         "DM": "DM"
+      "MessageTextEditor": {
+        "MessagePrivatePlaceholder": "Nachricht an {name}",
+        "MessagePlaceholder": "Nachricht in {group}",
+        "Popups": {
+          "Bold": "Fett",
+          "Italic": "Kursiv",
+          "Strikethrough": "Durchgestrichen",
+          "Code": "Code"
+        },
+        "Send": "Senden",
+        "Sending": "Sende",
+        "FileUpload": {
+          "Title": "Datei hochladen",
+          "Description": "Wähle eine oder mehrere Dateien <br /> von deinem Gerät aus"
+        }
       }
-   }
+    }
+  },
+  "Sidebar": {
+    "Members": {
+      "title": "Mitglieder"
+    },
+    "SharedMedia": {
+      "title": "Geteilte Medien",
+      "AttachmentDescription": "Geteilt von <nameBold> {name} </nameBold> am {date}"
+    },
+    "Popups": {
+      "AddNewAdmin": "Neuen Administrator hinzufügen"
+    },
+    "StatusTypes": {
+      "Online": "Online",
+      "Admins": "Administratoren",
+      "Offline": "Offline",
+      "Away": "Abwesend"
+    },
+    "MemberInfo": {
+      "MemberSince": "Mitglied seit",
+      "Roles": "Rollen",
+      "DM": "DM"
+    }
+  }
 }

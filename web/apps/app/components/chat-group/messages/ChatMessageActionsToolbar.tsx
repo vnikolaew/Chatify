@@ -9,6 +9,8 @@ import { usePinGroupChatMessage } from "@web/api";
 import { useCurrentChatGroup } from "@hooks";
 import ChatMessageMoreActionsButton from "@components/chat-group/messages/ChatMessageMoreActionsButton";
 import { EditIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useReplyToMessageContext } from "@components/chat-group";
 
 export interface ChatMessageActionsToolbarProps {
    showMoreActions: boolean;
@@ -29,11 +31,13 @@ const ChatMessageActionsToolbar = ({
       isLoading: pinLoading,
       error,
    } = usePinGroupChatMessage();
+   const t = useTranslations(`MainArea.ChatMessages.Popups`);
+   const [_, setReplyToMessage] = useReplyToMessageContext();
 
    const messageActions = useMemo(() => {
       return [
          {
-            label: "Pin for this group",
+            label: t(`PinForThisGroup`),
             action: async () => {
                await pinMessage({ messageId, groupId });
             },
@@ -41,14 +45,16 @@ const ChatMessageActionsToolbar = ({
             Icon: <PinIcon className={`fill-foreground`} size={14} />,
          },
          {
-            label: "Reply to this message",
+            label: t(`ReplyToThisMessage`),
             action: async () => {
+               console.log(`Replying ...`);
+               setReplyToMessage(messageId)
             },
             loading: false,
             Icon: <CommentIcon className={`fill-foreground`} size={14} />,
          },
          {
-            label: "Forward this message",
+            label: t(`ForwardThisMessage`),
             action: async () => {
                console.log(`Opening modal ...`);
                onOpenForwardMessageModal();
@@ -57,7 +63,7 @@ const ChatMessageActionsToolbar = ({
             Icon: <ForwardIcon className={`fill-foreground`} size={14} />,
          },
          {
-            label: "Edit",
+            label: t(`Edit`),
             action: async () => {
                console.log(`Editing message ...`);
                onEditMessageChange(true)
@@ -66,7 +72,7 @@ const ChatMessageActionsToolbar = ({
             Icon: <EditIcon className={`stroke-foreground`} size={14} />,
          },
       ];
-   }, [pinMessage, messageId, groupId, pinLoading]);
+   }, [pinMessage, messageId, groupId, pinLoading, t, onOpenForwardMessageModal, onEditMessageChange]);
 
    return (
       <div

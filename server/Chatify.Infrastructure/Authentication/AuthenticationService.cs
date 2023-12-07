@@ -176,9 +176,10 @@ public sealed class AuthenticationService(
         ClaimsPrincipal principal,
         string userId)
         => new(principal,
-            Google,
+            External.Constants.AuthProviders.Google,
             userId,
-            Google);
+            External.Constants.AuthProviders.Google
+            );
 
     private static ExternalLoginInfo GetGithubExternalLoginInfoForUser(
         ClaimsPrincipal principal,
@@ -199,7 +200,7 @@ public sealed class AuthenticationService(
         var existingUser = await userManager.FindByEmailAsync(userInfo.Email);
         if ( existingUser is not null )
         {
-            return await SignInWithLoginProvider(existingUser, Google);
+            return await SignInWithLoginProvider(existingUser, External.Constants.AuthProviders.Google);
         }
 
         // Get count of users having the same username:
@@ -230,7 +231,7 @@ public sealed class AuthenticationService(
             UserHandle = GenerateUserHandle(userInfo.Name.Underscore(), usersWithSameUserName?.Count ?? 0)
         };
 
-        chatifyUser.AddToken(new TokenInfo(Google, AuthenticationTokenName, request.AccessToken));
+        chatifyUser.AddToken(new TokenInfo(External.Constants.AuthProviders.Google, AuthenticationTokenName, request.AccessToken));
 
         var identityResult = await userManager.CreateAsync(chatifyUser);
         if ( !identityResult.Succeeded ) return identityResult.ToError()!;
@@ -253,7 +254,7 @@ public sealed class AuthenticationService(
             ? new UserSignedUpResult
             {
                 UserId = chatifyUser.Id,
-                AuthenticationProvider = Google
+                AuthenticationProvider = External.Constants.AuthProviders.Google
             }
             : identityResult.ToError()!;
     }

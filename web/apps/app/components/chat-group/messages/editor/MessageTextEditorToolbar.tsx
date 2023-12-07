@@ -7,11 +7,14 @@ import StrikethroughIcon from "@components/icons/StrikethroughIcon";
 import CodeIcon from "@components/icons/CodeIcon";
 import { useSlate } from "slate-react";
 import { CustomEditor } from "./editor";
+import { useTranslations } from "next-intl";
 
 export interface MessageTextEditorToolbarProps {}
 
 const MessageTextEditorToolbar = ({}: MessageTextEditorToolbarProps) => {
    const editor = useSlate();
+   const t = useTranslations(`MainArea.ChatMessages.MessageTextEditor.Popups`);
+
    return (
       <div
          className={`flex flex-col items-start gap-1 absolute left-3 top-3 w-full`}
@@ -21,7 +24,7 @@ const MessageTextEditorToolbar = ({}: MessageTextEditorToolbarProps) => {
                onPress={(_) => CustomEditor.toggleBoldMark(editor)}
                isActive={editor.getMarks()?.bold}
                icon={<BoldIcon className={`fill-foreground`} size={16} />}
-               text={`Bold`}
+               text={t(`Bold`)}
             />
             <Divider
                orientation={"vertical"}
@@ -31,7 +34,7 @@ const MessageTextEditorToolbar = ({}: MessageTextEditorToolbarProps) => {
                isActive={editor.getMarks()?.italic}
                onPress={(_) => CustomEditor.toggleItalicMark(editor)}
                icon={<ItalicIcon className={`fill-foreground`} size={16} />}
-               text={`Italic`}
+               text={t(`Italic`)}
             />
             <Divider
                orientation={"vertical"}
@@ -43,12 +46,12 @@ const MessageTextEditorToolbar = ({}: MessageTextEditorToolbarProps) => {
                icon={
                   <StrikethroughIcon className={`fill-foreground`} size={16} />
                }
-               text={`Strikethrough`}
+               text={t(`Strikethrough`)}
             />
             <ToolbarButton
                onPress={(_) => CustomEditor.toggleCodeBlock(editor)}
                icon={<CodeIcon className={`stroke-foreground`} size={16} />}
-               text={`Code`}
+               text={t(`Code`)}
             />
          </div>
          <Divider

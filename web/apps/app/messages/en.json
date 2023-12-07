@@ -2,6 +2,14 @@
    "Index": {
       "title": "Hello world!"
    },
+   "Friends": {
+      "Title": "Find new friends",
+      "Description": "You can add a new Chatify friend with their handle.",
+      "DescriptionTwo": "Use a handle to find the user you are searching for.",
+      "Search": "Search",
+      "Searching": "Searching ...",
+      "SendRequest": "Send request"
+   },
    "MainNavbar": {
       "Profile": {
          "title": "Profile",
@@ -56,6 +64,22 @@
             "ForwardThisMessage": "Forward this message",
             "Edit": "Edit",
             "MoreActions": "More actions"
+         },
+         "MessageTextEditor": {
+            "MessagePrivatePlaceholder": "Message {name}",
+            "MessagePlaceholder": "Message in {group}",
+            "Popups": {
+               "Bold": "Bold",
+               "Italic": "Italic",
+               "Strikethrough": "Strikethrough",
+               "Code": "Code"
+            },
+            "Send": "Send",
+            "Sending": "Sending",
+            "FileUpload": {
+               "Title": "Upload File",
+               "Description": "Choose one or more <br /> from your device"
+            }
          }
       }
    },
@@ -65,7 +89,7 @@
       },
       "SharedMedia": {
          "title": "Shared Media",
-         "AttachmentDescription": "Shared by <nameBold> {name} </nameBold> on {date}"
+         "AttachmentDescription": "Shared by <nameBold> {name} </nameBold> on <dateBold> {date} </dateBold>"
       },
       "Popups": {
          "AddNewAdmin": "Add a new admin"

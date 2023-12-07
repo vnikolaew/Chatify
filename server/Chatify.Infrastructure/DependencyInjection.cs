@@ -36,10 +36,12 @@ using LanguageExt.UnitsOfMeasure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Polly;
 using Polly.Extensions.Http;
 using Quartz;
@@ -81,6 +83,7 @@ public static class DependencyInjection
             .AddSeeding()
             .AddRepositories()
             .AddBackgroundJobs()
+            .AddOtel()
             .AddServices(configuration)
             .AddCaching(configuration)
             .AddContexts();
@@ -119,15 +122,30 @@ public static class DependencyInjection
             .AddNotifications()
             .AddCounters();
 
+    public static IServiceCollection AddOtel(this IServiceCollection services)
+    {
+        services
+            .AddOpenTelemetry()
+            .ConfigureResource(builder => { builder.AddService("Chatify"); })
+            .WithTracing(builder =>
+            {
+                builder
+                    .AddAspNetCoreInstrumentation(opts => opts.RecordException = true)
+                    .AddSource("Chatify")
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("App1").AddTelemetrySdk())
+                    .AddOtlpExporter(opts => { opts.Endpoint = new Uri("http://localhost:14268"); })
+                    .AddRedisInstrumentation();
+            })
+            .WithMetrics(builder => builder.AddAspNetCoreInstrumentation());
+        return services;
+    }
+
     public static IServiceCollection AddNotifications(
         this IServiceCollection services)
     {
         services
             .AddScoped<INotificationService, SignalRNotificationService>()
-            .AddSignalR(opts =>
-            {
-                opts.KeepAliveInterval = 30.Seconds();
-            })
+            .AddSignalR(opts => { opts.KeepAliveInterval = 30.Seconds(); })
             .AddJsonProtocol()
             // .AddMessagePackProtocol(opts => {
             //     StaticCompositeResolver.Instance.Register(

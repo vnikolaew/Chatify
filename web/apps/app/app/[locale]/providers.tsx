@@ -6,6 +6,7 @@ import { NextUIProvider } from "@nextui-org/react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { queryClient, USER_LOCATION_LOCAL_STORAGE_KEY } from "@web/api";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { useRouter } from "next/navigation";
 
 export interface ProvidersProps extends PropsWithChildren {
    isDevelopment: boolean;
@@ -22,7 +23,7 @@ export const OAuthProvider = ({ children }: PropsWithChildren) => {
 const RememberUserGeolocation = () => {
    useEffect(() => {
       window.navigator.geolocation.getCurrentPosition((position) => {
-         queryClient?.setQueryData(["user-geolocation"], position.coords);
+         queryClient?.setQueryData([USER_LOCATION_LOCAL_STORAGE_KEY], position.coords);
          localStorage.setItem(
             USER_LOCATION_LOCAL_STORAGE_KEY,
             `${position.coords.latitude};${position.coords.longitude}`
@@ -34,10 +35,11 @@ const RememberUserGeolocation = () => {
 };
 
 const Providers = ({ children, isDevelopment }: ProvidersProps) => {
+   const router = useRouter();
    return (
       <QueryClientProvider client={queryClient}>
          <RememberUserGeolocation />
-         <NextUIProvider>
+         <NextUIProvider navigate={router.push}>
             <NextThemesProvider defaultTheme={"dark"} attribute={"class"}>
                <OAuthProvider>{children}</OAuthProvider>
             </NextThemesProvider>

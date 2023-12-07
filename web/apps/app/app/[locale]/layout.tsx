@@ -7,9 +7,9 @@ import MainNavbar from "@components/navbar/Navbar";
 import process from "process";
 import { getImagesBaseUrl } from "@web/api";
 import CookieConsentBannerModal from "@components/CookieConsentBannerModal";
-import { unstable_setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
+import Footer from "./footer";
 
 export const metadata: Metadata = {
    title: "Chatify 2023",
@@ -48,13 +48,7 @@ async function ChatifyLayout({ children, params: { locale }, ...rest }: PropsWit
             <MainNavbar baseImagesUrl={getImagesBaseUrl()} />
             <main className="app">{children}</main>
             <CookieConsentBannerModal />
-            <footer
-               className={`w-full text-center mt-20 p-12 text-large border-t border-t-gray-700`}
-            >
-               <h2 className={`text-foreground font-medium text-2xl`}>
-                  Footer Area
-               </h2>
-            </footer>
+            <Footer />
          </NextIntlClientProvider>
       </Providers>
       </body>

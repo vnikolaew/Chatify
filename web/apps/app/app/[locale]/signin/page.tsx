@@ -130,11 +130,7 @@ const SignInPage: NextPage = () => {
                            value={values.password}
                            onChange={handleChange}
                            errorMessage={errors.password}
-                           validationState={
-                              touched.password && errors.password
-                                 ? "invalid"
-                                 : "valid"
-                           }
+                           isInvalid={Boolean(touched.password && errors.password)}
                            label={"Password"}
                            placeholder={"Choose a strong one"}
                            className={`py-1 text-md rounded-lg`}
