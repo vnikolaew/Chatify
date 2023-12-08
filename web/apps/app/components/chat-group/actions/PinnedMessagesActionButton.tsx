@@ -26,15 +26,15 @@ import {
    useUnpinGroupChatMessage,
 } from "@web/api";
 import { User as TUser } from "@openapi";
-import { X } from "lucide-react";
-import moment from "moment/moment";
 import { useTranslations } from "next-intl";
+import PinOffIcon from "@components/icons/PinOffIcon";
+import { Time } from "@components/common";
 
 export const PinnedMessagesActionButton = ({}: {}) => {
    const { isOpen, onOpenChange, onOpen } = useDisclosure({
       defaultOpen: false,
    });
-   const t = useTranslations('MainArea.TopBar.Popups');
+   const t = useTranslations("MainArea.TopBar.Popups");
 
    return (
       <TooltipWithPopoverActionButton
@@ -47,23 +47,19 @@ export const PinnedMessagesActionButton = ({}: {}) => {
             shadow: `sm`,
             classNames: {
                base: `text-xs `,
-               content: `text-[10px] h-5`
-            }
+               content: `text-[10px] h-5`,
+            },
          }}
          isOpen={isOpen}
          onOpenChange={onOpenChange}
-         popoverContent={<PinnedMessagesPopover onOpen={onOpen} />}
+         popoverContent={<PinnedMessagesPopover />}
          tooltipContent={t(`PinnedMessages`)}
          icon={<PinIcon fill={"white"} size={20} />}
       />
    );
 };
 
-export const PinnedMessagesPopover = ({
-   onOpen: keepPopoverOpen,
-}: {
-   onOpen: () => void;
-}) => {
+export const PinnedMessagesPopover = ({}) => {
    const groupId = useCurrentChatGroup();
    const { data: groupDetails } = useGetChatGroupDetailsQuery(groupId);
    const {
@@ -117,7 +113,7 @@ export const PinnedMessagesPopover = ({
          )}
          {pinnedMessages?.map((m) => (
             <Card
-               className={`max-w-[400px] p-2 relative border-1 border-default-300`}
+               className={`max-w-[400px] p-2 relative border-1 border-default-100`}
                isBlurred
                shadow={"md"}
                radius={"md"}
@@ -190,22 +186,18 @@ export const PinnedMessagesPopover = ({
                         size={`sm`}
                         shadow={`sm`}
                         classNames={{
-                           base: `text-[.6rem]`,
+                           content: `text-[.6rem] h-4`
                         }}
                         color={`default`}
                      >
                         <Button
                            className={`w-6 h-6 p-1 bg-transparent`}
                            radius={`full`}
-                           onPress={(e) => {
-                              setOpen(true);
-                              // keepPopoverOpen();
-                           }}
+                           onPress={() => setOpen(true)}
                            startContent={
-                              <X
-                                 size={12}
+                              <PinOffIcon
                                  className={`stroke-default-400 transition-all duration-100 group-hover:stroke-foreground`}
-                              />
+                                 size={12} />
                            }
                            isIconOnly
                         />
@@ -213,7 +205,7 @@ export const PinnedMessagesPopover = ({
                   </div>
                   <Avatar
                      src={getMediaUrl(
-                        pinnedMessagesSenders[m.userId]?.profilePicture.mediaUrl
+                        pinnedMessagesSenders[m.userId]?.profilePicture.mediaUrl,
                      )}
                      size={"sm"}
                      radius={`full`}
@@ -222,9 +214,9 @@ export const PinnedMessagesPopover = ({
                </CardHeader>
                <CardBody className={`py-1 px-2 text-xs`}>{m.content}</CardBody>
                <CardFooter
-                  className={`text-[.6rem] text-default-400 mt-2 p-0 px-2`}
+                  className={`text-xxs text-default-400 mt-2 p-0 px-2`}
                >
-                  {moment(new Date(m.createdAt)).format(`MMM HH:MM A`)}
+                  <Time className={`!text-xxs`} format={`MMMM HH:MM A, YYYY`} value={m.createdAt} />
                </CardFooter>
             </Card>
          ))}

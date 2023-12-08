@@ -10,7 +10,7 @@ import {
 import { getMediaUrl, useGetChatGroupDetailsQuery } from "@web/api";
 import { twMerge } from "tailwind-merge";
 import moment from "moment/moment";
-import React, { Fragment, useMemo, useState } from "react";
+import React, { Fragment, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCurrentUserId, useHover } from "@hooks";
 import {
@@ -26,6 +26,7 @@ import ForwardedChatMessageEntry from "@components/chat-group/messages/Forwarded
 import ChatGroupMemberInfoCard from "@components/sidebar/members/ChatGroupMemberInfoCard";
 import MessageTextEditor, { ChatifyFile } from "./editor/MessageTextEditor";
 import { Time } from "@components/common";
+import { useClickAway } from "@uidotdev/usehooks";
 
 export interface ChatMessageEntryProps
    extends React.DetailedHTMLProps<
@@ -50,6 +51,9 @@ export const ChatMessageEntry = React.forwardRef<HTMLDivElement, ChatMessageEntr
    const [messageSectionRef, showMessageActions, setShowMessageActions] = useHover<HTMLDivElement>();
    const meId = useCurrentUserId();
    const [isEditingMessage, setIsEditingMessage] = useState(false);
+   const messageEntryRef = useClickAway<HTMLDivElement>((e) => {
+      if(isEditingMessage) setIsEditingMessage(false);
+   });
 
    const {
       isOpen: forwardMessageModalOpen,
@@ -94,7 +98,10 @@ export const ChatMessageEntry = React.forwardRef<HTMLDivElement, ChatMessageEntr
    return (
       <div
          className={`w-full rounded-lg transition-background duration-100 hover:bg-default-100 ${isPinned && `bg-warning-50 bg-opacity-80`}`}
-         ref={ref}>
+         ref={node => {
+            if(ref?.current)  ref.current = node;
+            messageEntryRef.current = node;
+         }}>
          <div
             ref={messageSectionRef}
             className={`flex relative flex-col gap-2 items-start  ${className}`}
@@ -171,16 +178,16 @@ export const ChatMessageEntry = React.forwardRef<HTMLDivElement, ChatMessageEntr
                      <Time value={message.message.createdAt} className={`text-xs font-light text-default-500`} />
                   </div>
                   {isEditingMessage ? (
-                     <div className={`flex flex-col gap-1 w-full min-w-[700px]`}>
+                     <div className={`flex flex-col gap-1 w-full min-w-[600px]`}>
                      <span className={`text-small`}>
                       Editing message ...
                      </span>
                         <MessageTextEditor
-                           className={`mt-2`}
+                           className={`mt-2 w-full`}
                            initialAttachments={new Map<string, ChatifyFile>(message?.message?.attachments?.map(a => {
                               return [a.mediaUrl, new ChatifyFile(new File([], a.fileName, { type: a.type })!, a.id)]!;
                            }))} initialContent={message?.message?.content} chatGroup={groupDetails} />
-                        <Button className={`self-end`} size={`sm`} color={`danger`} variant={`solid`}
+                        <Button className={`self-end mt-2 px-6`} size={`sm`} color={`danger`} variant={`flat`}
                                 onPress={_ => setIsEditingMessage(false)}>Cancel</Button>
                      </div>
                   ) : (
@@ -202,7 +209,7 @@ export const ChatMessageEntry = React.forwardRef<HTMLDivElement, ChatMessageEntr
                         )}
                      </Fragment>
                   )}
-                  {
+                  {!isEditingMessage &&
                      <ChatMessageReactionSection
                         userReaction={message.userReaction}
                         messageId={message.message.id}
@@ -263,7 +270,7 @@ export const ChatMessageEntry = React.forwardRef<HTMLDivElement, ChatMessageEntr
                   )}
                </div>
             </div>
-            {hasReplies && (
+            {hasReplies && !isEditingMessage && (
                <AnimatePresence>
                   {repliesExpanded && (
                      <motion.section

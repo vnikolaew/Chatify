@@ -18,7 +18,11 @@ module.exports = {
       ...createGlobPatternsForDependencies(__dirname),
    ],
    theme: {
-      extend: {},
+      extend: {
+         fontSize: {
+            'xxs': '.6rem'
+         }
+      },
    },
    darkMode: "class",
    plugins: [nextui()],

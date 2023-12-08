@@ -1,4 +1,5 @@
-﻿using Metadata = System.Collections.Generic.IDictionary<string, string>;
+﻿using Humanizer;
+using Metadata = System.Collections.Generic.IDictionary<string, string>;
 using ReactionCounts = System.Collections.Generic.IDictionary<long, long>;
 
 namespace Chatify.Domain.Entities;
@@ -6,14 +7,13 @@ namespace Chatify.Domain.Entities;
 public class Media
 {
     public Guid Id { get; set; }
-    
+
     public string MediaUrl { get; set; } = default!;
-    
+
     public string? FileName { get; set; }
-    
+
     public string? Type { get; set; }
 }
-
 
 public class ChatMessage
 {
@@ -31,8 +31,15 @@ public class ChatMessage
 
     private readonly HashSet<Media> _attachments = new();
 
-    public Guid? ForwardedMessageId { get; set; }
-    
+    public Guid? ForwardedMessageId
+    {
+        get => Metadata.TryGetValue(nameof(ForwardedMessageId).Underscore(), out var id) &&
+               Guid.TryParse(id, out var guiId)
+            ? guiId
+            : null;
+        set => Metadata[nameof(ForwardedMessageId).Underscore()] = value?.ToString() ?? string.Empty;
+    }
+
     public IReadOnlyCollection<Media> Attachments
     {
         get => _attachments.ToList().AsReadOnly();

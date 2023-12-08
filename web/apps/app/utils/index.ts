@@ -47,6 +47,8 @@ export const randomShuffleArray = <T>(array: T[]) => {
 };
 
 export const markdownProcessor = unified()
+   // @ts-ignore
    .use(remarkParse)
+   // @ts-ignore
    .use(remarkRehype)
    .use(rehypeStringify);

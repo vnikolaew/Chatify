@@ -27,6 +27,22 @@ internal class Program
 
     public static async Task Main(string[] args)
     {
-        await TelegramPlayground.Run();
+        using var client = new HttpClient()
+        {
+            BaseAddress = new Uri("https://images.chesscomfiles.com")
+            // 
+        };
+
+        char[] colors = { 'w', 'b' };
+        char[] pieces = { 'n', 'q', 'k', 'b', 'r' };
+
+        var coloredPieces = colors.SelectMany(c => pieces.Select(p => $"{c}{p}"));
+        if ( !Directory.Exists("pieces") ) Directory.CreateDirectory("pieces");
+        
+        foreach ( var coloredPiece in coloredPieces )
+        {
+            var imageBytes = await client.GetByteArrayAsync($"/chess-themes/pieces/classic/150/{coloredPiece}.png");
+            await File.WriteAllBytesAsync($"pieces/{coloredPiece}.png", imageBytes);
+        }
     }
 }

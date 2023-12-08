@@ -15,3 +15,4 @@ export * from "./ProfileIcon";
 export * from "./RightArrow";
 export * from "./UploadIcon";
 export * from "./SearchIcon";
+export * from "./PinOffIcon";

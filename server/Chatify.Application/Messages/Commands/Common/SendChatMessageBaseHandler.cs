@@ -36,7 +36,7 @@ internal abstract class SendChatMessageBaseHandler<TRequest, TResponse>(
 
         var uploadRequest = new MultipleFileUploadRequest
         {
-            Files = inputFiles,
+            Files = inputFiles.ToList(),
             UserId = identityContext.Id
         };
 

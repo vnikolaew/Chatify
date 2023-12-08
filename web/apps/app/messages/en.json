@@ -60,6 +60,7 @@
          "ScrollToBottom": "Scroll to bottom",
          "Popups": {
             "PinForThisGroup": "Pin for this group",
+            "UnpinForThisGroup": "Unpin message",
             "ReplyToThisMessage": "Reply to this message",
             "ForwardThisMessage": "Forward this message",
             "Edit": "Edit",

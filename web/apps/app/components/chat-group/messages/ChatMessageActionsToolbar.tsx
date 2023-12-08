@@ -5,12 +5,13 @@ import { PinIcon } from "@icons";
 import CommentIcon from "@components/icons/CommentIcon";
 import ForwardIcon from "@components/icons/ForwardIcon";
 import { Spinner } from "@nextui-org/react";
-import { usePinGroupChatMessage } from "@web/api";
+import { useGetChatGroupPinnedMessages, usePinGroupChatMessage, useUnpinGroupChatMessage } from "@web/api";
 import { useCurrentChatGroup } from "@hooks";
 import ChatMessageMoreActionsButton from "@components/chat-group/messages/ChatMessageMoreActionsButton";
 import { EditIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useReplyToMessageContext } from "@components/chat-group";
+import PinOffIcon from "@components/icons/PinOffIcon";
 
 export interface ChatMessageActionsToolbarProps {
    showMoreActions: boolean;
@@ -22,7 +23,7 @@ export interface ChatMessageActionsToolbarProps {
 const ChatMessageActionsToolbar = ({
                                       showMoreActions,
                                       onOpenForwardMessageModal,
-   onEditMessageChange,
+                                      onEditMessageChange,
                                       messageId,
                                    }: ChatMessageActionsToolbarProps) => {
    const groupId = useCurrentChatGroup();
@@ -31,24 +32,38 @@ const ChatMessageActionsToolbar = ({
       isLoading: pinLoading,
       error,
    } = usePinGroupChatMessage();
+
+   const {
+      mutateAsync: unpinMessage,
+      isLoading: unpinLoading,
+      error: unpinError,
+   } = useUnpinGroupChatMessage();
+
+   const { data: pinnedMessages, isLoading: pinnedMessagesLoading } = useGetChatGroupPinnedMessages({ groupId });
    const t = useTranslations(`MainArea.ChatMessages.Popups`);
    const [_, setReplyToMessage] = useReplyToMessageContext();
 
    const messageActions = useMemo(() => {
       return [
-         {
+         (pinnedMessages?.some(m => m.id === messageId) ? {
+            label: t(`UnpinForThisGroup`),
+            action: async () => {
+               await unpinMessage({ messageId, groupId });
+            },
+            loading: unpinLoading,
+            Icon: <PinOffIcon className={`fill-foreground`} size={14} />,
+         } : {
             label: t(`PinForThisGroup`),
             action: async () => {
                await pinMessage({ messageId, groupId });
             },
             loading: pinLoading,
             Icon: <PinIcon className={`fill-foreground`} size={14} />,
-         },
+         }),
          {
             label: t(`ReplyToThisMessage`),
             action: async () => {
-               console.log(`Replying ...`);
-               setReplyToMessage(messageId)
+               setReplyToMessage(messageId);
             },
             loading: false,
             Icon: <CommentIcon className={`fill-foreground`} size={14} />,
@@ -56,31 +71,30 @@ const ChatMessageActionsToolbar = ({
          {
             label: t(`ForwardThisMessage`),
             action: async () => {
-               console.log(`Opening modal ...`);
                onOpenForwardMessageModal();
             },
             loading: false,
             Icon: <ForwardIcon className={`fill-foreground`} size={14} />,
          },
+         showMoreActions ?
          {
             label: t(`Edit`),
             action: async () => {
-               console.log(`Editing message ...`);
-               onEditMessageChange(true)
+               onEditMessageChange(true);
             },
             loading: false,
             Icon: <EditIcon className={`stroke-foreground`} size={14} />,
-         },
+         } : null!,
       ];
-   }, [pinMessage, messageId, groupId, pinLoading, t, onOpenForwardMessageModal, onEditMessageChange]);
+   }, [pinMessage, messageId, groupId, pinLoading, t, onOpenForwardMessageModal, onEditMessageChange, setReplyToMessage, pinnedMessages, unpinMessage, unpinLoading, showMoreActions]);
 
    return (
       <div
          className={`absolute px-1 border-1 border-default-300 z-10 flex items-center gap-1 text-xs min-h-fit max-h-fit rounded-md bg-zinc-900 -translate-y-1/2 top-0 right-10`}
       >
-         {messageActions.map(({ label, Icon, action, loading }, i) => (
+         {messageActions.filter(Boolean).map(({ label, Icon, action, loading }, i) => (
             <TooltipButton
-               radius={"full"}
+               radius={"md"}
                key={label}
                placement={"top"}
                onClick={action}
@@ -93,8 +107,8 @@ const ChatMessageActionsToolbar = ({
                   },
                }}
                size={"sm"}
-               classNames={{ base: `p-0 text-[.7rem]` }}
-               offset={2}
+               classNames={{ base: `p-0 text-[.6rem]`, content: `text-[.6rem] h-4` }}
+               offset={4}
                icon={
                   loading ? (
                      <Spinner
@@ -113,7 +127,7 @@ const ChatMessageActionsToolbar = ({
             />
          ))}
          {showMoreActions && (
-            <ChatMessageMoreActionsButton  />
+            <ChatMessageMoreActionsButton />
          )}
       </div>
    );

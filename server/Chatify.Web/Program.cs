@@ -8,10 +8,10 @@ using Chatify.Web.Middleware;
 [assembly: InternalsVisibleTo("Chatify.IntegrationTesting")]
 var builder = WebApplication.CreateBuilder(args);
 {
-    builder.WebHost.UseProductionHttps(builder.Environment);
-    builder.Services.AddWindowsService(o =>
-        o.ServiceName = "TestService");
-    builder.Host.UseWindowsService();
+    // builder.WebHost.UseProductionHttps(builder.Environment);
+    // builder.Services.AddWindowsService(o =>
+    //     o.ServiceName = "TestService");
+    // builder.Host.UseWindowsService();
     
     builder.Services
         .AddSingleton<SecureHeadersMiddleware>()
@@ -25,9 +25,9 @@ var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 {
     app
-        // .UseHttpsRedirection()
+        .UseHttpsRedirection()
         .UseConfiguredCors(app.Environment)
-        // .UseSecureHeaders()
+        .UseSecureHeaders()
         .UseCachedStaticFiles(app.Environment)
         .UseDevelopmentSwagger(app.Environment)
         .UseConfiguredCookiePolicy()

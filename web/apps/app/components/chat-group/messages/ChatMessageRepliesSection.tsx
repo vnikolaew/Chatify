@@ -14,9 +14,9 @@ export interface ChatMessageRepliesSectionProps {
 }
 
 export const ChatMessageRepliesSection = ({
-   messageId,
-   total,
-}: ChatMessageRepliesSectionProps) => {
+                                             messageId,
+                                             total,
+                                          }: ChatMessageRepliesSectionProps) => {
    const {
       data: replies,
       isLoading,
@@ -28,8 +28,10 @@ export const ChatMessageRepliesSection = ({
       pageSize: 5,
    });
    const meId = useCurrentUserId();
-   console.log({ replies });
 
+   if (error) {
+      return (<div className={`text-xs text-red-500`}>An error occurred: {error.message}</div>);
+   }
    if (isLoading && isFetching)
       return (
          <div className={`flex mb-4 flex-col gap-2 items-start`}>
@@ -79,7 +81,7 @@ export const ChatMessageRepliesSection = ({
                />
                <div
                   className={twMerge(
-                     `flex flex-col justify-center self-start items-start gap-0`
+                     `flex flex-col justify-center self-start items-start gap-0`,
                   )}
                >
                   <div className={twMerge(`items-center flex gap-1`)}>
@@ -111,7 +113,7 @@ export const ChatMessageRepliesSection = ({
                         className={`text-[0.6rem] inline-flex items-center justify-center h-[16px] text-center font-light text-default-500`}
                      >
                         {moment(new Date(reply.createdAt)).format(
-                           "HH:MM DD/MM/YYYY"
+                           "HH:MM DD/MM/YYYY",
                         )}
                      </span>
                   </div>

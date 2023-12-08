@@ -56,7 +56,7 @@ export const ChatMessageReactionSection = ({
          reactions?.some(
             (r) => r.userId === meId && r.reactionCode === reactionCode
          ) || userReaction?.reactionCode === reactionCode,
-      [meId, reactions]
+      [meId, reactions, userReaction?.reactionCode]
    );
 
    const reactionsByCode = useMemo<Record<string, ChatMessageReaction[]>>(

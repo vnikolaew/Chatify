@@ -4,19 +4,20 @@ import { ChatGroupMessageEntry } from "@openapi";
 import { Avatar, Divider, Link } from "@nextui-org/react";
 import moment from "moment";
 import { getMediaUrl, useGetUserDetailsQuery } from "@web/api";
+import { Time } from "@components/common";
 
 export interface ForwardedChatMessageEntryProps {
    message: ChatGroupMessageEntry;
 }
 
 const ForwardedChatMessageEntry = ({
-   message,
-}: ForwardedChatMessageEntryProps) => {
+                                      message,
+                                   }: ForwardedChatMessageEntryProps) => {
    const { data: user } = useGetUserDetailsQuery(
       message.forwardedMessage?.userId,
       {
          enabled: !!message.forwardedMessage?.userId,
-      }
+      },
    );
 
    return (
@@ -42,11 +43,9 @@ const ForwardedChatMessageEntry = ({
                }}
             />
             <div className={`flex h-4 items-center gap-2`}>
-               <span className={`text-[.6rem] text-foreground-300`}>
-                  {moment(
-                     new Date(message.forwardedMessage?.createdAt)
-                  ).fromNow()}
-               </span>
+               <Time className={`!text-[.7rem] text-foreground-300`}
+                     value={message.forwardedMessage?.createdAt}
+                     format={m => m.fromNow()} />
                <Divider className={`w-[1px] bg-foreground-400 h-2`} />
                <Link
                   href={`/?c=${message.forwardedMessage?.chatGroupId}`}

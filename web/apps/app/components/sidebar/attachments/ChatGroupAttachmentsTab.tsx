@@ -8,8 +8,8 @@ export interface ChatGroupAttachmentsTabProps {
 }
 
 const ChatGroupAttachmentsTab = ({
-   chatGroupId,
-}: ChatGroupAttachmentsTabProps) => {
+                                    chatGroupId,
+                                 }: ChatGroupAttachmentsTabProps) => {
    const {
       data: attachments,
       isLoading,
@@ -26,41 +26,40 @@ const ChatGroupAttachmentsTab = ({
          <div className={`my-2  mx-auto grid gap-2 max-w-fit grid-cols-2`}>
             {isLoading && isFetching
                ? Array.from({ length: 10 }).map((_, i) => (
-                    <div
-                       className={`flex flex-col items-start m-2 gap-2`}
-                       key={i}
-                    >
-                       <Skeleton
-                          className={`w-28 h-36 rounded-medium`}
-                          key={i}
-                       />
-                       <div className={`w-full`}>
-                          <Skeleton className={`w-3/5 h-3 rounded-full`} />
-                          <Skeleton className={`w-4/5 mt-1 h-2 rounded-full`} />
-                       </div>
-                    </div>
-                 ))
-               : attachments?.pages
-                    ?.flatMap((p) => p.items)
-                    .map((attachment, i) => (
-                       <MediaAttachment
-                          key={attachment.attachmentId}
-                          attachment={attachment}
-                       />
-                    ))}
-         </div>
-         {attachments?.pages?.at(-1)?.hasMore ||
-            (true && (
-               <div className={`w-full mt-4 text-center`}>
-                  <Link
-                     className={`cursor-pointer text-small mx-auto`}
-                     underline={`hover`}
-                     color={`primary`}
+                  <div
+                     className={`flex flex-col items-start m-2 gap-2`}
+                     key={i}
                   >
-                     Show more
-                  </Link>
-               </div>
-            ))}
+                     <Skeleton
+                        className={`w-28 h-36 rounded-medium`}
+                        key={i}
+                     />
+                     <div className={`w-full`}>
+                        <Skeleton className={`w-3/5 h-3 rounded-full`} />
+                        <Skeleton className={`w-4/5 mt-1 h-2 rounded-full`} />
+                     </div>
+                  </div>
+               ))
+               : attachments?.pages
+                  ?.flatMap((p) => p.items)
+                  .map((attachment, i) => (
+                     <MediaAttachment
+                        key={attachment.attachmentId}
+                        attachment={attachment}
+                     />
+                  ))}
+         </div>
+         {attachments?.pages?.at(-1)?.hasMore && (
+            <div className={`w-full mt-4 text-center`}>
+               <Link
+                  className={`cursor-pointer text-small mx-auto`}
+                  underline={`hover`}
+                  color={`primary`}
+               >
+                  Show more
+               </Link>
+            </div>
+         )}
       </div>
    );
 };

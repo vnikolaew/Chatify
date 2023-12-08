@@ -1,7 +1,7 @@
 "use client";
-import React, { HTMLAttributes, useCallback, useEffect, useMemo, useState } from "react";
-import { DefaultElement, Editable, Slate, withReact } from "slate-react";
-import { createEditor, Text, Transforms } from "slate";
+import React, { forwardRef, HTMLAttributes, useCallback, useEffect, useMemo, useState } from "react";
+import { DefaultElement, Editable, ReactEditor, Slate, withReact } from "slate-react";
+import { createEditor, Editor, Text, Transforms } from "slate";
 import {
    Button,
    Dropdown,
@@ -88,12 +88,13 @@ function serializer(node: any) {
    }
 }
 
-const MessageTextEditor = ({
-                              chatGroup,
-                              initialAttachments, initialContent,
-                              className,
-                              ...props
-                           }: MessageTextEditorProps) => {
+const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
+                                                                                 chatGroup,
+                                                                                 initialAttachments,
+                                                                                 initialContent,
+                                                                                 className,
+                                                                                 ...props
+                                                                              }, ref) => {
    const [editor] = useState(() => withReact(createEditor()));
    const [replyTo] = useReplyToMessageContext();
    const hubClient = useChatifyClientContext();
@@ -136,19 +137,20 @@ const MessageTextEditor = ({
       isLoading: draftLoading,
       error: draftError,
    } = useDraftChatMessage();
+
    useOnWindowLocationChange(async (e: ChatGroupChangedEvent) => {
       await handleDraftMessage(e.from);
    });
 
+   useEffect(() => CustomEditor.placeCursorAtEnd(editor), []);
+
    useEffect(() => {
       if (isUserTyping) {
-         console.log(`Starting typing ...`);
          hubClient
             .startTypingInGroupChat(groupId)
             .then(console.log)
             .catch(console.error);
       } else {
-         console.log(`Stopping typing ...`);
          hubClient
             .stopTypingInGroupChat(groupId)
             .then(console.log)
@@ -188,7 +190,7 @@ const MessageTextEditor = ({
    }, []);
 
    const initialValue = useMemo(() => {
-      if (!draftedMessage || !initialContent) {
+      if (!draftedMessage && !initialContent) {
          return [
             {
                type: "paragraph",
@@ -201,7 +203,6 @@ const MessageTextEditor = ({
             .use(markdown)
             .use(slate)
             .processSync(initialContent ?? draftedMessage.content);
-         console.log(`Result: `, { result });
          return result.result;
       }
    }, [draftedMessage, initialContent]);
@@ -275,7 +276,7 @@ const MessageTextEditor = ({
          editor={editor}
          initialValue={initialValue}
       >
-         <div className={`relative h-fit w-5/6 mr-12 ${className}`} {...props}>
+         <div ref={ref} className={`relative h-fit w-5/6 mr-12 ${className}`} {...props}>
             <Editable
                placeholder={replyTo ? `Reply ...` : placeholder}
                className={`bg-zinc-900 !break-words !whitespace-nowrap ${
@@ -283,11 +284,12 @@ const MessageTextEditor = ({
                      ? `!min-h-[180px] !max-h-[180px]`
                      : `!min-h-[140px] !max-h-[140px]`
                } relative text-medium px-6 pt-14 rounded-medium text-white border-default-200 border-1 !active:border-default-300 !focus:border-default-300`}
+               autoFocus
                renderElement={renderElement}
                renderLeaf={renderLeaf}
                onKeyDown={async (e) => {
-                  if(e.key === "Enter") {
-                     e.preventDefault()
+                  if (e.key === "Enter") {
+                     e.preventDefault();
                      await handleSendMessage();
                      return;
                   }
@@ -434,6 +436,6 @@ const MessageTextEditor = ({
          </div>
       </Slate>
    );
-};
+});
 
 export default MessageTextEditor;

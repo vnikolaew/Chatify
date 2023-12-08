@@ -62,6 +62,13 @@ export const CustomEditor = {
       );
    },
 
+   placeCursorAtEnd(editor: BaseEditor & ReactEditor) {
+      const lastNode = editor.children[editor.children.length - 1];
+      const lastNodePath = ReactEditor.findPath(editor, lastNode);
+      const endPoint = Editor.end(editor, lastNodePath);
+      Transforms.select(editor, endPoint);
+   },
+
    toggleBoldMark(editor: BaseEditor & ReactEditor) {
       const isActive = CustomEditor.isBoldMarkActive(editor);
       if (isActive) {
@@ -85,7 +92,7 @@ export const CustomEditor = {
       Transforms.setNodes(
          editor,
          { type: isActive ? null : "code" },
-         { match: (n) => Editor.isBlock(editor, n) }
+         { match: (n) => Editor.isBlock(editor, n) },
       );
    },
 

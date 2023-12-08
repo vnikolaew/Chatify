@@ -7,13 +7,13 @@ import {
    useDisclosure,
    User,
 } from "@nextui-org/react";
+import { User as TUser } from "@openapi";
 import { AddUserIcon, PlusIcon } from "@icons";
-import { useAddChatGroupMember, useGetChatGroupDetailsQuery, useGetMyFriendsQuery } from "@web/api";
+import { useAddChatGroupMember } from "@web/api";
 import TooltipWithPopoverActionButton from "@components/common/TooltipWithPopoverActionButton";
 import {
    useCurrentChatGroup,
    useGetNewMemberSuggestions,
-   useIsChatGroupPrivate,
    useIsChatGroupPrivateById,
 } from "@hooks";
 import SadFaceIcon from "@components/icons/SadFaceIcon";
@@ -49,30 +49,15 @@ export const AddNewMemberActionButton = ({}: AddNewMemberActionButtonProps) => {
 
 const AddNewMemberPopover = () => {
    const groupId = useCurrentChatGroup();
-   const {
-      mutateAsync: addNewMember,
-      error: addMemberError,
-      isLoading: addMemberLoading,
-   } = useAddChatGroupMember();
+
 
    // Count only users that are friends but not group sidebar:
-   const { addMemberSuggestedUsers, isLoading } = useGetNewMemberSuggestions(groupId);
    const isGroupPrivate = useIsChatGroupPrivateById(groupId);
+   const { addMemberSuggestedUsers, isLoading } = useGetNewMemberSuggestions(groupId, !isGroupPrivate);
 
-   const handleAddNewMember = useCallback(
-      async (friendId: string) => {
-         console.log("click");
-         await addNewMember({
-            newMemberId: friendId,
-            chatGroupId: groupId,
-            membershipType: 0,
-         });
-      },
-      [addNewMember, groupId],
-   );
 
    return (
-      <div className={`flex py-4 flex-col items-start gap-3`}>
+      <div className={`flex py-3 flex-col items-start gap-3`}>
          {isLoading && (
             <Fragment>
                {Array.from({ length: 5 }).map((_, i) => (
@@ -94,21 +79,51 @@ const AddNewMemberPopover = () => {
                ))}
             </Fragment>
          )}
-         {addMemberSuggestedUsers?.length === 0 && !isLoading && (
+         {isGroupPrivate ? (
+            <div
+               className={`flex w-full text-xs items-center text-default-300 justify-between gap-4`}
+            >Cannot add new members to a private group.</div>
+         ) : (addMemberSuggestedUsers?.length === 0 && !isLoading ? (
             <div
                className={`text-default-300 my-2 gap-1 flex-col flex items-center w-full`}
             >
                <SadFaceIcon className={`fill-default-300`} size={20} />
-               <span className={`text-xs`}>
+               <span className={`!text-xxs`}>
                   You have no suggestions for new members{" "}
                </span>
             </div>
-         )}
-         {isGroupPrivate ? (
-            <div
-               className={`flex w-full items-center text-default-300 justify-between gap-4`}
-            >Cannot add new members to a private group.</div>
-         ) : addMemberSuggestedUsers?.map((friend, i) => (
+         ) : <SuggestedNewMembersList suggestedUsers={addMemberSuggestedUsers} />)}
+      </div>
+   );
+};
+
+interface SuggestedNewMembersListProps {
+   suggestedUsers: TUser[];
+}
+
+const SuggestedNewMembersList = ({ suggestedUsers }: SuggestedNewMembersListProps) => {
+   const groupId = useCurrentChatGroup();
+
+   const {
+      mutateAsync: addNewMember,
+      error: addMemberError,
+      isLoading: addMemberLoading,
+   } = useAddChatGroupMember();
+
+   const handleAddNewMember = useCallback(
+      async (friendId: string) => {
+         console.log("click");
+         await addNewMember({
+            newMemberId: friendId,
+            chatGroupId: groupId,
+            membershipType: 0,
+         });
+      },
+      [addNewMember, groupId],
+   );
+   return (
+      <Fragment>
+         {suggestedUsers?.map((friend, i) => (
             <div
                className={`flex w-full items-center justify-between gap-4`}
                key={friend.id}
@@ -146,6 +161,7 @@ const AddNewMemberPopover = () => {
                />
             </div>
          ))}
-      </div>
+      </Fragment>
    );
+
 };

@@ -1,8 +1,8 @@
 import { useGetChatGroupDetailsQuery, useGetMyFriendsQuery } from "@web/api";
 import { useMemo } from "react";
 
-export function useGetNewMemberSuggestions(groupId: string) {
-   const { data: friends, isLoading, error } = useGetMyFriendsQuery();
+export function useGetNewMemberSuggestions(groupId: string, enabled: boolean = true) {
+   const { data: friends, isLoading, isFetching, error } = useGetMyFriendsQuery({ enabled });
    const { data: groupDetails } = useGetChatGroupDetailsQuery(groupId);
 
    const addMemberSuggestedUsers = useMemo(() => {
@@ -12,5 +12,5 @@ export function useGetNewMemberSuggestions(groupId: string) {
       return friends?.filter((f) => !memberIds.has(f.id)) ?? [];
    }, [groupDetails?.members, friends]);
 
-   return { addMemberSuggestedUsers, isLoading };
+   return { addMemberSuggestedUsers, isLoading: isLoading && isFetching };
 }
