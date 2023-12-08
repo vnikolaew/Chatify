@@ -28,6 +28,7 @@ export const ChatMessageRepliesSection = ({
       pageSize: 5,
    });
    const meId = useCurrentUserId();
+   console.log({ replies });
 
    if (isLoading && isFetching)
       return (

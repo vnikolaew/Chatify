@@ -43,17 +43,17 @@ const ChatMessageEntries = React.forwardRef<HTMLDivElement, ChatMessageEntriesPr
         const groupedMessages = groupBy<ChatGroupMessageEntry>(messages?.pages?.flatMap(_ => _.items),
             (message: ChatGroupMessageEntry) => {
                 const date = new Date(message.message.createdAt);
-                return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+                return `${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
             });
         return toPairs(groupedMessages)
             .map(([date, entry]) => [parseDate(date), entry] as const)
-            .sort(([dateA], [dateB]) => dateB.getTime() - dateA.getTime());
+            .sort(([dateA], [dateB]) => dateA.getTime() - dateB.getTime());
 
     }, [messages?.pages]);
 
     return (
         <div className={`flex flex-col gap-4 items-center w-full`}>
-            {messagesByDate.reverse().map(([date, messages], dateIndex, arr2) => (
+            {messagesByDate.map(([date, messages], dateIndex, arr2) => (
                 <div className={`flex w-full items-start flex-col gap-2`} key={date.toISOString()}>
                     <Chip className={`text-xs px-4 self-center`} size={`sm`} content={date.toISOString()}
                           color={`primary`}

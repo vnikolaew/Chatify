@@ -75,7 +75,7 @@ export const useSendGroupChatMessageMutation = () => {
                produce(messages, (draft) => {
                   (
                      draft!.pages[0] as CursorPaged<ChatGroupMessageEntry>
-                  ).items.shift();
+                  ).items.pop();
                   return draft;
                })
             );
@@ -97,7 +97,7 @@ export const useSendGroupChatMessageMutation = () => {
                produce(messages, (draft) => {
                   (
                      draft!.pages[0] as CursorPaged<ChatGroupMessageEntry>
-                  ).items.unshift({
+                  ).items.push({
                      message: {
                         id: uuidv4(),
                         chatGroupId,

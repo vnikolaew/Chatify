@@ -33,7 +33,7 @@ const TooltipWithPopoverActionButton = ({
 }: TooltipWithPopoverActionButtonProps) => {
    return (
       <Popover
-         placement={"bottom"}
+         // placement={"bottom"}
          onOpenChange={onOpenChange}
          isOpen={isOpen}
          {...popoverProps}

@@ -17,7 +17,7 @@ const MembersTypingSection = ({}: MembersTypingSectionProps) => {
     const groupId = useCurrentChatGroup();
     const usersTyping = useGetUsersTyping(groupId);
     const [typingDotsCount, setTypingDotsCount] = useState(1);
-    useInterval(() => setTypingDotsCount((c) => (c + 1) % 4), 1000, [
+    useInterval(() => setTypingDotsCount((c) => (c + 1) % 4), 750, [
         usersTyping,
     ]);
 
@@ -41,7 +41,7 @@ const MembersTypingSection = ({}: MembersTypingSectionProps) => {
                 .join(``);
     }, [members, typingDotsCount]);
 
-    if (!members?.length) return null!;
+    if (!members?.length) return <div className={`h-6 w-full`} />;
 
     return (
         <AnimatePresence mode={`sync`}>

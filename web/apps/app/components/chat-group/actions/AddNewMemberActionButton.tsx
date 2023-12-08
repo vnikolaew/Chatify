@@ -8,23 +8,31 @@ import {
    User,
 } from "@nextui-org/react";
 import { AddUserIcon, PlusIcon } from "@icons";
-import { useAddChatGroupMember, useGetMyFriendsQuery } from "@web/api";
+import { useAddChatGroupMember, useGetChatGroupDetailsQuery, useGetMyFriendsQuery } from "@web/api";
 import TooltipWithPopoverActionButton from "@components/common/TooltipWithPopoverActionButton";
-import { useCurrentChatGroup, useGetNewMemberSuggestions } from "@hooks";
+import {
+   useCurrentChatGroup,
+   useGetNewMemberSuggestions,
+   useIsChatGroupPrivate,
+   useIsChatGroupPrivateById,
+} from "@hooks";
 import SadFaceIcon from "@components/icons/SadFaceIcon";
 import { useTranslations } from "next-intl";
 
-export interface AddNewMemberActionButtonProps {}
+export interface AddNewMemberActionButtonProps {
+}
 
 export const AddNewMemberActionButton = ({}: AddNewMemberActionButtonProps) => {
    const { isOpen, onOpenChange } = useDisclosure({ defaultOpen: false });
-   const t = useTranslations('MainArea.TopBar.Popups');
+   const t = useTranslations("MainArea.TopBar.Popups");
 
    return (
       <TooltipWithPopoverActionButton
          isOpen={isOpen}
          onOpenChange={onOpenChange}
          popoverContent={<AddNewMemberPopover />}
+         tooltipProps={{ placement: isOpen ? `top` : `bottom` }}
+         popoverProps={{ placement: `bottom` }}
          tooltipContent={t(`AddNewMember`)}
          icon={<AddUserIcon fill={"white"} size={20} />}
       />
@@ -32,7 +40,6 @@ export const AddNewMemberActionButton = ({}: AddNewMemberActionButtonProps) => {
 };
 
 const AddNewMemberPopover = () => {
-   const { data: friends, isLoading, error } = useGetMyFriendsQuery();
    const groupId = useCurrentChatGroup();
    const {
       mutateAsync: addNewMember,
@@ -41,7 +48,8 @@ const AddNewMemberPopover = () => {
    } = useAddChatGroupMember();
 
    // Count only users that are friends but not group sidebar:
-   const addMemberSuggestedUsers = useGetNewMemberSuggestions(groupId);
+   const { addMemberSuggestedUsers, isLoading } = useGetNewMemberSuggestions(groupId);
+   const isGroupPrivate = useIsChatGroupPrivateById(groupId);
 
    const handleAddNewMember = useCallback(
       async (friendId: string) => {
@@ -52,7 +60,7 @@ const AddNewMemberPopover = () => {
             membershipType: 0,
          });
       },
-      [addNewMember, groupId]
+      [addNewMember, groupId],
    );
 
    return (
@@ -88,7 +96,11 @@ const AddNewMemberPopover = () => {
                </span>
             </div>
          )}
-         {addMemberSuggestedUsers?.map((friend, i) => (
+         {isGroupPrivate ? (
+            <div
+               className={`flex w-full items-center text-default-300 justify-between gap-4`}
+            >Cannot add new members to a private group.</div>
+         ) : addMemberSuggestedUsers?.map((friend, i) => (
             <div
                className={`flex w-full items-center justify-between gap-4`}
                key={friend.id}

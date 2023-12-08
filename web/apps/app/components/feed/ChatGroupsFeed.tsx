@@ -96,7 +96,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                   }}
                   color={"default"}
                   radius={"full"}
-                  size={"md"}
+                  size={"sm"}
                   startContent={
                      <SearchIcon
                         className={`mr-1 group-data-[focus=true]:fill-primary-500`}

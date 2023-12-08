@@ -8,16 +8,14 @@ export interface AddUserIconProps extends SVGProps<SVGSVGElement> {
 export const AddUserIcon = ({ size, fill, ...rest }: AddUserIconProps) => {
    return (
       <div>
-         <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            id="add-account"
-            width={size}
-            height={size}
-            fill={fill}
-            {...rest}
-         >
-            <path d="M21,10.5H20v-1a1,1,0,0,0-2,0v1H17a1,1,0,0,0,0,2h1v1a1,1,0,0,0,2,0v-1h1a1,1,0,0,0,0-2Zm-7.7,1.72A4.92,4.92,0,0,0,15,8.5a5,5,0,0,0-10,0,4.92,4.92,0,0,0,1.7,3.72A8,8,0,0,0,2,19.5a1,1,0,0,0,2,0,6,6,0,0,1,12,0,1,1,0,0,0,2,0A8,8,0,0,0,13.3,12.22ZM10,11.5a3,3,0,1,1,3-3A3,3,0,0,1,10,11.5Z"></path>
+         <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-plus"
+              {...rest}>
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <line x1="19" x2="19" y1="8" y2="14" />
+            <line x1="22" x2="16" y1="11" y2="11" />
          </svg>
       </div>
    );

@@ -22,7 +22,7 @@ import {
    useGetDraftedMessageForGroup,
    useSendGroupChatMessageMutation,
 } from "@web/api";
-import { useCurrentChatGroup, useOnWindowLocationChange } from "@hooks";
+import { useCurrentChatGroup, useCurrentUserId, useIsChatGroupPrivate, useOnWindowLocationChange } from "@hooks";
 import * as escaper from "html-escaper";
 import { plateToMarkdown } from "slate-mark";
 
@@ -53,7 +53,6 @@ export interface MessageTextEditorProps extends HTMLAttributes<HTMLDivElement> {
    chatGroup: ChatGroupDetailsEntry;
    initialContent?: string;
    initialAttachments?: Map<string, ChatifyFile>; // File URL -> File instance
-   placeholder?: string;
 }
 
 export enum MessageAction {
@@ -92,7 +91,6 @@ function serializer(node: any) {
 const MessageTextEditor = ({
                               chatGroup,
                               initialAttachments, initialContent,
-                              placeholder,
                               className,
                               ...props
                            }: MessageTextEditorProps) => {
@@ -109,6 +107,18 @@ const MessageTextEditor = ({
       clearFiles,
    } = useFileUpload([...(initialAttachments?.values() ?? [])]);
    const t = useTranslations(`MainArea.ChatMessages.MessageTextEditor`);
+   const isPrivate = useIsChatGroupPrivate(chatGroup);
+
+   const meId = useCurrentUserId();
+   const t2 = useTranslations(`MainArea.ChatMessages`);
+   const placeholder = useMemo(() => {
+      return isPrivate ?
+         t2(`MessageTextEditor.MessagePrivatePlaceholder`, {
+            name: chatGroup?.members?.find(
+               (_) => _.id !== meId,
+            )?.username,
+         }) : t2(`MessageTextEditor.MessagePlaceholder`, { group: chatGroup?.chatGroup.name });
+   }, [isPrivate, t2, chatGroup?.members, meId, chatGroup?.chatGroup.name]);
 
    const groupId = useCurrentChatGroup();
    const {
@@ -275,7 +285,13 @@ const MessageTextEditor = ({
                } relative text-medium px-6 pt-14 rounded-medium text-white border-default-200 border-1 !active:border-default-300 !focus:border-default-300`}
                renderElement={renderElement}
                renderLeaf={renderLeaf}
-               onKeyDown={(e) => {
+               onKeyDown={async (e) => {
+                  if(e.key === "Enter") {
+                     e.preventDefault()
+                     await handleSendMessage();
+                     return;
+                  }
+
                   if (e.key === " ") {
                      e.preventDefault();
                      Transforms.insertText(editor, `\u00a0`);

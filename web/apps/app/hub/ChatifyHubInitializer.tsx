@@ -21,7 +21,8 @@ import {
 } from "@web/api";
 import { enableMapSet, produce } from "immer";
 
-export interface ChatifyHubInitializerProps {}
+export interface ChatifyHubInitializerProps {
+}
 
 export interface IUserTyping {
    userId: string;
@@ -54,7 +55,7 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                      ).items[0].message.attachments = message.attachments;
                      return draft;
                   });
-               }
+               },
             );
             return;
          }
@@ -69,9 +70,9 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                   old,
                   () =>
                      new Set(
-                        [...old].filter((u) => u.userId !== message.senderId)
-                     )
-               )
+                        [...old].filter((u) => u.userId !== message.senderId),
+                     ),
+               ),
          );
 
          queryClient.setQueryData<
@@ -86,10 +87,10 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                   ])
                   .members.find((m) => m.id === message.senderId);
 
-               return produce(messages, (draft) => {
+               const newMessagePages = produce(messages, (draft) => {
                   (
                      draft!.pages[0] as CursorPaged<ChatGroupMessageEntry>
-                  ).items.unshift({
+                  ).items.push({
                      message: {
                         id: message.messageId,
                         chatGroupId: message.chatGroupId,
@@ -114,14 +115,16 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                   });
                   return draft;
                });
-            }
+               console.log({ newMessagePages });
+               return newMessagePages;
+            },
          );
          queryClient.setQueryData<ChatGroupFeedEntry[]>([`feed`], (feed) => {
             return produce(feed, (draft) => {
                const feedItemIndex = draft.findIndex(
-                  (e) => e.chatGroup.id === message.chatGroupId
+                  (e) => e.chatGroup.id === message.chatGroupId,
                );
-               feed[feedItemIndex].latestMessage = {
+               const latestMessage = {
                   id: message.messageId,
                   chatGroupId: message.chatGroupId,
                   content: message.content,
@@ -133,7 +136,10 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                };
 
                return [
-                  feed[feedItemIndex],
+                  {
+                     ...feed[feedItemIndex],
+                     latestMessage,
+                  },
                   ...feed.slice(0, feedItemIndex),
                   ...feed.slice(feedItemIndex + 1),
                ];
@@ -157,12 +163,12 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                (group) => {
                   return produce(group, (draft) => {
                      const user = group.members.find(
-                        (m) => m.id === event.userId
+                        (m) => m.id === event.userId,
                      );
                      user.status = event.newStatus as unknown as UserStatus;
                      return draft;
                   });
-               }
+               },
             );
          }
       });
@@ -177,9 +183,9 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                      if (!draft) draft = new Set<IUserTyping>();
                      draft.add({ userId, username, groupId: chatGroupId });
                      return draft;
-                  })
+                  }),
             );
-         }
+         },
       );
 
       client.onChatGroupMemberStoppedTyping(
@@ -197,9 +203,9 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                         }
                      }
                      return draft;
-                  })
+                  }),
             );
-         }
+         },
       );
 
       client.onChatGroupMessageUnReactedTo((event) => {
@@ -210,17 +216,17 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                const message = draft.pages
                   .flatMap((_) => _.items)
                   .find(
-                     (m) => m.message.id === event.messageId
+                     (m) => m.message.id === event.messageId,
                   ) as ChatGroupMessageEntry;
 
                if (
                   message.message.reactionCounts[
                      event.reactionType.toString()
-                  ] > 0
+                     ] > 0
                ) {
                   message.message.reactionCounts[
                      event.reactionType.toString()
-                  ]--;
+                     ]--;
                }
                return draft;
             });
@@ -233,7 +239,7 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                   draft = draft.filter((r) => r.id !== event.messageReactionId);
                   return draft;
                });
-            }
+            },
          );
       });
 
@@ -245,13 +251,13 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                const message = draft.pages
                   .flatMap((_) => _.items)
                   .find(
-                     (m) => m.message.id === event.messageId
+                     (m) => m.message.id === event.messageId,
                   ) as ChatGroupMessageEntry;
 
                // string -> number
                message.message.reactionCounts[
                   event.reactionType.toString()
-               ] ??= 0;
+                  ] ??= 0;
                message.message.reactionCounts[event.reactionType.toString()]++;
                return draft;
             });
@@ -271,7 +277,7 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                   });
                   return draft;
                });
-            }
+            },
          );
       });
 
@@ -281,7 +287,7 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
             (old) => {
                return produce(old, (draft) => {
                   const existing = draft.members.find(
-                     (m) => m.id === event.adminId
+                     (m) => m.id === event.adminId,
                   );
                   if (existing) {
                      draft.chatGroup.adminIds.push(existing.id);
@@ -292,7 +298,7 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
 
                   return draft;
                });
-            }
+            },
          );
       });
 
@@ -353,7 +359,7 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                      },
                   });
                });
-            }
+            },
          );
       });
 
@@ -376,7 +382,7 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                      },
                   });
                });
-            }
+            },
          );
       });
 
@@ -399,7 +405,7 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                      },
                   });
                });
-            }
+            },
          );
       });
 
@@ -409,11 +415,11 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
             (old) => {
                return produce(old, (draft) => {
                   draft.members = draft.members.filter(
-                     (m) => m.id !== event.userId
+                     (m) => m.id !== event.userId,
                   );
                   return draft;
                });
-            }
+            },
          );
       });
 
@@ -429,7 +435,7 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
                   });
                   return draft;
                });
-            }
+            },
          );
       });
 
@@ -439,11 +445,11 @@ export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
             (old) => {
                return produce(old, (draft) => {
                   draft.members = draft.members.filter(
-                     (m) => m.id !== event.userId
+                     (m) => m.id !== event.userId,
                   );
                   return draft;
                });
-            }
+            },
          );
       });
 

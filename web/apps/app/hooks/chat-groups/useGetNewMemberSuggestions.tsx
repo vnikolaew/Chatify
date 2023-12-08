@@ -12,5 +12,5 @@ export function useGetNewMemberSuggestions(groupId: string) {
       return friends?.filter((f) => !memberIds.has(f.id)) ?? [];
    }, [groupDetails?.members, friends]);
 
-   return addMemberSuggestedUsers;
+   return { addMemberSuggestedUsers, isLoading };
 }
