@@ -5,7 +5,6 @@ import { Inter, Roboto } from "next/font/google";
 import Providers from "./providers";
 import MainNavbar from "@components/navbar/Navbar";
 import process from "process";
-import { getImagesBaseUrl } from "@web/api";
 import CookieConsentBannerModal from "@components/CookieConsentBannerModal";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
@@ -31,6 +30,10 @@ export function __IS_DEV__() {
    return process.env.NODE_ENV === "development";
 }
 
+export function __IS_COOKIE_CONSENT_ENABLED__() {
+   return process.env.COOKIE_CONSENT_ENABLED === "1";
+}
+
 async function ChatifyLayout({ children, params: { locale }, ...rest }: PropsWithChildren & { params: any }) {
    // Validate that the incoming `locale` parameter is valid
    let messages;
@@ -45,9 +48,9 @@ async function ChatifyLayout({ children, params: { locale }, ...rest }: PropsWit
       <body className={`dark`}>
       <Providers isDevelopment={__IS_DEV__()}>
          <NextIntlClientProvider locale={locale} messages={messages}>
-            <MainNavbar baseImagesUrl={getImagesBaseUrl()} />
+            <MainNavbar />
             <main className="app">{children}</main>
-            <CookieConsentBannerModal />
+            {__IS_COOKIE_CONSENT_ENABLED__() && <CookieConsentBannerModal />}
             <Footer />
          </NextIntlClientProvider>
       </Providers>

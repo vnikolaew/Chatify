@@ -19,12 +19,12 @@ const ChatMessageMoreActionsButton = ({ }: ChatMessageMoreActionsButtonProps) =>
 
    return (
       <>
-         <Popover placement={`bottom`} isOpen={popoverOpen}>
-            <PopoverTrigger onClick={_ => setPopoverOpen(true)} className={`px-1`}>Hey</PopoverTrigger>
-            <PopoverContent>
-               <MoreMessageActionsDropdown />
-            </PopoverContent>
-         </Popover>
+         {/*<Popover placement={`bottom`} isOpen={popoverOpen}>*/}
+         {/*   <PopoverTrigger onClick={_ => setPopoverOpen(true)} className={`px-1`}>Hey</PopoverTrigger>*/}
+         {/*   <PopoverContent>*/}
+         {/*      <MoreMessageActionsDropdown />*/}
+         {/*   </PopoverContent>*/}
+         {/*</Popover>*/}
          <TooltipWithPopoverActionButton
             popoverContent={<MoreMessageActionsDropdown />}
             tooltipContent={"More actions"}

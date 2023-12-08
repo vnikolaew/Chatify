@@ -18,9 +18,8 @@
       <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
       <PackageReference Include="OneOf" Version="3.0.263" />
       <PackageReference Include="OneOf.SourceGenerator" Version="3.0.263" />
+      <PackageReference Include="SimpleInjector" Version="5.4.1" />
+      <PackageReference Include="SimpleInjector.Integration.AspNetCore" Version="5.4.0" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ReferencePathWithRefAssemblies Update="C:\Users\Victorio\.nuget\packages\oneof\3.0.255\lib\netstandard2.0\OneOf.dll" />
-    </ItemGroup>
 </Project>

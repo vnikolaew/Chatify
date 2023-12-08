@@ -8,7 +8,7 @@ import {
    Tooltip,
    useDisclosure,
 } from "@nextui-org/react";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { BellIcon } from "@icons";
 import {
    sleep,
@@ -21,7 +21,8 @@ import CheckIcon from "@components/icons/CheckIcon";
 import TooltipWithPopoverActionButton from "@components/common/TooltipWithPopoverActionButton";
 import { useTranslations } from "next-intl";
 
-export interface NotificationsDropdownProps {}
+export interface NotificationsDropdownProps {
+}
 
 export enum NotificationTab {
    ALL = "all",
@@ -33,7 +34,7 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
       defaultOpen: false,
    });
    const [selectedTab, setSelectedTab] = useState<NotificationTab>(
-      NotificationTab.ALL
+      NotificationTab.ALL,
    );
    const {
       data: notifications,
@@ -44,8 +45,13 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
          pageSize: 10,
          pagingCursor: undefined!,
       },
-      { enabled: selectedTab === NotificationTab.ALL && isOpen }
+      { enabled: selectedTab === NotificationTab.ALL && isOpen },
    );
+
+   const notificationsCount = useMemo(() =>
+         notifications?.pages?.flatMap(_ => _.items)?.length ?? 0,
+      []);
+
    const {
       data: unreadNotifications,
       isLoading: unreadLoading,
@@ -63,7 +69,7 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
       // await markAsRead({}, {});
       await sleep(2000);
    };
-   const t = useTranslations('MainNavbar.Popups');
+   const t = useTranslations("MainNavbar.Popups");
 
    console.log(notifications?.pages?.[0]);
    return (
@@ -71,6 +77,14 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
          <TooltipWithPopoverActionButton
             isOpen={isOpen}
             onOpenChange={onOpenChange}
+            tooltipProps={{
+               classNames: {
+                  base: `text-xs `,
+                  content: `text-[10px] h-5`,
+               },
+               shadow: `sm`,
+               size: `sm`,
+            }}
             popoverContent={
                <div className={`flex flex-col items-start`}>
                   <div
@@ -148,9 +162,9 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
             }
             tooltipContent={t(`Notifications`)}
             icon={
-               notifications?.length > 0 ? (
+               notificationsCount > 0 ? (
                   <Badge
-                     content={1}
+                     content={notificationsCount}
                      size={"sm"}
                      classNames={{
                         badge: "text-xs p-2 flex items-center justify-center",

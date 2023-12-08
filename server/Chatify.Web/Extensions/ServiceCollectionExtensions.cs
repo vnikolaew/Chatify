@@ -34,7 +34,9 @@ public static class ServiceCollectionExtensions
             config.AllowNullDestinationValues = true;
         });
 
-    public static IServiceCollection AddWebComponents(this IServiceCollection services)
+    public static IServiceCollection AddWebComponents(
+        this IServiceCollection services,
+        IWebHostEnvironment environment)
     {
         services
             .AddSingleton<IAuthorizationMiddlewareResultHandler,
@@ -50,7 +52,14 @@ public static class ServiceCollectionExtensions
             .AddProblemDetails(opts => { opts.CustomizeProblemDetails = _ => { }; })
             .AddConfiguredSwagger()
             .Configure<KestrelServerOptions>(opts => opts.AllowSynchronousIO = true)
-            .AddControllers(opts => { opts.Filters.Add<GlobalExceptionFilter>(); })
+            .AddControllers(opts =>
+            {
+                opts.Filters.Add<GlobalExceptionFilter>();
+                if ( environment.IsProduction() )
+                {
+                    opts.Filters.Add<ActivitySourceActionFilter>();
+                }
+            })
             .AddJsonOptions(opts =>
             {
                 opts.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;

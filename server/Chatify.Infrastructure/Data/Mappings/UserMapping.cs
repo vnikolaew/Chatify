@@ -20,7 +20,7 @@ public class UserMapping : Cassandra.Mapping.Mappings
             .UnderscoreColumn(u => u.Status, cm => cm.WithDbType<sbyte>())
             .UnderscoreColumn(u => u.PhoneNumbers)
             .UnderscoreColumn(u => u.ProfilePicture)
-            .UnderscoreColumn(u => u.BannerPictures)
+            .UnderscoreColumn(u => u.BannerPictures, cm => cm.WithFrozenKey())
             .UnderscoreColumn(u => u.CreatedAt)
             .UnderscoreColumn(u => u.UpdatedAt)
             .UnderscoreColumn(u => u.LastLogin)

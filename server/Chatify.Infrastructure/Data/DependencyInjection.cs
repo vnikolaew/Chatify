@@ -101,8 +101,8 @@ public static class DependencyInjection
                 .MakeGenericMethod(type)
                 .Invoke(defs, new[] { typeSerializer });
         }
-
         return defs;
+
     }
 
     private static RetryPolicy RetryPolicy(

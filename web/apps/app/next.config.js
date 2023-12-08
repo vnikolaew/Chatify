@@ -26,6 +26,9 @@ const nextConfig = {
          {
             hostname: `cdn.jsdelivr.net`,
          },
+         {
+            hostname: `images.unsplash.com`,
+         },
       ],
       contentSecurityPolicy: "",
       loader: "default",

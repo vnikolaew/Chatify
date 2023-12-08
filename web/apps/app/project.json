@@ -73,7 +73,7 @@
          "command": "cd apps/app && next dev --experimental-https"
       },
       "build-custom-server": {
-         "executor": "@nrwl/js:tsc",
+         "executor": "@nx/js:tsc",
          "defaultConfiguration": "production",
          "options": {
             "outputPath": "dist/apps/app",

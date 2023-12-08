@@ -7,7 +7,7 @@ export interface TimeProps extends DetailedHTMLProps<TimeHTMLAttributes<HTMLTime
    format?: string;
 }
 
-const Time = ({ value, format = "HH:MM DD/MM/YYYY", ...props }: TimeProps) => {
+const Time = ({ value, format = "HH:mm DD/MM/YYYY", ...props }: TimeProps) => {
    const { className, ...rest } = props;
    return (
       <time className={`text-xs font-light text-default-500 ${className}`} {...rest}>

@@ -24,6 +24,14 @@ const AddNewGroupAdminActionButton =
             isOpen={isOpen}
             onOpenChange={onOpenChange}
             popoverContent={<AddNewAdminPopover />}
+            tooltipProps={{
+               size: `sm`,
+               shadow: `sm`,
+               classNames: {
+                  base: `text-xs `,
+                  content: `text-[10px] h-5`,
+               },
+            }}
             popoverProps={{
                classNames: {
                   base: `pl-4 pr-0`,

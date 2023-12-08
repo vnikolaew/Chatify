@@ -16,14 +16,9 @@ import { useIsUserLoggedIn } from "@hooks";
 import { NotificationsDropdown, UserDropdown } from "@components/navbar";
 import SignOutButton from "@components/navbar/SignOutButton";
 import AddNewFriendButton from "@components/navbar/AddNewFriendButton";
-import { useTranslations, useLocalizedRouter } from "next-intl";
+import { useTranslations } from "next-intl";
 
 const NAV_LINKS: (LinkProps & { label: string })[] = [
-   {
-      href: `/_playgrounds`,
-      label: "Playgrounds",
-      color: "danger",
-   },
    {
       href: `/signup`,
       color: `foreground`,
@@ -37,7 +32,7 @@ const NAV_LINKS: (LinkProps & { label: string })[] = [
    },
 ];
 
-const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
+const MainNavbar = () => {
    const pathname = usePathname();
    const { isUserLoggedIn } = useIsUserLoggedIn();
    const t = useTranslations(`Index`);
@@ -66,7 +61,7 @@ const MainNavbar = ({ baseImagesUrl }: { baseImagesUrl: string }) => {
                <h2 className={`ml-2 text-foreground`}>Chatify</h2>
             </Link>
          </NavbarBrand>
-         <NavbarContent justify={"end"} className={`flex gap-1`}>
+         <NavbarContent justify={"end"} className={`flex gap-4`}>
             {data?.claims && Object.keys(data?.claims).length ? (
                <Fragment>
                   <NavbarItem className={`mr-4`}>

@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Button, ButtonProps } from "@nextui-org/react";
-import { FacebookIcon } from "../../components/icons/FacebookIcon";
+import { FacebookIcon } from "@icons";
 
 const FacebookSignInButton = (props: ButtonProps) => {
    const { className, ...rest } = props;

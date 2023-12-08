@@ -40,7 +40,7 @@ internal sealed class DatabaseSeedingService(IServiceScopeFactory scopeFactory)
             .First()
             .Key;
 
-        var user = await mapper.FirstOrDefaultAsync<ChatifyUser>("WHERE id = ?", userId);
+        var user = await mapper.FirstOrDefaultAsync<ChatifyUser>("SELECT username, email FROM users WHERE id = ?", userId);
 
         logger.LogInformation("Test user credentials: Username - {Username}, Email - {Email} Password - {Password}",
             user.UserName,

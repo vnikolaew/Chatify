@@ -45,14 +45,13 @@ public sealed partial class UserSeeder(IServiceScopeFactory factory)
             u) => u.Email.ToUpper())
         .RuleFor(u => u.EmailConfirmationTime, _ => DateTimeOffset.Now)
         .RuleFor(u => u.DeviceIps,
-            f => new HashSet<IPAddress> { f.Internet.IpAddress() })
+            f => [f.Internet.IpAddress()])
         .RuleFor(u => u.DisplayName, (_,
             u) => u.UserName.Humanize());
 
     protected override async Task SeedCoreAsync(CancellationToken cancellationToken = default)
     {
         await using var scope = ScopeFactory.CreateAsyncScope();
-
         var userManager = scope.ServiceProvider
             .GetRequiredService<UserManager<ChatifyUser>>();
         var provider = scope.ServiceProvider
@@ -94,7 +93,7 @@ public sealed partial class UserSeeder(IServiceScopeFactory factory)
                 _ = await userManager.AddClaimsAsync(
                     user, new List<Claim>
                     {
-                        new(Authentication.External.Constants.ClaimNames.Picture, user.ProfilePicture.MediaUrl),
+                        new(Authentication.External.Constants.ClaimNames.Picture, user.ProfilePicture.MediaUrl)
                     });
             }
         }

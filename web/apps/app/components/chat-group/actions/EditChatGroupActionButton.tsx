@@ -36,6 +36,12 @@ const EditChatGroupActionButton = ({
                   base: "h-9 w-9 px-0",
                },
             }}
+            size={`sm`}
+            shadow={`sm`}
+            classNames={{
+               base: `text-xs `,
+               content: `text-[10px] h-5`
+            }}
             onClick={onOpenChange}
             icon={<Edit className={`stroke-default-400`} size={20} />}
             content={t(`EditChatGroup`)}

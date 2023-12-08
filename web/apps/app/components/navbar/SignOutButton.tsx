@@ -20,6 +20,12 @@ const SignOutButton = ({}: SignOutButtonProps) => {
       <TooltipButton
          onClick={handleSignOut}
          className={`text-xs px-3 py-1`}
+         size={`sm`}
+         shadow={`sm`}
+         classNames={{
+            base: `text-xs `,
+            content: `!text-[10px] h-5`,
+         }}
          chipProps={{
             className: `hover:bg-danger-500 w-8 h-8 p-0`,
             classNames: {

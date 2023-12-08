@@ -9,6 +9,7 @@ using Cassandra.Data.Linq;
 using Chatify.Infrastructure.Data.Models;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Exception = System.Exception;
 using InvalidOperationException = System.InvalidOperationException;
 
 namespace Chatify.Infrastructure.Data.Services;
@@ -82,9 +83,9 @@ public class DatabaseInitializationService(CassandraOptions cassandraOptions,
     {
         try
         {
-            await DefineUdts(session);
             await CreateIdentityTablesAsync(cassandraOptions);
             await CreateApplicationTablesAsync(stoppingToken);
+            await DefineUdts(session);
         }
         catch ( Exception e )
         {
@@ -95,21 +96,6 @@ public class DatabaseInitializationService(CassandraOptions cassandraOptions,
     private static async Task DefineUdts(ISession session)
     {
         session.ChangeKeyspace(Constants.KeyspaceName);
-        session.Execute("""
-                        CREATE TYPE IF NOT EXISTS message_replier_info (
-                            user_id uuid,
-                            username text,
-                            profile_picture_url text,
-                        );
-                        """);
-        session.Execute("""
-                        CREATE TYPE IF NOT EXISTS media (
-                            id uuid,
-                            media_url text,
-                            file_name text,
-                            type text
-                        );
-                        """);
         await session.UserDefinedTypes.DefineAsync(
             MessageReplierInfo.UdtMap,
             Media.UdtMap,
@@ -173,7 +159,7 @@ public class DatabaseInitializationService(CassandraOptions cassandraOptions,
 
         try
         {
-            await CreateTableIfNotExists(session, usersTable);
+            // await CreateTableIfNotExists(session, usersTable);
             await CreateTableIfNotExists(session, rolesTable);
         }
         catch ( AlreadyExistsException )
@@ -202,18 +188,5 @@ public class DatabaseInitializationService(CassandraOptions cassandraOptions,
         sessionHelperType
             .GetProperty("RolesTableName", BindingFlags.Public | BindingFlags.Static)!
             .SetValue(null, rolesTableName);
-
-        session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS users_by_email AS SELECT * FROM " +
-                        options.KeyspaceName + "." + usersTableName +
-                        " WHERE NormalizedEmail IS NOT NULL AND id IS NOT NULL AND username IS NOT NULL AND created_at IS NOT NULL PRIMARY KEY (NormalizedEmail, id)");
-        session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS users_by_username AS SELECT * FROM " +
-                        options.KeyspaceName + "." + usersTableName +
-                        " WHERE NormalizedUserName IS NOT NULL AND Id IS NOT NULL AND username IS NOT NULL AND created_at IS NOT NULL PRIMARY KEY (NormalizedUserName, Id)");
-        session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS roles_by_name AS SELECT * FROM " +
-                        options.KeyspaceName + "." + rolesTableName +
-                        " WHERE NormalizedName IS NOT NULL AND Id IS NOT NULL PRIMARY KEY (NormalizedName, Id)");
-        session.Execute("CREATE MATERIALIZED VIEW IF NOT EXISTS userclaims_by_type_and_value AS SELECT * FROM " +
-                        options.KeyspaceName +
-                        ".userclaims WHERE Type IS NOT NULL AND Value IS NOT NULL AND userid IS NOT NULL PRIMARY KEY ((Type, Value), UserId)");
     }
 }

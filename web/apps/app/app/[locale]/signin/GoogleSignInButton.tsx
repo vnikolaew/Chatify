@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Button, ButtonProps, Spinner } from "@nextui-org/react";
-import { GoogleIcon } from "../../components/icons/GoogleIcon";
+import { GoogleIcon } from "@icons";
 
 const GoogleSignInButton = (props: ButtonProps) => {
    const { className, isLoading, ...rest } = props;

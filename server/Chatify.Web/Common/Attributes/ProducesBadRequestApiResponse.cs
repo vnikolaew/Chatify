@@ -5,73 +5,30 @@ using Microsoft.AspNetCore.Mvc;
 namespace Chatify.Web.Common.Attributes;
 
 [AttributeUsage(AttributeTargets.Method)]
-public class ProducesBadRequestApiResponseAttribute : ProducesResponseTypeAttribute
-{
-    public ProducesBadRequestApiResponseAttribute()
-        : base(typeof(ApiResponse<Unit>), ( int )HttpStatusCode.BadRequest)
-    {
-    }
-}
+public class ProducesBadRequestApiResponseAttribute()
+    : ProducesResponseTypeAttribute(typeof(ApiResponse<Unit>), ( int )HttpStatusCode.BadRequest);
 
 [AttributeUsage(AttributeTargets.Method)]
-public class ProducesCreatedAtApiResponseAttribute : ProducesResponseTypeAttribute
-{
-    public ProducesCreatedAtApiResponseAttribute()
-        : base(typeof(ApiResponse<object>), ( int )HttpStatusCode.Created)
-    {
-    }
-}
+public class ProducesCreatedAtApiResponseAttribute()
+    : ProducesResponseTypeAttribute(typeof(ApiResponse<object>), ( int )HttpStatusCode.Created);
 
 [AttributeUsage(AttributeTargets.Method)]
-public class ProducesNotFoundApiResponseAttribute : ProducesResponseTypeAttribute
-{
-    public ProducesNotFoundApiResponseAttribute()
-        : base(( int )HttpStatusCode.NotFound)
-    {
-    }
-}
+public class ProducesNotFoundApiResponseAttribute() : ProducesResponseTypeAttribute(( int )HttpStatusCode.NotFound);
 
 [AttributeUsage(AttributeTargets.Method)]
-public class ProducesNoContentApiResponseAttribute : ProducesResponseTypeAttribute
-{
-    public ProducesNoContentApiResponseAttribute()
-        : base(( int )HttpStatusCode.NoContent)
-    {
-    }
-}
+public class ProducesNoContentApiResponseAttribute() : ProducesResponseTypeAttribute(( int )HttpStatusCode.NoContent);
 
 [AttributeUsage(AttributeTargets.Method)]
-public class ProducesOkApiResponseAttribute<TData> : ProducesResponseTypeAttribute where TData : notnull
-{
-    public ProducesOkApiResponseAttribute()
-        : base(typeof(ApiResponse<TData>), ( int )HttpStatusCode.OK)
-    {
-    }
-}
+public class ProducesOkApiResponseAttribute<TData>()
+    : ProducesResponseTypeAttribute(typeof(ApiResponse<TData>), ( int )HttpStatusCode.OK)
+    where TData : notnull;
 
 [AttributeUsage(AttributeTargets.Method)]
-public class ProducesAcceptedApiResponseAttribute : ProducesResponseTypeAttribute
-{
-    public ProducesAcceptedApiResponseAttribute()
-        : base(( int )HttpStatusCode.Accepted)
-    {
-    }
-}
+public class ProducesAcceptedApiResponseAttribute() : ProducesResponseTypeAttribute(( int )HttpStatusCode.Accepted);
 
 [AttributeUsage(AttributeTargets.Method)]
-public class ProducesAcceptedApiResponseAttribute<TData> : ProducesResponseTypeAttribute
-{
-    public ProducesAcceptedApiResponseAttribute()
-        : base(typeof(TData), ( int )HttpStatusCode.Accepted)
-    {
-    }
-}
+public class ProducesAcceptedApiResponseAttribute<TData>()
+    : ProducesResponseTypeAttribute(typeof(TData), ( int )HttpStatusCode.Accepted);
 
 [AttributeUsage(AttributeTargets.Method)]
-public class ProducesRedirectApiResponseAttribute : ProducesResponseTypeAttribute
-{
-    public ProducesRedirectApiResponseAttribute()
-        : base(( int )HttpStatusCode.Redirect)
-    {
-    }
-}
+public class ProducesRedirectApiResponseAttribute() : ProducesResponseTypeAttribute(( int )HttpStatusCode.Redirect);

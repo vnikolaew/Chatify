@@ -31,7 +31,15 @@ export const AddNewMemberActionButton = ({}: AddNewMemberActionButtonProps) => {
          isOpen={isOpen}
          onOpenChange={onOpenChange}
          popoverContent={<AddNewMemberPopover />}
-         tooltipProps={{ placement: isOpen ? `top` : `bottom` }}
+         tooltipProps={{
+            placement: isOpen ? `top` : `bottom`,
+            size: `sm`,
+            shadow: `sm`,
+            classNames: {
+               base: `text-xs `,
+               content: `text-[10px] h-5`,
+            },
+         }}
          popoverProps={{ placement: `bottom` }}
          tooltipContent={t(`AddNewMember`)}
          icon={<AddUserIcon fill={"white"} size={20} />}

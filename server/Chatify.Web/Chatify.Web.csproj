@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <ApplicationIcon>logo.ico</ApplicationIcon>
         <LangVersion>default</LangVersion>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,6 +14,7 @@
         <PackageReference Include="FastEndpoints" Version="5.15.0.22-beta"/>
         <PackageReference Include="Humanizer.Core" Version="2.14.1"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0-preview.2.23153.2"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0-rc.1.23419.4" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
     </ItemGroup>
     <ItemGroup>
@@ -32,6 +34,20 @@
     </ItemGroup>
     <ItemGroup>
         <_ContentIncludedByDefault Remove="Views\Index\Index.cshtml"/>
+        <_ContentIncludedByDefault Remove="swagger\v1\output\kiota-lock.json" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Update="certs\myapp.pfx">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="swagger\v1\swagger.yaml">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
     <Target Name="OpenAPI" AfterTargets="Build" Condition="$(Configuration)=='Debug'">

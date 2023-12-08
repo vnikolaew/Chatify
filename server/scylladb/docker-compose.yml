@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+    scylla1:
+        image: scylladb/scylla
+        container_name: scylla
+        ports:
+            - "9042:9042" # ScyllaDB CQL port
+        volumes:
+            - scylla-data-node1:/var/lib/scylla
+        environment:
+            - SCYLLA_SEEDS=scylla-node1,scylla-node2,scylla-node3
+    scylla2:
+        image: scylladb/scylla
+        container_name: scylla2
+        command: --seeds=scylla
+        ports:
+            - "9042:9042" # ScyllaDB CQL port
+        volumes:
+            - scylla-data-node2:/var/lib/scylla
+        environment:
+            - SCYLLA_SEEDS=scylla-node1,scylla-node2,scylla-node3
+    
+    scylla3:
+        image: scylladb/scylla
+        container_name: scylla3
+        command: --seeds=scylla
+        ports:
+            - "9042:9042" # ScyllaDB CQL port
+        volumes:
+            - scylla-data-node3:/var/lib/scylla
+        environment:
+            - SCYLLA_SEEDS=scylla-node1,scylla-node2,scylla-node3
+
+volumes:
+    scylla-data-node1:
+    scylla-data-node2:
+    scylla-data-node3:

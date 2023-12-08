@@ -82,13 +82,16 @@ public class AuthController : ApiController
             .MatchAsync(
                 err => err.ToBadRequest(),
                 _ => returnUrl is not null
-                    ? Url.IsLocalUrl(returnUrl) switch
-                    {
-                        true => Redirect($"{Request.Host.Host}/{returnUrl}"),
-                        _ => Redirect(returnUrl)
-                    }
+                    ? RedirectToUrl(returnUrl)
                     : NoContent());
     }
+
+    private IActionResult RedirectToUrl(string returnUrl)
+        => Url.IsLocalUrl(returnUrl) switch
+        {
+            true => Redirect($"{Request.Host.Host}/{returnUrl}"),
+            _ => Redirect(returnUrl)
+        };
 
     [HttpPost]
     [Route(GoogleSignUpRoute)]
@@ -101,11 +104,7 @@ public class AuthController : ApiController
         => SendAsync<GoogleSignUp, GoogleSignUpResult>(signUp, cancellationToken)
             .MatchAsync(err => err.ToBadRequest(),
                 _ => returnUrl is not null
-                    ? Url.IsLocalUrl(returnUrl) switch
-                    {
-                        true => Redirect($"{Request.Host.Host}/${returnUrl}"),
-                        _ => Redirect(returnUrl)
-                    }
+                    ? RedirectToUrl(returnUrl)
                     : NoContent());
 
     [HttpPost]
@@ -132,11 +131,7 @@ public class AuthController : ApiController
             .MatchAsync(
                 err => err.ToBadRequest(),
                 _ => returnUrl is not null
-                    ? Url.IsLocalUrl(returnUrl) switch
-                    {
-                        true => Redirect($"{Request.Host.Host}/${returnUrl}"),
-                        _ => Redirect(returnUrl)
-                    }
+                    ? RedirectToUrl(returnUrl)
                     : NoContent());
 
     [HttpPost]

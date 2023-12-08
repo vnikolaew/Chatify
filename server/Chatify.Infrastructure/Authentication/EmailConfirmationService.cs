@@ -35,7 +35,7 @@ public sealed class EmailConfirmationService(IServiceScopeFactory scopeFactory,
         Domain.Entities.User user,
         CancellationToken cancellationToken = default)
     {
-        return true;
+        // return true;
 
         var tokenResult = await authenticationService
             .GenerateEmailConfirmationTokenAsync(user.Id, cancellationToken);

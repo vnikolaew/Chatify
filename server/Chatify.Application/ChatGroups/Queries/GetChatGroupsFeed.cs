@@ -16,13 +16,8 @@ public record ChatGroupFeedEntry(
     ChatMessage LatestMessage,
     Domain.Entities.User? MessageSender = default!)
 {
-    public ChatGroup ChatGroup { get; init; }
-    public ChatMessage LatestMessage { get; init; }
-    public Domain.Entities.User? MessageSender { get; init; }
-
     public ChatGroupFeedEntry() : this(new ChatGroup(), new ChatMessage())
     {
-        
     }
 }
 

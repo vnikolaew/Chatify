@@ -2,7 +2,7 @@
 import React from "react";
 import GithubLogin from "react-github-login";
 import * as process from "process";
-import { GithubIcon } from "../../components/icons/GithubIcon";
+import { GithubIcon } from "@icons";
 
 export interface GithubSignInButtonProps {
    onSuccess: (res: { code: string }) => void | Promise<void>;

@@ -4,24 +4,27 @@ CREATE KEYSPACE IF NOT EXISTS chatify
 USE chatify;
 
 // UDTs:
-CREATE TYPE IF NOT EXISTS media (
-    id uuid,
-    media_url text,
-    file_name text,
-    type text,
-    metadata map<text, text>
+CREATE TYPE IF NOT EXISTS media
+    (
+        id        uuid,
+        media_url text,
+        file_name text,
+        type      text,
+        metadata  frozen<map<text, text>>
     );
 
-CREATE TYPE IF NOT EXISTS message_pin (
-    message_id uuid,
-    pinner_id uuid,
-    created_at timestamp,
+CREATE TYPE IF NOT EXISTS message_pin
+    (
+        message_id uuid,
+        pinner_id  uuid,
+        created_at timestamp,
     );
 
-CREATE TYPE IF NOT EXISTS message_replier_info (
-    user_id uuid,
-    username text,
-    profile_picture_url text,
+CREATE TYPE IF NOT EXISTS message_replier_info
+    (
+        user_id             uuid,
+        username            text,
+        profile_picture_url text,
     );
 
 CREATE TABLE IF NOT EXISTS users
@@ -29,7 +32,7 @@ CREATE TABLE IF NOT EXISTS users
     id                    uuid,
     created_at            timestamp,
     username              text,
-    banner_pictures       set<media>,
+    banner_pictures       set<frozen<media>>,
     device_ips            set<blob>,
     display_name          text,
     user_handle           text,
@@ -51,10 +54,38 @@ CREATE TABLE IF NOT EXISTS users
     tokens                list<frozen<tokeninfo>>,
     twofactorenabled      boolean,
     updated_at            timestamp,
-    PRIMARY KEY ((id), created_at)
-) WITH CLUSTERING ORDER BY (created_at desc);
+    PRIMARY KEY ((id))
+);
 
 CREATE INDEX IF NOT EXISTS users_by_user_handle ON users (user_handle);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS users_by_email
+AS
+SELECT *
+FROM chatify.users
+WHERE NormalizedEmail IS NOT NULL
+  AND id IS NOT NULL
+  AND username IS NOT NULL
+PRIMARY KEY (NormalizedEmail, id);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS users_by_username AS
+SELECT *
+FROM chatify.users
+WHERE NormalizedUserName IS NOT NULL
+  AND Id IS NOT NULL
+  AND username IS NOT NULL
+PRIMARY KEY (NormalizedUserName, Id);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS roles_by_name AS
+SELECT *
+FROM chatify.roles
+WHERE NormalizedName IS NOT NULL
+  AND Id IS NOT NULL
+PRIMARY KEY (NormalizedName, Id);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS userclaims_by_type_and_value AS
+    SELECT * FROM chatify.userclaims WHERE Type IS NOT NULL
+    AND Value IS NOT NULL AND userid IS NOT NULL PRIMARY KEY ((Type, Value), UserId);
 
 CREATE TABLE IF NOT EXISTS friends
 (
@@ -240,11 +271,12 @@ CREATE TABLE IF NOT EXISTS chat_message_replies_summaries
 
 CREATE INDEX IF NOT EXISTS chat_message_reply_summaries_message_id_idx on chat_message_replies_summaries (message_id);
 
-CREATE TYPE IF NOT EXISTS attachment_info (
-    absolute_url text,
-    filename text,
-    type text,
-    metadata map<text,text>
+CREATE TYPE IF NOT EXISTS attachment_info
+    (
+        absolute_url text,
+        filename     text,
+        type         text,
+        metadata     map<text,text>
     );
 
 CREATE TABLE IF NOT EXISTS chat_group_attachments

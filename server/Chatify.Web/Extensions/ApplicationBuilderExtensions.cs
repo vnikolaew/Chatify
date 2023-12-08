@@ -25,8 +25,27 @@ public static class ApplicationBuilderExtensions
     }
 
     public static IApplicationBuilder UseConfiguredCors(
-        this IApplicationBuilder app)
-        => app.UseCors(policy =>
+        this IApplicationBuilder app,
+        IWebHostEnvironment environment)
+    {
+        if ( environment.IsProduction() )
+        {
+            return app.UseCors(policy =>
+                policy
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .WithOrigins(
+                        "https://localhost:443",
+                        "https://localhost:443/",
+                        "http://localhost:80",
+                        "http://localhost:80/",
+                        "https://localhost",
+                        "https://localhost/"
+                    )
+                    .AllowCredentials());
+        }
+
+        return app.UseCors(policy =>
             policy
                 .AllowAnyHeader()
                 .AllowAnyMethod()
@@ -36,8 +55,9 @@ public static class ApplicationBuilderExtensions
                     "https://localhost:3000",
                     "https://localhost:3000/",
                     "http://localhost:3000"
-                    )
+                )
                 .AllowCredentials());
+    }
 
     public static IApplicationBuilder UseConfiguredCookiePolicy(
         this IApplicationBuilder app)
@@ -64,13 +84,16 @@ public static class ApplicationBuilderExtensions
         this IApplicationBuilder app,
         IWebHostEnvironment environment,
         string? path = "/static")
-        => app.UseStaticFiles(new StaticFileOptions
+    {
+        var staticFilesDir = Path.Combine(environment.ContentRootPath, StaticFilesDirectoryName);
+        if ( !Directory.Exists(staticFilesDir) ) Directory.CreateDirectory(staticFilesDir);
+
+        return app.UseStaticFiles(new StaticFileOptions
         {
             HttpsCompression = HttpsCompressionMode.Compress,
             FileProvider =
                 new CompositeFileProvider(
-                    new PhysicalFileProvider(
-                        Path.Combine(environment.ContentRootPath, StaticFilesDirectoryName)),
+                    new PhysicalFileProvider(staticFilesDir),
                     new PhysicalFileProvider(Path.Combine(environment.ContentRootPath, "swagger"))),
             RequestPath = path,
             ServeUnknownFileTypes = true,
@@ -86,4 +109,5 @@ public static class ApplicationBuilderExtensions
                 headers.Expires = DateTimeOffset.Now.AddDays(30);
             }
         });
+    }
 }

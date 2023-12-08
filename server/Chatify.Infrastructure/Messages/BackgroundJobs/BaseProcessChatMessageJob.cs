@@ -20,14 +20,14 @@ internal abstract class BaseProcessChatMessageJob<TMessage>(IOpenGraphMetadataEn
 
     // private readonly ILogger<ProcessChatMessageReplyJob> _logger;
 
-    protected abstract Func<Guid, CancellationToken, Task<TMessage?>> GetById { get; init; }
-
     protected readonly IDomainRepository<TMessage, Guid> Messages = messages;
 
     protected readonly IEventDispatcher EventDispatcher = eventDispatcher;
 
     public abstract JobKey JobKey { get; }
 
+    protected abstract Task<TMessage?> GetById(Guid id,
+        CancellationToken cancellationToken = default);
     public async Task Execute(IJobExecutionContext context)
     {
         var message = await GetById(MessageId, context.CancellationToken);

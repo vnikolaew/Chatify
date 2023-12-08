@@ -1,29 +1,38 @@
 ﻿using Cassandra.Mapping;
 using Chatify.Infrastructure.Common.Caching.Extensions;
+using Chatify.Infrastructure.Data.Models;
+using Humanizer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
+using ChatGroupMember = Chatify.Domain.Entities.ChatGroupMember;
 
 namespace Chatify.Infrastructure.Data.Seeding;
 
 internal sealed class CompositeSeeder(IServiceScopeFactory scopeFactory) : ISeeder
 {
     public int Priority => 1;
-
+    
+    private const string CassandraConfigSectionName = "Cassandra";
+    private const string RedisConfigSectionName = "Redis";
+    
+    private const string PurgeCacheConfigName = "PurgeCache";
+    private const string PurgeKeyPatternsConfigName = "PurgeKeyPatterns";
+    
     private static readonly string[] TablesToBeTruncated =
     {
-        "chat_group_members",
-        "chat_group_members_count",
-        "chat_message_replies_summaries",
-        "chat_group_join_requests",
-        "chat_messages_reply_count",
-        "chat_groups",
+        nameof(ChatGroupMember).Pluralize().Underscore(),
+        nameof(ChatGroupMembersCount).Pluralize().Underscore(),
+        nameof(ChatGroupJoinRequest).Pluralize().Underscore(),
+        nameof(ChatGroup).Pluralize().Underscore(),
+        nameof(ChatMessage).Pluralize().Underscore(),
+        nameof(ChatMessageReply).Pluralize().Underscore(),
+        nameof(ChatMessageReplyCount).Pluralize().Underscore(),
+        nameof(ChatMessageReaction).Pluralize().Underscore(),
+        nameof(ChatGroupAttachment).Pluralize().Underscore(),
+        nameof(ChatMessageRepliesSummary).Pluralize().Underscore(),
         "friends",
-        "chat_messages",
-        "chat_message_replies",
-        "chat_message_reactions",
-        "chat_group_attachments",
     };
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
@@ -41,7 +50,6 @@ internal sealed class CompositeSeeder(IServiceScopeFactory scopeFactory) : ISeed
     )
     {
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<CompositeSeeder>>();
-
         var seeders = scope.ServiceProvider
             .GetServices<ISeeder>()
             .Where(s => s is not CompositeSeeder)
@@ -63,7 +71,7 @@ internal sealed class CompositeSeeder(IServiceScopeFactory scopeFactory) : ISeed
     {
         var purgeDb = serviceProvider
             .GetRequiredService<IConfiguration>()
-            .GetSection("Cassandra")
+            .GetSection(CassandraConfigSectionName)
             .GetValue<bool>("PurgeDb");
         if ( purgeDb )
         {
@@ -76,18 +84,20 @@ internal sealed class CompositeSeeder(IServiceScopeFactory scopeFactory) : ISeed
     {
         var cacheConfig = serviceProvider
             .GetRequiredService<IConfiguration>()
-            .GetSection("Redis");
+            .GetSection(RedisConfigSectionName);
 
-        var purgeCache = cacheConfig.GetValue<bool>("PurgeCache");
+        var purgeCache = cacheConfig.GetValue<bool>(PurgeCacheConfigName);
         if ( purgeCache )
         {
             var server = serviceProvider.GetRequiredService<IServer>();
             var cache = serviceProvider.GetRequiredService<IDatabase>();
 
             var keysSection = cacheConfig
-                .GetSection("PurgeKeyPatterns");
+                .GetSection(PurgeKeyPatternsConfigName);
             var keyPatterns = keysSection.Get<string[]>();
-            await PurgeCacheEntries(cache, server, keyPatterns ?? new string[] { }, false);
+            await PurgeCacheEntries(
+                cache, server, keyPatterns ?? Array.Empty<string>(),
+                false);
         }
     }
 
@@ -113,10 +123,13 @@ internal sealed class CompositeSeeder(IServiceScopeFactory scopeFactory) : ISeed
             await cache.DeleteAllKeysByPattern(server, keyPattern);
         }
 
+        var jsonPatterns = new[] { "User:*", "ChatGroup:*" };
         if ( deleteJsonDocuments )
         {
-            await cache.DeleteAllKeysByPattern(server, "User:*");
-            await cache.DeleteAllKeysByPattern(server, "ChatGroup:*");
+            foreach ( var jsonPattern in jsonPatterns )
+            {
+                await cache.DeleteAllKeysByPattern(server, jsonPattern);
+            }
         }
     }
 }

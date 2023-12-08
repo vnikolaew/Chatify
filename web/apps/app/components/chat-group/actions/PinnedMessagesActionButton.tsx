@@ -42,6 +42,14 @@ export const PinnedMessagesActionButton = ({}: {}) => {
             showArrow: true,
             className: `bg-zinc-900 z-20`,
          }}
+         tooltipProps={{
+            size: `sm`,
+            shadow: `sm`,
+            classNames: {
+               base: `text-xs `,
+               content: `text-[10px] h-5`
+            }
+         }}
          isOpen={isOpen}
          onOpenChange={onOpenChange}
          popoverContent={<PinnedMessagesPopover onOpen={onOpen} />}

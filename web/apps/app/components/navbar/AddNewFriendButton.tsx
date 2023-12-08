@@ -15,7 +15,8 @@ const AddNewFriendButton = ({}: AddNewFriendButtonProps) => {
             closeDelay={100}
             delay={100}
             classNames={{
-               base: `text-xs`,
+               base: `text-xs `,
+               content: `text-[10px] h-5`
             }}
             shadow={`sm`}
             size={`sm`}

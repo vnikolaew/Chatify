@@ -35,7 +35,6 @@ public class LocalFileSystemUploadService(
         {
             return Error.New($"Files with extension `{fileExtension}` are not allowed.");
         }
-
         var newFileId = guidGenerator.New();
         var newFileName = singleFileUploadRequest.UserId.HasValue
             ? $"{singleFileUploadRequest.UserId}_{newFileId}_{fileNameWithoutExtension}.{fileExtension}"

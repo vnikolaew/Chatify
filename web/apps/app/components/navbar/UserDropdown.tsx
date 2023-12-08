@@ -71,7 +71,6 @@ export const UserDropdown = ({}: UserDropdownProps) => {
   } = useChangeUserStatusMutation();
 
   const { theme, setTheme } = useTheme();
-  const router = useRouter();
   const [loadingAction, setLoadingAction] = useState<string>(null!);
   const [isStatusPopoverOpen, setIsStatusPopoverOpen] = useState(false);
   const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
@@ -83,9 +82,7 @@ export const UserDropdown = ({}: UserDropdownProps) => {
 
   const handleChangeUserStatus = async (newStatus: string) => {
     setLoadingAction(newStatus);
-    await changeUserStatus({
-      newStatus
-    } as ChangeUserStatusModel);
+    await changeUserStatus({ newStatus } as ChangeUserStatusModel);
     console.log(newStatus);
     setLoadingAction(null!);
     setIsStatusPopoverOpen(false);
@@ -93,8 +90,7 @@ export const UserDropdown = ({}: UserDropdownProps) => {
   const { mutateAsync: signOut } = useSignOutMutation();
 
   const handleSignOut = async () => {
-    await signOut(null!);
-    window.location.reload();
+    signOut(null!).then(_ => window.location.reload());
   };
 
   return (
@@ -168,27 +164,28 @@ export const UserDropdown = ({}: UserDropdownProps) => {
             // @ts-ignore
             href={`/profile`}
             classNames={{
-              description: "text-[.75rem] text-default-300"
+              description: "text-[.6rem] text-default-300 h-6",
+              title: `h-fit text-xs`
             }}
             description={t(`Profile.description`)}
             className={` flex px-3 py-2 text-foreground items-center gap-3`}
             startContent={<ProfileIcon size={18} />}
             key={"profile"}
           >
-            <span className={`text-sm`}>{t(`Profile.title`)}</span>
+            <span className={`text-xs h-auto`}>{t(`Profile.title`)}</span>
           </DropdownItem>
           <DropdownItem
             as={Link}
             href={`/create`}
             // @ts-ignore
-            color={"foreground"}
+            // color={"foreground"}
             textValue={"create-chat-group"}
             endContent={
               <PlusIcon className={`fill-foreground ml-3`} size={20} />
             }
             classNames={{
-              description:
-                "text-[.75rem] text-default-300 hover:text-default-300"
+              description: "text-[.6rem] text-default-300 h-6",
+              title: `h-fit text-xs`
             }}
             description={t(`CreateChatGroup.description`)}
             startContent={
@@ -197,7 +194,7 @@ export const UserDropdown = ({}: UserDropdownProps) => {
             className={`px-3 py-2 text-foreground `}
             key={"create-chat-group"}
           >
-            <span className={`text-small`}>{t(`CreateChatGroup.title`)}</span>
+            <span className={`text-xs`}>{t(`CreateChatGroup.title`)}</span>
           </DropdownItem>
           <DropdownItem textValue={"rsdff"} key={"status-2"}>
             <Popover
@@ -211,7 +208,7 @@ export const UserDropdown = ({}: UserDropdownProps) => {
             >
               <PopoverTrigger className={`px-1`}>
                 <Button
-                  className={`bg-transparent text-small w-full items-center justify-between`}
+                  className={`bg-transparent text-xs w-full items-center justify-between`}
                   size={"sm"}
                   endContent={
                     <RightArrow
@@ -285,7 +282,7 @@ export const UserDropdown = ({}: UserDropdownProps) => {
             className={`px-3 py-2`}
             key={"darkMode"}
           >
-            <span className={`text-small`}>{t(`DarkMode.title`)}</span>
+            <span className={`text-xs`}>{t(`DarkMode.title`)}</span>
           </DropdownItem>
         </DropdownSection>
         <DropdownSection>
@@ -299,7 +296,7 @@ export const UserDropdown = ({}: UserDropdownProps) => {
             variant={"bordered"}
             key={"sign-out"}
           >
-            <span className={`text-small`}>{t(`SignOut.title`)}</span>
+            <span className={`text-xs`}>{t(`SignOut.title`)}</span>
           </DropdownItem>
         </DropdownSection>
         <DropdownSection>
@@ -313,10 +310,9 @@ export const UserDropdown = ({}: UserDropdownProps) => {
             className={`cursor-default`}
           >
                   <span
-                    className={`text-xs leading-2 break-words mt-6 text-default-500`}
+                    className={`text-[.6rem] leading-2 break-words mt-2 text-default-500`}
                   >
-                     Chatify, Inc. © {new Date().getFullYear()}. All <br />
-                     rights reserved.
+                     Chatify, Inc. © {new Date().getFullYear()}. All rights reserved.
                   </span>
           </DropdownItem>
         </DropdownSection>
