@@ -7,39 +7,40 @@ using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Server;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Microsoft.AspNetCore.SignalR;
 using StackExchange.Redis;
 
 namespace Chatify.Infrastructure.Friendships.EventHandlers;
 
 internal sealed class FriendInvitationAcceptedEventHandler(
-        IHubContext<ChatifyHub, IChatifyHubClient> hubContext,
-        INotificationRepository notifications,
-        IUserRepository users,
-        IDatabase cache,
-        IGuidGenerator guidGenerator,
-        IClock clock)
+    IHubContext<ChatifyHub, IChatifyHubClient> hubContext,
+    INotificationRepository notifications,
+    IUserRepository users,
+    IDatabase cache,
+    IGuidGenerator guidGenerator,
+    IClock clock)
     : IEventHandler<FriendInvitationAcceptedEvent>
 {
     public async Task HandleAsync(
         FriendInvitationAcceptedEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var cacheSaveTasks = new Task[]
-        {
-            cache.AddUserFriendAsync(
-                @event.InviterId,
-                @event.InviteeId, @event.Timestamp),
-            cache.AddUserFriendAsync(
-                @event.InviteeId,
-                @event.InviterId,
-                @event.Timestamp),
-        };
-        await Task.WhenAll(cacheSaveTasks);
+        _ = await
+            ( Task<bool>[] )
+            [
+                cache.AddUserFriendAsync(
+                    @event.InviterId,
+                    @event.InviteeId, @event.Timestamp),
+                cache.AddUserFriendAsync(
+                    @event.InviteeId,
+                    @event.InviterId,
+                    @event.Timestamp),
+            ];
 
         var invitee = await users.GetAsync(@event.InviteeId, cancellationToken);
         await CreateAndSaveNotification(@event, invitee, cancellationToken);
-        
+
         await hubContext
             .Clients
             .User(@event.InviterId.ToString())

@@ -27,12 +27,12 @@ const AddNewFriendButton = ({}: AddNewFriendButtonProps) => {
                onPress={console.log}
                href={`/friends`}
                startContent={
-                  <AddUserIcon className={`fill-foreground`} size={20} />
+                  <AddUserIcon className={`fill-foreground`} size={16} />
                }
                radius={"full"}
                isIconOnly
                variant={`solid`}
-               className={`text-xs gap-1 p-4 bg-transparent rounded-full hover:bg-default-200`}
+               className={`text-xs gap-1 bg-transparent rounded-full hover:bg-default-200`}
                size={"md"}
                color={`default`}
             />

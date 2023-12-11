@@ -15,7 +15,7 @@
       "jest",
       "node"
     ],
-     "plugins": [
+    "plugins": [
       {
         "name": "next"
       }
@@ -32,7 +32,8 @@
     "../../apps/app/.next/types/**/*.ts",
     "../../libs/**/*.ts",
     "../../libs/**/*.d.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "../../dist/apps/app/.next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

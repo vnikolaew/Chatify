@@ -29,9 +29,12 @@ const PlaygroundsPage = async (props) => {
       "..",
       "..",
       "..",
+      "..",
       "app",
+      "[locale]",
       "%5Fplaygrounds"
    );
+   console.log({ dir });
 
    const components = fs
       .readdirSync(dir, { encoding: "utf8", withFileTypes: true })

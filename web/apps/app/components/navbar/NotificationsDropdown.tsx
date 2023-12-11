@@ -174,10 +174,10 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
                      color={"danger"}
                      placement={"top-right"}
                   >
-                     <BellIcon className={`fill-foreground`} size={24} />
+                     <BellIcon className={`fill-foreground`} size={16} />
                   </Badge>
                ) : (
-                  <BellIcon className={`fill-foreground`} size={24} />
+                  <BellIcon className={`fill-foreground`} size={16} />
                )
             }
          />

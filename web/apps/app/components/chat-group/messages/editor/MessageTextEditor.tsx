@@ -1,7 +1,7 @@
 "use client";
 import React, { forwardRef, HTMLAttributes, useCallback, useEffect, useMemo, useState } from "react";
-import { DefaultElement, Editable, ReactEditor, Slate, withReact } from "slate-react";
-import { createEditor, Editor, Text, Transforms } from "slate";
+import { DefaultElement, Editable, Slate, withReact } from "slate-react";
+import { createEditor,  Text, Transforms } from "slate";
 import {
    Button,
    Dropdown,
@@ -283,7 +283,7 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                   attachedFilesUrls?.size
                      ? `!min-h-[180px] !max-h-[180px]`
                      : `!min-h-[140px] !max-h-[140px]`
-               } relative text-medium px-6 pt-14 rounded-medium text-white border-default-200 border-1 !active:border-default-300 !focus:border-default-300`}
+               } relative text-sm px-6 pt-14 rounded-medium text-white border-default-200 border-1 !active:border-default-300 !focus:border-default-300`}
                autoFocus
                renderElement={renderElement}
                renderLeaf={renderLeaf}
@@ -348,12 +348,12 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                   <DropdownTrigger className={` `}>
                      <Button
                         variant={"shadow"}
-                        className={`text-foreground p-0`}
+                        className={`text-foreground p-0 h-6 w-6`}
                         color={"primary"}
                         radius={"full"}
                         size={"sm"}
                         startContent={
-                           <span className={`fill-foreground text-medium`}>
+                           <span className={`fill-foreground text-sm`}>
                               +
                            </span>
                         }
@@ -416,8 +416,8 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                      spinner={<Spinner color={"white"} size={"sm"} />}
                      onPress={handleSendMessage}
                      isDisabled={disableSendMessageButton}
-                     className={`z-10 items-center !gap-2 pr-2 text-white`}
-                     size={"md"}
+                     className={`z-10 items-center !gap-2 pr-2 px-3 text-white`}
+                     size={"sm"}
                      {...(!isLoading
                         ? {
                            endContent: (

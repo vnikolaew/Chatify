@@ -124,6 +124,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                         size={"sm"}
                         classNames={{
                            base: `px-2 py-1 text-[.6rem]`,
+                           content: `text-[.6rem] h-4`
                         }}
                         content={t(`ScrollToBottom`)}
                      >

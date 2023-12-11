@@ -45,7 +45,7 @@ const MainNavbar = () => {
       <Navbar
          classNames={{
             item: ["data-[active=true]:text-primary"],
-            base: "py-2",
+            base: "py-1",
          }}
          className={`w-full mx-0 !max-w-[3000px]`}
          isBordered
@@ -61,7 +61,7 @@ const MainNavbar = () => {
                <h2 className={`ml-2 text-foreground`}>Chatify</h2>
             </Link>
          </NavbarBrand>
-         <NavbarContent justify={"end"} className={`flex gap-4`}>
+         <NavbarContent justify={"end"} className={`flex gap-3`}>
             {data?.claims && Object.keys(data?.claims).length ? (
                <Fragment>
                   <NavbarItem className={`mr-4`}>
