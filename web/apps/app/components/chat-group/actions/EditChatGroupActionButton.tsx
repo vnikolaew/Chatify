@@ -15,18 +15,27 @@ import {
 import { ChatGroupDetailsEntry } from "@openapi";
 import { useIsChatGroupPrivate } from "@hooks";
 import { useTranslations } from "next-intl";
+import { useEditChatGroupMutation } from "@web/api";
 
 export interface EditChatGroupActionButtonProps {
    chatGroup: ChatGroupDetailsEntry;
 }
 
 const EditChatGroupActionButton = ({
-   chatGroup,
-}: EditChatGroupActionButtonProps) => {
-   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+                                      chatGroup,
+                                   }: EditChatGroupActionButtonProps) => {
+   const { isOpen, onOpen, onOpenChange,onClose } = useDisclosure();
    const isPrivate = useIsChatGroupPrivate(chatGroup);
+   const [newAbout, setNewAbout] = useState(chatGroup?.chatGroup?.about ?? ``);
+
    const [isDirty, setIsDirty] = useState(false);
-   const t = useTranslations('MainArea.TopBar.Popups');
+   const { mutateAsync: editChatGroup, isLoading: editLoading, error: editError } = useEditChatGroupMutation();
+   const t = useTranslations("MainArea.TopBar.Popups");
+
+   async function handleSaveChanges(e: any): Promise<any> {
+      await editChatGroup({ chatGroupId: chatGroup.chatGroup.id, about: newAbout });
+      onClose()
+   }
 
    return (
       <Fragment>
@@ -40,13 +49,32 @@ const EditChatGroupActionButton = ({
             shadow={`sm`}
             classNames={{
                base: `text-xs `,
-               content: `text-[10px] h-5`
+               content: `text-[10px] h-5`,
             }}
             onClick={onOpenChange}
             icon={<Edit className={`stroke-default-400`} size={20} />}
             content={t(`EditChatGroup`)}
          />
-         <Modal size={`md`} onOpenChange={onOpenChange} isOpen={isOpen}>
+         <Modal motionProps={{
+            variants: {
+               enter: {
+                  y: 0,
+                  opacity: 1,
+                  transition: {
+                     duration: 0.3,
+                     ease: "easeOut",
+                  },
+               },
+               exit: {
+                  y: -20,
+                  opacity: 0,
+                  transition: {
+                     duration: 0.3,
+                     ease: "easeIn",
+                  },
+               },
+            },
+         }} size={`md`} onOpenChange={onOpenChange} isOpen={isOpen}>
             <ModalContent className={`px-2 py-2`}>
                {(onClose) => (
                   <Fragment>
@@ -61,9 +89,11 @@ const EditChatGroupActionButton = ({
                            placeholder={`Best group ever`}
                            onValueChange={(value) => {
                               setIsDirty(true);
+                              setNewAbout(value)
                            }}
                            size={`md`}
                            color={`default`}
+                           value={newAbout}
                            variant={`flat`}
                            classNames={{
                               label: `text-xs`,
@@ -86,7 +116,7 @@ const EditChatGroupActionButton = ({
                         <Button
                            size={`md`}
                            variant={`shadow`}
-                           onPress={onClose}
+                           onPress={handleSaveChanges}
                            isDisabled={!isDirty}
                            color={`default`}
                            className={`ml-2`}

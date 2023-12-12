@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect } from "react";
 import Link from "next/link";
-import { ChatifyClient, useGetChatGroupDetailsQuery, useGetMyClaimsQuery } from "@web/api";
+import { useGetChatGroupDetailsQuery, useGetMyClaimsQuery } from "@web/api";
 import { useIsUserLoggedIn } from "@hooks";
 import { useDisclosure } from "@nextui-org/react";
 import { useCurrentChatGroup } from "@hooks";
@@ -9,7 +9,6 @@ import ChatGroupTopBar from "@components/chat-group/ChatGroupTopBar";
 import { useSearchParams } from "next/navigation";
 import { ChatMessagesSection } from "@components/chat-group";
 import Toast from "@components/common/Toast";
-import { CookieAuthProvider } from "../../../../../libs/api/kiota/api/CookieAuthProvider";
 
 function IndexPage() {
    const params = useSearchParams();

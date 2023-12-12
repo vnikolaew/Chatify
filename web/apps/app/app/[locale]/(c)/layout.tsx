@@ -1,6 +1,4 @@
 import React, { PropsWithChildren } from "react";
-import { cookies } from "next/headers";
-import process from "process";
 import { ChatifyHubInitializer, ChatClientProvider } from "apps/app/hub";
 import MainLayout from "./MainLayout";
 

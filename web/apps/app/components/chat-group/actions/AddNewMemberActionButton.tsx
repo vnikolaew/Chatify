@@ -40,7 +40,7 @@ export const AddNewMemberActionButton = ({}: AddNewMemberActionButtonProps) => {
                content: `text-[10px] h-5`,
             },
          }}
-         popoverProps={{ placement: `bottom` }}
+         popoverProps={{ placement: `bottom`, showArrow: true }}
          tooltipContent={t(`AddNewMember`)}
          icon={<AddUserIcon fill={"white"} size={20} />}
       />
@@ -57,7 +57,7 @@ const AddNewMemberPopover = () => {
 
 
    return (
-      <div className={`flex py-3 flex-col items-start gap-3`}>
+      <div className={`flex py-3 px-2 flex-col items-start gap-3`}>
          {isLoading && (
             <Fragment>
                {Array.from({ length: 5 }).map((_, i) => (
