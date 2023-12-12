@@ -2,6 +2,11 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import process from "process";
+
+export function __IS_DEV__() {
+   return process.env.NODE_ENV === "development";
+}
 
 export function hexToDecimal(hexString: string) {
    // Remove any leading "0x" if present

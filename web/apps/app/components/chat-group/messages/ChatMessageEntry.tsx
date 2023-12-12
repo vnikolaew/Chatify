@@ -1,8 +1,7 @@
 "use client";
 import { ChatGroupMessageEntry } from "@openapi";
 import {
-   Avatar, Button,
-   Chip,
+   Avatar, AvatarGroup, Button,
    Link,
    Tooltip,
    useDisclosure,
@@ -52,7 +51,7 @@ export const ChatMessageEntry = React.forwardRef<HTMLDivElement, ChatMessageEntr
    const meId = useCurrentUserId();
    const [isEditingMessage, setIsEditingMessage] = useState(false);
    const messageEntryRef = useClickAway<HTMLDivElement>((e) => {
-      if(isEditingMessage) setIsEditingMessage(false);
+      if (isEditingMessage) setIsEditingMessage(false);
    });
 
    const {
@@ -99,7 +98,7 @@ export const ChatMessageEntry = React.forwardRef<HTMLDivElement, ChatMessageEntr
       <div
          className={`w-full rounded-lg transition-background duration-100 hover:bg-default-100 ${isPinned && `bg-warning-50 bg-opacity-80`}`}
          ref={node => {
-            if(ref?.current)  ref.current = node;
+            if (ref?.current) ref.current = node;
             messageEntryRef.current = node;
          }}>
          <div
@@ -162,7 +161,7 @@ export const ChatMessageEntry = React.forwardRef<HTMLDivElement, ChatMessageEntr
                         }
                      >
                         <Link
-                           className={`text-small cursor-pointer`}
+                           className={`text-xs cursor-pointer`}
                            underline={"hover"}
                            color={`foreground`}
                         >
@@ -175,7 +174,7 @@ export const ChatMessageEntry = React.forwardRef<HTMLDivElement, ChatMessageEntr
                            )}
                         </Link>
                      </Tooltip>
-                     <Time value={message.message.createdAt} className={`text-xs font-light text-default-500`} />
+                     <Time value={message.message.createdAt} className={`text-[.6rem] font-light text-default-500`} />
                   </div>
                   {isEditingMessage ? (
                      <div className={`flex flex-col gap-1 w-full min-w-[600px]`}>
@@ -193,7 +192,7 @@ export const ChatMessageEntry = React.forwardRef<HTMLDivElement, ChatMessageEntr
                   ) : (
                      <Fragment>
                <span
-                  className={`max-w-[500px] leading-5 text-[0.8rem] text-foreground-500 mt-1 ${
+                  className={`max-w-[500px] leading-4 text-[0.75rem] text-foreground-500 mt-0 ${
                      !hasReplies && `mb-0`
                   }`}
                   dangerouslySetInnerHTML={{ __html: message.message.content }}
@@ -218,39 +217,24 @@ export const ChatMessageEntry = React.forwardRef<HTMLDivElement, ChatMessageEntr
                   }
                   {hasReplies && (
                      <div
-                        className={`max-w-[500px] mt-1 flex items-center gap-0 text-small text-default-300`}
+                        className={`max-w-[500px] mt-1 flex items-end gap-0 text-small text-default-300`}
                      >
-                        <Chip
-                           className={`py-1 mt-1 flex items-center`}
-                           size={"sm"}
-                           variant={"faded"}
-                           color={"default"}
-                        >
-                           <div className={`flex items-center gap-1`}>
-                              {message.repliersInfo.replierInfos
-                                 .slice(0, 3)
-                                 .map((replier, i) => (
-                                    <Avatar
-                                       classNames={{
-                                          base: "w-5 h-5",
-                                       }}
-                                       color={"success"}
-                                       radius={"sm"}
-                                       className={`w-5 h-5`}
-                                       src={replier.profilePictureUrl}
-                                       size={"sm"}
-                                       key={replier.userId}
-                                    />
-                                 ))}
-                              {message.repliersInfo.replierInfos.length > 3 && (
-                                 <div
-                                    className={`rounded-md flex items-center justify-center bg-black text-xs w-5 h-5 text-foreground`}
-                                 >
-                                    +{message.repliersInfo.replierInfos.length - 3}
-                                 </div>
-                              )}
-                           </div>
-                        </Chip>
+                        <AvatarGroup className={`mt-1`} size={`sm`} radius={`full`} color={`default`} max={3}
+                                     isBordered>
+                           {message.repliersInfo.replierInfos
+                              .slice(0, 3)
+                              .map((replier, i) => (
+                                 <Avatar
+                                    classNames={{
+                                       base: "w-5 h-5",
+                                    }}
+                                    className={`w-5 h-5`}
+                                    src={replier.profilePictureUrl}
+                                    size={"sm"}
+                                    key={replier.userId}
+                                 />
+                              ))}
+                        </AvatarGroup>
                         <div className={`self-end`}>
                            <ExpandRepliesLink
                               onPress={(_) => setRepliesExpanded(!repliesExpanded)}
@@ -258,13 +242,14 @@ export const ChatMessageEntry = React.forwardRef<HTMLDivElement, ChatMessageEntr
                               totalReplies={message.repliersInfo.total}
                            />
                         </div>
+                        <div className={`mx-2 mt-1 h-[2px] w-[2px] bg-default-400 rounded-full self-center`} />
                         <div className={`self-end`}>
-                        <span className={`text-xs text-default-400 ml-2`}>
-                           Last reply{" "}
-                           {moment(
-                              new Date(message.repliersInfo.lastUpdatedAt),
-                           ).fromNow()}
-                        </span>
+                           <span className={`text-xxs text-default-400`}>
+                              Last reply{" "}
+                              {moment(
+                                 new Date(message.repliersInfo.lastUpdatedAt),
+                              ).fromNow()}
+                           </span>
                         </div>
                      </div>
                   )}

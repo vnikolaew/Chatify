@@ -15,6 +15,8 @@ riderModule.iml
 
 # dependencies
 /web/node_modules
+/web/libs/api/kiota
+/server/Playgrounds
 
 # IDEs and editors
 /.idea

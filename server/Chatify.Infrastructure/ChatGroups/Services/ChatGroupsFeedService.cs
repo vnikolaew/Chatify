@@ -10,10 +10,10 @@ using StackExchange.Redis;
 namespace Chatify.Infrastructure.ChatGroups.Services;
 
 internal sealed class ChatGroupsFeedService(
-        IDatabase cache,
-        IChatMessageRepository messages,
-        IChatGroupRepository groups,
-        IUserRepository users)
+    IDatabase cache,
+    IChatMessageRepository messages,
+    IChatGroupRepository groups,
+    IUserRepository users)
     : IChatGroupsFeedService
 {
     private static readonly Faker<ChatGroupFeedEntry> FeedEntryFaker
@@ -33,7 +33,8 @@ internal sealed class ChatGroupsFeedService(
                 Email = f.Internet.Email(),
                 ProfilePicture = new Media { Id = Guid.NewGuid(), MediaUrl = f.Internet.Avatar() }
             })
-            .RuleFor(e => e.ChatGroup, (f, e) => new ChatGroup
+            .RuleFor(e => e.ChatGroup, (f,
+                e) => new ChatGroup
             {
                 Id = Guid.NewGuid(),
                 CreatedAt = f.Date.Past(1),
@@ -50,19 +51,18 @@ internal sealed class ChatGroupsFeedService(
         CancellationToken cancellationToken = default)
     {
         // Get feed with group ids from cache sorted set:
-        var groupIds  = await cache.GetUserFeedAsync(
+        var groupIds = await cache.GetUserFeedAsync(
             userId,
             offset, limit);
         if ( !groupIds.Any() ) return FeedEntryFaker.Generate(10);
 
-        var feedGroups = await groups
-            .GetByIds(groupIds, cancellationToken);
+        var (feedGroups, feedMessagesDict) = await (
+            groups.GetByIds(groupIds, cancellationToken),
+            messages.GetLatestForGroups(groupIds, cancellationToken)
+        );
 
         // Query DB to get last message for each Chat Group:
-        var feedMessages = ( await messages
-                .GetLatestForGroups(groupIds, cancellationToken) )
-            .Values
-            .ToList();
+        var feedMessages = feedMessagesDict.Values.ToList();
 
         // Query cache for Message Sender info:
         var messageSenderIds = feedMessages
@@ -70,19 +70,24 @@ internal sealed class ChatGroupsFeedService(
             .Select(m => m!.UserId)
             .Distinct()
             .ToList();
+        
         var userInfos = await users.GetByIds(messageSenderIds, cancellationToken);
 
         var entries = feedGroups
             .ZipOn(feedMessages,
-                r => r.Id,
-                m => m?.ChatGroupId,
-                (group, message) => new ChatGroupFeedEntry { ChatGroup = group, LatestMessage = message });
-
-        return entries.ZipOn(userInfos,
-                e => e.LatestMessage?.UserId,
-                u => u.Id,
-                (e, user) => e with { MessageSender = user })
-            .OrderByDescending(e => e.LatestMessage?.CreatedAt)
+                r => r!.Id,
+                m => m!.ChatGroupId,
+                (group,
+                    message) => new ChatGroupFeedEntry { ChatGroup = group!, LatestMessage = message! })
+            .Cast<ChatGroupFeedEntry>()
             .ToList();
+
+        return entries.ZipOn(userInfos!,
+                e => e!.LatestMessage.UserId,
+                u => u.Id,
+                (e,
+                    user) => e! with { MessageSender = user })
+            .OrderByDescending(e => e!.LatestMessage.CreatedAt)
+            .ToList()!;
     }
 }

@@ -17,7 +17,7 @@ export const ExpandRepliesLink = ({
 }: ExpandRepliesLinkProps) => {
    return expanded ? (
       <Link
-         className={`text-xs cursor-pointer ml-2`}
+         className={`cursor-pointer text-[.6rem] ml-2`}
          onPress={onPress}
          underline={"hover"}
          color={"primary"}
@@ -31,7 +31,8 @@ export const ExpandRepliesLink = ({
          delay={TOOLTIP_DELAY}
          closeDelay={TOOLTIP_DELAY}
          classNames={{
-            base: `text-xs px-3 py-0`,
+            base: `text-xxs px-3 py-0`,
+            content: `h-4 text-xxs`
          }}
          placement={"bottom"}
          color={"default"}
@@ -39,7 +40,7 @@ export const ExpandRepliesLink = ({
          size={"sm"}
       >
          <Link
-            className={`text-xs cursor-pointer ml-2`}
+            className={`text-[.6rem] cursor-pointer ml-2`}
             onPress={onPress}
             underline={"hover"}
             color={"primary"}

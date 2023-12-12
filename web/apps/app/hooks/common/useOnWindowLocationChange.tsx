@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 
 export function useOnWindowLocationChange(
-   callback: (e: Event) => void | Promise<void>
+   callback: (e: Event) => void | Promise<void>,
 ) {
+   const eventName = `pushState`;
+
    useEffect(() => {
-      window.addEventListener("pushState", callback);
-      return () => window.removeEventListener(`pushState`, callback);
+      window.addEventListener(eventName, callback);
+      return () => window.removeEventListener(eventName, callback);
    }, []);
 }

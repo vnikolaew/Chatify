@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from "react";
+import React, { Fragment, useMemo } from "react";
 import { ChatGroupFeedEntry } from "@openapi";
 import { Avatar, Button, Skeleton } from "@nextui-org/react";
 import moment from "moment";
@@ -17,6 +17,7 @@ import {
    useCurrentUserId,
    useGetUsersTyping,
 } from "@hooks";
+import { Time } from "@components/common";
 
 export interface ChatGroupFeedEntryProps {
    feedEntry: ChatGroupFeedEntry;
@@ -35,14 +36,14 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
    const client = useQueryClient();
    const meId = useCurrentUserId();
    const groupId = useCurrentChatGroup();
-   const usersTyping = useGetUsersTyping(feedEntry.chatGroup.id);
+   const usersTyping = useGetUsersTyping(feedEntry?.chatGroup?.id);
    const isActive = useMemo(
-      () => feedEntry.chatGroup.id === groupId,
-      [groupId, feedEntry.chatGroup.id],
+      () => feedEntry?.chatGroup?.id === groupId,
+      [groupId, feedEntry?.chatGroup?.id],
    );
 
    const handlePrefetchGroupDetails = async () => {
-      await client.prefetchQuery(["chat-group", feedEntry.chatGroup.id], {
+      await client.prefetchQuery(["chat-group", feedEntry?.chatGroup?.id], {
          queryFn: ({ queryKey: [_, id] }) =>
             getChatGroupDetails({ chatGroupId: id }),
          staleTime: 30 * 60 * 1000,
@@ -93,7 +94,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
          onMouseEnter={async (_) => await handlePrefetchGroupDetails()}
          color={"default"}
          as={Link}
-         href={`?c=${feedEntry.chatGroup.id}`}
+         href={`?c=${feedEntry?.chatGroup?.id}`}
          size={"lg"}
          variant={"light"}
          radius={"md"}
@@ -104,11 +105,11 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
          } items-center cursor-pointer w-full gap-4 p-3`}
       >
          <Avatar
-            fallback={<Skeleton className={`h-12 w-12 rounded-full`} />}
+            fallback={<Skeleton className={`h-10 w-10 rounded-full`} />}
             isBordered
             radius={"full"}
             color={"primary"}
-            size={"lg"}
+            size={"md"}
             className={`aspect-square ml-2 object-cover`}
             src={getMediaUrl(
                isPrivateGroup
@@ -117,15 +118,15 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
             )}
          />
          <div
-            className={`flex flex-1 flex-col justify-evenly items-center gap-1`}
+            className={`flex flex-1 flex-col justify-evenly items-center gap-0`}
          >
             <div className={`flex w-full gap-2 items-center justify-between`}>
-               <span className="text-medium w-3/4 truncate font-semibold text-default-800">
+               <span className="text-sm w-3/4 truncate font-semibold text-default-800">
                   {isPrivateGroup
                      ? user?.user?.username
                      : feedEntry?.chatGroup?.name?.substring(0, 20)}
                </span>
-               <time className={`text-xs font-light text-default-500`}>
+               <time className={`text-xxs font-light text-default-500`}>
                   {feedEntry?.latestMessage?.createdAt
                      ? formatDate(feedEntry.latestMessage.createdAt)
                      : "-"}
@@ -155,32 +156,33 @@ const ChatFeedEntryMessageSummary = ({
                                         meId,
                                         isPrivateGroup,
                                      }: ChatFeedEntryMessageSummaryProps) => {
+   const messageSenderId = feedEntry.latestMessage?.userId;
+
    return (
       <div className={`w-full flex items-center gap-1 h-4 rounded-full`}>
-         {isPrivateGroup && feedEntry.latestMessage.userId === meId && (
+         {isPrivateGroup && messageSenderId === meId && (
             <span className={`text-xs text-default-400 font-semibold`}>
-                     You:
-                  </span>
+               You:
+            </span>
          )}
-         {isPrivateGroup && feedEntry.latestMessage.userId !== meId && (
-            <span className={`text-xs text-default-400 font-semibold`}>
-                  </span>
-         )}
-
-         {!isPrivateGroup && feedEntry.latestMessage.userId === meId && (
-            <span className={`text-xs text-default-400 font-semibold`}>
-                     You:
-                  </span>
+         {isPrivateGroup && messageSenderId !== meId && (
+            <Fragment />
          )}
 
-         {!isPrivateGroup && feedEntry.latestMessage.userId !== meId && (
+         {!isPrivateGroup && messageSenderId === meId && (
             <span className={`text-xs text-default-400 font-semibold`}>
-                     {feedEntry.messageSender?.username}:
-                  </span>
+               You:
+            </span>
+         )}
+
+         {!isPrivateGroup && messageSenderId !== meId && (
+            <span className={`text-xs text-default-400 font-semibold`}>
+               {feedEntry.messageSender?.username}:
+            </span>
          )}
 
          <p
-            className={`text-xs font-normal w-full truncate leading-3 text-default-500`}
+            className={`text-[.7rem] font-normal w-full truncate leading-3 text-default-500`}
             dangerouslySetInnerHTML={{
                __html: messageSummary,
             }}

@@ -12,6 +12,7 @@ import {
 import { useCurrentUserId } from "@hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import { DEFAULT_STALE_TIME } from "@web/api";
 
 export interface ChatGroupMembersTabProps {
    chatGroupId: string;
@@ -24,23 +25,18 @@ const ChatGroupMembersTab = ({ chatGroupId }: ChatGroupMembersTabProps) => {
    const t = useTranslations(`Sidebar.StatusTypes`);
 
    const meId = useCurrentUserId();
-   const isCurrentUserGroupAdmin = useMemo(
-      () => data && meId && data?.chatGroup?.adminIds?.some((_) => _ === meId),
-      [data, meId]
-   );
    const client = useQueryClient();
    const membersByCategory = useMembersByCategory(
       data?.members,
       data?.chatGroup?.adminIds
    );
-   console.log({membersByCategory});
 
    const handlePrefetchUserDetails = async (userId: string) => {
       console.log(`Fetching data for user ${userId} ...`);
 
       await client.prefetchQuery([USER_DETAILS_KEY, userId], {
          queryFn: ({ queryKey: [_, id] }) => getUserDetails({ userId: id }),
-         staleTime: 60 * 1000,
+         staleTime: DEFAULT_STALE_TIME,
       });
    };
 

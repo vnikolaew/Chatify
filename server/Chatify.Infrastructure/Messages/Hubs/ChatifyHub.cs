@@ -5,10 +5,8 @@ using Chatify.Infrastructure.Messages.Hubs.Models.Server;
 using Chatify.Shared.Abstractions.Contexts;
 using LanguageExt;
 using LanguageExt.Common;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Chatify.Infrastructure.Messages.Hubs;
 

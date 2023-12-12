@@ -7,60 +7,60 @@ using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Server;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
 namespace Chatify.Infrastructure.ChatGroups.EventHandlers;
 
-internal sealed class ChatGroupMemberRemovedEventHandler(IDomainRepository<Domain.Entities.ChatGroup, Guid> groups,
-        ILogger<ChatGroupMemberRemovedEventHandler> logger,
-        ICounterService<ChatGroupMembersCount, Guid> membersCounts,
-        IHubContext<ChatifyHub, IChatifyHubClient> chatifyHubContext,
-        IIdentityContext identityContext,
-        IDatabase cache)
+internal sealed class ChatGroupMemberRemovedEventHandler(
+    IDomainRepository<Domain.Entities.ChatGroup, Guid> groups,
+    ILogger<ChatGroupMemberRemovedEventHandler> logger,
+    ICounterService<ChatGroupMembersCount, Guid> membersCounts,
+    IHubContext<ChatifyHub, IChatifyHubClient> chatifyHubContext,
+    IIdentityContext identityContext,
+    IDatabase cache)
     : IEventHandler<ChatGroupMemberRemovedEvent>
 {
+    public async Task HandleAsync(
+        ChatGroupMemberRemovedEvent @event,
+        CancellationToken cancellationToken = default)
+    {
+        var group = await groups.GetAsync(@event.GroupId, cancellationToken);
+        if ( group is null ) return;
 
-   public async Task HandleAsync(
-      ChatGroupMemberRemovedEvent @event,
-      CancellationToken cancellationToken = default)
-   {
-      var group = await groups.GetAsync(@event.GroupId, cancellationToken);
-      if ( group is null ) return;
+        var membersCount = await membersCounts.Decrement(group.Id, cancellationToken: cancellationToken);
+        logger.LogInformation("Decremented Membership count for Chat Group with Id '{Id}' to {Count} ",
+            @event.GroupId, membersCount?.MembersCount);
 
-      var membersCount = await membersCounts.Decrement(group.Id, cancellationToken: cancellationToken);
-      logger.LogInformation("Decremented Membership count for Chat Group with Id '{Id}' to {Count} ",
-         @event.GroupId, membersCount?.MembersCount);
+        // Remove new member to cache set as well:
+        var memberId = @event.MemberId;
+        var successes = await
+            ( Task<bool>[] )
+            [
+                // Remove user from `group-members` set
+                cache.RemoveGroupMemberAsync(group.Id, memberId),
 
-      // Remove new member to cache set as well:
-      var memberId = @event.MemberId;
+                // Remove `group entry` user feed sorted set
+                cache.RemoveUserFeedEntryAsync(memberId, group.Id)
+            ];
 
-      var cacheRemoveTasks = new[]
-      {
-          // Remove user from `group-members` set
-         cache.RemoveGroupMemberAsync(group.Id, memberId),
-         
-          // Remove `group entry` user feed sorted set
-          cache.RemoveUserFeedEntryAsync(memberId, group.Id)
-      };
-      
-      var success = await Task.WhenAll(cacheRemoveTasks);
-      if ( success.All(_ => _) )
-      {
-         logger.LogInformation(
-            "Successfully pruned cache entries for User {UserId}",
-            @event.MemberId);
-      }
+        if ( successes.All(_ => _) )
+        {
+            logger.LogInformation(
+                "Successfully pruned cache entries for User {UserId}",
+                @event.MemberId);
+        }
 
-      await chatifyHubContext
-         .Clients
-         .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
-         .ChatGroupMemberRemoved(new ChatGroupMemberRemoved(
-            @event.GroupId,
-            @event.RemovedById,
-            @event.MemberId,
-            identityContext.Username,
-            @event.Timestamp));
-   }
+        await chatifyHubContext
+            .Clients
+            .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
+            .ChatGroupMemberRemoved(new ChatGroupMemberRemoved(
+                @event.GroupId,
+                @event.RemovedById,
+                @event.MemberId,
+                identityContext.Username,
+                @event.Timestamp));
+    }
 }

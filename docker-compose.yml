@@ -1,0 +1,126 @@
+version: "3.9"
+
+services:
+   chatify-web:
+      build:
+         context: ./web
+         dockerfile: Dockerfile
+      networks:
+         default:
+      environment:
+         - NEXT_PUBLIC_BACKEND_API_URL=http://chatify-server:8080/api
+      ports:
+         - "3000:3000"
+   caddy:
+      image: caddy
+      ports:
+         - "80:80"
+         - "443:443"
+      volumes:
+         - ./web/caddy/Caddyfile:/etc/caddy/Caddyfile
+         - ./web/caddy/localhost-cert.pem:/etc/caddy/localhost-cert.pem
+         - ./web/caddy/localhost-key.pem:/etc/caddy/localhost-key.pem
+      networks:
+         default:
+   jaeger:
+      image: jaegertracing/all-in-one:1.6
+      container_name: jaeger
+      ports:
+         - "5775:5775/udp"
+         - "6831:6831/udp"
+         - "6832:6832/udp"
+         - "5778:5778"
+         - "16686:16686"
+         - "14268:14268"
+         - "9411:9411"
+      environment:
+         - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+      networks:
+         default:
+   redis:
+      image: redis/redis-stack:latest
+      container_name: redis
+      networks:
+         - default
+      ports:
+         - "6379:6379"
+      volumes:
+         - redis-data:/data
+   web-server:
+      build:
+         context: ./server
+         dockerfile: Dockerfile
+      container_name: chatify-server
+      environment:
+         - ASPNETCORE_URLS=http://+:8080
+         - ASPNETCORE_ENVIRONMENT=Production
+         - Redis__Endpoint=redis:6379
+         - Cassandra__ContactPoints:0=scylla1
+         - Cassandra__Port=9042
+         - UseSeeding=true
+      networks:
+         - default
+      depends_on:
+         - redis
+         - scylla1
+         - scylla2
+         - scylla3
+         - jaeger
+      expose:
+         - "8080"
+      ports:
+         - "8090:8080"
+         - "7139:7139"
+      restart: on-failure
+   scylla1:
+      image: scylladb/scylla
+      container_name: scylla1
+      ports:
+         - "9042:9042" # ScyllaDB CQL port
+      volumes:
+         - scylla-data-node1:/var/lib/scylla
+      networks:
+         - default
+      restart: always
+      command: "--smp 2"
+      environment:
+         - SCYLLA_SEEDS=scylla1,scylla2,scylla3
+   scylla2:
+      image: scylladb/scylla
+      container_name: scylla2
+      command: "--smp 2 --seeds scylla1"
+      ports:
+         - "9043:9042" # ScyllaDB CQL port
+      volumes:
+         - scylla-data-node2:/var/lib/scylla
+      restart: always
+      depends_on:
+         - scylla1
+      networks:
+         - default
+      environment:
+         - SCYLLA_SEEDS=scylla1,scylla2,scylla3
+
+   scylla3:
+      image: scylladb/scylla
+      container_name: scylla3
+      command: "--smp 2 --seeds scylla1"
+      ports:
+         - "9044:9042" # ScyllaDB CQL port
+      volumes:
+         - scylla-data-node3:/var/lib/scylla
+      restart: always
+      depends_on:
+         - scylla1
+      networks:
+         - default
+      environment:
+         - SCYLLA_SEEDS=scylla1,scylla2,scylla3
+
+volumes:
+   scylla-data-node1:
+   scylla-data-node2:
+   scylla-data-node3:
+   redis-data:
+networks:
+   default:

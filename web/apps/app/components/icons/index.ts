@@ -15,4 +15,5 @@ export * from "./ProfileIcon";
 export * from "./RightArrow";
 export * from "./UploadIcon";
 export * from "./SearchIcon";
+export { CircleMinusIcon } from "./CircleMinusIcon";
 export * from "./PinOffIcon";

@@ -94,7 +94,7 @@ export const ChatMessageReactionSection = ({
       }
    };
    return (
-      <div className={`items-center mt-1 flex gap-1`}>
+      <div className={`items-center mt-2 flex gap-1`}>
          {Object.entries(reactionCounts ?? {}).map(
             ([reactionCode, count], i) => (
                <Tooltip
@@ -116,7 +116,7 @@ export const ChatMessageReactionSection = ({
                   }
                >
                   <Button
-                     className={`px-2 min-w-fit max-w-fit w-fit items-center justify-center h-5 py-0`}
+                     className={`px-2 min-w-fit max-w-fit w-fit items-center justify-center h-4 py-0`}
                      onMouseEnter={handleFetchReactions}
                      onPress={(_) => handleReactToMessage(Number(reactionCode))}
                      size={"sm"}
@@ -163,7 +163,7 @@ export const ChatMessageReactionSection = ({
             }
          >
             <Button
-               className={`px-2 min-w-fit max-w-fit w-fit items-center justify-center h-5 py-0`}
+               className={`px-2 min-w-fit max-w-fit w-fit items-center justify-center h-4 py-0`}
                isIconOnly
                onMouseEnter={handleFetchReactions}
                startContent={

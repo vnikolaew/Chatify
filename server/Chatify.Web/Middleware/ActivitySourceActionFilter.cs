@@ -5,15 +5,21 @@ namespace Chatify.Web.Middleware;
 
 public class ActivitySourceActionFilter : IAsyncActionFilter
 {
+    private const string ActivitySourceName = "Chatify";
+
     public async Task OnActionExecutionAsync(
         ActionExecutingContext context,
         ActionExecutionDelegate next)
     {
-        var source = new ActivitySource("Chatify");
-        using var activity = source.StartActivity();
-        
-        activity.SetTag("request.path", context.HttpContext.Request.Path);
+        using var activity = GetActivity();
+        activity?.SetTag("request.path", context.HttpContext.Request.Path);
 
         await next();
+    }
+
+    private static Activity? GetActivity()
+    {
+        var source = new ActivitySource(ActivitySourceName);
+        return source.StartActivity();
     }
 }

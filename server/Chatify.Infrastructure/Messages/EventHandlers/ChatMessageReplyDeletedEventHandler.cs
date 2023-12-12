@@ -7,7 +7,6 @@ using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Server;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
-using LanguageExt.ClassInstances.Const;
 using Microsoft.AspNetCore.SignalR;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 

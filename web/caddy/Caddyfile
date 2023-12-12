@@ -1,0 +1,13 @@
+localhost {
+   reverse_proxy * http://chatify-web:3000
+
+   encode gzip
+   header -Server
+   tls /etc/caddy/localhost-cert.pem /etc/caddy/localhost-key.pem {
+   }
+
+   log {
+      output stdout
+      format console
+   }
+}
