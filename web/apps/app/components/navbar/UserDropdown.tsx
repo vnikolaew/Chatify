@@ -14,7 +14,7 @@ import {
    ListboxItem,
    Popover,
    PopoverContent,
-   PopoverTrigger,
+   PopoverTrigger, Select, SelectItem,
    Spinner,
    Switch,
 } from "@nextui-org/react";
@@ -81,11 +81,9 @@ export const UserDropdown = ({}: UserDropdownProps) => {
    }, [isDropdownMenuOpen]);
 
    const handleChangeUserStatus = async (newStatus: string) => {
-      console.log(`We're here.`);
       setLoadingAction(newStatus);
 
       await changeUserStatus({ newStatus } as ChangeUserStatusModel);
-      console.log(newStatus);
 
       setLoadingAction(null!);
       setIsStatusPopoverOpen(false);
@@ -153,6 +151,7 @@ export const UserDropdown = ({}: UserDropdownProps) => {
                }
                if (key === "status") {
                   console.log("im here");
+                  setIsDropdownMenuOpen(true);
                }
                if (key === "create-chat-group") {
                   setIsDropdownMenuOpen(false);
@@ -199,14 +198,13 @@ export const UserDropdown = ({}: UserDropdownProps) => {
                >
                   <span className={`text-xs`}>{t(`CreateChatGroup.title`)}</span>
                </DropdownItem>
-               <DropdownItem onClick={e => console.log(`Click!`)} textValue={"rsdff"} key={"status-2"}>
+               <DropdownItem textValue={"rsdff"} key={"status"}>
                   <Popover
                      color={"default"}
                      size={"sm"}
                      // keep popover open while request is in-flight:
                      isOpen={changeStatusLoading || isStatusPopoverOpen}
                      onOpenChange={open => {
-                        console.log(`Click!`);
                         if (isStatusPopoverOpen) setIsStatusPopoverOpen(false);
                         else {
                            // setIsDropdownMenuOpen(open)
@@ -239,7 +237,6 @@ export const UserDropdown = ({}: UserDropdownProps) => {
                      <PopoverContent>
                         <Listbox
                            onSelectionChange={console.log}
-                           onAction={handleChangeUserStatus}
                            className={`w-[140px] px-0 py-1`}
                            selectionMode={"single"}
                            variant={"solid"}
@@ -254,6 +251,7 @@ export const UserDropdown = ({}: UserDropdownProps) => {
                                     // color={color}
                                     variant={"shadow"}
                                     selectedIcon={null!}
+                                    onClick={_ => handleChangeUserStatus(status)}
                                     // className={`w-[140px]`}
                                     classNames={{
                                        wrapper: "w-[300px]",

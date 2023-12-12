@@ -23,6 +23,8 @@ import MessageTextEditor from "@components/chat-group/messages/editor/MessageTex
 import MembersTypingSection from "@components/chat-group/messages/MembersTypingSection";
 import ChatMessageEntries from "@components/chat-group/messages/ChatMessageEntries";
 import { useTranslations } from "next-intl";
+import SadFaceIcon from "@components/icons/SadFaceIcon";
+import { Meh } from "lucide-react";
 
 export interface ChatMessagesSectionProps {
    groupId: string;
@@ -64,6 +66,11 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
       { enabled: !!groupId },
    );
    console.log({ messages });
+   const groupHasNoMessages = useMemo(() =>
+         messages?.pages?.length === 1
+         && messages?.pages[0].items.length === 0
+         && !messages?.pages[0].hasMore,
+      [messages?.pages, messages?.pages[0].items.length]);
 
    const showConversationBeginningMessage = useMemo(
       () =>
@@ -124,7 +131,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                         size={"sm"}
                         classNames={{
                            base: `px-2 py-1 text-[.6rem]`,
-                           content: `text-[.6rem] h-4`
+                           content: `text-[.6rem] h-4`,
                         }}
                         content={t(`ScrollToBottom`)}
                      >
@@ -153,9 +160,9 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                      className={`w-full relative`}
                      orientation={"vertical"}
                   >
-                     {showConversationBeginningMessage && (
+                     {!groupHasNoMessages && showConversationBeginningMessage && (
                         <div
-                           className={`w-full flex justify-center gap-4 text-center items-center my-8`}
+                           className={`w-full flex justify-center gap-2 text-center items-center my-8`}
                         >
                            <StartupRocketIcon
                               className={`fill-default-400`}
@@ -163,6 +170,21 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                            />
                            <span className={`text-medium text-default-400`}>
                               {t(`ConversationBeginningMessage`)}
+                           </span>
+                        </div>
+                     )}
+                     {!isLoading && groupHasNoMessages && (
+                        <div
+                           className={`w-full flex justify-center gap-2 text-center items-center my-8`}
+                        >
+                           <Meh
+                              className={`text-default-400`}
+                              size={24}
+                           />
+                           <span
+                              className={`text-medium text-default-400`}
+                           >
+                              Group has no messages yet. Be the first one to text.
                            </span>
                         </div>
                      )}

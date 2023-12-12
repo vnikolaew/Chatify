@@ -12,7 +12,7 @@ import {
    // @ts-ignore
 } from "@openapi";
 import { GetMyClaimsResponse } from "../../../auth";
-import { CursorPaged } from "../../../../../openapi/common/CursorPaged";
+import { CursorPaged } from "@openapi";
 import { produce } from "immer";
 import { GET_PAGINATED_GROUP_MESSAGES_KEY } from "../../../messages";
 import { GET_ALL_REACTIONS_KEY } from "../queries";

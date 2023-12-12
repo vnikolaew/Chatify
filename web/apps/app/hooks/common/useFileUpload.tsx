@@ -3,6 +3,27 @@ import React, { useMemo, useRef, useState } from "react";
 import { ChatifyFile } from "@components/chat-group/messages/editor/MessageTextEditor";
 import { v4 as uuidv4 } from "uuid";
 
+export function useSingleFileUpload() {
+   const fileInputRef = useRef<HTMLInputElement>();
+   const [selectedFile, setSelectedFile] = useState<File | null>();
+   const fileUrl = useMemo(() => {
+      if (!selectedFile) return "";
+      return URL.createObjectURL(selectedFile);
+   }, [selectedFile]);
+
+   const normalizedFileName = useMemo(() => {
+      if (!selectedFile) return "";
+      const parts = selectedFile?.name.split(".");
+      return `${parts
+         .slice(0, parts.length - 1)
+         .join("")
+         .substring(0, 20)}.${parts.at(-1)}`;
+   }, [selectedFile]);
+
+   return { fileInputRef, selectedFile, setSelectedFile, fileUrl, normalizedFileName }
+
+}
+
 export function useFileUpload(initialFiles?: ChatifyFile[]) {
    const [attachedFiles, setAttachedFiles] = useState<ChatifyFile[]>(() => initialFiles ?? []);
 

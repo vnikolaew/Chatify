@@ -37,9 +37,7 @@ export const useChangeUserStatusMutation = () => {
    return useMutation(changeUserStatus, {
       onError: console.error,
       onSuccess: (data, { newStatus }) => {
-         console.log("User status changed successfully: " + data);
          console.log("Updating User status to " + newStatus);
-
          client.setQueryData<UserDetailsEntry>(
             [USER_DETAILS_KEY, userId],
             (current: UserDetailsEntry | undefined) =>
@@ -48,7 +46,7 @@ export const useChangeUserStatusMutation = () => {
                      ...draft.user,
                      status: newStatus as UserStatus,
                   };
-               })
+               }),
          );
 
          client.setQueriesData<ChatGroupDetailsEntry>(
@@ -56,13 +54,12 @@ export const useChangeUserStatusMutation = () => {
             (group: ChatGroupDetailsEntry) =>
                produce(group, (draft: ChatGroupDetailsEntry) => {
                   const user = draft.members?.find(
-                     (m: User) => m.userId === userId
+                     (m: User) => m.userId === userId,
                   );
-                  user.status = newStatus;
+                  if (user) user.status = newStatus;
                   return draft;
-               })
+               }),
          );
       },
-      onSettled: (res) => console.log(res),
    });
 };

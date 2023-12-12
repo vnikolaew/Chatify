@@ -348,12 +348,12 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                   <DropdownTrigger className={` `}>
                      <Button
                         variant={"shadow"}
-                        className={`text-foreground p-0 h-6 w-6`}
+                        className={`text-foreground p-0 h-4 w-4`}
                         color={"primary"}
                         radius={"full"}
-                        size={"sm"}
+                        // size={"sm"}
                         startContent={
-                           <span className={`fill-foreground text-sm`}>
+                           <span className={`fill-foreground text-xs`}>
                               +
                            </span>
                         }

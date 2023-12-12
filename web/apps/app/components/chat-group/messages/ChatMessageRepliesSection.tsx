@@ -123,6 +123,7 @@ export const ChatMessageRepliesSection = ({
                      {reply.content}
                   </span>
                   <ChatMessageReactionSection
+                     isReply
                      messageId={reply.id}
                      reactionCounts={reply.reactionCounts}
                      userReaction={null!}

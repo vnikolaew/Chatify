@@ -10,8 +10,8 @@ import {
 import { ReactionsSummaryTooltipContent } from "@components/chat-group/messages";
 import {
    useGetAllReactionsForMessage,
-   useReactToGroupMessageMutation,
-   useUnreactToGroupMessageMutation,
+   useReactToGroupMessageMutation, useReactToGroupMessageReplyMutation,
+   useUnreactToGroupMessageMutation, useUnreactToGroupMessageReplyMutation,
 } from "@web/api";
 import { ChatMessageReaction, UserMessageReaction } from "@openapi";
 import { useCurrentChatGroup, useCurrentUserId } from "@hooks";
@@ -25,13 +25,15 @@ export interface ChatMessageReactionSectionProps {
    messageId: string;
    reactionCounts: Record<string, number>;
    userReaction: UserMessageReaction;
+   isReply?: boolean;
 }
 
 export const ChatMessageReactionSection = ({
-   reactionCounts,
-   userReaction,
-   messageId,
-}: ChatMessageReactionSectionProps) => {
+                                              reactionCounts,
+                                              userReaction,
+                                              messageId,
+                                              isReply = false,
+                                           }: ChatMessageReactionSectionProps) => {
    const [fetchReactions, setFetchReactions] = useState(false);
    const {
       isOpen: reactTooltipOpen,
@@ -46,6 +48,8 @@ export const ChatMessageReactionSection = ({
       enabled: fetchReactions,
    });
    const { mutateAsync: reactToMessage } = useReactToGroupMessageMutation();
+   const { mutateAsync: reactToMessageReply } = useReactToGroupMessageReplyMutation();
+   const { mutateAsync: unreactToMessageReply } = useUnreactToGroupMessageReplyMutation();
    const { mutateAsync: unreactToMessage } = useUnreactToGroupMessageMutation();
 
    const groupId = useCurrentChatGroup();
@@ -54,9 +58,9 @@ export const ChatMessageReactionSection = ({
    const hasUserReacted = useCallback(
       (reactionCode: number) =>
          reactions?.some(
-            (r) => r.userId === meId && r.reactionCode === reactionCode
+            (r) => r.userId === meId && r.reactionCode === reactionCode,
          ) || userReaction?.reactionCode === reactionCode,
-      [meId, reactions, userReaction?.reactionCode]
+      [meId, reactions, userReaction?.reactionCode],
    );
 
    const reactionsByCode = useMemo<Record<string, ChatMessageReaction[]>>(
@@ -68,7 +72,7 @@ export const ChatMessageReactionSection = ({
                [key]: [...(acc[key] ?? []), r],
             };
          }, {}) ?? {},
-      [reactions]
+      [reactions],
    );
 
    const handleFetchReactions = () => {
@@ -80,13 +84,17 @@ export const ChatMessageReactionSection = ({
          const reactionId = reactions.find((r) => r.userId === meId).id!;
          console.log(reactionId, reactions);
 
-         await unreactToMessage({
+         if (isReply) {
+            await unreactToMessageReply({ messageId, groupId, messageReactionId: reactionId });
+         } else await unreactToMessage({
             groupId,
             messageId,
             messageReactionId: reactionId,
          });
       } else {
-         await reactToMessage({
+         if (isReply) {
+            await reactToMessageReply({ messageId, groupId, reactionType: reactionCode });
+         } else await reactToMessage({
             messageId,
             groupId,
             reactionType: reactionCode,
@@ -139,14 +147,14 @@ export const ChatMessageReactionSection = ({
                      />
                   </Button>
                </Tooltip>
-            )
+            ),
          )}
          <Tooltip
             showArrow
-            delay={100}
+            delay={200}
             isOpen={reactTooltipOpen}
             onOpenChange={onReactTooltipOpen}
-            closeDelay={100}
+            closeDelay={200}
             offset={2}
             size={"sm"}
             placement={"top"}

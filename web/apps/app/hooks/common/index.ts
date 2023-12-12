@@ -1,4 +1,4 @@
-export { useFileUpload } from "./useFileUpload";
+export { useFileUpload, useSingleFileUpload } from "./useFileUpload";
 export { useInterval } from "./useInterval";
 export { useHover } from "./useHover";
 export { useDebounce } from "./useDebounce";

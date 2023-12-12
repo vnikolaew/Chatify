@@ -40,11 +40,13 @@ export const PinnedMessagesActionButton = ({}: {}) => {
       <TooltipWithPopoverActionButton
          popoverProps={{
             showArrow: true,
-            className: `bg-zinc-900 z-20`,
+            className: `bg-zinc-900 z-20 rounded-xl`,
+            placement: `bottom`
          }}
          tooltipProps={{
             size: `sm`,
             shadow: `sm`,
+            placement : isOpen ? `top` : `bottom`,
             classNames: {
                base: `text-xs `,
                content: `text-[10px] h-5`,
@@ -105,11 +107,11 @@ export const PinnedMessagesPopover = ({}) => {
          ))}
       </div>
    ) : (
-      <div className={`flex my-2 flex-col items-start gap-2`}>
+      <div className={`flex rounded-md my-2 flex-col items-start gap-2`}>
          {pinnedMessages && !pinnedMessages.length && (
-            <div className={`text-xs text-default-300 my-4 mx-2`}>
+            <span className={`text-xs rounded-md text-default-300 my-4 mx-2`}>
                There are no pinned messages in this group.
-            </div>
+            </span>
          )}
          {pinnedMessages?.map((m) => (
             <Card

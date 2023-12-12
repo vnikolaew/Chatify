@@ -140,7 +140,6 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                >
                   <NotSentIcon className={`fill-default-200`} size={50} />
                   <span>No chat groups found.</span>
-                  <Link></Link>
                   <Button
                      href={`/chat-groups/create`}
                      as={Link}

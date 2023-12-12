@@ -42,7 +42,7 @@ export const AddNewMemberActionButton = ({}: AddNewMemberActionButtonProps) => {
          }}
          popoverProps={{ placement: `bottom`, showArrow: true }}
          tooltipContent={t(`AddNewMember`)}
-         icon={<AddUserIcon fill={"white"} size={20} />}
+         icon={<AddUserIcon className={`fill-transparent`} fill={"white"} size={20} />}
       />
    );
 };

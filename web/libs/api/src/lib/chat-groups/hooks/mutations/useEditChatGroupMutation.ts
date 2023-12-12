@@ -1,7 +1,7 @@
 import { chatGroupsClient } from "../../client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
-import { ChatGroup, ChatGroupDetailsEntry } from "@openapi";
+import { ChatGroupDetailsEntry } from "@openapi";
 import { produce } from "immer";
 
 export interface EditChatGroupModel {
@@ -34,9 +34,7 @@ export const useEditChatGroupMutation = () => {
    const client = useQueryClient();
    return useMutation<any, Error, EditChatGroupModel, any>(editChatGroup, {
       onError: console.error,
-      onSuccess: (data, { chatGroupId, about }) => {
-         console.log("Chat group edited successfully: " + data);
-         const chatGroup = client.getQueryData<ChatGroupDetailsEntry>([`chat-group`, chatGroupId], { exact: true });
+      onSuccess: async (data, { chatGroupId, about }) => {
          client.setQueryData<ChatGroupDetailsEntry>([`chat-group`, chatGroupId], (old: ChatGroupDetailsEntry) => {
             if (!old) return old;
             return produce(old, (group: ChatGroupDetailsEntry) => {
@@ -44,7 +42,7 @@ export const useEditChatGroupMutation = () => {
                return group;
             });
          });
-
+         await client.refetchQueries([`chat-group`, chatGroupId], { exact: true });
       },
       onSettled: (res) => console.log(res),
       cacheTime: 60 * 60 * 1000,

@@ -28,7 +28,7 @@ const reactToGroupMessageReply = async (
 export const useReactToGroupMessageReplyMutation = () => {
    const client = useQueryClient();
 
-   return useMutation(reactToGroupMessageReply, {
+   return useMutation<any, Error, ReactToGroupMessageModel, any>(reactToGroupMessageReply, {
       onError: console.error,
       onSuccess: (data) =>
          console.log(

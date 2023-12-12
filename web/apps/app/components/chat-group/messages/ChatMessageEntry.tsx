@@ -131,7 +131,7 @@ export const ChatMessageEntry = React.forwardRef<HTMLDivElement, ChatMessageEntr
                </div>
             )}
             <div
-               className={`flex px-2 py-2 rounded-lg gap-3 items-start`}
+               className={`flex p-3 rounded-lg gap-3 items-start`}
                key={message.message.id}
             >
                <Avatar

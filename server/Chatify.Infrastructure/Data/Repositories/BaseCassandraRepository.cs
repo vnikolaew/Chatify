@@ -98,10 +98,12 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         var primaryKeys = MappingDefinition
             .PartitionKeys
             .ToHashSet();
+
         var clusteringKeys = MappingDefinition
             .ClusteringKeys
-            .Select(_ => _.Item1)
+            .Select(tuple => MappingDefinition.GetColumnDefinition(typeof(TDataEntity).GetProperty(tuple.Item1)!)!.ColumnName)
             .ToHashSet();
+        
         primaryKeys.UnionWith(clusteringKeys);
 
         var partitionKeyValues = entity
@@ -121,7 +123,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         var cql = new Cql($" UPDATE {MappingDefinition.TableName} SET {string.Join(
             ", ",
             tableColumns
-                .Select(c => $"{c.name} = ?").ToList())} WHERE {filterStatement};")
+                .Select(c => $"{c.name} = ?").ToList())} WHERE {filterStatement} ALLOW FILTERING;")
             .WithOptions(opts =>
                 opts.SetConsistencyLevel(ConsistencyLevel.Quorum)
                     .SetRetryPolicy(new DefaultRetryPolicy()))

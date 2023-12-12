@@ -17,7 +17,7 @@ public class LocalFileSystemUploadService(
 
     private static readonly System.Collections.Generic.HashSet<string> AllowedFileTypes = new()
     {
-        "jpg", "png", "webp", "jpeg"
+        "jpg", "png", "webp", "jpeg", "avif"
     };
 
     public async Task<OneOf<Error, FileUploadResult>> UploadAsync(

@@ -18,7 +18,7 @@ const CreateChatGroupHeading = ({
          <h2 className={`text-default-700 text-2xl`}>Create a chat group</h2>
          <Divider
             orientation={"horizontal"}
-            className={`h-[1.5px] mt-2 rounded-full shadow-md w-full bg-default-300`}
+            className={`h-[0.7px] mt-3 rounded-full shadow-md w-full bg-default-200`}
          />
       </div>
    );

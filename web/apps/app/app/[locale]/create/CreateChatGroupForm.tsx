@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useRef, useState } from "react";
+import React  from "react";
 import { Formik } from "formik";
 import {
    CreateChatGroupModel,
@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { User as TUser } from "@openapi";
 import * as yup from "yup";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSingleFileUpload } from "@hooks";
 
 export interface CreateChatGroupFormProps {
 }
@@ -47,22 +48,8 @@ const createChatGroupSchema = yup.object({
 });
 
 const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
-   const fileInputRef = useRef<HTMLInputElement>();
    const router = useRouter();
-   const [selectedFile, setSelectedFile] = useState<File | null>();
-   const fileUrl = useMemo(() => {
-      if (!selectedFile) return "";
-      return URL.createObjectURL(selectedFile);
-   }, [selectedFile]);
-
-   const normalizedFileName = useMemo(() => {
-      if (!selectedFile) return "";
-      const parts = selectedFile?.name.split(".");
-      return `${parts
-         .slice(0, parts.length - 1)
-         .join("")
-         .substring(0, 20)}.${parts.at(-1)}`;
-   }, [selectedFile]);
+   const { selectedFile, fileUrl, setSelectedFile, fileInputRef, normalizedFileName } = useSingleFileUpload();
 
    const {
       isLoading,
@@ -105,7 +92,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
            }) => (
             <form
                onSubmit={handleSubmit}
-               className={`w-[320px] flex flex-col gap-3 mt-6`}
+               className={`w-[320px] flex flex-col gap-4 mt-8`}
                autoComplete={"off"}
             >
                <Input
@@ -114,11 +101,11 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                   // value={values.name}
                   // onChange={handleChange}
                   {...getFieldProps("name")}
-                  labelPlacement={"inside"}
+                  labelPlacement={"outside"}
                   isRequired
                   label={"Name"}
                   classNames={{
-                     input: "text-small pb-1",
+                     input: "text-small pb-0",
                      label: "py-1",
                   }}
                   autoComplete={"off"}
@@ -128,7 +115,8 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                   }
                   placeholder={"Think of a cool name."}
                   size={"md"}
-                  className={`py-1 text-md rounded-lg`}
+                  radius={`sm`}
+                  className={`py-1 text-md`}
                   type={"text"}
                   name={"name"}
                   id={"name"}
@@ -137,10 +125,10 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                   isClearable
                   onClear={() => setFieldValue("about", "")}
                   {...getFieldProps("about")}
-                  labelPlacement={"inside"}
+                  labelPlacement={"outside"}
                   label={"About"}
                   classNames={{
-                     input: "text-small pb-1",
+                     input: "text-small pb-0",
                      label: "py-1",
                   }}
                   autoComplete={"off"}
@@ -150,7 +138,8 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                   }
                   placeholder={"Give your group a brief description."}
                   size={"md"}
-                  className={`py-1 text-md rounded-lg`}
+                  radius={`sm`}
+                  className={`py-1 text-md`}
                   type={"text"}
                   name={"about"}
                   id={"about"}
@@ -162,8 +151,10 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                      label={"Select a group picture:"}
                      variant={"flat"}
                      color={"primary"}
+                     onClick={_ => fileInputRef.current?.click()}
                      classNames={{
-                        inputWrapper: "py-2 px-4",
+                        inputWrapper: "py-2 px-2",
+                        input: `cursor-pointer`,
                         label: `text-foreground text-medium`,
                      }}
                      startContent={
@@ -178,7 +169,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                            <UploadIcon className={`fill-white`} size={20} />
                         </Button>
                      }
-                     type={"text"}
+                     type={`text`}
                      isReadOnly
                      placeholder={
                         selectedFile ? normalizedFileName : " Upload a file"
@@ -252,7 +243,9 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                      label: `text-medium`,
                   }}
                   label={"Add friends to group:"}
-                  description={"Add one or more of your friends to chat group"}
+                  description={
+                     <span><b className={`text-primary mr-1`}>*</b> Add one or more of your friends to chat group</span>
+                  }
                   labelPlacement={"outside"}
                   placeholder={"Select users"}
                   items={friends ?? []}
@@ -290,7 +283,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                      }
                      color={"primary"}
                      size={"md"}
-                     className={`text-white w-full mt-8 py-2 text-medium hover:opacity-80 self-center shadow-sm rounded-md`}
+                     className={`text-white w-full mt-4 py-2 text-medium hover:opacity-80 self-center shadow-sm rounded-md`}
                      type={`submit`}
                   >
                      {isSubmitting ? "Loading" : "Create"}
@@ -298,7 +291,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                   <Link
                      href={`/`}
                      className={`w-fit self-end`}
-                     color={"foreground"}
+                     color={"primary"}
                      underline={"hover"}
                      size={"sm"}
                   >

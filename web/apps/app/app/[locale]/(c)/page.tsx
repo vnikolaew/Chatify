@@ -38,6 +38,7 @@ function IndexPage() {
          {isNew && chatGroupDetails && (
             <Toast
                className={`bg-success-300`}
+               autoFocus={false}
                header={"Success!"}
                isOpen={isSuccessModalOpen}
                onOpenChange={onSuccessModalOpenChange}

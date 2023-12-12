@@ -6,8 +6,9 @@ import CreateChatGroupHeading from "./CreateChatGroupHeading";
 export interface PageProps {}
 
 export const metadata: Metadata = {
-   title: "Create a new chat group.",
+   title: "Create group.",
    category: "chat-group",
+   description: `Create a new Chatify group.`
 };
 
 const CreateChatGroupPage = async ({}: PageProps) => {
