@@ -14,10 +14,10 @@ using Mapper = Cassandra.Mapping.Mapper;
 namespace Chatify.Infrastructure.Data.Repositories;
 
 public sealed class UserRepository(
-        IMapper mapper,
-        Mapper dbMapper,
-        IEntityChangeTracker changeTracker,
-        IRedisConnectionProvider connectionProvider)
+    IMapper mapper,
+    Mapper dbMapper,
+    IEntityChangeTracker changeTracker,
+    IRedisConnectionProvider connectionProvider)
     : BaseCassandraRepository<Domain.Entities.User, ChatifyUser, Guid>(mapper, dbMapper, changeTracker),
         IUserRepository
 {
@@ -70,20 +70,24 @@ public sealed class UserRepository(
 
         if ( missingUserIds.Any() )
         {
-            var missingUsers = ( await DbMapper.FetchListAsync<ChatifyUser>(
-                    new Cql($"WHERE id IN ({string.Join(", ", missingUserIds.Select(_ => "?"))}) ALLOW FILTERING;")
-                        .WithArguments(missingUserIds.Cast<object>().ToArray()))
-                )
+            var cql = new Cql($"WHERE id IN ({string.Join(", ", missingUserIds.Select(_ => "?"))}) ALLOW FILTERING;")
+                .WithArguments(missingUserIds.Cast<object>().ToArray());
+
+            var missingUsers = ( await DbMapper.FetchListAsync<ChatifyUser>(cql) )
                 .ToDictionary(_ => _.Id, _ => _);
 
             foreach ( var id in missingUserIds )
             {
-                usersById[id.ToString()] = missingUsers[id];
+                if ( missingUsers.TryGetValue(id, out var missingUser) )
+                {
+                    usersById[id.ToString()] = missingUser;
+                }
             }
         }
 
         return usersById
             .Values
+            .Where(_ => _ is not null)
             .To<Domain.Entities.User>(Mapper)
             .ToList();
     }

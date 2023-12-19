@@ -66,7 +66,7 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
    } = useMarkNotificationsAsReadMutation();
 
    const handleMarkNotificationsAsRead = async () => {
-      // await markAsRead({}, {});
+      await markAsRead({}, {});
       await sleep(2000);
    };
    const t = useTranslations("MainNavbar.Popups");

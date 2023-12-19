@@ -4,6 +4,7 @@ import { HttpStatusCode } from "axios";
 import { USER_DETAILS_KEY } from "../../../profile";
 import { FriendInvitationStatus, UserDetailsEntry } from "@openapi";
 import { produce } from "immer";
+import { GetMyClaimsResponse } from "../../../auth";
 
 export interface SendFriendInvitationModel {
    userId: string;
@@ -14,7 +15,7 @@ const sendFriendInvite = async (model: SendFriendInvitationModel) => {
       `invite/${model.userId}`,
       {
          headers: {},
-      }
+      },
    );
 
    if (status === HttpStatusCode.BadRequest) {
@@ -33,6 +34,7 @@ export const useSendFriendInviteMutation = () => {
          onError: console.error,
          onSuccess: (data, { userId }) => {
             console.log("Friend invite sent successfully: " + data);
+            const meId = client.getQueryData<GetMyClaimsResponse>([`me`, `claims`])?.claims?.["nameidentifier"];
 
             // Update friend invitation user details:
             client.setQueryData<UserDetailsEntry>(
@@ -40,19 +42,22 @@ export const useSendFriendInviteMutation = () => {
                (old: UserDetailsEntry) => {
                   if (!old) return old;
                   return produce(old, (draft: UserDetailsEntry) => {
-                     if (draft.friendInvitation) {
-                        draft.friendInvitation.status =
-                           FriendInvitationStatus.PENDING;
-                        draft.friendInvitation.createdAt =
-                           new Date().toISOString();
-                     }
+                     draft.friendInvitation = {
+                        ...draft.friendInvitation,
+                        status: FriendInvitationStatus.PENDING,
+                        createdAt: new Date().toISOString(),
+                        id: data.data.id,
+                        inviterId: meId,
+                        inviteeId: userId,
+                     };
+
                      return draft;
                   });
-               }
+               },
             );
          },
          onSettled: (res) => console.log(res),
          cacheTime: 60 * 60 * 1000,
-      }
+      },
    );
 };

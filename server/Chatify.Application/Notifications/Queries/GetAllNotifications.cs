@@ -20,8 +20,7 @@ internal sealed class GetAllNotificationsHandler(IIdentityContext identityContex
         INotificationRepository notifications)
     : IQueryHandler<GetAllNotifications, GetAllNotificationsResult>
 {
-    public async Task<GetAllNotificationsResult> HandleAsync(
-        GetAllNotifications query,
+    public async Task<GetAllNotificationsResult> HandleAsync(GetAllNotifications query,
         CancellationToken cancellationToken = default)
         => await notifications.GetPaginatedForUserAsync(
             identityContext.Id, query.PageSize, query.PagingCursor,

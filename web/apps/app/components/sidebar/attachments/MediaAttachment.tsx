@@ -85,7 +85,7 @@ export const MediaAttachment = ({
                                 : attachment.username,
                             date: moment(new Date(attachment.createdAt)).format("DD MMM YYYY"),
                             nameBold: (chunks) => <b className={`text-foreground-700 text-xs`}>{chunks}</b>,
-                            dateBold: (chunks) => <Chip className={`!text-[10px] h-[16px] ml-1 px-1 !py-0`} variant={`shadow`} color={`default`} size={`sm`} >{chunks}</Chip>,
+                            dateBold: (chunks) => <Chip as={`span`} className={`!text-[10px] h-[16px] ml-1 px-1 !py-0`} variant={`shadow`} color={`default`} size={`sm`} >{chunks}</Chip>,
                         })}
                 </p>
             </div>

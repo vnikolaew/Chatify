@@ -37,7 +37,7 @@ export const NotificationsTab = ({
             <Listbox
                onAction={(key) => {
                   console.log(key);
-                  setTimeout(() => onAction?.(key), 500);
+                  // setTimeout(() => onAction?.(key), 500);
                }}
                variant={"shadow"}
                className={`px-1`}
@@ -47,7 +47,7 @@ export const NotificationsTab = ({
                      className={`px-0`}
                      variant={"faded"}
                      color={"default"}
-                     key={i}
+                     key={notification.id}
                   >
                      <NotificationEntry
                         notification={notification}

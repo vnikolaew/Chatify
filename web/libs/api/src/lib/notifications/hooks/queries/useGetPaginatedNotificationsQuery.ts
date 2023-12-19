@@ -62,7 +62,7 @@ export const useGetPaginatedNotificationsQuery = (
       CursorPaged<UserNotification>,
       any
    >({
-      queryKey: [NOTIFICATIONS_KEY, model.pageSize, model.pagingCursor],
+      queryKey: [NOTIFICATIONS_KEY],
       queryFn: () => getPaginatedNotifications(model),
       getNextPageParam: (lastPage: CursorPaged<UserNotification>) => {
          return lastPage.pagingCursor;

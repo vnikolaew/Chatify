@@ -286,7 +286,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                      className={`text-white w-full mt-4 py-2 text-medium hover:opacity-80 self-center shadow-sm rounded-md`}
                      type={`submit`}
                   >
-                     {isSubmitting ? "Loading" : "Create"}
+                     {isSubmitting ? "Creating" : "Create"}
                   </Button>
                   <Link
                      href={`/`}

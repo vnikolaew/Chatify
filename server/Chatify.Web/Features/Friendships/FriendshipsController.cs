@@ -154,7 +154,7 @@ public class FriendshipsController : ApiController
     [ProducesNoContentApiResponse]
     public async Task<IActionResult> GetFriendSuggestions(CancellationToken cancellationToken = default)
     {
-        var result = await QueryAsync<GetFriendSuggestions, List<ChatGroupMember>>(
+        var result = await QueryAsync<GetFriendSuggestions, List<User>>(
             new GetFriendSuggestions(), cancellationToken);
         return Ok(result);
     }

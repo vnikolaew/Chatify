@@ -8,7 +8,8 @@
       "DescriptionTwo": "Use a handle to find the user you are searching for.",
       "Search": "Search",
       "Searching": "Searching ...",
-      "SendRequest": "Send request"
+      "SendRequest": "Send request",
+      "SendingRequest": "Sending"
    },
    "MainNavbar": {
       "Profile": {

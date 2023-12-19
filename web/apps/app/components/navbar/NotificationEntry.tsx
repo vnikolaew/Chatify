@@ -17,13 +17,13 @@ export interface NotificationEntryProps extends ListboxItemProps {
 }
 
 export const NotificationEntry = ({
-   notificationTypeIcon,
-   id,
-   startContent,
-   notification,
-   message,
-   ...rest
-}: NotificationEntryProps) => {
+                                     notificationTypeIcon,
+                                     id,
+                                     startContent,
+                                     notification,
+                                     message,
+                                     ...rest
+                                  }: NotificationEntryProps) => {
    const client = useQueryClient();
    const {
       mutateAsync: acceptFriendInvite,
@@ -58,90 +58,92 @@ export const NotificationEntry = ({
             </time>
             {notification.type ===
                UserNotificationType.INCOMING_FRIEND_INVITE && (
-               <div className={`w-full mt-0 flex items-center justify-evenly`}>
-                  <Button
-                     className={`px-12 text-xs py-0`}
-                     onPress={async () => {
-                        await acceptFriendInvite(
-                           {
-                              inviteId: (notification as any).inviteId,
-                              userId: notification.userId,
-                           },
-                           {
-                              onSuccess: async (_, { inviteId }) => {
-                                 client.setQueriesData<UserNotification[]>(
-                                    {
-                                       exact: false,
-                                       queryKey: [`notifications`],
-                                    },
-                                    (old) =>
-                                       old.filter(
-                                          (n) =>
-                                             (n as any).inviteId !== inviteId
-                                       )
-                                 );
+                  <div className={`w-full mt-0 flex items-center justify-evenly`}>
+                     <Button
+                        className={`px-12 text-xs py-0`}
+                        onPress={async () => {
+                           await acceptFriendInvite(
+                              {
+                                 inviteId: (notification as any).inviteId,
+                                 userId: notification.userId,
                               },
-                           }
-                        );
-                     }}
-                     isLoading={isLoading}
-                     radius={"full"}
-                     size={"sm"}
-                     variant={"light"}
-                     color={"success"}
-                  >
-                     Accept
-                  </Button>
-                  <Button
-                     className={`px-8 py-0 text-xs`}
-                     onPress={async (_) => {
-                        await declineFriendInvite(
-                           {
-                              inviteId: (notification as any).inviteId,
-                           },
-                           {
-                              onSuccess: async (_, { inviteId }) => {
-                                 client.setQueriesData<UserNotification[]>(
-                                    {
-                                       exact: false,
-                                       queryKey: [`notifications`],
-                                    },
-                                    (old) =>
-                                       old.filter(
-                                          (n) =>
-                                             (n as any).inviteId !== inviteId
-                                       )
-                                 );
+                              {
+                                 onSuccess: async (_, { inviteId }) => {
+                                    client.setQueriesData<UserNotification[]>(
+                                       {
+                                          exact: false,
+                                          queryKey: [`notifications`],
+                                       },
+                                       (old) =>
+                                          old.filter(
+                                             (n) =>
+                                                (n as any).inviteId !== inviteId,
+                                          ),
+                                    );
+                                 },
                               },
-                           }
-                        );
-                     }}
-                     isLoading={declineLoading}
-                     radius={"full"}
-                     size={"sm"}
-                     variant={"light"}
-                     color={"danger"}
-                  >
-                     Decline
-                  </Button>
-               </div>
-            )}
+                           );
+                        }}
+                        isLoading={isLoading}
+                        radius={"full"}
+                        size={"sm"}
+                        variant={"light"}
+                        color={"success"}
+                     >
+                        Accept
+                     </Button>
+                     <Button
+                        className={`px-8 py-0 text-xs`}
+                        onPress={async (_) => {
+                           await declineFriendInvite(
+                              {
+                                 inviteId: (notification as any).inviteId,
+                              },
+                              {
+                                 onSuccess: async (_, { inviteId }) => {
+                                    client.setQueriesData<UserNotification[]>(
+                                       {
+                                          exact: false,
+                                          queryKey: [`notifications`],
+                                       },
+                                       (old) =>
+                                          old.filter(
+                                             (n) =>
+                                                (n as any).inviteId !== inviteId,
+                                          ),
+                                    );
+                                 },
+                              },
+                           );
+                        }}
+                        isLoading={declineLoading}
+                        radius={"full"}
+                        size={"sm"}
+                        variant={"light"}
+                        color={"danger"}
+                     >
+                        Decline
+                     </Button>
+                  </div>
+               )}
             {notification.type ===
                UserNotificationType.ACCEPTED_FRIEND_INVITE && (
-               <div className={`w-full mt-1 flex items-center justify-center`}>
-                  <Button
-                     href={`?c=${(notification as any).chatGroupId}`}
-                     as={Link}
-                     size={"sm"}
-                     variant={"shadow"}
-                     color={"primary"}
-                  >
-                     Go to new chat group
-                  </Button>
-               </div>
-            )}
+                  <div className={`w-full mt-1 flex items-center justify-center`}>
+                     <Button
+                        href={`?c=${(notification as any).chatGroupId}`}
+                        as={Link}
+                        size={"sm"}
+                        variant={"shadow"}
+                        color={"primary"}
+                     >
+                        Go to new chat group
+                     </Button>
+                  </div>
+               )}
          </div>
-         <div className={`w-2 h-2 rounded-full bg-primary`} />
+         {!notification.read && (
+            <div className={`w-2 h-2 rounded-full bg-primary`} />
+         )}
       </div>
    );
 };
