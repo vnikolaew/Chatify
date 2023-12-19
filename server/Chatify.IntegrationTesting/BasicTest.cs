@@ -7,11 +7,12 @@ namespace Chatify.IntegrationTesting;
 
 public class BasicTest : IClassFixture<ChatifyWebApplicationFactory<Program>>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly ChatifyWebApplicationFactory<Program> _factory;
     private readonly HttpClient _httpClient;
     private readonly ITestOutputHelper _testOutputHelper;
 
-    public BasicTest(WebApplicationFactory<Program> factory,
+    public BasicTest(
+        ChatifyWebApplicationFactory<Program> factory,
         ITestOutputHelper testOutputHelper)
     {
         _factory = factory;

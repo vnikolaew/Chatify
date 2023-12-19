@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Groups;
@@ -19,14 +20,15 @@ public record RemoveChatGroupMember(
     [Required] Guid MemberId
 ) : ICommand<RemoveChatGroupMemberResult>;
 
-internal sealed class RemoveChatGroupMemberHandler(IDomainRepository<ChatGroup, Guid> groups,
-        IChatGroupMemberRepository members,
-        IIdentityContext identityContext,
-        IEventDispatcher eventDispatcher,
-        IClock clock)
-    : ICommandHandler<RemoveChatGroupMember, RemoveChatGroupMemberResult>
+internal sealed class RemoveChatGroupMemberHandler(
+    IDomainRepository<ChatGroup, Guid> groups,
+    IChatGroupMemberRepository members,
+    IIdentityContext identityContext,
+    IEventDispatcher eventDispatcher,
+    IClock clock)
+    : BaseCommandHandler<RemoveChatGroupMember, RemoveChatGroupMemberResult>(eventDispatcher, identityContext, clock)
 {
-    public async Task<RemoveChatGroupMemberResult> HandleAsync(
+    public override async Task<RemoveChatGroupMemberResult> HandleAsync(
         RemoveChatGroupMember command,
         CancellationToken cancellationToken = default)
     {

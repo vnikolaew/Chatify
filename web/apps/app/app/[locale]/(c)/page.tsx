@@ -1,7 +1,7 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import Link from "next/link";
-import { useGetChatGroupDetailsQuery, useGetMyClaimsQuery } from "@web/api";
+import { useGetChatGroupDetailsQuery } from "@web/api";
 import { useIsUserLoggedIn } from "@hooks";
 import { useDisclosure } from "@nextui-org/react";
 import { useCurrentChatGroup } from "@hooks";
@@ -13,7 +13,6 @@ import Toast from "@components/common/Toast";
 function IndexPage() {
    const params = useSearchParams();
    const isNew = params.get("new") === "true";
-   const { data: me } = useGetMyClaimsQuery();
 
    const {
       isOpen: isSuccessModalOpen,

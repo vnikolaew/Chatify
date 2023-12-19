@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using Chatify.Application.ChatGroups.Queries.Models;
+using Chatify.Application.Common;
 using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Messages.Commands;
@@ -30,9 +31,9 @@ internal sealed class GetMessagesByChatGroupHandler(
         IChatGroupMemberRepository members,
         IPagingCursorHelper pagingCursorHelper,
         IUserRepository users)
-    : IQueryHandler<GetMessagesForChatGroup, GetMessagesForChatGroupResult>
+    : BaseQueryHandler<GetMessagesForChatGroup, GetMessagesForChatGroupResult>(identityContext)
 {
-    public async Task<GetMessagesForChatGroupResult> HandleAsync(
+    public override async Task<GetMessagesForChatGroupResult> HandleAsync(
         GetMessagesForChatGroup command,
         CancellationToken cancellationToken = default)
     {

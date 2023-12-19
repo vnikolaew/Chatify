@@ -9,12 +9,7 @@ using Chatify.Web.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 {
     // builder.WebHost.UseProductionHttps(builder.Environment);
-    // builder.Services.AddWindowsService(o =>
-    //     o.ServiceName = "TestService");
-    // builder.Host.UseWindowsService();
-    
     builder.Services
-        .AddSingleton<SecureHeadersMiddleware>()
         .AddWebComponents(builder.Environment)
         .AddUserRateLimiting()
         .AddMappers()

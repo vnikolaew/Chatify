@@ -1,18 +1,22 @@
 "use client";
 import React, { useMemo } from "react";
 import AddNewGroupAdminActionButton from "@components/sidebar/members/AddNewGroupAdminActionButton";
-import { Skeleton } from "@nextui-org/react";
+import { Skeleton, Spinner } from "@nextui-org/react";
 import ChatGroupMemberEntry from "./ChatGroupMemberEntry";
 import {
-   getUserDetails,
+   getUserDetails, MemberCategory,
    useGetChatGroupDetailsQuery,
    useMembersByCategory,
-   USER_DETAILS_KEY,
+   USER_DETAILS_KEY, useRemoveChatGroupAdmin,
 } from "@web/api";
-import { useCurrentUserId } from "@hooks";
+import { useCurrentChatGroup, useCurrentUserId } from "@hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { DEFAULT_STALE_TIME } from "@web/api";
+import { User } from "@openapi";
+import { TooltipButton } from "@components/common";
+import ThrashIcon from "@components/icons/ThrashIcon";
+import { X } from "lucide-react";
 
 export interface ChatGroupMembersTabProps {
    chatGroupId: string;
@@ -28,21 +32,21 @@ const ChatGroupMembersTab = ({ chatGroupId }: ChatGroupMembersTabProps) => {
    const client = useQueryClient();
    const membersByCategory = useMembersByCategory(
       data?.members,
-      data?.chatGroup?.adminIds
+      data?.chatGroup?.adminIds,
    );
 
    const handlePrefetchUserDetails = async (userId: string) => {
-      console.log(`Fetching data for user ${userId} ...`);
-
-      await client.prefetchQuery([USER_DETAILS_KEY, userId], {
-         queryFn: ({ queryKey: [_, id] }) => getUserDetails({ userId: id }),
-         staleTime: DEFAULT_STALE_TIME,
-      });
+      if (!client.getQueryCache().find([USER_DETAILS_KEY, userId])) {
+         await client.prefetchQuery([USER_DETAILS_KEY, userId], {
+            queryFn: ({ queryKey: [_, id] }) => getUserDetails({ userId: id }),
+            staleTime: DEFAULT_STALE_TIME,
+         });
+      }
    };
 
    return (
       <div>
-         {Object.entries(membersByCategory).map(([category, members], id) => (
+         {Object.entries(membersByCategory).map(([category, members]: [MemberCategory, User[]], id) => (
             <div key={id} className={`mt-4 w-full`}>
                <div
                   className={`w-full flex items-center justify-between gap-2 mt-4 px-4`}
@@ -76,6 +80,11 @@ const ChatGroupMembersTab = ({ chatGroupId }: ChatGroupMembersTabProps) => {
                            key={member.id}
                            member={member}
                            category={category}
+                           endContent={
+                              category === "admins" &&
+                              data.creator.id === meId &&
+                              member?.id !== meId &&
+                              <RemoveChatGroupAdminButton adminId={member.id} />}
                         />
                      ))}
                   </div>
@@ -83,6 +92,52 @@ const ChatGroupMembersTab = ({ chatGroupId }: ChatGroupMembersTabProps) => {
             </div>
          ))}
       </div>
+   );
+};
+
+interface RemoveChatGroupAdminButtonProps {
+   adminId: string;
+}
+
+const RemoveChatGroupAdminButton = ({ adminId }: RemoveChatGroupAdminButtonProps) => {
+   const { mutateAsync: removeAdmin, isLoading, error } = useRemoveChatGroupAdmin();
+   const chatGroupId = useCurrentChatGroup();
+
+   const handleRemoveAdmin = async () => {
+      await removeAdmin({ adminId, chatGroupId }, {});
+   };
+
+   if (isLoading ) {
+      return (
+         <Spinner
+            classNames={{
+               base: `w-4 h-4`,
+               circle1: `w-4 h-4`,
+               circle2: `w-4 h-4`,
+            }}
+            className={`ml-auto`}
+            role={`progressbar`}
+            color={`danger`} />
+      );
+   }
+
+   return (
+      <TooltipButton
+         onClick={handleRemoveAdmin}
+         showArrow
+         classNames={{
+            base: `ml-auto text-[.6rem]`,
+            content: `ml-auto h-3 text-[.6rem]`,
+         }}
+         chipProps={{
+            classNames: {
+               base: `ml-auto`,
+               content: `w-fit h-fit !px-1`,
+            },
+         }}
+         color={`default`} size={`sm`} radius={`full`}
+         icon={<X className={`fill-danger-500 text-danger-500`} size={12} />}
+         content={`Remove from admins`} />
    );
 };
 

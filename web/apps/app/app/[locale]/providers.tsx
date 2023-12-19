@@ -7,9 +7,9 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { queryClient, USER_LOCATION_LOCAL_STORAGE_KEY } from "@web/api";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { useRouter } from "next/navigation";
+import process from "process";
 
 export interface ProvidersProps extends PropsWithChildren {
-   isDevelopment: boolean;
 }
 
 export const OAuthProvider = ({ children }: PropsWithChildren) => {
@@ -19,6 +19,10 @@ export const OAuthProvider = ({ children }: PropsWithChildren) => {
       </GoogleOAuthProvider>
    );
 };
+
+export function __IS_DEV__() {
+   return process.env.NODE_ENV === "development";
+}
 
 const RememberUserGeolocation = () => {
    useEffect(() => {
@@ -34,7 +38,7 @@ const RememberUserGeolocation = () => {
    return <Fragment />;
 };
 
-const Providers = ({ children, isDevelopment }: ProvidersProps) => {
+const Providers = ({ children }: ProvidersProps) => {
    const router = useRouter();
    return (
       <QueryClientProvider client={queryClient}>
@@ -44,7 +48,7 @@ const Providers = ({ children, isDevelopment }: ProvidersProps) => {
                <OAuthProvider>{children}</OAuthProvider>
             </NextThemesProvider>
          </NextUIProvider>
-         {isDevelopment && (
+         {__IS_DEV__() && (
             <ReactQueryDevtools position={"bottom-left"} initialIsOpen={true} />
          )}
       </QueryClientProvider>

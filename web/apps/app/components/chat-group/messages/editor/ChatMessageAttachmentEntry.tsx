@@ -57,8 +57,8 @@ const ChatMessageAttachmentEntry = ({
             color={"default"}
          >
             <Image
-               height={40}
-               width={40}
+               height={64}
+               width={64}
                shadow={"md"}
                radius={"md"}
                src={url}

@@ -4,13 +4,13 @@ import React, { useState } from "react";
 import VerticalDotsIcon from "@components/icons/VerticalDotsIcon";
 import { EditIcon } from "lucide-react";
 import ThrashIcon from "@components/icons/ThrashIcon";
-import { Popover, PopoverContent, PopoverTrigger, useDisclosure } from "@nextui-org/react";
+import { useDisclosure } from "@nextui-org/react";
 
 export interface ChatMessageMoreActionsButtonProps {
    onOpen?: () => void;
 }
 
-const ChatMessageMoreActionsButton = ({ }: ChatMessageMoreActionsButtonProps) => {
+const ChatMessageMoreActionsButton = ({}: ChatMessageMoreActionsButtonProps) => {
    const {
       isOpen: isMoreActionsDropdownMenuOpen,
       onOpenChange: onMoreActionsDropdownMenuOpenChange,
@@ -40,7 +40,8 @@ const ChatMessageMoreActionsButton = ({ }: ChatMessageMoreActionsButtonProps) =>
             }}
             tooltipProps={{
                placement: "top",
-               classNames: { base: `p-0 px-2 text-[.7rem]` },
+               radius: `md`,
+               classNames: { base: `p-0 px-2 text-[.7rem]`, content: `px-2 h-4 text-[.6rem]` },
             }}
             chipProps={{
                color: `default`,

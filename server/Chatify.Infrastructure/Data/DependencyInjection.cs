@@ -5,10 +5,8 @@ using AspNetCore.Identity.Cassandra.Extensions;
 using AspNetCore.Identity.Cassandra.Models;
 using Cassandra;
 using Cassandra.Mapping;
-using Cassandra.Mapping.TypeConversion;
 using Cassandra.Serialization;
 using Chatify.Infrastructure.Data.Mappings.Serialization;
-using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Data.Seeding;
 using Chatify.Infrastructure.Data.Services;
 using Microsoft.AspNetCore.Http;
@@ -19,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Retry;
+using ChatifyUser = Chatify.Infrastructure.Data.Models.ChatifyUser;
 using ISession = Cassandra.ISession;
 
 namespace Chatify.Infrastructure.Data;
@@ -80,7 +79,7 @@ public static class DependencyInjection
                 });
     }
 
-    private static TypeSerializerDefinitions? GetTypeSerializerDefinitions()
+    public static TypeSerializerDefinitions? GetTypeSerializerDefinitions()
     {
         var typeSerializers = Assembly
             .GetExecutingAssembly()
@@ -156,15 +155,15 @@ public static class DependencyInjection
             .ConfigureExternalCookie(opts =>
             {
                 opts.Cookie.SameSite = SameSiteMode.None;
-                opts.Events.OnRedirectToAccessDenied = ctx => { return Task.CompletedTask; };
+                opts.Events.OnRedirectToAccessDenied = ctx => Task.CompletedTask;
                 opts.Events.OnValidatePrincipal = ctx => Task.CompletedTask;
                 opts.Cookie.HttpOnly = false;
             })
             .ConfigureApplicationCookie(opts =>
             {
                 opts.Cookie.SameSite = SameSiteMode.None;
-                opts.Events.OnRedirectToAccessDenied = ctx => { return Task.CompletedTask; };
-                opts.Events.OnValidatePrincipal = ctx => { return Task.CompletedTask; };
+                opts.Events.OnRedirectToAccessDenied = ctx => Task.CompletedTask;
+                opts.Events.OnValidatePrincipal = ctx => Task.CompletedTask;
                 opts.Cookie.HttpOnly = false;
             });
 

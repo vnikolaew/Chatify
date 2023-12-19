@@ -13,7 +13,7 @@ const Layout = async ({ children, params }: LayoutProps) => {
    // if (!isUserLoggedIn) return redirect(`/signin`, RedirectType.push);
 
    return (
-      <div className={`flex border-b-1 border-b-default-200 items-start gap-0`}>
+      <div className={`flex items-start gap-0`}>
          <ChatClientProvider>
             <ChatifyHubInitializer />
             <MainLayout>{children}</MainLayout>

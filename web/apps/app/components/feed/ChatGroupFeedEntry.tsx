@@ -1,7 +1,7 @@
 "use client";
 import React, { Fragment, useMemo } from "react";
 import { ChatGroupFeedEntry } from "@openapi";
-import { Avatar, Button, Skeleton } from "@nextui-org/react";
+import { Avatar, AvatarProps, Button, Skeleton } from "@nextui-org/react";
 import moment from "moment";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,6 +21,7 @@ import { Time } from "@components/common";
 
 export interface ChatGroupFeedEntryProps {
    feedEntry: ChatGroupFeedEntry;
+   avatarColor: AvatarProps[`color`];
 }
 
 function formatDate(dateTime: string) {
@@ -32,10 +33,11 @@ function formatDate(dateTime: string) {
          : date.format("M/D/YY");
 }
 
-const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
+const ChatGroupFeedEntry = ({ feedEntry, avatarColor }: ChatGroupFeedEntryProps) => {
    const client = useQueryClient();
    const meId = useCurrentUserId();
    const groupId = useCurrentChatGroup();
+
    const usersTyping = useGetUsersTyping(feedEntry?.chatGroup?.id);
    const isActive = useMemo(
       () => feedEntry?.chatGroup?.id === groupId,
@@ -43,11 +45,12 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
    );
 
    const handlePrefetchGroupDetails = async () => {
-      await client.prefetchQuery(["chat-group", feedEntry?.chatGroup?.id], {
+      await client.prefetchQuery([`chat-group`, feedEntry?.chatGroup?.id], {
          queryFn: ({ queryKey: [_, id] }) =>
             getChatGroupDetails({ chatGroupId: id }),
          staleTime: 30 * 60 * 1000,
       });
+
       await client.prefetchInfiniteQuery(
          GET_PAGINATED_GROUP_MESSAGES_KEY(feedEntry.chatGroup.id),
          {
@@ -64,9 +67,10 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
       );
    };
    const isPrivateGroup = useMemo(
-      () => feedEntry?.chatGroup?.metadata?.private === "true",
+      () => feedEntry?.chatGroup?.metadata?.private === `true`,
       [feedEntry?.chatGroup?.metadata?.private],
    );
+
    const {
       data: user,
       isLoading,
@@ -76,8 +80,32 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
       { enabled: isPrivateGroup },
    );
 
+   const sideBgColor = useMemo(() => {
+      if (isActive) {
+         switch (avatarColor) {
+            case "danger":
+               return `border-l-danger`;
+            case "warning":
+               return `border-l-warning`;
+            case "primary":
+               return `border-l-primary`;
+            case "success":
+               return `border-l-success`;
+            case "secondary":
+               return `border-l-secondary`;
+            case "default":
+               return `border-l-default`;
+            default:
+               return `border-l-transparent`;
+         }
+      }
+      return `border-l-transparent`;
+
+   }, [avatarColor, isActive]);
+
    const messageSummary = useMemo(() => {
-      return [...usersTyping].filter((_) => _.userId !== meId).length > 0
+      return [...usersTyping]
+         .filter((_) => _.userId !== meId).length > 0
          ? `${[...usersTyping]
             .filter((u) => u.userId !== meId)
             .map((_) => _.username)
@@ -100,7 +128,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
          radius={"md"}
          className={`flex h-fit shadow-md transition-background duration-100 hover:bg-default-500 ${
             isActive
-               ? "bg-default-100 border-l-2 border-l-primary"
+               ? `bg-default-100 border-l-2 ${sideBgColor}`
                : `bg-transparent`
          } items-center cursor-pointer w-full gap-4 p-3`}
       >
@@ -108,7 +136,7 @@ const ChatGroupFeedEntry = ({ feedEntry }: ChatGroupFeedEntryProps) => {
             fallback={<Skeleton className={`h-10 w-10 rounded-full`} />}
             isBordered
             radius={"full"}
-            color={"primary"}
+            color={avatarColor ?? "primary"}
             size={"md"}
             className={`aspect-square ml-2 object-cover`}
             src={getMediaUrl(

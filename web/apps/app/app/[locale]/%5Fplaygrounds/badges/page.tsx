@@ -31,7 +31,6 @@ const BadgesPage = () => {
             </Badge>
 
             <Badge
-               disableOutline={false}
                placement={"bottom-right"}
                className={`py-0.5 hover:scale-105`}
                color={"success"}

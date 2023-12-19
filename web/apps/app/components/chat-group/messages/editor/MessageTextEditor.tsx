@@ -1,7 +1,7 @@
 "use client";
 import React, { forwardRef, HTMLAttributes, useCallback, useEffect, useMemo, useState } from "react";
 import { DefaultElement, Editable, Slate, withReact } from "slate-react";
-import { createEditor,  Text, Transforms } from "slate";
+import { createEditor, Text, Transforms } from "slate";
 import {
    Button,
    Dropdown,
@@ -281,7 +281,7 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                placeholder={replyTo ? `Reply ...` : placeholder}
                className={`bg-zinc-900 !break-words !whitespace-nowrap ${
                   attachedFilesUrls?.size
-                     ? `!min-h-[180px] !max-h-[180px]`
+                     ? `!min-h-[200px] !max-h-[200px]`
                      : `!min-h-[140px] !max-h-[140px]`
                } relative text-sm px-6 pt-14 rounded-medium text-white border-default-200 border-1 !active:border-default-300 !focus:border-default-300`}
                autoFocus
@@ -340,20 +340,21 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                hidden
                multiple
                type={"file"}
+               accept={`*/*`}
             />
             <div
-               className={`items-end gap-2 flex absolute z-10 left-3 bottom-3`}
+               className={`items-end gap-2 flex absolute z-10 mt-2 left-3 bottom-3`}
             >
                <Dropdown size={`sm`} placement={"top"}>
                   <DropdownTrigger className={` `}>
                      <Button
                         variant={"shadow"}
-                        className={`text-foreground p-0 h-4 w-4`}
+                        className={`text-foreground !min-w-fit !max-w-fit m-0 !p-2 h-6 w-6`}
                         color={"primary"}
                         radius={"full"}
                         // size={"sm"}
                         startContent={
-                           <span className={`fill-foreground text-xs`}>
+                           <span className={`fill-foreground text-sm`}>
                               +
                            </span>
                         }
@@ -373,9 +374,13 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                         key={MessageAction.FileUpload}
                         description={
                            <span dangerouslySetInnerHTML={{ __html: t(`FileUpload.Description`) }}
-                                 className={`text-[.7rem] leading-3`}>
+                                 className={`text-[.7rem] mt-1 leading-2`}>
                            </span>
                         }
+                        classNames={{
+                           description: `mt-1`,
+                           title: `text-md`,
+                        }}
                         startContent={
                            <UploadIcon
                               className={`fill-foreground`}
@@ -418,16 +423,10 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                      isDisabled={disableSendMessageButton}
                      className={`z-10 items-center !gap-2 pr-2 px-3 text-white`}
                      size={"sm"}
-                     {...(!isLoading
-                        ? {
-                           endContent: (
-                              <RightArrow
-                                 className={`fill-white group-hover:fill-white`}
-                                 size={20}
-                              />
-                           ),
-                        }
-                        : {})}
+                     endContent={!isLoading ? <RightArrow
+                        className={`fill-white group-hover:fill-white`}
+                        size={20}
+                     /> : undefined}
                   >
                      {isLoading ? t("Sending") : t("Send")}
                   </Button>

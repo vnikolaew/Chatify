@@ -23,12 +23,12 @@ internal sealed class CompositeSeeder(IServiceScopeFactory scopeFactory) : ISeed
     private static readonly string[] TablesToBeTruncated =
     {
         nameof(ChatGroupMember).Pluralize().Underscore(),
-        nameof(ChatGroupMembersCount).Pluralize().Underscore(),
+        nameof(ChatGroupMembersCount).Underscore(),
         nameof(ChatGroupJoinRequest).Pluralize().Underscore(),
         nameof(ChatGroup).Pluralize().Underscore(),
         nameof(ChatMessage).Pluralize().Underscore(),
         nameof(ChatMessageReply).Pluralize().Underscore(),
-        nameof(ChatMessageReplyCount).Pluralize().Underscore(),
+        ChatMessageReplyCount.TableName,
         nameof(ChatMessageReaction).Pluralize().Underscore(),
         nameof(ChatGroupAttachment).Pluralize().Underscore(),
         nameof(ChatMessageRepliesSummary).Pluralize().Underscore(),

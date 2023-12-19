@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.ChatGroups.Commands;
+using Chatify.Application.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
@@ -16,12 +17,13 @@ public record GetChatGroupSharedAttachments(
     [Required] string PagingCursor
 ) : IQuery<GetChatGroupSharedAttachmentsResult>;
 
-internal sealed class GetChatGroupSharedAttachmentsHandler(IIdentityContext identityContext,
-        IChatGroupMemberRepository members,
-        IChatGroupAttachmentRepository attachments)
-    : IQueryHandler<GetChatGroupSharedAttachments, GetChatGroupSharedAttachmentsResult>
+internal sealed class GetChatGroupSharedAttachmentsHandler(
+    IIdentityContext identityContext,
+    IChatGroupMemberRepository members,
+    IChatGroupAttachmentRepository attachments)
+    : BaseQueryHandler<GetChatGroupSharedAttachments, GetChatGroupSharedAttachmentsResult>(identityContext)
 {
-    public async Task<GetChatGroupSharedAttachmentsResult> HandleAsync(
+    public override async Task<GetChatGroupSharedAttachmentsResult> HandleAsync(
         GetChatGroupSharedAttachments query,
         CancellationToken cancellationToken = default)
     {

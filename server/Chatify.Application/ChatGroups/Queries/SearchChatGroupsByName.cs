@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common;
 using Chatify.Application.Common.Models;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
@@ -20,9 +21,9 @@ internal sealed class
         IFriendshipsRepository friendships,
         IIdentityContext identityContext,
         IChatGroupRepository groups)
-    : IQueryHandler<SearchChatGroupsByName, SearchChatGroupsByNameResult>
+    : BaseQueryHandler<SearchChatGroupsByName, SearchChatGroupsByNameResult>(identityContext)
 {
-    public async Task<SearchChatGroupsByNameResult> HandleAsync(
+    public override async Task<SearchChatGroupsByNameResult> HandleAsync(
         SearchChatGroupsByName query,
         CancellationToken cancellationToken = default)
     {

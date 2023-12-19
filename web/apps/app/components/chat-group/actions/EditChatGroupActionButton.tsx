@@ -9,7 +9,7 @@ import {
    ModalBody,
    ModalContent,
    ModalFooter,
-   ModalHeader,
+   ModalHeader, Textarea,
    useDisclosure,
 } from "@nextui-org/react";
 import { ChatGroupDetailsEntry } from "@openapi";
@@ -61,12 +61,15 @@ interface EditChatGroupModalProps {
 
 const EditChatGroupModal = ({ onClose, onOpenChange, isOpen, chatGroup }: EditChatGroupModalProps) => {
    const isPrivate = useIsChatGroupPrivate(chatGroup);
-   const [newAbout, setNewAbout] = useState(chatGroup?.chatGroup?.about ?? ``);
+   const [newAbout, setNewAbout] = useState(() => chatGroup?.chatGroup?.about ?? ``);
    const { selectedFile, setSelectedFile, fileUrl, fileInputRef, normalizedFileName } = useSingleFileUpload();
 
    useEffect(() => {
       console.log(selectedFile);
    }, [selectedFile]);
+
+   useEffect(() => setNewAbout(chatGroup?.chatGroup?.about),
+      [chatGroup?.chatGroup?.about]);
 
    const [isDirty, setIsDirty] = useState(false);
    const { mutateAsync: editChatGroup, isLoading: editLoading, error: editError } = useEditChatGroupMutation();
@@ -103,12 +106,12 @@ const EditChatGroupModal = ({ onClose, onOpenChange, isOpen, chatGroup }: EditCh
                   <ModalHeader>
                      Edit{" "}
                      {isPrivate
-                        ? `private group`
+                        ? `group`
                         : chatGroup?.chatGroup?.name}
                   </ModalHeader>
                   <ModalBody className={`mt-2`}>
-                     <Input
-                        placeholder={`Best group ever`}
+                     <Textarea
+                        placeholder={`Think of a good one.`}
                         onValueChange={(value) => {
                            setIsDirty(true);
                            setNewAbout(value);

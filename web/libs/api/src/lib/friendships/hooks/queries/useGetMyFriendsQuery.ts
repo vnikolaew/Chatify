@@ -2,6 +2,7 @@ import { friendshipsClient } from "../../client";
 import { useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { DEFAULT_CACHE_TIME, DEFAULT_STALE_TIME } from "../../../constants";
+//@ts-ignore
 import { UserListApiResponse, User } from "@openapi";
 
 const getMyFriends = async (): Promise<User[]> => {

@@ -180,7 +180,6 @@ export const ChatMessageReactionSection = ({
                      classNames={{
                         badge: `bg-default px-0`,
                      }}
-                     disableOutline
                      shape={"circle"}
                      content={
                         <PlusIcon className={`fill-foreground`} size={8} />

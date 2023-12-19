@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Application.User.Commands;
@@ -26,15 +27,17 @@ public record CreateChatGroup(
     InputFile? InputFile) : ICommand<CreateChatGroupResult>;
 
 internal sealed class CreateChatGroupHandler(
-        IDomainRepository<ChatGroup, Guid> groups,
-        IUserRepository users,
-        IIdentityContext identityContext,
-        IEventDispatcher eventDispatcher,
-        IFileUploadService fileUploadService,
-        IGuidGenerator guidGenerator, IChatGroupMemberRepository members, IClock clock)
-    : ICommandHandler<CreateChatGroup, CreateChatGroupResult>
+    IDomainRepository<ChatGroup, Guid> groups,
+    IUserRepository users,
+    IIdentityContext identityContext,
+    IEventDispatcher eventDispatcher,
+    IFileUploadService fileUploadService,
+    IGuidGenerator guidGenerator,
+    IChatGroupMemberRepository members,
+    IClock clock)
+    : BaseCommandHandler<CreateChatGroup, CreateChatGroupResult>(eventDispatcher, identityContext, clock)
 {
-    public async Task<CreateChatGroupResult> HandleAsync(
+    public override async Task<CreateChatGroupResult> HandleAsync(
         CreateChatGroup command,
         CancellationToken cancellationToken = default)
     {

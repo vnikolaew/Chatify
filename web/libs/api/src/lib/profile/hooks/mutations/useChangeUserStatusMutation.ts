@@ -53,7 +53,7 @@ export const useChangeUserStatusMutation = () => {
             [`chat-group`],
             (group: ChatGroupDetailsEntry) =>
                produce(group, (draft: ChatGroupDetailsEntry) => {
-                  const user = draft.members?.find(
+                  const user = draft?.members?.find(
                      (m: User) => m.userId === userId,
                   );
                   if (user) user.status = newStatus;

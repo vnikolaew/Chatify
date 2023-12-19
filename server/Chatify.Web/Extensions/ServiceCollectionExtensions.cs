@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
                 .AddMaps(
                     typeof(IAssemblyMarker),
                     typeof(Application.IAssemblyMarker));
+
             config.AllowNullDestinationValues = true;
         });
 
@@ -42,6 +43,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IAuthorizationMiddlewareResultHandler,
                 AuthorizationResultMiddlewareHandler>()
             .AddMappers()
+            .AddSingleton<SecureHeadersMiddleware>()
             .AddSingleton<IActionContextAccessor, ActionContextAccessor>()
             .AddScoped<IUrlHelper>(x =>
             {
@@ -60,20 +62,23 @@ public static class ServiceCollectionExtensions
                     opts.Filters.Add<ActivitySourceActionFilter>();
                 }
             })
-            .AddJsonOptions(opts =>
-            {
-                opts.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
-                opts.JsonSerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
-
-                opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                opts.JsonSerializerOptions.Converters.Add(new IPAddressConverter());
-                opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<ChatGroupMessageEntry>());
-                opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<UserNotification>());
-                opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<ChatGroupAttachment>());
-            })
+            .AddJsonOptions(ConfigureJsonOptions)
             .ConfigureApiBehaviorOptions(opts => opts.SuppressModelStateInvalidFilter = true);
 
         return services;
+    }
+
+    private static void ConfigureJsonOptions(JsonOptions opts)
+    {
+        opts.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
+        opts.JsonSerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+
+        opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        opts.JsonSerializerOptions.Converters.Add(new IPAddressConverter());
+        opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<ChatGroupMessageEntry>());
+        opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<UserNotification>());
+        opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<ChatGroupAttachment>());
+        opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<ChatMessageReply>());
     }
 
     public static IServiceCollection AddUserRateLimiting(this IServiceCollection services)
@@ -137,11 +142,6 @@ public static class ServiceCollectionExtensions
 
                     return ImmutableArray<Type>.Empty;
                 });
-                opts.SwaggerGeneratorOptions.Servers = new List<OpenApiServer>()
-                {
-                    new() { Url = "https://localhost:7139" }
-                };
-                var xmlFileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                // opts.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFileName));
+                opts.SwaggerGeneratorOptions.Servers = [new OpenApiServer { Url = "https://localhost:7139" }];
             });
 }

@@ -2,7 +2,6 @@ import { chatGroupsClient } from "../../client";
 import {
    UseQueryOptions,
    useQuery,
-   useQueryClient,
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { useMemo } from "react";
@@ -12,6 +11,7 @@ import {
    ChatGroupDetailsEntryApiResponse,
    User,
    UserStatus,
+// @ts-ignore
 } from "@openapi";
 
 export interface GetChatGroupDetailsModel {
@@ -19,14 +19,14 @@ export interface GetChatGroupDetailsModel {
 }
 
 export const getChatGroupDetails = async (
-   model: GetChatGroupDetailsModel
+   model: GetChatGroupDetailsModel,
 ): Promise<ChatGroupDetailsEntry> => {
    const { status, data } =
       await chatGroupsClient.get<ChatGroupDetailsEntryApiResponse>(
          `${model.chatGroupId}`,
          {
             headers: {},
-         }
+         },
       );
 
    if (status === HttpStatusCode.BadRequest) {
@@ -36,8 +36,10 @@ export const getChatGroupDetails = async (
    return data.data!;
 };
 
+export type MemberCategory = "admins" | "online" | 'offline' | "away";
+
 export const useMembersByCategory = (members?: User[], adminIds?: string[]) =>
-   useMemo<Record<string, User[]>>(
+   useMemo<Record<MemberCategory, User[]>>(
       () =>
          (members ?? []).reduce(
             (acc, member: User) => {
@@ -58,9 +60,9 @@ export const useMembersByCategory = (members?: User[], adminIds?: string[]) =>
                   }
                return acc;
             },
-            { admins: [], online: [], offline: [], away: [] }
+            { admins: [], online: [], offline: [], away: [] },
          ),
-      [members]
+      [members, adminIds],
    );
 
 export const useGetChatGroupDetailsQuery = (
@@ -75,10 +77,8 @@ export const useGetChatGroupDetailsQuery = (
       "initialData"
    > & {
       initialData?: (() => undefined) | undefined;
-   }
+   },
 ) => {
-   const client = useQueryClient();
-
    return useQuery<
       ChatGroupDetailsEntry,
       Error,
@@ -86,8 +86,8 @@ export const useGetChatGroupDetailsQuery = (
       string[]
    >({
       queryKey: [`chat-group`, chatGroupId],
-      queryFn: ({ queryKey: [_, id] }) =>
-         getChatGroupDetails({ chatGroupId: id }),
+      queryFn: ({ queryKey: [_, chatGroupId] }) =>
+         getChatGroupDetails({ chatGroupId }),
       cacheTime: 60 * 60 * 1000,
       enabled: !!chatGroupId,
       staleTime: 30 * 60 * 1000,

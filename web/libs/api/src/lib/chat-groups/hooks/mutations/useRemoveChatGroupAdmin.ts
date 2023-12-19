@@ -5,13 +5,13 @@ import { HttpStatusCode } from "axios";
 import { ChatGroupDetailsEntry, User } from "@openapi";
 import { produce } from "immer";
 
-export interface AddChatGroupAdminModel {
+export interface RemoveChatGroupAdminModel {
    chatGroupId: string;
-   newAdminId: string;
+   adminId: string;
 }
 
-const addChatGroupAdmin = async (model: AddChatGroupAdminModel) => {
-   const { status, data } = await chatGroupsClient.post(`admins`, model, {
+const removeChatGroupAdmin = async ({ adminId, chatGroupId }: RemoveChatGroupAdminModel) => {
+   const { status, data } = await chatGroupsClient.delete(`${chatGroupId}/admins/${adminId}`, {
       headers: {},
    });
 
@@ -22,23 +22,27 @@ const addChatGroupAdmin = async (model: AddChatGroupAdminModel) => {
    return data;
 };
 
-export const useAddChatGroupAdmin = () => {
+export const useRemoveChatGroupAdmin = () => {
    const client = useQueryClient();
-   return useMutation<any, Error, AddChatGroupAdminModel, any>(
-      addChatGroupAdmin,
+   return useMutation<any, Error, RemoveChatGroupAdminModel, any>(
+      removeChatGroupAdmin,
       {
          onError: console.error,
-         onSuccess: (_, { chatGroupId, newAdminId }) => {
+         onSuccess: (_, { chatGroupId, adminId }) => {
 
-            // Add new admin member to chat group admin Ids:
+            // Remove admin member from chat group admin Ids / Admins:
             client.setQueryData<ChatGroupDetailsEntry>([`chat-group`, chatGroupId], (old: ChatGroupDetailsEntry) => {
                return produce(old, (groupDetails: ChatGroupDetailsEntry) => {
                   if (groupDetails.chatGroup?.adminIds) {
-                     groupDetails.chatGroup.adminIds.push(newAdminId);
+                     groupDetails.chatGroup.adminIds =
+                        groupDetails.chatGroup.adminIds.filter((id: string) =>
+                           id !== adminId);
                   }
 
                   if (groupDetails.chatGroup?.admins) {
-                     groupDetails.chatGroup.admins.push(groupDetails.members?.find((m: User) => m.id === newAdminId));
+                     groupDetails.chatGroup.admins =
+                        groupDetails.chatGroup.admins?.filter((admin: User) =>
+                           admin.id !== adminId) ?? [];
                   }
 
                   groupDetails.chatGroup.updatedAt = new Date().toISOString();

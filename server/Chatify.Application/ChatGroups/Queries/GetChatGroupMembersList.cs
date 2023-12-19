@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.ChatGroups.Commands;
+using Chatify.Application.Common;
 using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Domain.Common;
@@ -19,13 +20,14 @@ public record GetChatGroupMembersList(
     [Required] [property: CacheKey] Guid ChatGroupId
 ) : IQuery<GetChatGroupMembersListResult>;
 
-internal sealed class GetChatGroupMembersListHandler(IChatGroupMemberRepository members,
-        IDomainRepository<ChatGroup, Guid> groups,
-        IIdentityContext identityContext,
-        IUserRepository users)
-    : IQueryHandler<GetChatGroupMembersList, GetChatGroupMembersListResult>
+internal sealed class GetChatGroupMembersListHandler(
+    IChatGroupMemberRepository members,
+    IDomainRepository<ChatGroup, Guid> groups,
+    IIdentityContext identityContext,
+    IUserRepository users)
+    : BaseQueryHandler<GetChatGroupMembersList, GetChatGroupMembersListResult>(identityContext)
 {
-    public async Task<GetChatGroupMembersListResult> HandleAsync(
+    public override async Task<GetChatGroupMembersListResult> HandleAsync(
         GetChatGroupMembersList command,
         CancellationToken cancellationToken = default)
     {
@@ -42,7 +44,7 @@ internal sealed class GetChatGroupMembersListHandler(IChatGroupMemberRepository 
             .UserIdsByGroup(group.Id, cancellationToken);
 
         var memberUsers = await users.GetByIds(memberIds!, cancellationToken)
-                    ?? new List<Domain.Entities.User>();
+                          ?? new List<Domain.Entities.User>();
         return memberUsers;
     }
 }

@@ -13,7 +13,8 @@ import { useAddChatGroupAdmin, useGetChatGroupDetailsQuery } from "@web/api";
 import { useCurrentChatGroup, useGetNewAdminSuggestions } from "@hooks";
 import SadFaceIcon from "@components/icons/SadFaceIcon";
 
-export interface AddNewGroupAdminActionButtonProps {}
+export interface AddNewGroupAdminActionButtonProps {
+}
 
 const AddNewGroupAdminActionButton =
    ({}: AddNewGroupAdminActionButtonProps) => {
@@ -23,7 +24,7 @@ const AddNewGroupAdminActionButton =
          <TooltipWithPopoverActionButton
             isOpen={isOpen}
             onOpenChange={onOpenChange}
-            popoverContent={<AddNewAdminPopover />}
+            popoverContent={<AddNewAdminPopover onOpenChange={onOpenChange} />}
             tooltipProps={{
                size: `sm`,
                shadow: `sm`,
@@ -36,6 +37,7 @@ const AddNewGroupAdminActionButton =
                classNames: {
                   base: `pl-4 pr-0`,
                },
+               placement: `bottom`,
             }}
             chipProps={{
                classNames: {
@@ -43,13 +45,17 @@ const AddNewGroupAdminActionButton =
                },
                className: `w-8 h-8 p-0`,
             }}
-            tooltipContent={"Add a new member"}
+            tooltipContent={"Add new admin"}
             icon={<PlusIcon className={"fill-foreground"} size={16} />}
          />
       );
    };
 
-const AddNewAdminPopover = () => {
+interface AddNewAdminPopoverProps {
+   onOpenChange: () => void;
+}
+
+const AddNewAdminPopover = ({ onOpenChange }: AddNewAdminPopoverProps) => {
    const groupId = useCurrentChatGroup();
    const { isLoading } = useGetChatGroupDetailsQuery(groupId);
    const {
@@ -64,12 +70,13 @@ const AddNewAdminPopover = () => {
    const handleAddNewAdmin = useCallback(
       async (newAdminId: string) => {
          console.log("click");
+         onOpenChange();
          await addNewAdmin({
             chatGroupId: groupId,
             newAdminId,
          });
       },
-      [addNewAdmin, groupId]
+      [addNewAdmin, groupId],
    );
 
    return (
@@ -107,7 +114,7 @@ const AddNewAdminPopover = () => {
          )}
          {addAdminSuggestedUsers?.map((user, i) => (
             <div
-               className={`flex w-full items-center justify-between gap-4`}
+               className={`flex w-full items-center justify-between gap-5`}
                key={user.id}
             >
                <User
@@ -115,16 +122,18 @@ const AddNewAdminPopover = () => {
                      color: "danger",
                      src: user.profilePicture.mediaUrl,
                      size: "sm",
+                     classNames: { img: `w-5 h-5`, icon: `w-5 h-5`, base: `w-5 h-5` },
                      name: user.username,
                   }}
+                  classNames={{ name: `text-xs font-normal` }}
                   name={user.username}
                   key={user.id}
                />
                <Button
                   radius={"full"}
                   onPress={() => handleAddNewAdmin(user.id)}
-                  size={"sm"}
-                  className={`bg-transparent hover:bg-default-300 duration-300 transition-background`}
+                  // size={"sm"}
+                  className={`bg-transparent !w-fit !m-0 !min-w-5 !max-w-5 !h-5 p-0 hover:bg-default-300 duration-300 transition-background`}
                   startContent={
                      addMemberLoading ? (
                         <CircularProgress
@@ -136,7 +145,7 @@ const AddNewAdminPopover = () => {
                            color={"danger"}
                         />
                      ) : (
-                        <PlusIcon className={`fill-default-500`} size={12} />
+                        <PlusIcon className={`fill-default-500`} size={10} />
                      )
                   }
                   isIconOnly

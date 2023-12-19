@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.ChatGroups.Commands;
+using Chatify.Application.Common;
 using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
@@ -19,12 +20,13 @@ public record GetChatGroupMembershipDetails(
 ) : IQuery<GetChatGroupMembershipDetailsResult>;
 
 internal sealed class
-    GetChatGroupMembershipDetailsHandler(IIdentityContext identityContext,
+    GetChatGroupMembershipDetailsHandler(
+        IIdentityContext identityContext,
         IChatGroupMemberRepository members)
-    : IQueryHandler<GetChatGroupMembershipDetails,
-        GetChatGroupMembershipDetailsResult>
+    : BaseQueryHandler<GetChatGroupMembershipDetails,
+        GetChatGroupMembershipDetailsResult>(identityContext)
 {
-    public async Task<GetChatGroupMembershipDetailsResult> HandleAsync(
+    public override async Task<GetChatGroupMembershipDetailsResult> HandleAsync(
         GetChatGroupMembershipDetails query,
         CancellationToken cancellationToken = default)
     {

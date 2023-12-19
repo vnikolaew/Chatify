@@ -47,8 +47,6 @@ export const useGetAllReactionsForMessage = (
       "initialData" | "queryFn" | "queryKey"
    > & {}
 ) => {
-   const client = useQueryClient();
-
    return useQuery<ChatMessageReaction[], Error, ChatMessageReaction[], any>(
       GET_ALL_REACTIONS_KEY(messageId),
       () => getAllReactionsForMessage({ messageId }),

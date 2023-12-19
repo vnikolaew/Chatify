@@ -1,5 +1,5 @@
 import { authClient } from "../../client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 
 export interface RegularSignInModel {
@@ -26,11 +26,9 @@ const regularSignIn = async (model: RegularSignInModel) => {
 };
 
 export const useRegularSignInMutation = () => {
-   const client = useQueryClient();
    return useMutation<any, Error, RegularSignInModel, any>(regularSignIn, {
       onError: console.error,
       onSuccess: (data) => console.log("Sign in success: " + data),
       onSettled: (res) => console.log(res),
-      cacheTime: 60 * 60 * 1000,
    });
 };

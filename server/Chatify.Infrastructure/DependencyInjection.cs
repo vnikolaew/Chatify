@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Reflection;
-using System.Text.Json;
 using AutoMapper.Internal;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.ChatGroups.Contracts;
@@ -55,21 +54,6 @@ using Extensions = Chatify.Shared.Infrastructure.Events.Extensions;
 using IAuthenticationService = Chatify.Application.Authentication.Contracts.IAuthenticationService;
 
 namespace Chatify.Infrastructure;
-
-public sealed class IPAddressConverter
-    : System.Text.Json.Serialization.JsonConverter<IPAddress>
-{
-    public override IPAddress? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        string ipAddressString = reader.GetString();
-        return IPAddress.TryParse(ipAddressString, out var ipAddress)
-            ? ipAddress
-            : default;
-    }
-
-    public override void Write(Utf8JsonWriter writer, IPAddress value, JsonSerializerOptions options)
-        => writer.WriteStringValue(value.ToString());
-}
 
 public static class DependencyInjection
 {
@@ -147,16 +131,6 @@ public static class DependencyInjection
             .AddScoped<INotificationService, SignalRNotificationService>()
             .AddSignalR(opts => { opts.KeepAliveInterval = 30.Seconds(); })
             .AddJsonProtocol()
-            // .AddMessagePackProtocol(opts => {
-            //     StaticCompositeResolver.Instance.Register(
-            //         StandardResolver.Instance);
-            //
-            //     opts.SerializerOptions = MessagePackSerializerOptions
-            //         .Standard
-            //         .WithSecurity(MessagePackSecurity.TrustedData)
-            //         .WithCompression(MessagePackCompression.Lz4Block)
-            //         .WithResolver(StaticCompositeResolver.Instance);
-            // })
             .AddHubOptions<ChatifyHub>(opts =>
             {
                 opts.EnableDetailedErrors = false;
@@ -292,13 +266,6 @@ public static class DependencyInjection
         }
 
         return services;
-
-        // return services
-        //     .AddScoped<IChatMessageReplyRepository, ChatMessageReplyRepository>()
-        //     .AddScoped<IChatGroupAttachmentRepository, ChatGroupAttachmentRepository>()
-        //     .AddScoped<IChatGroupMemberRepository, ChatGroupMembersRepository>()
-        //     .AddScoped<IFriendInvitationRepository, FriendInvitationRepository>()
-        //     .AddScoped<IFriendshipsRepository, FriendshipsRepository>();
     }
 
     public static IServiceCollection AddAuthenticationServices(

@@ -54,6 +54,10 @@ using GetChatGroupsFeedResult =
 using GetChatGroupSharedAttachmentsResult =
     OneOf.OneOf<Chatify.Application.ChatGroups.Commands.UserIsNotMemberError, Chatify.Shared.Abstractions.Queries.
         CursorPaged<Chatify.Domain.Entities.ChatGroupAttachment>>;
+using RemoveChatGroupAdminResult =
+    OneOf.OneOf<Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
+        Chatify.Application.ChatGroups.Commands.UserIsNotMemberError,
+        Chatify.Application.ChatGroups.Commands.UserIsNotGroupAdminError, LanguageExt.Unit>;
 using static Chatify.Web.Features.ChatGroups.Models.Models;
 
 namespace Chatify.Web.Features.ChatGroups;
@@ -268,7 +272,6 @@ public class ChatGroupsController : ApiController
             Accepted);
     }
 
-
     [HttpPost]
     [Route("admins")]
     [ProducesBadRequestApiResponse]
@@ -281,6 +284,28 @@ public class ChatGroupsController : ApiController
         var result = await SendAsync<AddChatGroupAdmin, AddChatGroupAdminResult>(
             addChatGroupAdmin,
             cancellationToken);
+        return result
+            .Match(
+                _ => NotFound(),
+                _ => _.ToBadRequest(),
+                _ => _.ToBadRequest(),
+                _ => Accepted());
+    }
+
+    [HttpDelete]
+    [Route("{chatGroupId:guid}/admins/{adminId:guid}")]
+    [ProducesBadRequestApiResponse]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse]
+    // ReSharper disable once RouteTemplates.MethodMissingRouteParameters
+    public async Task<IActionResult> RemoveAdmin(
+        [FromRoute] RemoveChatGroupAdmin removeChatGroupAdmin,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await SendAsync<RemoveChatGroupAdmin, RemoveChatGroupAdminResult>(
+            removeChatGroupAdmin,
+            cancellationToken);
+        
         return result
             .Match(
                 _ => NotFound(),

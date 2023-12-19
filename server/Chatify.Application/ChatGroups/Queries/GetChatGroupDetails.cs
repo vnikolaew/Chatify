@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.ChatGroups.Commands;
+using Chatify.Application.Common;
 using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Domain.Entities;
@@ -25,12 +26,16 @@ public record GetChatGroupDetails(
 ) : IQuery<GetChatGroupDetailsResult>;
 
 [Timed]
-internal sealed class GetChatGroupDetailsHandler(IIdentityContext identityContext, IChatGroupMemberRepository members,
-        IChatGroupRepository groups, IUserRepository users)
-    : IQueryHandler<GetChatGroupDetails, GetChatGroupDetailsResult>
+internal sealed class GetChatGroupDetailsHandler(
+    IIdentityContext identityContext,
+    IChatGroupMemberRepository members,
+    IChatGroupRepository groups,
+    IUserRepository users)
+    : BaseQueryHandler<GetChatGroupDetails, GetChatGroupDetailsResult>(identityContext)
 {
-    public async Task<GetChatGroupDetailsResult> HandleAsync(
-        GetChatGroupDetails query, CancellationToken cancellationToken = default)
+    public override async Task<GetChatGroupDetailsResult> HandleAsync(
+        GetChatGroupDetails query,
+        CancellationToken cancellationToken = default)
     {
         var group = await groups.GetAsync(query.GroupId, cancellationToken);
         if ( group is null ) return new ChatGroupNotFoundError();

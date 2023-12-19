@@ -1,12 +1,13 @@
 "use client";
-import React from "react";
-import { getMediaUrl, useGetPaginatedMessageRepliesQuery } from "@web/api";
+import React, { useCallback } from "react";
+import { getMediaUrl, useGetChatGroupDetailsQuery, useGetPaginatedMessageRepliesQuery } from "@web/api";
 import { Avatar, Divider, Link, Skeleton, Tooltip } from "@nextui-org/react";
 import { twMerge } from "tailwind-merge";
 import moment from "moment";
-import { useCurrentUserId } from "@hooks";
+import { useCurrentChatGroup, useCurrentUserId } from "@hooks";
 import { ChatMessageReactionSection } from "@components/chat-group";
 import ChatGroupMemberInfoCard from "@components/sidebar/members/ChatGroupMemberInfoCard";
+import { ChatMessageReply } from "@openapi";
 
 export interface ChatMessageRepliesSectionProps {
    messageId: string;
@@ -17,6 +18,8 @@ export const ChatMessageRepliesSection = ({
                                              messageId,
                                              total,
                                           }: ChatMessageRepliesSectionProps) => {
+   const groupId = useCurrentChatGroup();
+   const { data: groupDetails, error: groupError } = useGetChatGroupDetailsQuery(groupId);
    const {
       data: replies,
       isLoading,
@@ -27,6 +30,13 @@ export const ChatMessageRepliesSection = ({
       pagingCursor: null!,
       pageSize: 5,
    });
+
+   const getUserMediaUrlForReply = useCallback((reply: ChatMessageReply) =>
+         getMediaUrl(
+            reply.user?.profilePicture?.mediaUrl ??
+            groupDetails?.members?.find(m => m.id === reply?.userId)?.profilePicture?.mediaUrl),
+      []);
+
    const meId = useCurrentUserId();
 
    if (error) {
@@ -56,9 +66,9 @@ export const ChatMessageRepliesSection = ({
       <div className={` flex mb-4 flex-col items-start w-full gap-2`}>
          <div className={`flex w-full items-center gap-2`}>
             <div className={`text-default-300 inline-flex text-center text-xs`}>
-               <span>{replies?.length}</span>
+               <span>{replies?.pages?.flatMap(_ => _.items)?.length}</span>
                <span className={`ml-1`}>
-                  {replies?.length !== 1 ? "replies" : "reply"}
+                  {replies?.pages?.flatMap(_ => _.items)?.length !== 1 ? "replies" : "reply"}
                </span>
             </div>
             <Divider
@@ -66,7 +76,7 @@ export const ChatMessageRepliesSection = ({
                orientation={"horizontal"}
             />
          </div>
-         {replies?.map((reply, i) => (
+         {replies?.pages?.flatMap(_ => _.items)?.map((reply, i) => (
             <div
                className={`flex px-2 py-1 rounded-lg gap-2 items-center`}
                key={reply.id}
@@ -77,7 +87,7 @@ export const ChatMessageRepliesSection = ({
                   radius={"md"}
                   color={"default"}
                   isBordered
-                  src={getMediaUrl(reply.user?.profilePicture?.mediaUrl)}
+                  src={getUserMediaUrlForReply(reply)}
                />
                <div
                   className={twMerge(

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common;
 using Chatify.Application.Common.Models;
 using Chatify.Application.User.Common;
 using Chatify.Domain.Common;
@@ -27,14 +28,15 @@ public record AddChatGroupMember(
 ) : ICommand<AddChatGroupMemberResult>;
 
 internal sealed class AddChatGroupMemberHandler(
-        IIdentityContext identityContext,
-        IChatGroupMemberRepository members,
-        IDomainRepository<ChatGroup, Guid> groups,
-        IEventDispatcher eventDispatcher,
-        IClock clock, IDomainRepository<Domain.Entities.User, Guid> users)
-    : ICommandHandler<AddChatGroupMember, AddChatGroupMemberResult>
+    IIdentityContext identityContext,
+    IChatGroupMemberRepository members,
+    IDomainRepository<ChatGroup, Guid> groups,
+    IEventDispatcher eventDispatcher,
+    IClock clock,
+    IDomainRepository<Domain.Entities.User, Guid> users)
+    : BaseCommandHandler<AddChatGroupMember, AddChatGroupMemberResult>(eventDispatcher, identityContext, clock)
 {
-    public async Task<AddChatGroupMemberResult> HandleAsync(
+    public override async Task<AddChatGroupMemberResult> HandleAsync(
         AddChatGroupMember command,
         CancellationToken cancellationToken = default)
     {

@@ -3,11 +3,19 @@ import React from "react";
 import { ChatGroupFeedEntry as TChatGroupFeedEntry } from "@openapi";
 import { Reorder, motion } from "framer-motion";
 import ChatGroupFeedEntry from "./ChatGroupFeedEntry";
-import { ScrollShadow } from "@nextui-org/react";
+import { AvatarProps, ScrollShadow } from "@nextui-org/react";
 
 export interface ChatGroupFeedEntriesProps {
    feedEntries: TChatGroupFeedEntry[];
 }
+
+const AVATAR_COLORS: AvatarProps[`color`][] = [
+   `primary`,
+   "danger",
+   "warning",
+   "secondary",
+   "success",
+];
 
 const ChatGroupFeedEntries = ({ feedEntries }: ChatGroupFeedEntriesProps) => {
    return (
@@ -32,7 +40,9 @@ const ChatGroupFeedEntries = ({ feedEntries }: ChatGroupFeedEntriesProps) => {
                      className={i === length - 1 ? `mb-12 w-full` : `w-full`}
                      key={(e as ChatGroupFeedEntry)?.chatGroup?.id}
                   >
-                     <ChatGroupFeedEntry feedEntry={e} />
+                     <ChatGroupFeedEntry
+                        avatarColor={AVATAR_COLORS[i % AVATAR_COLORS.length]}
+                        feedEntry={e} />
                   </motion.div>
                </Reorder.Item>
             ))}

@@ -14,7 +14,7 @@ import { useUserHandle } from "@hooks";
 import {
    useAcceptFriendInviteMutation,
    useDeclineFriendInviteMutation,
-   useFindUserByHandleQuery,
+   useFindUserByHandleQuery, useGetFriendSuggestions,
    useSendFriendInviteMutation,
 } from "@web/api";
 import { FriendInvitationStatus, UserStatus } from "@openapi";
@@ -39,6 +39,8 @@ const FriendsPage = ({}: PageProps) => {
       () => !isLoading && !isFetching && !user,
       [isLoading, isFetching, user],
    );
+   const { data: suggestedFriends, isLoading: friendsLoading } = useGetFriendSuggestions();
+   console.log(suggestedFriends);
 
 
    const {

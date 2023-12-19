@@ -42,7 +42,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
    return (
       <div className={`w-full flex items-start`}>
-         <section className={`grow-[1] resize-x max-w-[400px]`} id={`sidebar`}>
+         <section className={`grow-[1] h-full resize-x max-w-[400px]`} id={`sidebar`}>
             <ChatGroupsFeed />
          </section>
          <section id={`main`} className={`grow-[5]`}>

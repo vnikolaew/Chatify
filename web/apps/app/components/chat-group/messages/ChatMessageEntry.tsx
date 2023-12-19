@@ -9,7 +9,7 @@ import {
 import { getMediaUrl, useGetChatGroupDetailsQuery } from "@web/api";
 import { twMerge } from "tailwind-merge";
 import moment from "moment/moment";
-import React, { Fragment, useEffect, useMemo, useState } from "react";
+import React, { Fragment, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCurrentUserId, useHover } from "@hooks";
 import {

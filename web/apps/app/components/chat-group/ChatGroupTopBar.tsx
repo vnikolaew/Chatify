@@ -24,6 +24,7 @@ export interface ChatGroupTopBarProps {
 
 const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
    const { isUserLoggedIn } = useIsUserLoggedIn();
+
    const chatGroupId = useCurrentChatGroup();
    const t = useTranslations("MainArea.TopBar");
    const { data: me, error: meError } = useGetMyClaimsQuery({
@@ -52,6 +53,14 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
          )?.length,
       [chatGroupDetails?.members],
    );
+   const groupPictureUrl = useMemo(() =>
+      getMediaUrl(
+         isPrivateGroup
+            ? chatGroupDetails?.members?.find(
+               (m) => m.id !== me?.claims?.nameidentifier,
+            )?.profilePicture?.mediaUrl
+            : chatGroupDetails?.chatGroup?.picture?.mediaUrl,
+      ), [isPrivateGroup, chatGroupDetails, me]);
 
    return (
       <div
@@ -69,13 +78,7 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                      color={"danger"}
                      size={"md"}
                      className={`aspect-square object-cover`}
-                     src={getMediaUrl(
-                        isPrivateGroup
-                           ? chatGroupDetails?.members?.find(
-                              (m) => m.id !== me?.claims?.nameidentifier,
-                           )?.profilePicture?.mediaUrl
-                           : chatGroupDetails?.chatGroup?.picture?.mediaUrl,
-                     )}
+                     src={groupPictureUrl}
                   />
                   <div
                      className={`flex flex-col items-start justify-around h-full`}

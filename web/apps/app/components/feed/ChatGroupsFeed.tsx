@@ -11,19 +11,20 @@ import {
    Link,
    Skeleton,
 } from "@nextui-org/react";
-import { useIsUserLoggedIn, useDebounce, useCurrentChatGroup } from "@hooks";
+import { useIsUserLoggedIn, useDebounce } from "@hooks";
 import { useSearchChatGroupsByName } from "@web/api";
 import { HamburgerMenuIcon, NotSentIcon, SearchIcon } from "@icons";
 import ChatGroupFeedEntries from "@components/feed/ChatGroupFeedEntries";
 import { useTranslations } from "next-intl";
 
-export interface ChatGroupsFeedProps {}
+export interface ChatGroupsFeedProps {
+}
 
 const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
    const { isUserLoggedIn } = useIsUserLoggedIn();
    const [searchTerm, setSearchTerm] = useState("");
    const debouncedSearch = useDebounce(searchTerm, 2000);
-   const t = useTranslations('FeedSidebar');
+   const t = useTranslations("FeedSidebar");
    const {
       data: searchEntries,
       isLoading: searchLoading,
@@ -31,7 +32,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
       error: searchError,
    } = useSearchChatGroupsByName(
       { query: debouncedSearch },
-      { enabled: debouncedSearch?.length >= 3 }
+      { enabled: debouncedSearch?.length >= 3 },
    );
 
    const {
@@ -44,7 +45,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
          offset: 0,
          limit: 10,
       },
-      { enabled: isUserLoggedIn }
+      { enabled: isUserLoggedIn },
    );
 
    const filteredEntries = useMemo(() => {
@@ -53,6 +54,8 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
       const searchEntryIds = new Set(searchEntries?.map((_) => _.id));
       return feedEntries?.filter((e) => searchEntryIds.has(e.chatGroup.id));
    }, [debouncedSearch, searchEntries, feedEntries]);
+
+   const [sizes, setSizes] = useState([100, 50]);
 
    // @ts-ignore
    return (

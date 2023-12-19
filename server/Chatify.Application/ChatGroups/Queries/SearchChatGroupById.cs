@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.ChatGroups.Commands;
+using Chatify.Application.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
@@ -13,12 +14,12 @@ public record SearchChatGroupById(
     [Required] Guid GroupId
     ):  IQuery<SearchChatGroupByIdResult>;
 
-internal sealed class SearchChatGroupByIdHandler(IIdentityContext identityContext, IChatGroupRepository groups)
-    : IQueryHandler<SearchChatGroupById, SearchChatGroupByIdResult>
+internal sealed class SearchChatGroupByIdHandler(
+    IIdentityContext identityContext,
+    IChatGroupRepository groups)
+    : BaseQueryHandler<SearchChatGroupById, SearchChatGroupByIdResult>(identityContext)
 {
-    private readonly IIdentityContext _identityContext = identityContext;
-
-    public async Task<SearchChatGroupByIdResult> HandleAsync(
+    public override async Task<SearchChatGroupByIdResult> HandleAsync(
         SearchChatGroupById query,
         CancellationToken cancellationToken = default)
     {

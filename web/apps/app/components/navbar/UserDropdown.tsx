@@ -14,11 +14,11 @@ import {
    ListboxItem,
    Popover,
    PopoverContent,
-   PopoverTrigger, Select, SelectItem,
+   PopoverTrigger,
    Spinner,
    Switch,
 } from "@nextui-org/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
    ChangeUserStatusModel,
    getMediaUrl,
@@ -32,7 +32,6 @@ import { useIsUserLoggedIn } from "@hooks";
 import { UserStatus } from "@openapi";
 import { ExitIcon, PlusIcon, ProfileIcon, RightArrow } from "@icons";
 import ChatBubbleIcon from "@components/icons/ChatBubbleIcon";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 export const USER_STATUSES = new Set<{
@@ -74,6 +73,13 @@ export const UserDropdown = ({}: UserDropdownProps) => {
    const [loadingAction, setLoadingAction] = useState<string>(null!);
    const [isStatusPopoverOpen, setIsStatusPopoverOpen] = useState(false);
    const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
+   const visibleStatuses = useMemo(() => {
+      return [...USER_STATUSES]
+         .filter(
+            (s) => s.status !== userDetails?.user.status,
+         );
+   }, [userDetails]);
+
    const t = useTranslations(`MainNavbar`);
 
    useEffect(() => {
@@ -146,15 +152,18 @@ export const UserDropdown = ({}: UserDropdownProps) => {
          <DropdownMenu
             className={`gap-2 min-w-[200px]`}
             onAction={async (key) => {
-               if (key === "sign-out") {
-                  await handleSignOut();
-               }
-               if (key === "status") {
-                  console.log("im here");
-                  setIsDropdownMenuOpen(true);
-               }
-               if (key === "create-chat-group") {
-                  setIsDropdownMenuOpen(false);
+               switch (key) {
+                  case "sign-out":
+                     await handleSignOut();
+                     break;
+                  case "status":
+                     setIsDropdownMenuOpen(true);
+                     break;
+                  case "create-chat-group":
+                     setIsDropdownMenuOpen(false);
+                     break;
+                  default:
+                     break;
                }
             }}
             aria-label={"User actions"}
@@ -207,7 +216,6 @@ export const UserDropdown = ({}: UserDropdownProps) => {
                      onOpenChange={open => {
                         if (isStatusPopoverOpen) setIsStatusPopoverOpen(false);
                         else {
-                           // setIsDropdownMenuOpen(open)
                            setIsStatusPopoverOpen(open);
                         }
                      }}
@@ -226,7 +234,6 @@ export const UserDropdown = ({}: UserDropdownProps) => {
                            endContent={
                               <RightArrow
                                  fill={`white`}
-                                 // className={`fill:white`}
                                  size={22}
                               />
                            }
@@ -242,10 +249,7 @@ export const UserDropdown = ({}: UserDropdownProps) => {
                            variant={"solid"}
                            aria-label={"Statuses"}
                         >
-                           {[...USER_STATUSES]
-                              .filter(
-                                 (s) => s.status !== userDetails?.user.status,
-                              )
+                           {visibleStatuses
                               .map(({ status, color }, i) => (
                                  <ListboxItem
                                     // color={color}

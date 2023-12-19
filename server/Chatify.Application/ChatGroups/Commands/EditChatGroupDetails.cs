@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Application.User.Commands;
@@ -7,6 +8,7 @@ using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
+using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
 using LanguageExt.Common;
@@ -24,13 +26,16 @@ public record EditChatGroupDetails(
     InputFile? Picture
 ) : ICommand<EditChatGroupDetailsResult>;
 
-internal sealed class EditChatGroupDetailsHandler(IDomainRepository<ChatGroup, Guid> groups,
-        IChatGroupMemberRepository members,
-        IIdentityContext identityContext, IClock clock,
-        IFileUploadService fileUploadService)
-    : ICommandHandler<EditChatGroupDetails, EditChatGroupDetailsResult>
+internal sealed class EditChatGroupDetailsHandler(
+    IDomainRepository<ChatGroup, Guid> groups,
+    IChatGroupMemberRepository members,
+    IIdentityContext identityContext,
+    IClock clock,
+    IFileUploadService fileUploadService,
+    IEventDispatcher eventDispatcher)
+    : BaseCommandHandler<EditChatGroupDetails, EditChatGroupDetailsResult>(eventDispatcher, identityContext, clock)
 {
-    public async Task<EditChatGroupDetailsResult> HandleAsync(
+    public override async Task<EditChatGroupDetailsResult> HandleAsync(
         EditChatGroupDetails command,
         CancellationToken cancellationToken = default)
     {
@@ -39,7 +44,7 @@ internal sealed class EditChatGroupDetailsHandler(IDomainRepository<ChatGroup, G
 
         var isMember = await members.Exists(group.Id, identityContext.Id, cancellationToken);
         if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, group.Id);
-        
+
         if ( !group.AdminIds.Contains(identityContext.Id) )
             return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
 
@@ -65,7 +70,7 @@ internal sealed class EditChatGroupDetailsHandler(IDomainRepository<ChatGroup, G
                     File = command.Picture
                 }, cancellationToken);
             if ( result.Value is Error uploadError ) return new FileUploadError(uploadError.Message);
-            
+
             if ( result.Value is FileUploadResult newMedia )
             {
                 groupPicture = new Media

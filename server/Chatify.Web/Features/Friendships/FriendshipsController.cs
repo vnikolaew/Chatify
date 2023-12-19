@@ -147,4 +147,15 @@ public class FriendshipsController : ApiController
             _ => BadRequest(),
             _ => NoContent());
     }
+    
+    [HttpGet]
+    [Route("suggestions")]
+    [ProducesBadRequestApiResponse]
+    [ProducesNoContentApiResponse]
+    public async Task<IActionResult> GetFriendSuggestions(CancellationToken cancellationToken = default)
+    {
+        var result = await QueryAsync<GetFriendSuggestions, List<ChatGroupMember>>(
+            new GetFriendSuggestions(), cancellationToken);
+        return Ok(result);
+    }
 }

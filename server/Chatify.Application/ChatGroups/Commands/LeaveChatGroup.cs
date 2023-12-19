@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Groups;
@@ -19,13 +20,15 @@ public record LeaveChatGroup(
     [MinLength(3), MaxLength(200)] string? Reason
 ) : ICommand<LeaveChatGroupResult>;
 
-internal sealed class LeaveChatGroupHandler(IChatGroupMemberRepository members,
-        IClock clock, IDomainRepository<ChatGroup, Guid> groups,
-        IIdentityContext identityContext,
-        IEventDispatcher eventDispatcher)
-    : ICommandHandler<LeaveChatGroup, LeaveChatGroupResult>
+internal sealed class LeaveChatGroupHandler(
+    IChatGroupMemberRepository members,
+    IClock clock,
+    IDomainRepository<ChatGroup, Guid> groups,
+    IIdentityContext identityContext,
+    IEventDispatcher eventDispatcher)
+    : BaseCommandHandler<LeaveChatGroup, LeaveChatGroupResult>(eventDispatcher, identityContext, clock)
 {
-    public async Task<LeaveChatGroupResult> HandleAsync(
+    public override async Task<LeaveChatGroupResult> HandleAsync(
         LeaveChatGroup command,
         CancellationToken cancellationToken = default)
     {

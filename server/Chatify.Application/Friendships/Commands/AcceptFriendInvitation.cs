@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.Common;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Domain.Common;
@@ -24,19 +25,21 @@ public record FriendInviteInvalidStateError(FriendInvitationStatus Status)
 
 public record AcceptFriendInvitation([Required] Guid InviteId) : ICommand<AcceptFriendInvitationResult>;
 
-internal sealed class AcceptFriendInvitationHandler(IIdentityContext identityContext,
-        IDomainRepository<FriendInvitation, Guid> friendInvites,
-        IFriendshipsRepository friends,
-        IClock clock,
-        IEventDispatcher eventDispatcher,
-        IGuidGenerator guidGenerator,
-        IChatGroupRepository groups,
-        IChatGroupMemberRepository members,
-        IUserRepository users)
+internal sealed class AcceptFriendInvitationHandler(
+    IIdentityContext identityContext,
+    IDomainRepository<FriendInvitation, Guid> friendInvites,
+    IFriendshipsRepository friends,
+    IClock clock,
+    IEventDispatcher eventDispatcher,
+    IGuidGenerator guidGenerator,
+    IChatGroupRepository groups,
+    IChatGroupMemberRepository members,
+    IUserRepository users)
     :
-        ICommandHandler<AcceptFriendInvitation, AcceptFriendInvitationResult>
+        BaseCommandHandler<AcceptFriendInvitation, AcceptFriendInvitationResult>(eventDispatcher, identityContext,
+            clock)
 {
-    public async Task<AcceptFriendInvitationResult> HandleAsync(
+    public override async Task<AcceptFriendInvitationResult> HandleAsync(
         AcceptFriendInvitation command,
         CancellationToken cancellationToken = default)
     {
@@ -95,7 +98,7 @@ internal sealed class AcceptFriendInvitationHandler(IIdentityContext identityCon
                 MembershipType = 0,
             }
         };
-        
+
         await Task.WhenAll(groupMembers
             .Select(m =>
                 members.SaveAsync(m, cancellationToken)));

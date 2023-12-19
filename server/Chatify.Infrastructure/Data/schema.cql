@@ -188,7 +188,7 @@ CREATE TABLE IF NOT EXISTS chat_message_replies
     content         text,
     attachments     set<frozen<media>>,
     metadata        map<text, text>,
-    reaction_counts map<smallint, bigint>,
+    reaction_counts map<bigint, bigint>,
     created_at      timestamp,
     updated_at      timestamp,
     replies_count   bigint static,

@@ -11,7 +11,7 @@ import { NextIntlClientProvider } from "next-intl";
 import Footer from "./footer";
 
 export const metadata: Metadata = {
-   title: "Chatify 2023",
+   title: `Chatify - ${new Date().getFullYear()}`,
    description: "Chatify - converse with your fellas!",
    icons: [],
 } satisfies Metadata;
@@ -26,9 +26,6 @@ const roboto = Roboto({
    subsets: ["latin"],
 });
 
-export function __IS_DEV__() {
-   return process.env.NODE_ENV === "development";
-}
 
 export function __IS_COOKIE_CONSENT_ENABLED__() {
    return process.env.COOKIE_CONSENT_ENABLED === "1";
@@ -46,7 +43,7 @@ async function ChatifyLayout({ children, params: { locale }, ...rest }: PropsWit
    return (
       <html lang={locale} className={`${inter.className} bg-gray-950 text-white`}>
       <body className={`dark`}>
-      <Providers isDevelopment={__IS_DEV__()}>
+      <Providers>
          <NextIntlClientProvider locale={locale} messages={messages}>
             <MainNavbar />
             <main className="app">{children}</main>

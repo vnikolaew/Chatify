@@ -90,7 +90,7 @@ const ChatMessageActionsToolbar = ({
 
    return (
       <div
-         className={`absolute px-1 border-1 border-default-300 z-10 flex items-center gap-1 text-xs min-h-fit max-h-fit rounded-md bg-zinc-900 -translate-y-1/2 top-0 right-10`}
+         className={`absolute px-0 border-1 border-default-300 z-10 flex items-center gap-0 text-xs min-h-fit max-h-fit rounded-lg bg-zinc-900 -translate-y-1/2 top-0 right-10`}
       >
          {messageActions.filter(Boolean).map(({ label, Icon, action, loading }, i) => (
             <TooltipButton

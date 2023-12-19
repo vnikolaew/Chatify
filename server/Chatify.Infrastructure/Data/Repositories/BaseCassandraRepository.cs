@@ -101,7 +101,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
 
         var clusteringKeys = MappingDefinition
             .ClusteringKeys
-            .Select(tuple => MappingDefinition.GetColumnDefinition(typeof(TDataEntity).GetProperty(tuple.Item1)!)!.ColumnName)
+            .Select(tuple => tuple.Item1)
             .ToHashSet();
         
         primaryKeys.UnionWith(clusteringKeys);
@@ -123,7 +123,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         var cql = new Cql($" UPDATE {MappingDefinition.TableName} SET {string.Join(
             ", ",
             tableColumns
-                .Select(c => $"{c.name} = ?").ToList())} WHERE {filterStatement} ALLOW FILTERING;")
+                .Select(c => $"{c.name} = ?").ToList())} WHERE {filterStatement};")
             .WithOptions(opts =>
                 opts.SetConsistencyLevel(ConsistencyLevel.Quorum)
                     .SetRetryPolicy(new DefaultRetryPolicy()))

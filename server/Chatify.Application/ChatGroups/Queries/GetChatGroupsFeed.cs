@@ -1,5 +1,5 @@
-﻿using System.Text;
-using Chatify.Application.ChatGroups.Contracts;
+﻿using Chatify.Application.ChatGroups.Contracts;
+using Chatify.Application.Common;
 using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Application.Common.Models;
 using Chatify.Domain.Entities;
@@ -22,15 +22,16 @@ public record ChatGroupFeedEntry(
 }
 
 [Timed]
-public record GetChatGroupsFeed
-    (int Limit, int Offset) : IQuery<GetChatGroupsFeedResult>;
+public record GetChatGroupsFeed(int Limit, int Offset) : IQuery<GetChatGroupsFeedResult>;
 
-internal sealed class GetChatGroupsFeedHandler(IIdentityContext identityContext,
-        IChatGroupsFeedService feedService)
-    : IQueryHandler<GetChatGroupsFeed, GetChatGroupsFeedResult>
+internal sealed class GetChatGroupsFeedHandler(
+    IIdentityContext identityContext,
+    IChatGroupsFeedService feedService)
+    : BaseQueryHandler<GetChatGroupsFeed, GetChatGroupsFeedResult>(identityContext)
 {
-    public async Task<GetChatGroupsFeedResult> HandleAsync(
-        GetChatGroupsFeed query, CancellationToken cancellationToken = default)
+    public override async Task<GetChatGroupsFeedResult> HandleAsync(
+        GetChatGroupsFeed query,
+        CancellationToken cancellationToken = default)
         => await feedService.GetFeedEntriesForUserAsync(
             identityContext.Id,
             query.Limit,

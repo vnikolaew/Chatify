@@ -1,5 +1,5 @@
 import { messagesClient } from "../client";
-import { InfiniteData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import {
    ChatGroupDetailsEntry,
@@ -7,7 +7,7 @@ import {
    ChatMessageReply,
    ChatMessageReplyCursorPagedApiResponse,
    CursorPaged,
-   MessageSenderInfoEntry,
+   MessageSenderInfoEntry, User,
    // @ts-ignore
 } from "@openapi";
 import { GET_PAGINATED_GROUP_MESSAGES_KEY } from "./useGetPaginatedGroupMessagesQuery";
@@ -19,7 +19,7 @@ export interface GetPaginatedMessageRepliesModel {
 }
 
 const getPaginatedMessageReplies = async (
-   model: GetPaginatedMessageRepliesModel
+   model: GetPaginatedMessageRepliesModel,
 ): Promise<ChatMessageReply[]> => {
    const { messageId, pageSize, pagingCursor } = model;
    const params = new URLSearchParams({
@@ -33,7 +33,7 @@ const getPaginatedMessageReplies = async (
          {
             headers: {},
             params,
-         }
+         },
       );
 
    if (status === HttpStatusCode.BadRequest) {
@@ -43,23 +43,27 @@ const getPaginatedMessageReplies = async (
    return data.data;
 };
 
+export const GET_PAGINATED_GROUP_MESSAGE_REPLIES_KEY = (messageId: string) => [
+   `message`,
+   messageId,
+   `replies`,
+];
+
 export const useGetPaginatedMessageRepliesQuery = (
-   model: GetPaginatedMessageRepliesModel
+   model: GetPaginatedMessageRepliesModel,
 ) => {
    const client = useQueryClient();
 
-   return useQuery<ChatMessageReply[], Error, ChatMessageReply[], any>({
-      queryKey: [
-         `message`,
-         model.messageId,
-         `replies`,
-         model.pageSize,
-         model.pagingCursor,
-      ],
+   return useInfiniteQuery<CursorPaged<ChatMessageReply>, Error, CursorPaged<ChatMessageReply>, any>({
+      queryKey: GET_PAGINATED_GROUP_MESSAGE_REPLIES_KEY(model.messageId),
       queryFn: () => getPaginatedMessageReplies(model),
+      getNextPageParam: (lastPage) => {
+         return lastPage.pagingCursor;
+      },
+      getPreviousPageParam: (_, allPages) => allPages.at(-1)?.pagingCursor,
       cacheTime: 60 * 60 * 1000,
       onSuccess: (data) => {
-         data.forEach((reply) => {
+         data.pages.flatMap(_ => _).forEach((reply) => {
             const x = client.getQueryData<
                InfiniteData<CursorPaged<ChatGroupMessageEntry>>
             >(GET_PAGINATED_GROUP_MESSAGES_KEY(reply.chatGroupId), {
@@ -83,9 +87,9 @@ export const useGetPaginatedMessageRepliesQuery = (
                const chatGroupUser = client
                   .getQueryData<ChatGroupDetailsEntry>(
                      [`chat-group`, reply.chatGroupId],
-                     { exact: true }
+                     { exact: true },
                   )
-                  ?.members.find((m) => m.id === reply.userId);
+                  ?.members.find((m: User) => m.id === reply.userId);
                if (chatGroupUser) {
                   reply.user = {
                      id: chatGroupUser.id,
