@@ -14,8 +14,7 @@ internal sealed class ActivityEnricherHandlerDecorator<TRequest, TResponse>(
 {
     private const string ActivitySourceName = "Chatify";
     
-    public async Task<TResponse> HandleAsync(
-        TRequest query,
+    public async Task<TResponse> HandleAsync(TRequest query,
         CancellationToken cancellationToken = default)
     {
         var source = new ActivitySource(ActivitySourceName);

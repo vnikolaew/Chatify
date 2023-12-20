@@ -23,8 +23,7 @@ internal sealed class GetChatGroupSharedAttachmentsHandler(
     IChatGroupAttachmentRepository attachments)
     : BaseQueryHandler<GetChatGroupSharedAttachments, GetChatGroupSharedAttachmentsResult>(identityContext)
 {
-    public override async Task<GetChatGroupSharedAttachmentsResult> HandleAsync(
-        GetChatGroupSharedAttachments query,
+    public override async Task<GetChatGroupSharedAttachmentsResult> HandleAsync(GetChatGroupSharedAttachments query,
         CancellationToken cancellationToken = default)
     {
         var isGroupMember = await members.Exists(

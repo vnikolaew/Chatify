@@ -17,8 +17,7 @@ public record SearchUsersByName(
 internal sealed class SearchUsersByNameHandler
     (IUserRepository users) : IQueryHandler<SearchUsersByName, SearchUsersByNameResult>
 {
-    public async Task<SearchUsersByNameResult> HandleAsync(
-        SearchUsersByName command,
+    public async Task<SearchUsersByNameResult> HandleAsync(SearchUsersByName command,
         CancellationToken cancellationToken = default)
     {
         // Figure out Full-Text search here:

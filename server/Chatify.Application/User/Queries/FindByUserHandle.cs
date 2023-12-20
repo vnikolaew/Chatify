@@ -25,8 +25,7 @@ internal sealed class FindByUserHandleHandler
     IIdentityContext identityContext
 ) : IQueryHandler<FindByUserHandle, FindByUserHandleResult>
 {
-    public async Task<FindByUserHandleResult> HandleAsync(
-        FindByUserHandle query,
+    public async Task<FindByUserHandleResult> HandleAsync(FindByUserHandle query,
         CancellationToken cancellationToken = default)
     {
         var user = await users.FindByUserHandle(query.UserHandle,

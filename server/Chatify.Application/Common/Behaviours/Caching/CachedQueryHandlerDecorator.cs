@@ -36,8 +36,7 @@ public sealed class CachedQueryHandlerDecorator<TQuery, TResult>(IQueryHandler<T
 
     private static bool IsCachingEnabled => CachedQueryOptions.ContainsKey(typeof(TQuery));
 
-    public async Task<TResult> HandleAsync(
-        TQuery query,
+    public async Task<TResult> HandleAsync(TQuery query,
         CancellationToken cancellationToken = default)
     {
         if ( !IsCachingEnabled )

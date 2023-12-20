@@ -17,8 +17,7 @@ internal sealed class GetMyFriendsHandler(IFriendshipsRepository friendships,
         IIdentityContext identityContext)
     : IQueryHandler<GetMyFriends, GetMyFriendsResult>
 {
-    public async Task<GetMyFriendsResult> HandleAsync(
-        GetMyFriends query,
+    public async Task<GetMyFriendsResult> HandleAsync(GetMyFriends query,
         CancellationToken cancellationToken = default)
         => await friendships.AllForUser(identityContext.Id, cancellationToken);
 }

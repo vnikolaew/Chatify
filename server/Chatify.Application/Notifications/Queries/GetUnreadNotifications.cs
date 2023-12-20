@@ -15,8 +15,7 @@ internal sealed class GetUnreadNotificationsHandler(IIdentityContext identityCon
         INotificationRepository notifications)
     : IQueryHandler<GetUnreadNotifications, GetUnreadNotificationsResult>
 {
-    public async Task<GetUnreadNotificationsResult> HandleAsync(
-        GetUnreadNotifications _,
+    public async Task<GetUnreadNotificationsResult> HandleAsync(GetUnreadNotifications _,
         CancellationToken cancellationToken = default)
     {
         var allNotifications = await notifications.AllForUserAsync(

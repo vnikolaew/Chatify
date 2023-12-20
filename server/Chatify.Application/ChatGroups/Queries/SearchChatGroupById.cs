@@ -19,8 +19,7 @@ internal sealed class SearchChatGroupByIdHandler(
     IChatGroupRepository groups)
     : BaseQueryHandler<SearchChatGroupById, SearchChatGroupByIdResult>(identityContext)
 {
-    public override async Task<SearchChatGroupByIdResult> HandleAsync(
-        SearchChatGroupById query,
+    public override async Task<SearchChatGroupByIdResult> HandleAsync(SearchChatGroupById query,
         CancellationToken cancellationToken = default)
     {
         var group = await groups.GetAsync(query.GroupId, cancellationToken);

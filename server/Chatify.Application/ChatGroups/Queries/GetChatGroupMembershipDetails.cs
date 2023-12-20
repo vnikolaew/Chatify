@@ -26,8 +26,7 @@ internal sealed class
     : BaseQueryHandler<GetChatGroupMembershipDetails,
         GetChatGroupMembershipDetailsResult>(identityContext)
 {
-    public override async Task<GetChatGroupMembershipDetailsResult> HandleAsync(
-        GetChatGroupMembershipDetails query,
+    public override async Task<GetChatGroupMembershipDetailsResult> HandleAsync(GetChatGroupMembershipDetails query,
         CancellationToken cancellationToken = default)
     {
         var isMember = await members.Exists(query.GroupId, identityContext.Id, cancellationToken);

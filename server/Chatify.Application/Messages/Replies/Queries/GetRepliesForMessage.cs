@@ -25,8 +25,7 @@ internal sealed class GetRepliesByForMessageHandler(IChatMessageReplyRepository 
         IChatMessageRepository messages)
     : IQueryHandler<GetRepliesForMessage, GetRepliesForMessageResult>
 {
-    public async Task<GetRepliesForMessageResult> HandleAsync(
-        GetRepliesForMessage command,
+    public async Task<GetRepliesForMessageResult> HandleAsync(GetRepliesForMessage command,
         CancellationToken cancellationToken = default)
     {
         var message = await messages.GetAsync(

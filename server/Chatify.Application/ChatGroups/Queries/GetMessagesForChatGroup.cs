@@ -33,8 +33,7 @@ internal sealed class GetMessagesByChatGroupHandler(
         IUserRepository users)
     : BaseQueryHandler<GetMessagesForChatGroup, GetMessagesForChatGroupResult>(identityContext)
 {
-    public override async Task<GetMessagesForChatGroupResult> HandleAsync(
-        GetMessagesForChatGroup command,
+    public override async Task<GetMessagesForChatGroupResult> HandleAsync(GetMessagesForChatGroup command,
         CancellationToken cancellationToken = default)
     {
         var isGroupMember = await members.Exists(

@@ -12,7 +12,8 @@ public sealed class ActivitySourceHandlerDecorator<TRequest, TResponse>(
 ) : IQueryHandler<TRequest, TResponse>
     where TRequest : class, IQuery<TResponse>
 {
-    public async Task<TResponse> HandleAsync(TRequest query, CancellationToken cancellationToken = default)
+    public async Task<TResponse> HandleAsync(TRequest query,
+        CancellationToken cancellationToken = default)
     {
         var source = new ActivitySource("Chatify");
         using var activity = source.StartActivity(typeof(TRequest).Name, ActivityKind.Server);

@@ -30,8 +30,7 @@ internal sealed class GetChatGroupJoinRequestsHandler(IChatGroupJoinRequestRepos
         IUserRepository users)
     : IQueryHandler<GetChatGroupJoinRequests, GetChatGroupJoinRequestsResult>
 {
-    public async Task<GetChatGroupJoinRequestsResult> HandleAsync(
-        GetChatGroupJoinRequests query,
+    public async Task<GetChatGroupJoinRequestsResult> HandleAsync(GetChatGroupJoinRequests query,
         CancellationToken cancellationToken = default)
     {
         var group = await groups.GetAsync(query.GroupId, cancellationToken);

@@ -15,8 +15,7 @@ internal sealed class GetSentInvitationsHandler(IIdentityContext identityContext
         IFriendInvitationRepository friendInvitations)
     : IQueryHandler<GetSentInvitations, GetSentInvitationsResult>
 {
-    public async Task<GetSentInvitationsResult> HandleAsync(
-        GetSentInvitations query,
+    public async Task<GetSentInvitationsResult> HandleAsync(GetSentInvitations query,
         CancellationToken cancellationToken = default)
     {
         var invites = await friendInvitations.AllSentByUserAsync(identityContext.Id, cancellationToken);

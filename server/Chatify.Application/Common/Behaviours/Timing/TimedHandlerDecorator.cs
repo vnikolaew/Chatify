@@ -29,8 +29,8 @@ public sealed class TimedHandlerDecorator<TQuery, TResult>(IQueryHandler<TQuery,
 
     private static bool IsTimingEnabled => EnabledQueries.Contains(typeof(TQuery));
 
-    public async Task<TResult> HandleAsync(
-        TQuery query, CancellationToken cancellationToken = default)
+    public async Task<TResult> HandleAsync(TQuery query,
+        CancellationToken cancellationToken = default)
     {
         if ( !IsTimingEnabled ) return await inner.HandleAsync(query, cancellationToken);
 

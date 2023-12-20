@@ -26,8 +26,7 @@ internal sealed class SearchChatGroupMembersByNameHandler(
     IUserRepository users)
     : BaseQueryHandler<SearchChatGroupMembersByName, SearchChatGroupMembersByNameResult>(identityContext)
 {
-    public override async Task<SearchChatGroupMembersByNameResult> HandleAsync(
-        SearchChatGroupMembersByName query,
+    public override async Task<SearchChatGroupMembersByNameResult> HandleAsync(SearchChatGroupMembersByName query,
         CancellationToken cancellationToken = default)
     {
         var isMember = await members

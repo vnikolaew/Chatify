@@ -40,14 +40,17 @@ internal sealed class ChatGroupMemberAddedEventHandler(
             )
         );
 
-        await chatifyHubContext
-            .Clients
-            .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
-            .ChatGroupMemberAdded(new ChatGroupMemberAdded(
-                @event.GroupId,
-                @event.AddedById,
-                member!.Id,
-                member.Username,
-                @event.Timestamp));
+        if ( chatifyHubContext is not null )
+        {
+            await chatifyHubContext
+                .Clients
+                .Group(ChatifyHub.GetChatGroupId(@event.GroupId))
+                .ChatGroupMemberAdded(new ChatGroupMemberAdded(
+                    @event.GroupId,
+                    @event.AddedById,
+                    member!.Id,
+                    member.Username,
+                    @event.Timestamp));
+        }
     }
 }

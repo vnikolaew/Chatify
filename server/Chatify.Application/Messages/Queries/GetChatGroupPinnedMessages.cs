@@ -26,8 +26,7 @@ internal sealed class GetChatGroupPinnedMessagesHandler(
         IChatMessageRepository messages)
     : IQueryHandler<GetChatGroupPinnedMessages, GetChatGroupPinnedMessagesResult>
 {
-    public async Task<GetChatGroupPinnedMessagesResult> HandleAsync(
-        GetChatGroupPinnedMessages query,
+    public async Task<GetChatGroupPinnedMessagesResult> HandleAsync(GetChatGroupPinnedMessages query,
         CancellationToken cancellationToken = default)
     {
         var group = await groups.GetAsync(query.GroupId, cancellationToken);

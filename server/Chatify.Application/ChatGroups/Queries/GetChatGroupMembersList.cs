@@ -27,8 +27,7 @@ internal sealed class GetChatGroupMembersListHandler(
     IUserRepository users)
     : BaseQueryHandler<GetChatGroupMembersList, GetChatGroupMembersListResult>(identityContext)
 {
-    public override async Task<GetChatGroupMembersListResult> HandleAsync(
-        GetChatGroupMembersList command,
+    public override async Task<GetChatGroupMembersListResult> HandleAsync(GetChatGroupMembersList command,
         CancellationToken cancellationToken = default)
     {
         var group = await groups.GetAsync(

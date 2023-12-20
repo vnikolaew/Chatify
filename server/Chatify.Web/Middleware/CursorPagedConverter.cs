@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using Chatify.Shared.Abstractions.Queries;
 using Humanizer;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Chatify.Web.Middleware;
 
@@ -33,10 +34,10 @@ public sealed class CursorPagedConverter<T>
 
         writer.WritePropertyName(nameof(CursorPaged<T>.PagingCursor).Camelize());
         writer.WriteStringValue(value.PagingCursor);
-        
+
         writer.WritePropertyName(nameof(CursorPaged<T>.HasMore).Camelize());
         writer.WriteBooleanValue(value.HasMore);
-        
+
         writer.WritePropertyName(nameof(CursorPaged<T>.Total).Camelize());
         writer.WriteNumberValue(value.Total);
 
@@ -44,7 +45,13 @@ public sealed class CursorPagedConverter<T>
         writer.WriteNumberValue(value.PageSize);
 
         writer.WritePropertyName(nameof(CursorPaged<T>.Items).Camelize());
-        JsonSerializer.Serialize(writer, value.Items, options);
+        writer.WriteStartArray();
+        foreach ( var item in value.Items )
+        {
+            JsonSerializer.Serialize(writer, item, item.GetType(), options);
+        }
+        writer.WriteEndArray();
+
 
         writer.WriteEndObject();
     }

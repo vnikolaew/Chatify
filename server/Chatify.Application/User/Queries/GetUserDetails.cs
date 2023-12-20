@@ -30,8 +30,7 @@ internal sealed class GetUserDetailsHandler(IIdentityContext identityContext,
         IFriendInvitationRepository friendInvites)
     : IQueryHandler<GetUserDetails, GetUserDetailsResult>
 {
-    public async Task<GetUserDetailsResult> HandleAsync(
-        GetUserDetails query,
+    public async Task<GetUserDetailsResult> HandleAsync(GetUserDetails query,
         CancellationToken cancellationToken = default)
     {
         var user = await users.GetAsync(query.UserId, cancellationToken);
