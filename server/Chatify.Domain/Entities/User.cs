@@ -18,7 +18,7 @@ public class User : IDomainEntity
     public List<string> Roles { get; set; } = new();
 
     public ISet<PhoneNumber> PhoneNumbers { get; set; } = new HashSet<PhoneNumber>();
-    
+
     public Media ProfilePicture { get; set; } = default!;
 
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
@@ -30,11 +30,13 @@ public class User : IDomainEntity
     public HashSet<IPAddress> DeviceIps { get; init; } = new();
 
     public Metadata Metadata { get; init; } = new Dictionary<string, string>();
-    
+
+    public HashSet<Guid> StarredChatGroups { get; init; } = [];
+
     public string DisplayName { get; set; }
-    
+
     public string UserHandle { get; set; }
-    
+
     public void AddDeviceIp(IPAddress ipAddress)
         => DeviceIps.Add(ipAddress);
 }

@@ -58,6 +58,14 @@ using RemoveChatGroupAdminResult =
     OneOf.OneOf<Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
         Chatify.Application.ChatGroups.Commands.UserIsNotMemberError,
         Chatify.Application.ChatGroups.Commands.UserIsNotGroupAdminError, LanguageExt.Unit>;
+using StarChatGroupResult =
+    OneOf.OneOf<Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError,
+        Chatify.Application.User.Common.UserNotFound, LanguageExt.Unit>;
+using GetStarredGroupsResult =
+    OneOf.OneOf<Chatify.Application.User.Common.UserNotFound,
+        System.Collections.Generic.List<Chatify.Domain.Entities.ChatGroup>>;
+using UnstarChatGroupResult = OneOf.OneOf<Chatify.Application.User.Common.UserNotFound, Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError, LanguageExt.Unit>;
+
 using static Chatify.Web.Features.ChatGroups.Models.Models;
 
 namespace Chatify.Web.Features.ChatGroups;
@@ -106,6 +114,20 @@ public class ChatGroupsController : ApiController
     {
         var result = await QueryAsync<GetChatGroupsFeed, GetChatGroupsFeedResult>(
             new GetChatGroupsFeed(limit, offset), cancellationToken);
+        return result.Match(
+            err => err.ToBadRequest(),
+            Ok);
+    }
+    
+    [HttpGet]
+    [Route("starred/feed")]
+    [ProducesBadRequestApiResponse]
+    [ProducesOkApiResponse<List<ChatGroupFeedEntry>>]
+    public async Task<IActionResult> StarredFeed(CancellationToken cancellationToken = default)
+    {
+        var result = await QueryAsync<GetStarredChatGroupsFeed, GetChatGroupsFeedResult>(
+            new GetStarredChatGroupsFeed(), cancellationToken);
+        
         return result.Match(
             err => err.ToBadRequest(),
             Ok);
@@ -305,12 +327,61 @@ public class ChatGroupsController : ApiController
         var result = await SendAsync<RemoveChatGroupAdmin, RemoveChatGroupAdminResult>(
             removeChatGroupAdmin,
             cancellationToken);
-        
+
         return result
             .Match(
                 _ => NotFound(),
                 _ => _.ToBadRequest(),
                 _ => _.ToBadRequest(),
                 _ => Accepted());
+    }
+
+    [HttpPost]
+    [Route("starred/{chatGroupId:guid}")]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse]
+    public async Task<IActionResult> StarChatGroup(
+        [FromRoute] Guid chatGroupId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await SendAsync<StarChatGroup, StarChatGroupResult>(
+            new StarChatGroup(chatGroupId),
+            cancellationToken);
+
+        return result.Match(
+            _ => NotFound(),
+            _ => NotFound(),
+            _ => Accepted());
+    }
+
+    [HttpDelete]
+    [Route("starred/{chatGroupId:guid}")]
+    [ProducesNotFoundApiResponse]
+    [ProducesAcceptedApiResponse]
+    public async Task<IActionResult> UnstarChatGroup(
+        [FromRoute] Guid chatGroupId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await SendAsync<UnstarChatGroup, UnstarChatGroupResult>(
+            new  UnstarChatGroup(chatGroupId),
+            cancellationToken);
+
+        return result.Match(
+            _ => NotFound(),
+            _ => NotFound(),
+            _ => Accepted());
+    }
+
+    [HttpGet]
+    [Route("starred")]
+    [ProducesNotFoundApiResponse]
+    [ProducesOkApiResponse<List<ChatGroup>>]
+    public async Task<IActionResult> StarChatGroup(CancellationToken cancellationToken = default)
+    {
+        var result = await QueryAsync<GetStarredGroups, GetStarredGroupsResult>(
+            new GetStarredGroups(),
+            cancellationToken);
+
+        return result.Match(_ => NotFound(), Ok);
     }
 }

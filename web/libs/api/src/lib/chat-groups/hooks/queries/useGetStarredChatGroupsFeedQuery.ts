@@ -12,26 +12,15 @@ import {
 // @ts-ignore
 } from "@openapi";
 import { sleep } from "../../../utils";
+import { DEFAULT_CACHE_TIME } from "../../../constants";
 
-export interface GetChatGroupsFeedModel {
-   limit: number;
-   offset: number;
-}
 
-const getChatGroupsFeed = async (
-   model: GetChatGroupsFeedModel,
-): Promise<ChatGroupFeedEntry[]> => {
-   const params = new URLSearchParams({
-      limit: `${model.limit}`,
-      offset: model.offset.toString(),
-   });
-
+const getStarredChatGroupsFeedQuery = async (): Promise<ChatGroupFeedEntry[]> => {
    const { status, data } =
-      await chatGroupsClient.get<ChatGroupFeedEntryListApiResponse>(`feed`, {
+      await chatGroupsClient.get<ChatGroupFeedEntryListApiResponse>(`starred/feed`, {
          headers: {},
-         data: model,
-         params,
       });
+
    await sleep(2000);
 
    if (status === HttpStatusCode.BadRequest) {
@@ -41,8 +30,9 @@ const getChatGroupsFeed = async (
    return data.data!;
 };
 
-export const useGetChatGroupsFeedQuery = (
-   model: GetChatGroupsFeedModel = { limit: 10, offset: 0 },
+export const STARRED_FEED_KEY = [`feed`, `starred`]
+
+export const useGetStarredChatGroupsFeedQuery = (
    options?: Omit<
       UseQueryOptions<
          ChatGroupFeedEntry[],
@@ -56,13 +46,12 @@ export const useGetChatGroupsFeedQuery = (
    },
 ) => {
    const client = useQueryClient();
-
    return useQuery({
-      queryKey: [`feed`],
-      queryFn: () => getChatGroupsFeed(model),
+      queryKey: STARRED_FEED_KEY,
+      queryFn: getStarredChatGroupsFeedQuery,
       refetchOnWindowFocus: false,
       refetchInterval: 60 * 5 * 1000,
-      cacheTime: 60 * 60 * 1000,
+      cacheTime: DEFAULT_CACHE_TIME,
       ...options,
    });
 };

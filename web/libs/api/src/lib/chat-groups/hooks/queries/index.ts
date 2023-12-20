@@ -6,3 +6,5 @@ export * from "./useSearchChatGroupsByName";
 export * from "./useSearchChatGroupsByName";
 export * from "./useGetUserMembershipDetailsQuery";
 export * from "./useGetChatGroupPinnedMessages";
+export * from "./useGetStarredChatGroups";
+export * from "./useGetStarredChatGroupsFeedQuery";

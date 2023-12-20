@@ -54,8 +54,23 @@ internal sealed class ChatGroupsFeedService(
         var groupIds = await cache.GetUserFeedAsync(
             userId,
             offset, limit);
+        
         if ( !groupIds.Any() ) return FeedEntryFaker.Generate(10);
+        return await GetFeedByGroups(groupIds.ToList(), cancellationToken);
+    }
 
+    public async Task<List<ChatGroupFeedEntry>> GetStarredFeedEntriesForUserAsync(
+        Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await users.GetAsync(userId, cancellationToken);
+        if ( user is null ) return [];
+
+        var starredGroupIds = user.StarredChatGroups;
+        return await GetFeedByGroups(starredGroupIds.ToList(), cancellationToken);
+    }
+
+    private async Task<List<ChatGroupFeedEntry>> GetFeedByGroups(List<Guid> groupIds, CancellationToken cancellationToken)
+    {
         var (feedGroups, feedMessagesDict) = await (
             groups.GetByIds(groupIds, cancellationToken),
             messages.GetLatestForGroups(groupIds, cancellationToken)
@@ -70,7 +85,7 @@ internal sealed class ChatGroupsFeedService(
             .Select(m => m!.UserId)
             .Distinct()
             .ToList();
-        
+
         var userInfos = await users.GetByIds(messageSenderIds, cancellationToken);
 
         var entries = feedGroups
@@ -83,11 +98,10 @@ internal sealed class ChatGroupsFeedService(
             .ToList();
 
         return entries.ZipOn(userInfos!,
-                e => e!.LatestMessage.UserId,
+                e => e!.LatestMessage?.UserId,
                 u => u.Id,
-                (e,
-                    user) => e! with { MessageSender = user })
-            .OrderByDescending(e => e!.LatestMessage.CreatedAt)
+                (e, user) => e! with { MessageSender = user })
+            .OrderByDescending(e => e!.LatestMessage?.CreatedAt ?? e.ChatGroup.CreatedAt)
             .ToList()!;
     }
 }

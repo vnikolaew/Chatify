@@ -5,3 +5,5 @@ export * from "./useRemoveChatGroupMemberMutation";
 export * from "./useLeaveChatGroupMutation";
 export * from "./useAddChatGroupAdminMutation";
 export * from "./useRemoveChatGroupAdmin"
+export * from "./useStarChatGroup"
+export * from "./useUnstarChatGroup"

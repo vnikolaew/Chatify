@@ -11,6 +11,7 @@ using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using LanguageExt.Common;
 using OneOf;
 using Guid = System.Guid;
@@ -88,7 +89,7 @@ internal sealed class CreateChatGroupHandler(
             Username = identityContext.Username,
             MembershipType = 0
         };
-        var membersTasks = ( await users.GetByIds(command.MemberIds ?? new List<Guid>(), cancellationToken) )!
+        var groupMembers = await ( await users.GetByIds(command.MemberIds ?? new List<Guid>(), cancellationToken) )!
             .Select(user => new ChatGroupMember
             {
                 Id = guidGenerator.New(),
@@ -102,15 +103,13 @@ internal sealed class CreateChatGroupHandler(
             .Select(member => members.SaveAsync(member, cancellationToken))
             .ToList();
 
-        await Task.WhenAll(membersTasks);
-        var @events = membersTasks
-            .Select(_ => _.Result)
+        var @events = groupMembers
             .Select(m => new ChatGroupMemberAddedEvent
             {
                 GroupId = groupId,
                 Timestamp = clock.Now,
                 MembershipType = m.MembershipType,
-                MemberId = m.Id,
+                MemberId = m.UserId,
                 AddedById = chatGroup.CreatorId,
                 AddedByUsername = identityContext.Username
             });

@@ -104,17 +104,19 @@ const ChatGroupFeedEntry = ({ feedEntry, avatarColor }: ChatGroupFeedEntryProps)
    }, [avatarColor, isActive]);
 
    const messageSummary = useMemo(() => {
-      return [...usersTyping]
-         .filter((_) => _.userId !== meId).length > 0
-         ? `${[...usersTyping]
-            .filter((u) => u.userId !== meId)
+      const usersTypingWithoutMe = [...usersTyping]
+         .filter((_) => _.userId !== meId);
+
+      return usersTypingWithoutMe.length > 0
+         ? `${usersTypingWithoutMe
             .map((_) => _.username)
             .join(", ")} ${
             usersTyping.size === 1 ? ` is ` : ` are `
          } currently typing ...`
-         : `${feedEntry.latestMessage?.content?.substring(0, 30)}${
+         : `${feedEntry.latestMessage?.content ? feedEntry.latestMessage?.content?.substring(0, 30) : ``}${
          feedEntry.latestMessage?.content?.length > 30 ? `...` : ``
       }` ?? `No messages yet.`;
+
    }, [usersTyping, feedEntry?.latestMessage?.content, meId]);
 
    return (
@@ -185,6 +187,14 @@ const ChatFeedEntryMessageSummary = ({
                                         isPrivateGroup,
                                      }: ChatFeedEntryMessageSummaryProps) => {
    const messageSenderId = feedEntry.latestMessage?.userId;
+
+   if (!messageSenderId && !messageSummary?.length) {
+      return <div className={`w-full flex items-center gap-1 h-4 rounded-full`}>
+            <span className={`text-xs text-default-400 font-semibold`}>
+         No messages yet.
+            </span>
+      </div>;
+   }
 
    return (
       <div className={`w-full flex items-center gap-1 h-4 rounded-full`}>

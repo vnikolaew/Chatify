@@ -4,11 +4,12 @@ using AspNetCore.Identity.Cassandra.Models;
 using AutoMapper;
 using Cassandra.Data.Linq;
 using Chatify.Application.Common.Mappings;
-using Chatify.Domain.Entities;
 using Chatify.Domain.ValueObjects;
+using Humanizer;
 using Newtonsoft.Json;
 using Redis.OM.Modeling;
 using DateTimeOffset = System.DateTimeOffset;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 using Metadata = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Chatify.Infrastructure.Data.Models;
@@ -146,6 +147,20 @@ public class ChatifyUser() :
                     u => u.PhoneNumbers
                         .Select(_ => new PhoneNumber(_))
                         .ToHashSet()))
+            .AfterMap((cu, u) =>
+            {
+                if ( !cu.Metadata.TryGetValue(
+                        nameof(Domain.Entities.User.StarredChatGroups).Underscore().ToLower(),
+                        out var starredChatGroups) ) return;
+                try
+                {
+                    var starredGroupIds = JsonSerializer.Deserialize<List<Guid>>(starredChatGroups);
+                    starredGroupIds?.ForEach(gId => u.StarredChatGroups.Add(gId));
+                }
+                catch ( Exception )
+                {
+                }
+            })
             .ReverseMap()
             .ForMember(u => u.PhoneNumbers,
                 cfg => cfg.MapFrom(
@@ -153,5 +168,21 @@ public class ChatifyUser() :
                         .Select(_ => _.Value)
                         .ToHashSet()))
             .ForMember(u => u.Email,
-                cfg => cfg.MapFrom(u => u.Email.Value));
+                cfg => cfg.MapFrom(u => u.Email.Value))
+            .AfterMap((u, cu) =>
+            {
+                if ( u.StarredChatGroups.Any() )
+                {
+                    cu.Metadata.TryAdd(
+                        nameof(Domain.Entities.User.StarredChatGroups).Underscore().ToLower(), string.Empty
+                    );
+                    cu.Metadata[nameof(Domain.Entities.User.StarredChatGroups).Underscore().ToLower()] =
+                        JsonSerializer.Serialize(u.StarredChatGroups);
+                }
+                else
+                {
+                    cu.Metadata[nameof(Domain.Entities.User.StarredChatGroups).Underscore().ToLower()] =
+                        JsonSerializer.Serialize(Array.Empty<Guid>());
+                }
+            });
 }

@@ -9,4 +9,8 @@ public interface IChatGroupsFeedService
         int limit,
         int offset,
         CancellationToken cancellationToken = default);
+    
+    Task<List<ChatGroupFeedEntry>> GetStarredFeedEntriesForUserAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }

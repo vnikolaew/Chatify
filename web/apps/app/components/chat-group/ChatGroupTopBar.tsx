@@ -2,15 +2,15 @@
 import React, { Fragment, useMemo } from "react";
 import {
    useCurrentChatGroup,
-   useIsChatGroupPrivate,
+   useIsChatGroupPrivate, useIsGroupStarred,
    useIsUserLoggedIn,
 } from "@hooks";
 import {
    getMediaUrl,
    useGetChatGroupDetailsQuery,
-   useGetMyClaimsQuery,
+   useGetMyClaimsQuery, useGetStarredChatGroups, useStarChatGroup, useUnstarChatGroup,
 } from "@web/api";
-import { Avatar, AvatarGroup, Skeleton } from "@nextui-org/react";
+import { Avatar, AvatarGroup, Skeleton, Spinner, Tooltip } from "@nextui-org/react";
 import { UserStatus } from "@openapi";
 import {
    EditChatGroupActionButton,
@@ -18,6 +18,7 @@ import {
    PinnedMessagesActionButton,
 } from "@components/chat-group/actions";
 import { useTranslations } from "next-intl";
+import { Star } from "lucide-react";
 
 export interface ChatGroupTopBarProps {
 }
@@ -38,7 +39,15 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
       enabled: !!chatGroupId && isUserLoggedIn,
    });
 
+   const { data: starredGroups } = useGetStarredChatGroups();
+
+   const { mutateAsync: starChatGroup, isLoading: starLoading } = useStarChatGroup();
+   const { mutateAsync: unstarChatGroup, isLoading: unstarLoading } = useUnstarChatGroup();
+   const showSpinner = useMemo(() => starLoading || unstarLoading, [starLoading, unstarLoading]);
+
    const isPrivateGroup = useIsChatGroupPrivate(chatGroupDetails);
+   const isGroupStarred = useIsGroupStarred(chatGroupId);
+
    const isUserGroupAdmin = useMemo(
       () =>
          chatGroupDetails?.chatGroup?.adminIds?.some(
@@ -60,7 +69,30 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                (m) => m.id !== me?.claims?.nameidentifier,
             )?.profilePicture?.mediaUrl
             : chatGroupDetails?.chatGroup?.picture?.mediaUrl,
-      ), [isPrivateGroup, chatGroupDetails, me]);
+      ), [isPrivateGroup, chatGroupDetails?.members, me?.claims?.nameidentifier, chatGroupDetails?.chatGroup?.picture?.mediaUrl]);
+
+   const groupName = useMemo(() => {
+      return isPrivateGroup
+         ? chatGroupDetails?.members?.filter(
+            (m) => m.id !== me?.claims?.nameidentifier,
+         )[0]?.username
+         : chatGroupDetails?.chatGroup?.name;
+   }, [isPrivateGroup, chatGroupDetails?.members, me?.claims?.nameidentifier, chatGroupDetails?.chatGroup?.name]);
+
+   const groupAbout = useMemo(() => {
+      return chatGroupDetails?.chatGroup?.about?.length
+         ? chatGroupDetails?.chatGroup?.about.length > 30 ? `${chatGroupDetails.chatGroup.about?.substring(
+            0,
+            30,
+         )}...` : chatGroupDetails?.chatGroup?.about
+         : t(`ChatGroupNoDescription`);
+   }, [chatGroupDetails?.chatGroup.about, t]);
+
+   async function handleClickStar() {
+      if (isGroupStarred) {
+         await unstarChatGroup({ chatGroupId });
+      } else await starChatGroup({ chatGroupId });
+   }
 
    return (
       <div
@@ -96,21 +128,32 @@ const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                         </Fragment>
                      ) : (
                         <Fragment>
+                           <div className={`flex items-center gap-4`}>
                            <span className={`text-medium text-foreground`}>
-                              {" "}
-                              {isPrivateGroup
-                                 ? chatGroupDetails.members.filter(
-                                    (m) => m.id !== me?.claims?.nameidentifier,
-                                 )[0].username
-                                 : chatGroupDetails?.chatGroup.name}
+                              {groupName}
                            </span>
+                              {showSpinner ? (
+                                 <Spinner className={`self-end`}  classNames={{
+                                    circle1: `h-4 w-4`,
+                                    circle2: `h-4 w-4`,
+                                 }} size={`sm`} color={`primary`} />
+                              ) : (
+                                 <Tooltip showArrow
+                                          classNames={{
+                                             content: `h-5`,
+                                          }}
+                                          size={`sm`} placement={`right`}
+                                          content={<span
+                                             className={`text-xxs`}>{isGroupStarred ? `Unstar` : `Star`} </span>}>
+                                    <Star
+                                       onClick={handleClickStar}
+                                       className={`stroke-primary-500 transition-colors self-end cursor-pointer hover:fill-primary-500 ${starredGroups?.some(g => g.id === chatGroupId) ? `fill-primary-500` : ``}`}
+                                       size={20} />
+                                 </Tooltip>
+                              )}
+                           </div>
                            <span className={`text-xs text-default-500`}>
-                              {chatGroupDetails.chatGroup.about?.length
-                                 ? chatGroupDetails.chatGroup.about.length > 30 ? `${chatGroupDetails.chatGroup.about?.substring(
-                                    0,
-                                    30,
-                                 )}...` : chatGroupDetails.chatGroup.about
-                                 : t(`ChatGroupNoDescription`)}
+                              {groupAbout}
                            </span>
                            <div className={`flex mt-1 items-center gap-3`}>
                               <span className={`text-xs text-default-400`}>

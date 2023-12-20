@@ -65,7 +65,6 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
       },
       { enabled: !!groupId },
    );
-   console.log({ messages });
    const groupHasNoMessages = useMemo(() =>
          messages?.pages?.length === 1
          && messages?.pages[0].items.length === 0

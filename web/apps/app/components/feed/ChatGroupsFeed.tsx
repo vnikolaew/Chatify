@@ -1,6 +1,6 @@
 "use client";
 import React, { Fragment, useMemo, useState } from "react";
-import { useGetChatGroupsFeedQuery } from "@web/api";
+import { useGetChatGroupsFeedQuery, useGetStarredChatGroupsFeedQuery } from "@web/api";
 import {
    Button,
    Dropdown,
@@ -16,8 +16,14 @@ import { useSearchChatGroupsByName } from "@web/api";
 import { HamburgerMenuIcon, NotSentIcon, SearchIcon } from "@icons";
 import ChatGroupFeedEntries from "@components/feed/ChatGroupFeedEntries";
 import { useTranslations } from "next-intl";
+import { MessageCircle, Star } from "lucide-react";
 
 export interface ChatGroupsFeedProps {
+}
+
+enum FeedMode {
+   ALL,
+   STARRED
 }
 
 const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
@@ -25,6 +31,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
    const [searchTerm, setSearchTerm] = useState("");
    const debouncedSearch = useDebounce(searchTerm, 2000);
    const t = useTranslations("FeedSidebar");
+
    const {
       data: searchEntries,
       isLoading: searchLoading,
@@ -35,6 +42,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
       { enabled: debouncedSearch?.length >= 3 },
    );
 
+   const [feedMode, setFeedMode] = useState(FeedMode.ALL);
    const {
       data: feedEntries,
       isLoading,
@@ -45,17 +53,27 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
          offset: 0,
          limit: 10,
       },
-      { enabled: isUserLoggedIn },
+      { enabled: isUserLoggedIn && feedMode === FeedMode.ALL },
    );
 
+   const {
+      data: starredGroupFeedEntries,
+      isLoading: starredLoading,
+      isFetching: starredFetching,
+      isRefetching: starredRefetching,
+   } = useGetStarredChatGroupsFeedQuery({ enabled: feedMode === FeedMode.STARRED });
+
    const filteredEntries = useMemo(() => {
-      if (!debouncedSearch || !searchEntries) return feedEntries;
+      if (!debouncedSearch || !searchEntries) return feedMode === FeedMode.ALL ? feedEntries : starredGroupFeedEntries;
 
       const searchEntryIds = new Set(searchEntries?.map((_) => _.id));
       return feedEntries?.filter((e) => searchEntryIds.has(e.chatGroup.id));
-   }, [debouncedSearch, searchEntries, feedEntries]);
+   }, [debouncedSearch, searchEntries, feedEntries, feedMode, starredGroupFeedEntries]);
 
-   const [sizes, setSizes] = useState([100, 50]);
+   const showSkeletons = useMemo(() =>
+      feedMode === FeedMode.ALL ? (isLoading && isFetching)
+         : ((starredLoading && starredFetching) || starredRefetching),
+      [feedMode, isLoading, isFetching, starredLoading, starredFetching, starredRefetching]);
 
    // @ts-ignore
    return (
@@ -65,7 +83,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
          <section
             className={`flex h-fit w-full items-center p-2 gap-1 rounded-medium `}
          >
-            <Dropdown offset={10} showArrow>
+            <Dropdown classNames={{}} offset={10} showArrow>
                <DropdownTrigger>
                   <Button
                      className={`bg-transparent border-none hover:bg-default-200`}
@@ -81,10 +99,29 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                      />
                   </Button>
                </DropdownTrigger>
-               <DropdownMenu aria-label={"Options"}>
-                  <DropdownItem key={"1"}>Option 1</DropdownItem>
-                  <DropdownItem key={"2"}>Option 2</DropdownItem>
-                  <DropdownItem key={"3"}>Option 3</DropdownItem>
+               <DropdownMenu onAction={key => {
+                  switch (key) {
+                     case `1`:
+                        setFeedMode(FeedMode.ALL);
+                        break;
+                     case `2`:
+                        setFeedMode(FeedMode.STARRED);
+                        break;
+                  }
+               }} aria-label={"Options"}>
+                  <DropdownItem
+                     className={`!text-xs ${feedMode === FeedMode.ALL && `!bg-default-200`}`}
+                     startContent={<MessageCircle strokeWidth={3} size={16} className={`stroke-default-700`} />}
+                     key={"1"}>
+                     View all
+                  </DropdownItem>
+                  <DropdownItem
+                     className={`!text-xs ${feedMode === FeedMode.STARRED && `!bg-default-200`}`}
+                     startContent={<Star size={16} className={`fill-primary-500 stroke-primary-500`} />}
+                     key={"2"}>
+                     View starred
+                  </DropdownItem>
+
                </DropdownMenu>
             </Dropdown>
             <div className={`flex-1 text-medium`}>
@@ -114,7 +151,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
          <div
             className={`w-full pr-4 flex flex-col gap-2 p-2 items-center rounded-md border-b-1 border-b-default-200`}
          >
-            {(isLoading || searchLoading) && (isFetching || searchFetching) && (
+            {showSkeletons && (
                <Fragment>
                   {Array.from({ length: 10 }).map((_, i) => (
                      <div
@@ -155,7 +192,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                </div>
             ) : (
                <ChatGroupFeedEntries
-                  feedEntries={filteredEntries ?? feedEntries ?? []}
+                  feedEntries={filteredEntries ?? (feedMode === FeedMode.ALL ? feedEntries : starredGroupFeedEntries) ?? []}
                />
             )}
          </div>

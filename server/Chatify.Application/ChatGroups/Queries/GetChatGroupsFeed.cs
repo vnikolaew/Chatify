@@ -29,7 +29,8 @@ internal sealed class GetChatGroupsFeedHandler(
     IChatGroupsFeedService feedService)
     : BaseQueryHandler<GetChatGroupsFeed, GetChatGroupsFeedResult>(identityContext)
 {
-    public override async Task<GetChatGroupsFeedResult> HandleAsync(GetChatGroupsFeed query,
+    public override async Task<GetChatGroupsFeedResult> HandleAsync(
+        GetChatGroupsFeed query,
         CancellationToken cancellationToken = default)
         => await feedService.GetFeedEntriesForUserAsync(
             identityContext.Id,

@@ -1,7 +1,6 @@
 import { chatGroupsClient } from "../../client";
 import {
    useInfiniteQuery,
-   useQuery,
    useQueryClient,
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
@@ -9,6 +8,7 @@ import {
    ChatGroupAttachment,
    ChatGroupAttachmentCursorPagedApiResponse,
    CursorPaged,
+   // @ts-ignore
 } from "@openapi";
 import { sleep } from "../../../utils";
 
