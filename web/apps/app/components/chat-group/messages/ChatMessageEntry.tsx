@@ -103,7 +103,7 @@ export const ChatMessageEntry = React.forwardRef<HTMLDivElement, ChatMessageEntr
          }}>
          <div
             ref={messageSectionRef}
-            className={`flex relative flex-col gap-2 items-start  ${className}`}
+            className={`flex relative flex-col gap-1 items-start  ${className}`}
             {...rest}
          >
             {showMessageActions && !isReplyTo && (

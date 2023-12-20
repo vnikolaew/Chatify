@@ -28,6 +28,8 @@ const AddNewGroupAdminActionButton =
             tooltipProps={{
                size: `sm`,
                shadow: `sm`,
+               placement: `bottom`,
+               showArrow: true,
                classNames: {
                   base: `text-xs `,
                   content: `text-[10px] h-5`,
@@ -37,6 +39,7 @@ const AddNewGroupAdminActionButton =
                classNames: {
                   base: `pl-4 pr-0`,
                },
+               showArrow: true,
                placement: `bottom`,
             }}
             chipProps={{
@@ -81,7 +84,7 @@ const AddNewAdminPopover = ({ onOpenChange }: AddNewAdminPopoverProps) => {
 
    return (
       <div
-         className={`flex max-h-[300px] overflow-y-scroll py-4 flex-col items-start gap-3`}
+         className={`flex max-h-[300px] px-2 py-2 flex-col items-start gap-3`}
       >
          {isLoading && (
             <Fragment>
@@ -109,7 +112,7 @@ const AddNewAdminPopover = ({ onOpenChange }: AddNewAdminPopoverProps) => {
                className={`text-default-300 my-2 gap-1 flex-col flex items-center w-full`}
             >
                <SadFaceIcon className={`fill-default-300`} size={20} />
-               <span>You have no suggestions for new members </span>
+               <span className={`text-xs`}>You have no suggestions for new admins </span>
             </div>
          )}
          {addAdminSuggestedUsers?.map((user, i) => (

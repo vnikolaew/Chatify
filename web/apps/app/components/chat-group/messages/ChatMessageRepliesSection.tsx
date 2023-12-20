@@ -44,7 +44,7 @@ export const ChatMessageRepliesSection = ({
    }
    if (isLoading && isFetching)
       return (
-         <div className={`flex mb-4 flex-col gap-2 items-start`}>
+         <div className={`flex mb-4 flex-col gap-1 items-start`}>
             {Array.from({ length: total }).map((_, i) => (
                <div className={`flex items-center gap-2`} key={i}>
                   <Skeleton className={`w-8 h-8 rounded-lg`} />
@@ -63,7 +63,7 @@ export const ChatMessageRepliesSection = ({
       );
 
    return (
-      <div className={` flex mb-4 flex-col items-start w-full gap-2`}>
+      <div className={` flex mb-4 flex-col items-start w-full gap-1`}>
          <div className={`flex w-full items-center gap-2`}>
             <div className={`text-default-300 inline-flex text-center text-xs`}>
                <span>{replies?.pages?.flatMap(_ => _.items)?.length}</span>

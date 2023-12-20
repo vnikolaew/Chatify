@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import AddNewGroupAdminActionButton from "@components/sidebar/members/AddNewGroupAdminActionButton";
 import { Skeleton, Spinner } from "@nextui-org/react";
 import ChatGroupMemberEntry from "./ChatGroupMemberEntry";
@@ -9,13 +9,12 @@ import {
    useMembersByCategory,
    USER_DETAILS_KEY, useRemoveChatGroupAdmin,
 } from "@web/api";
-import { useCurrentChatGroup, useCurrentUserId } from "@hooks";
+import { useCurrentChatGroup, useCurrentUserId, useIsChatGroupPrivate } from "@hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { DEFAULT_STALE_TIME } from "@web/api";
 import { User } from "@openapi";
 import { TooltipButton } from "@components/common";
-import ThrashIcon from "@components/icons/ThrashIcon";
 import { X } from "lucide-react";
 
 export interface ChatGroupMembersTabProps {
@@ -26,6 +25,7 @@ const ChatGroupMembersTab = ({ chatGroupId }: ChatGroupMembersTabProps) => {
    const { data, error, isLoading } = useGetChatGroupDetailsQuery(chatGroupId, {
       enabled: !!chatGroupId,
    });
+   const isPrivate = useIsChatGroupPrivate(data);
    const t = useTranslations(`Sidebar.StatusTypes`);
 
    const meId = useCurrentUserId();
@@ -43,6 +43,11 @@ const ChatGroupMembersTab = ({ chatGroupId }: ChatGroupMembersTabProps) => {
          });
       }
    };
+   const showRemoveAdminButton = useCallback((category: string, member: User) =>
+      category === "admins" &&
+      data.creator.id === meId &&
+      member?.id !== meId &&
+      !isPrivate, [data, isPrivate]);
 
    return (
       <div>
@@ -80,10 +85,7 @@ const ChatGroupMembersTab = ({ chatGroupId }: ChatGroupMembersTabProps) => {
                            key={member.id}
                            member={member}
                            category={category}
-                           endContent={
-                              category === "admins" &&
-                              data.creator.id === meId &&
-                              member?.id !== meId &&
+                           endContent={showRemoveAdminButton(category, member) &&
                               <RemoveChatGroupAdminButton adminId={member.id} />}
                         />
                      ))}
@@ -107,7 +109,7 @@ const RemoveChatGroupAdminButton = ({ adminId }: RemoveChatGroupAdminButtonProps
       await removeAdmin({ adminId, chatGroupId }, {});
    };
 
-   if (isLoading ) {
+   if (isLoading) {
       return (
          <Spinner
             classNames={{

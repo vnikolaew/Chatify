@@ -16,7 +16,7 @@ const SuggestedFriendsSection = ({}: SuggestedFriendsSectionProps) => {
       <section className={`mt-4`}>
          <h2 className={`text-default-400 text-large`}>Some user suggestions:</h2>
          <div className={`flex flex-col ${isLoading && isFetching ? `gap-2` : `gap-4`} mt-4`}>
-            {(isLoading && isFetching || true) && Array.from({ length: 3 }).map((_, i) => (
+            {(isLoading && isFetching ) && Array.from({ length: 3 }).map((_, i) => (
                <div
                   key={i}
                   className={`w-11/12 ml-4 mt-2 flex items-center gap-2`}
