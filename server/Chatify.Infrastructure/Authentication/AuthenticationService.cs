@@ -28,16 +28,16 @@ using IAuthenticationService = Chatify.Application.Authentication.Contracts.IAut
 namespace Chatify.Infrastructure.Authentication;
 
 public sealed class AuthenticationService(
-        UserManager<ChatifyUser> userManager,
-        SignInManager<ChatifyUser> signInManager,
-        IClock clock,
-        IGoogleOAuthClient googleOAuthClient,
-        IFacebookOAuthClient facebookOAuthClient,
-        IHttpContextAccessor contextAccessor,
-        IContext context,
-        IUserRepository users,
-        IIdentityContext identityContext,
-        IGithubOAuthClient githubOAuthClient)
+    UserManager<ChatifyUser> userManager,
+    SignInManager<ChatifyUser> signInManager,
+    IClock clock,
+    IGoogleOAuthClient googleOAuthClient,
+    IFacebookOAuthClient facebookOAuthClient,
+    IHttpContextAccessor contextAccessor,
+    IContext context,
+    IUserRepository users,
+    IIdentityContext identityContext,
+    IGithubOAuthClient githubOAuthClient)
     : IAuthenticationService
 {
     private const string AuthenticationTokenName = "access_token";
@@ -66,12 +66,12 @@ public sealed class AuthenticationService(
         {
             Email = request.Email,
             UserName = request.Username,
-            DeviceIps = new System.Collections.Generic.HashSet<IPAddress>
-            {
+            DeviceIps =
+            [
                 IPAddress.TryParse(context.IpAddress, out var address)
                     ? IPAddress.IsLoopback(address) ? IPAddress.Loopback : address
                     : IPAddress.None
-            },
+            ],
             ProfilePicture = Constants.DefaultUserProfilePicture,
             UserHandle = GenerateUserHandle(request.Username, usersWithSameUserName?.Count ?? 0)
         };
@@ -179,7 +179,7 @@ public sealed class AuthenticationService(
             External.Constants.AuthProviders.Google,
             userId,
             External.Constants.AuthProviders.Google
-            );
+        );
 
     private static ExternalLoginInfo GetGithubExternalLoginInfoForUser(
         ClaimsPrincipal principal,
@@ -217,21 +217,19 @@ public sealed class AuthenticationService(
                 { "ExternalId", userInfo.Id },
                 { "Locale", userInfo.Locale }
             },
-            DeviceIps = new System.Collections.Generic.HashSet<IPAddress>
-            {
-                IPAddress.Parse(context.IpAddress)
-            },
+            DeviceIps = [IPAddress.Parse(context.IpAddress)],
             EmailConfirmationTime = userInfo.VerifiedEmail ? DateTimeOffset.Now : default,
             ProfilePicture = new Media
             {
-                Type = "",
-                FileName = "",
+                Type = string.Empty,
+                FileName = string.Empty,
                 MediaUrl = userInfo.Picture
             },
             UserHandle = GenerateUserHandle(userInfo.Name.Underscore(), usersWithSameUserName?.Count ?? 0)
         };
 
-        chatifyUser.AddToken(new TokenInfo(External.Constants.AuthProviders.Google, AuthenticationTokenName, request.AccessToken));
+        chatifyUser.AddToken(new TokenInfo(External.Constants.AuthProviders.Google, AuthenticationTokenName,
+            request.AccessToken));
 
         var identityResult = await userManager.CreateAsync(chatifyUser);
         if ( !identityResult.Succeeded ) return identityResult.ToError()!;
@@ -287,15 +285,12 @@ public sealed class AuthenticationService(
                 { "ExternalId", userInfo.Id.ToString()! },
                 { "Locale", userInfo.Location }
             },
-            DeviceIps = new System.Collections.Generic.HashSet<IPAddress>
-            {
-                IPAddress.Parse(context.IpAddress)
-            },
+            DeviceIps = [IPAddress.Parse(context.IpAddress)],
             EmailConfirmationTime = DateTimeOffset.Now,
             ProfilePicture = new Media
             {
-                Type = "",
-                FileName = "",
+                Type = string.Empty,
+                FileName = string.Empty,
                 MediaUrl = userInfo.AvatarUrl
             },
             UserHandle = GenerateUserHandle(userInfo.Name.Underscore(), usersWithSameUserName?.Count ?? 0)
@@ -319,6 +314,7 @@ public sealed class AuthenticationService(
         identityResult = await userManager.AddLoginAsync(
             chatifyUser,
             GetGithubExternalLoginInfoForUser(principal, userInfo.Id.ToString()!));
+
         if ( !identityResult.Succeeded ) return identityResult.ToError()!;
 
         var info = await userManager.GetByNameAsync(chatifyUser, Github);
@@ -326,7 +322,7 @@ public sealed class AuthenticationService(
             info.LoginProvider, info.ProviderKey,
             isPersistent: true, true);
 
-        return identityResult.Succeeded
+        return result.Succeeded
             ? new UserSignedUpResult
             {
                 UserId = chatifyUser.Id,
@@ -363,10 +359,7 @@ public sealed class AuthenticationService(
             {
                 { "ExternalId", userInfo.Id }
             },
-            DeviceIps = new System.Collections.Generic.HashSet<IPAddress>()
-            {
-                IPAddress.Parse(context.IpAddress)
-            },
+            DeviceIps = [IPAddress.Parse(context.IpAddress)],
             EmailConfirmationTime = userInfo.Email is not null ? DateTimeOffset.Now : default,
             ProfilePicture = new Media
             {
@@ -421,7 +414,7 @@ public sealed class AuthenticationService(
                 UserId = existingUser.Id,
                 AuthenticationProvider = loginInfo.LoginProvider
             }
-            : Error.New("");
+            : Error.New(string.Empty);
     }
 
     public async Task<OneOf<UserNotFound, string>> GenerateEmailConfirmationTokenAsync(
@@ -444,7 +437,7 @@ public sealed class AuthenticationService(
 
         consentFeature.GrantConsent();
         await users.UpdateAsync(userId,
-            user => user.Metadata["Cookie-Consent"] = true.ToString(),
+            user => user.Metadata[ChatifyUser.CookieConsentMetadata] = true.ToString(),
             cancellationToken);
         return Unit.Default;
     }
@@ -458,7 +451,7 @@ public sealed class AuthenticationService(
         consentFeature.WithdrawConsent();
 
         await users.UpdateAsync(userId,
-            user => user.Metadata["Cookie-Consent"] = false.ToString(),
+            user => user.Metadata[ChatifyUser.CookieConsentMetadata] = false.ToString(),
             cancellationToken);
 
         return Unit.Default;

@@ -30,12 +30,12 @@ public record EditUserDetails(
     System.Collections.Generic.HashSet<string>? PhoneNumbers) : ICommand<EditUserDetailsResult>;
 
 internal sealed class EditUserDetailsHandler(
-        IUserRepository users,
-        IAuthenticationService authenticationService,
-        IIdentityContext identityContext,
-        IClock clock,
-        IFileUploadService fileUploadService,
-        IEventDispatcher eventDispatcher)
+    IUserRepository users,
+    IAuthenticationService authenticationService,
+    IIdentityContext identityContext,
+    IClock clock,
+    IFileUploadService fileUploadService,
+    IEventDispatcher eventDispatcher)
     : ICommandHandler<EditUserDetails, EditUserDetailsResult>
 {
     public async Task<EditUserDetailsResult> HandleAsync(
@@ -45,7 +45,7 @@ internal sealed class EditUserDetailsHandler(
         var user = await users.GetAsync(identityContext.Id, cancellationToken);
         if ( user is null ) return new UserNotFound();
 
-        Media? newProfilePicture = null;
+        var newProfilePicture = user.ProfilePicture;
         var newUsername = command.Username ?? user.Username;
         var newDisplayName = command.DisplayName ?? user.DisplayName;
 
@@ -85,7 +85,8 @@ internal sealed class EditUserDetailsHandler(
         {
             if ( command.PhoneNumbers?.Any() ?? false )
             {
-                user.PhoneNumbers = command.PhoneNumbers
+                user.PhoneNumbers = command
+                    .PhoneNumbers
                     .Select(n => new PhoneNumber(n))
                     .ToHashSet();
             }
@@ -93,9 +94,9 @@ internal sealed class EditUserDetailsHandler(
             user.Username = newUsername;
             user.DisplayName = newDisplayName;
             user.UpdatedAt = clock.Now;
-            if ( newProfilePicture is not null ) user.ProfilePicture = newProfilePicture;
+            user.ProfilePicture = newProfilePicture;
         }, cancellationToken);
-        
+
         await authenticationService.RefreshUserClaimsAsync(user, cancellationToken);
         await eventDispatcher.PublishAsync(new UserDetailsEditedEvent
         {
@@ -104,6 +105,7 @@ internal sealed class EditUserDetailsHandler(
             PhoneNumbers = command.PhoneNumbers,
             DisplayName = user.DisplayName
         }, cancellationToken);
+        
         return Unit.Default;
     }
 }

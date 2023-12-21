@@ -4,17 +4,23 @@ import React from "react";
 import { useSignOutMutation } from "@web/api";
 import LogoutIcon from "@components/icons/LogoutIcon";
 import { useTranslations } from "next-intl";
+import { Spinner } from "@nextui-org/react";
 
-export interface SignOutButtonProps {}
+export interface SignOutButtonProps {
+}
 
 const SignOutButton = ({}: SignOutButtonProps) => {
-   const { mutateAsync: signOut } = useSignOutMutation();
-   const t = useTranslations('MainNavbar.Popups');
+   const { mutateAsync: signOut, isLoading } = useSignOutMutation();
+   const t = useTranslations("MainNavbar.Popups");
 
    const handleSignOut = async () => {
       await signOut({});
       window.location.reload();
    };
+
+   if (isLoading) {
+      return <Spinner size={`sm`} color={`danger`} />;
+   }
 
    return (
       <TooltipButton

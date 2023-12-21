@@ -97,8 +97,7 @@ public class ChatGroupsController : ApiController
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
         => QueryAsync<GetChatGroupDetails, GetChatGroupDetailsResult>(
-                new GetChatGroupDetails(groupId),
-                cancellationToken)
+                new GetChatGroupDetails(groupId),cancellationToken)
             .MatchAsync(_ => NotFound(),
                 _ => _.ToBadRequest(),
                 Ok);
@@ -145,9 +144,7 @@ public class ChatGroupsController : ApiController
         var result = await QueryAsync<SearchChatGroupMembersByName, SearchChatGroupMembersByNameResult>(
             new SearchChatGroupMembersByName(groupId, usernameQuery), cancellationToken);
 
-        return result.Match(
-            err => err.ToBadRequest(),
-            Ok);
+        return result.Match(err => err.ToBadRequest(), Ok);
     }
 
     [HttpGet]
@@ -161,9 +158,7 @@ public class ChatGroupsController : ApiController
         var result = await QueryAsync<SearchChatGroupsByName, SearchChatGroupsByNameResult>(
             new SearchChatGroupsByName(nameQuery ?? string.Empty), cancellationToken);
 
-        return result.Match(
-            err => err.ToBadRequest(),
-            Ok);
+        return result.Match(err => err.ToBadRequest(), Ok);
     }
 
     [HttpGet]
@@ -376,7 +371,7 @@ public class ChatGroupsController : ApiController
     [Route("starred")]
     [ProducesNotFoundApiResponse]
     [ProducesOkApiResponse<List<ChatGroup>>]
-    public async Task<IActionResult> StarChatGroup(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> StarredGroups(CancellationToken cancellationToken = default)
     {
         var result = await QueryAsync<GetStarredGroups, GetStarredGroupsResult>(
             new GetStarredGroups(),

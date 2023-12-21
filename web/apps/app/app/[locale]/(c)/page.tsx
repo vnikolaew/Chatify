@@ -6,11 +6,20 @@ import { useIsUserLoggedIn } from "@hooks";
 import { useDisclosure } from "@nextui-org/react";
 import { useCurrentChatGroup } from "@hooks";
 import ChatGroupTopBar from "@components/chat-group/ChatGroupTopBar";
-import { useSearchParams } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
 import { ChatMessagesSection } from "@components/chat-group";
 import Toast from "@components/common/Toast";
+import { cookies } from "next/headers";
 
 function IndexPage() {
+   let { isUserLoggedIn } = useIsUserLoggedIn();
+   isUserLoggedIn = isUserLoggedIn || !!cookies().has(
+      process.env.NEXT_PUBLIC_APPLICATION_COOKIE_NAME,
+   );
+
+   console.log({ isUserLoggedIn });
+   if (!isUserLoggedIn) return redirect(`/signin`);
+
    const params = useSearchParams();
    const isNew = params.get("new") === "true";
 
@@ -20,7 +29,7 @@ function IndexPage() {
    } = useDisclosure({ defaultOpen: true });
 
    const chatGroupId = useCurrentChatGroup();
-   const { isUserLoggedIn } = useIsUserLoggedIn();
+
    const {
       data: chatGroupDetails,
       error,

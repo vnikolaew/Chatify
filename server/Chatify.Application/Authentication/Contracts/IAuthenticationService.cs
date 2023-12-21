@@ -10,9 +10,9 @@ namespace Chatify.Application.Authentication.Contracts;
 
 public abstract class UserAuthResult
 {
-    public Guid UserId { get; set; }
+    public Guid UserId { get; init; }
 
-    public string AuthenticationProvider { get; set; }
+    public string AuthenticationProvider { get; init; }
 }
 
 public sealed class UserSignedUpResult : UserAuthResult

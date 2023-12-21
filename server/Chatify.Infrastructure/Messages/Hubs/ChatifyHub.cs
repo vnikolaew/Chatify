@@ -5,14 +5,13 @@ using Chatify.Infrastructure.Messages.Hubs.Models.Server;
 using Chatify.Shared.Abstractions.Contexts;
 using LanguageExt;
 using LanguageExt.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Chatify.Infrastructure.Messages.Hubs;
 
-using SendGroupChatMessageResult = Either<Error, Guid>;
-
-// [Authorize]
+[Authorize]
 public sealed class ChatifyHub(
         IChatGroupMemberRepository members,
         IIdentityContext identityContext)
@@ -64,8 +63,7 @@ public sealed class ChatifyHub(
             .Test(groupId, value);
     }
 
-    public async Task SendMessage(string username,
-        string message)
+    public async Task SendMessage(string username, string message)
     {
         await Clients.All.ReceiveMessage(username, message);
     }

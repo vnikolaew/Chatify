@@ -124,6 +124,7 @@ const SignUpPage: NextPage = () => {
                                  label: "py-1",
                               }}
                               autoComplete={"off"}
+                              aria-autocomplete={`none`}
                               errorMessage={errors?.username}
                               validationState={
                                  touched.username && errors.username
@@ -140,6 +141,7 @@ const SignUpPage: NextPage = () => {
                            <Input
                               autoFocus
                               isClearable
+                              aria-autocomplete={`none`}
                               onClear={() => setFieldValue("username", "")}
                               value={values.email}
                               classNames={{
@@ -166,6 +168,7 @@ const SignUpPage: NextPage = () => {
                               id={"email"}
                            />
                            <PasswordInput
+                              aria-autocomplete={`none`}
                               size={"md"}
                               value={values.password}
                               classNames={{

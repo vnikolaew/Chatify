@@ -61,7 +61,7 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
       isLoading: starredLoading,
       isFetching: starredFetching,
       isRefetching: starredRefetching,
-   } = useGetStarredChatGroupsFeedQuery({ enabled: feedMode === FeedMode.STARRED });
+   } = useGetStarredChatGroupsFeedQuery({ enabled: isUserLoggedIn && feedMode === FeedMode.STARRED });
 
    const filteredEntries = useMemo(() => {
       if (!debouncedSearch || !searchEntries) return feedMode === FeedMode.ALL ? feedEntries : starredGroupFeedEntries;
@@ -71,8 +71,8 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
    }, [debouncedSearch, searchEntries, feedEntries, feedMode, starredGroupFeedEntries]);
 
    const showSkeletons = useMemo(() =>
-      feedMode === FeedMode.ALL ? (isLoading && isFetching)
-         : ((starredLoading && starredFetching) || starredRefetching),
+         feedMode === FeedMode.ALL ? (isLoading && isFetching)
+            : ((starredLoading && starredFetching) || starredRefetching),
       [feedMode, isLoading, isFetching, starredLoading, starredFetching, starredRefetching]);
 
    // @ts-ignore
@@ -99,26 +99,30 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                      />
                   </Button>
                </DropdownTrigger>
-               <DropdownMenu onAction={key => {
-                  switch (key) {
-                     case `1`:
-                        setFeedMode(FeedMode.ALL);
-                        break;
-                     case `2`:
-                        setFeedMode(FeedMode.STARRED);
-                        break;
-                  }
-               }} aria-label={"Options"}>
+               <DropdownMenu
+                  onAction={key => {
+                     switch (key) {
+                        case `0`: {
+                           setFeedMode(FeedMode.ALL);
+                           break;
+                        }
+                        case `1`: {
+                           setFeedMode(FeedMode.STARRED);
+                           break;
+                        }
+                     }
+                  }}
+                  aria-label={"Options"}>
                   <DropdownItem
                      className={`!text-xs ${feedMode === FeedMode.ALL && `!bg-default-200`}`}
                      startContent={<MessageCircle strokeWidth={3} size={16} className={`stroke-default-700`} />}
-                     key={"1"}>
+                     key={`0`}>
                      View all
                   </DropdownItem>
                   <DropdownItem
                      className={`!text-xs ${feedMode === FeedMode.STARRED && `!bg-default-200`}`}
                      startContent={<Star size={16} className={`fill-primary-500 stroke-primary-500`} />}
-                     key={"2"}>
+                     key={`1`}>
                      View starred
                   </DropdownItem>
 
@@ -132,7 +136,8 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
                   className={`w-full px-2`}
                   classNames={{
                      inputWrapper:
-                        "hover:border-foreground-500 px-4 group-data-[focus=true]:border-primary-500 border-1 border-transparent",
+                        "hover:border-foreground-500 px-4 !py-1 group-data-[focus=true]:border-primary-500 border-1 border-transparent",
+                     innerWrapper: `py-0`,
                   }}
                   color={"default"}
                   radius={"full"}
@@ -154,41 +159,27 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
             {showSkeletons && (
                <Fragment>
                   {Array.from({ length: 10 }).map((_, i) => (
-                     <div
-                        key={i}
-                        className={`flex items-center w-full gap-4 p-2`}
-                     >
-                        <Skeleton className={`w-14 h-14 rounded-full`} />
-                        <div
-                           className={`flex flex-1 flex-col items-center gap-2`}
-                        >
-                           <div
-                              className={`flex w-full items-center justify-between`}
-                           >
-                              <Skeleton className={`w-3/5 h-3 rounded-full`} />
-                              <Skeleton className={`w-1/6 h-3 rounded-full`} />
-                           </div>
-                           <Skeleton className={`w-full h-4 rounded-full`} />
-                        </div>
-                     </div>
+                     <LoadingFeedEntry key={i} />
                   ))}
                </Fragment>
             )}
             {!!filteredEntries && filteredEntries.length === 0 ? (
                <div
-                  className={`mt-12 h-auto flex-col flex items-center justify-center gap-2 text-default-300 text-large`}
+                  className={`my-16 h-auto flex-col flex items-center justify-center gap-2 text-default-300 text-large`}
                >
                   <NotSentIcon className={`fill-default-200`} size={50} />
                   <span>No chat groups found.</span>
-                  <Button
-                     href={`/chat-groups/create`}
-                     as={Link}
-                     size={"sm"}
-                     variant={"solid"}
-                     color={"primary"}
-                  >
-                     Create Chat group
-                  </Button>
+                  {feedMode === FeedMode.ALL && (
+                     <Button
+                        href={`/chat-groups/create`}
+                        as={Link}
+                        size={"sm"}
+                        variant={"solid"}
+                        color={"primary"}
+                     >
+                        Create Chat group
+                     </Button>
+                  )}
                </div>
             ) : (
                <ChatGroupFeedEntries
@@ -198,6 +189,28 @@ const ChatGroupsFeed = ({}: ChatGroupsFeedProps) => {
          </div>
       </aside>
    );
+};
+
+const LoadingFeedEntry = () => {
+   return (
+      <div
+         className={`flex items-center w-full gap-4 p-2`}
+      >
+         <Skeleton className={`w-14 h-14 rounded-full`} />
+         <div
+            className={`flex flex-1 flex-col items-center gap-2`}
+         >
+            <div
+               className={`flex w-full items-center justify-between`}
+            >
+               <Skeleton className={`w-3/5 h-3 rounded-full`} />
+               <Skeleton className={`w-1/6 h-3 rounded-full`} />
+            </div>
+            <Skeleton className={`w-full h-4 rounded-full`} />
+         </div>
+      </div>
+   );
+
 };
 
 export default ChatGroupsFeed;

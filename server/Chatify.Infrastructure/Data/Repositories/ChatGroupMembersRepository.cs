@@ -5,6 +5,7 @@ using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Data.Services;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Humanizer;
 using StackExchange.Redis;
 using ChatGroupMember = Chatify.Domain.Entities.ChatGroupMember;
@@ -28,13 +29,12 @@ public sealed class ChatGroupMembersRepository(
         CancellationToken cancellationToken = default)
     {
         // Add new user to both database and cache set:
-        var dbSaveTask = base.SaveAsync(entity, cancellationToken);
-        var cacheSaveTask = cache.AddGroupMemberAsync(entity.ChatGroupId, entity.UserId);
+        var (member, _) = await (
+            base.SaveAsync(entity, cancellationToken),
+            cache.AddGroupMemberAsync(entity.ChatGroupId, entity.UserId)
+        );
 
-        var saveTasks = new Task[] { dbSaveTask, cacheSaveTask };
-
-        await Task.WhenAll(saveTasks).ConfigureAwait(false);
-        return dbSaveTask.Result;
+        return member;
     }
 
     public new async Task<bool> DeleteAsync(

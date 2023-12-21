@@ -40,7 +40,7 @@ internal sealed class ChatGroupMemberAddedEventHandler(
             )
         );
 
-        if ( chatifyHubContext is not null )
+        if ( chatifyHubContext?.Clients is not null )
         {
             await chatifyHubContext
                 .Clients

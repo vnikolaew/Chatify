@@ -22,6 +22,8 @@ public class ChatifyUser() :
     CassandraIdentityUser(Guid.NewGuid()),
     IMapFrom<Domain.Entities.User>
 {
+    public const string CookieConsentMetadata = "Cookie-Consent";
+    
     [RedisIdField]
     [Indexed]
     [Ignore]

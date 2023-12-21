@@ -23,16 +23,16 @@ namespace Chatify.Web.Features.Auth;
 [AllowAnonymous]
 public class AuthController : ApiController
 {
-    public const string RegularSignUpRoute = "signup";
-    public const string SignOutRoute = "signout";
-    public const string RegularSignInRoute = "signin";
+    private const string RegularSignUpRoute = "signup";
+    private const string SignOutRoute = "signout";
+    private const string RegularSignInRoute = "signin";
 
-    public const string GoogleSignUpRoute = $"{RegularSignUpRoute}/google";
-    public const string FacebookSignUpRoute = $"{RegularSignUpRoute}/facebook";
-    public const string GithubSignUpRoute = $"{RegularSignUpRoute}/github";
+    private const string GoogleSignUpRoute = $"{RegularSignUpRoute}/google";
+    private const string FacebookSignUpRoute = $"{RegularSignUpRoute}/facebook";
+    private const string GithubSignUpRoute = $"{RegularSignUpRoute}/github";
 
-    public const string ConfirmEmailRoute = "confirm-email";
-    public const string CookiePolicyRoute = "cookie-policy";
+    private const string ConfirmEmailRoute = "confirm-email";
+    private const string CookiePolicyRoute = "cookie-policy";
 
     [HttpGet]
     [Authorize]

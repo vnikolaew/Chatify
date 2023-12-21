@@ -7,9 +7,19 @@ namespace Chatify.Domain.Entities;
 
 public class User : IDomainEntity
 {
+    private string _username = default!;
+    
     public Guid Id { get; set; }
 
-    public string Username { get; set; } = default!;
+    public string Username
+    {
+        get => _username;
+        set
+        {
+            UserHandle = UserHandle?.Replace(_username, value) ?? string.Empty;
+            _username = value;
+        }
+    }
 
     public Email Email { get; set; } = default!;
 

@@ -6,12 +6,7 @@ export interface LayoutProps extends PropsWithChildren {
    params: Record<string, any>;
 }
 
-const Layout = async ({ children, params }: LayoutProps) => {
-   // const isUserLoggedIn = !!cookies().has(
-   //    process.env.NEXT_PUBLIC_APPLICATION_COOKIE_NAME
-   // );
-   // if (!isUserLoggedIn) return redirect(`/signin`, RedirectType.push);
-
+const Layout = async ({ children }: LayoutProps) => {
    return (
       <div className={`flex items-start gap-0`}>
          <ChatClientProvider>

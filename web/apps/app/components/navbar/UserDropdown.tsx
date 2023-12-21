@@ -170,7 +170,6 @@ export const UserDropdown = ({}: UserDropdownProps) => {
          >
             <DropdownSection showDivider>
                <DropdownItem
-                  textValue={"profile"}
                   as={Link}
                   // @ts-ignore
                   href={`/profile`}
@@ -190,7 +189,6 @@ export const UserDropdown = ({}: UserDropdownProps) => {
                   href={`/create`}
                   // @ts-ignore
                   // color={"foreground"}
-                  textValue={"create-chat-group"}
                   endContent={
                      <PlusIcon className={`fill-foreground ml-3`} size={20} />
                   }
