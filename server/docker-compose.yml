@@ -1,10 +1,31 @@
 version: '3.9'
 
 services:
-#    caddy:
-#        build:
-#            context: ../caddy
-#            dockerfile: Dockerfile
+    caddy:
+        image: caddy
+        ports:
+            - "90:80"
+            - "444:443"
+        volumes:
+            - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+            - ./caddy/custom.pem:/etc/caddy/localhost-cert.pem
+            - ./caddy/custom-key.pem:/etc/caddy/localhost-key.pem
+        networks:
+            default:
+        depends_on:
+            - chatify-web
+        restart: on-failure
+    chatify-web:
+        build:
+            context: ../web/.
+            dockerfile: Dockerfile
+        networks:
+            default:
+        ports:
+            - "3000:3000"
+        depends_on:
+            - web-server
+        restart: on-failure
     jaeger:
         image: jaegertracing/all-in-one:1.6
         container_name: jaeger
@@ -29,32 +50,32 @@ services:
             - "6379:6379"
         volumes:
             - redis-data:/data
-#            - ./redis/redis.conf:/redis-stack.conf
+    #            - ./redis/redis.conf:/redis-stack.conf
     web-server:
         build:
             context: .
             dockerfile: Dockerfile
         container_name: chatify-server-1
         environment:
-            - ASPNETCORE_URLS=http://+:8080
+            - ASPNETCORE_HTTP_PORTS=80
+            - ASPNETCORE_HTTPS_PORTS=443
             - ASPNETCORE_ENVIRONMENT=Production
             - Redis__Endpoint=redis:6379
             - Cassandra__ContactPoints:0=scylla1
             - Cassandra__Port=9042
             - UseSeeding=true
-        networks: 
+        networks:
             - default
-        depends_on: 
+        depends_on:
             - redis
             - scylla1
             - scylla2
             - scylla3
             - jaeger
-        expose:
-            - "8080"
+        restart: always
         ports:
-            - "8090:8080"
-        restart: on-failure
+            - "5001:443"
+            - "5000:80"
     scylla1:
         image: scylladb/scylla
         container_name: scylla1
@@ -78,7 +99,7 @@ services:
             - scylla-data-node2:/var/lib/scylla
         restart: always
         depends_on:
-            -   scylla1
+            - scylla1
         networks:
             - default
         environment:
@@ -94,7 +115,7 @@ services:
             - scylla-data-node3:/var/lib/scylla
         restart: always
         depends_on:
-            -   scylla1
+            - scylla1
         networks:
             - default
         environment:
@@ -104,4 +125,6 @@ volumes:
     scylla-data-node1:
     scylla-data-node2:
     scylla-data-node3:
-    redis-d
+    redis-data:
+networks:
+    default:

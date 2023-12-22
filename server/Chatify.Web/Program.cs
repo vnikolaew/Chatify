@@ -8,7 +8,7 @@ using Chatify.Web.Middleware;
 [assembly: InternalsVisibleTo("Chatify.IntegrationTesting")]
 var builder = WebApplication.CreateBuilder(args);
 {
-    // builder.WebHost.UseProductionHttps(builder.Environment);
+    builder.WebHost.UseProductionHttps(builder.Environment);
     builder.Services
         .AddWebComponents(builder.Environment)
         .AddUserRateLimiting()

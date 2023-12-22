@@ -4,12 +4,12 @@ services:
    caddy:
       image: caddy
       ports:
-         - "80:80"
-         - "443:443"
+         - "90:80"
+         - "444:443"
       volumes:
          - ./caddy/Caddyfile:/etc/caddy/Caddyfile
-         - ./caddy/localhost-cert.pem:/etc/caddy/localhost-cert.pem
-         - ./caddy/localhost-key.pem:/etc/caddy/localhost-key.pem
+         - ./caddy/custom.pem:/etc/caddy/localhost-cert.pem
+         - ./caddy/custom-key.pem:/etc/caddy/localhost-key.pem
       networks:
          default:
    chatify-web:

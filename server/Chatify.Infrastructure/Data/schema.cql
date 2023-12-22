@@ -65,7 +65,6 @@ SELECT *
 FROM chatify.users
 WHERE NormalizedEmail IS NOT NULL
   AND id IS NOT NULL
-  AND username IS NOT NULL
 PRIMARY KEY (NormalizedEmail, id);
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS users_by_username AS
@@ -73,7 +72,6 @@ SELECT *
 FROM chatify.users
 WHERE NormalizedUserName IS NOT NULL
   AND Id IS NOT NULL
-  AND username IS NOT NULL
 PRIMARY KEY (NormalizedUserName, Id);
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS roles_by_name AS

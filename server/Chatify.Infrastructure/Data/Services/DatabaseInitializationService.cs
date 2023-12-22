@@ -7,6 +7,7 @@ using AspNetCore.Identity.Cassandra.Models;
 using Cassandra;
 using Cassandra.Data.Linq;
 using Chatify.Infrastructure.Data.Models;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
@@ -14,16 +15,16 @@ using InvalidOperationException = System.InvalidOperationException;
 
 namespace Chatify.Infrastructure.Data.Services;
 
-public class DatabaseInitializationService(CassandraOptions cassandraOptions,
-        ISession session,
-        ILogger<DatabaseInitializationService> logger)
+public class DatabaseInitializationService(
+    CassandraOptions cassandraOptions,
+    IWebHostEnvironment environment,
+    ISession session,
+    ILogger<DatabaseInitializationService> logger)
     : BackgroundService
 {
     private const string KeyspaceName = "chatify";
 
-    private readonly string _schemaFilePath = Path.Combine(
-        Directory.GetParent(Assembly.GetExecutingAssembly().Location)!.FullName, "Data",
-        "schema.cql");
+    private readonly string _schemaFilePath = Path.Combine(environment.ContentRootPath, "Data", "schema.cql");
 
     private static Regex GetUdtCollectionRegex(string keyspaceName)
     {
@@ -116,6 +117,7 @@ public class DatabaseInitializationService(CassandraOptions cassandraOptions,
             var statement = new SimpleStatement(cqlClause);
             statement.SetKeyspace(Constants.KeyspaceName);
 
+            logger.LogInformation("Executing statement: {Statement}", statement.QueryString);
             var rs = await session.ExecuteAsync(statement);
         }
 

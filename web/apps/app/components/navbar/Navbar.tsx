@@ -84,7 +84,6 @@ const MainNavbar = () => {
                         size={"lg"}
                         color={(color as any) ?? "foreground"}
                         underline={"hover"}
-                        // className={`text-foreground group-[data-active=true]:text-primary`}
                         href={href}
                         {...rest}
                      >

@@ -9,14 +9,9 @@ import ChatGroupTopBar from "@components/chat-group/ChatGroupTopBar";
 import { redirect, useSearchParams } from "next/navigation";
 import { ChatMessagesSection } from "@components/chat-group";
 import Toast from "@components/common/Toast";
-import { cookies } from "next/headers";
 
 function IndexPage() {
    let { isUserLoggedIn } = useIsUserLoggedIn();
-   isUserLoggedIn = isUserLoggedIn || !!cookies().has(
-      process.env.NEXT_PUBLIC_APPLICATION_COOKIE_NAME,
-   );
-
    console.log({ isUserLoggedIn });
    if (!isUserLoggedIn) return redirect(`/signin`);
 
