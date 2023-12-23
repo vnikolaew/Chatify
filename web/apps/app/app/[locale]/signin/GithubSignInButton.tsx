@@ -11,15 +11,17 @@ export interface GithubSignInButtonProps {
 }
 
 const GithubSignInButton = ({
-   onSuccess,
-   onError,
-   className,
-}: GithubSignInButtonProps) => {
+                               onSuccess,
+                               onError,
+                               className,
+                            }: GithubSignInButtonProps) => {
    return (
       <GithubLogin
          redirectUri={`http://localhost:4200`}
          buttonText={
-            <div className={`flex mx-auto items-center gap-2`}>
+            <div
+               aria-label={`Sign in with Facebook`}
+               className={`flex mx-auto items-center gap-2`}>
                <div className={`bg-white`}>
                   <GithubIcon fill={"black"} size={24} />
                </div>

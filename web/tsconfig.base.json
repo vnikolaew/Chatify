@@ -1,27 +1,60 @@
 {
-   "compileOnSave": false,
-   "compilerOptions": {
-      "rootDir": ".",
-      "sourceMap": true,
-      "declaration": false,
-      "moduleResolution": "node",
-      "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "importHelpers": true,
-      "target": "es2015",
-      "module": "esnext",
-      "lib": ["es2017", "dom"],
-      "skipLibCheck": true,
-      "skipDefaultLibCheck": true,
-      "baseUrl": ".",
-      "paths": {
-         "@web/api": ["libs/api/src/index.ts"],
-         "@icons": ["apps/app/components/icons/index.ts"],
-         "@hooks": ["apps/app/hooks/index.ts"],
-         "@components/*": ["apps/app/components/*"],
-         "@openapi": ["libs/api/openapi/index.ts"]
-      }
-   },
-   // "include": [ "apps/**/*", "libs/**/*"],
-   "exclude": ["node_modules", "tmp"]
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@components/*": [
+        "apps/app/components/*"
+      ],
+      "@hooks": [
+        "apps/app/hooks/index.ts"
+      ],
+      "@icons": [
+        "apps/app/components/icons/index.ts"
+      ],
+      "@openapi": [
+        "libs/api/openapi/index.ts"
+      ],
+      "@web/api": [
+        "libs/api/src/index.ts"
+      ],
+      "@web/components": [
+        "libs/components/src/index.ts"
+      ],
+      "@web/components/server": [
+        "libs/components/src/server.ts"
+      ],
+      "@web/hooks": [
+        "libs/hooks/src/index.ts"
+      ],
+      "@web/hooks/server": [
+        "libs/hooks/src/server.ts"
+      ],
+      "@web/utils": [
+        "libs/utils/src/index.ts"
+      ],
+      "@web/utils/server": [
+        "libs/utils/src/server.ts"
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
 }

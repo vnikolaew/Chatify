@@ -3,12 +3,11 @@ import React, { PropsWithChildren } from "react";
 import { Metadata } from "next";
 import { Inter, Roboto } from "next/font/google";
 import Providers from "./providers";
-import MainNavbar from "@components/navbar/Navbar";
 import process from "process";
-import CookieConsentBannerModal from "@components/CookieConsentBannerModal";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import Footer from "./footer";
+import { CookieConsentBannerModal, MainNavbar } from "@web/components";
 
 export const metadata: Metadata = {
    title: `Chatify - ${new Date().getFullYear()}`,

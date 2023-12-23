@@ -26,7 +26,7 @@ import PasswordInput from "../signin/PasswordInput";
 import GoogleSignInButton from "../signin/GoogleSignInButton";
 import FacebookSignInButton from "../signin/FacebookSignInButton";
 import GithubSignInButton from "../signin/GithubSignInButton";
-import { useGoogleSignIn } from "@hooks";
+import { useGoogleSignIn } from "@web/hooks";
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 const PASSWORD_REGEX =

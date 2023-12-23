@@ -1,7 +1,6 @@
 "use client";
 import React, { PropsWithChildren, useEffect } from "react";
-import ChatGroupsFeed from "@components/feed/ChatGroupsFeed";
-import { ChatGroupSidebar } from "@components/sidebar";
+import { ChatGroupsFeed, ChatGroupSidebar } from "@web/components";
 
 export interface MainLayoutProps extends PropsWithChildren {
 }

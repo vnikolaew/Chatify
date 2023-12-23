@@ -11,9 +11,9 @@ import {
 } from "@nextui-org/react";
 import React, { Fragment, useState } from "react";
 import PasswordInput from "../signin/PasswordInput";
-import { usePassword } from "@hooks";
-import { sleep, useChangeUserPasswordMutation } from "@web/api";
-import Toast from "@components/common/Toast";
+import { usePassword } from "@web/hooks";
+import {useChangeUserPasswordMutation } from "@web/api";
+import { Toast } from "@web/components";
 
 export interface ChangePasswordModalProps
    extends Omit<ModalProps, "children"> {}

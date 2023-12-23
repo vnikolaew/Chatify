@@ -1,8 +1,6 @@
 import React, { PropsWithChildren } from "react";
 import { cookies } from "next/headers";
 import process from "process";
-import { redirect } from "next/navigation";
-import { RedirectType } from "next/dist/client/components/redirect";
 import { OAuthProvider } from "../providers";
 
 export interface LayoutProps extends PropsWithChildren {}

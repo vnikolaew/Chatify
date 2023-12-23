@@ -4,7 +4,7 @@ import { FriendInvitationStatus, User, UserStatus } from "@openapi";
 import { Avatar, Badge, BadgeProps, Button, Chip, Skeleton, Spinner } from "@nextui-org/react";
 import { useGetFriendSuggestions, useGetUserDetailsQuery, useSendFriendInviteMutation } from "@web/api";
 import { useTranslations } from "next-intl";
-import { AddUserIcon } from "@icons";
+import { AddUserIcon } from "@web/components";
 
 export interface SuggestedFriendsSectionProps {
 }

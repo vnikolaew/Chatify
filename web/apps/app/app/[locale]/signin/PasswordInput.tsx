@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Input, InputProps } from "@nextui-org/react";
-import { EyeFilledIcon, EyeSlashFilledIcon } from "@icons";
+import { EyeFilledIcon, EyeSlashFilledIcon } from "@web/components";
 
 const PasswordInput = (props: InputProps) => {
    const [isVisible, setIsVisible] = useState(false);

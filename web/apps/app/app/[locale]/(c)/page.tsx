@@ -2,13 +2,10 @@
 import React from "react";
 import Link from "next/link";
 import { useGetChatGroupDetailsQuery } from "@web/api";
-import { useIsUserLoggedIn } from "@hooks";
 import { useDisclosure } from "@nextui-org/react";
-import { useCurrentChatGroup } from "@hooks";
-import ChatGroupTopBar from "@components/chat-group/ChatGroupTopBar";
 import { redirect, useSearchParams } from "next/navigation";
-import { ChatMessagesSection } from "@components/chat-group";
-import Toast from "@components/common/Toast";
+import { ChatGroupTopBar, ChatMessagesSection, Toast } from "@web/components";
+import { useCurrentChatGroup, useIsUserLoggedIn } from "@web/hooks";
 
 function IndexPage() {
    let { isUserLoggedIn } = useIsUserLoggedIn();

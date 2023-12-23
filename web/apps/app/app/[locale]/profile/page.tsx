@@ -1,6 +1,5 @@
 "use client";
 import React, { Fragment, useEffect, useMemo, useState } from "react";
-import { useCurrentUserId, useFileUpload, useUserEmail } from "@hooks";
 import {
    ChangeUserStatusModel,
    getMediaUrl,
@@ -22,10 +21,10 @@ import {
    Spinner,
 } from "@nextui-org/react";
 import { Lock, Mail, Pen, Phone, X } from "lucide-react";
-import { USER_STATUSES } from "@components/navbar";
-import { TooltipButton, Toast } from "@components/common";
 import { UserStatus } from "@openapi";
 import ChangePasswordModal from "./ChangePasswordModal";
+import { Toast, TooltipButton, USER_STATUSES } from "@web/components";
+import { useCurrentUserId, useFileUpload, useUserEmail } from "@web/hooks";
 
 export interface PageProps {}
 

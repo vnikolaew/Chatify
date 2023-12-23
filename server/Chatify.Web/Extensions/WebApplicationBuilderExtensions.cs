@@ -15,10 +15,10 @@ public static class WebApplicationBuilderExtensions
         IWebHostEnvironment environment)
     {
         if ( !environment.IsProduction() ) return webHostBuilder;
-        var httpPort = int.TryParse(Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS"), out var port)
+        var httpPort = int.TryParse(Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORT"), out var port)
             ? port
             : 80;
-        var httpsPort = int.TryParse(Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORTS"), out var port2)
+        var httpsPort = int.TryParse(Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORT"), out var port2)
             ? port2
             : 443;
 

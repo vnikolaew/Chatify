@@ -20,12 +20,12 @@ import {
    Spinner,
    User,
 } from "@nextui-org/react";
-import UploadIcon from "@components/icons/UploadIcon";
 import { useRouter } from "next/navigation";
 import { User as TUser } from "@openapi";
 import * as yup from "yup";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSingleFileUpload } from "@hooks";
+import { UploadIcon } from "@web/components";
+import { useSingleFileUpload } from "@web/hooks";
 
 export interface CreateChatGroupFormProps {
 }

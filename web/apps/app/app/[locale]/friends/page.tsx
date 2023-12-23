@@ -6,7 +6,6 @@ import {
    Spinner,
 } from "@nextui-org/react";
 import { UserIcon } from "lucide-react";
-import { useUserHandle } from "@hooks";
 import {
    useFindUserByHandleQuery
 } from "@web/api";
@@ -14,6 +13,7 @@ import { useTranslations } from "next-intl";
 import UserSearchResultSection from "./UserSearchResultSection";
 import { UserNotFound } from "./UserNotFound";
 import SuggestedFriendsSection from "./SuggestedFriendsSection";
+import { useUserHandle } from "@web/hooks";
 
 
 export interface PageProps {

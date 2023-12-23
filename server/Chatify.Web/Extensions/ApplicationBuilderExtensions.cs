@@ -30,19 +30,7 @@ public static class ApplicationBuilderExtensions
     {
         if ( environment.IsProduction() )
         {
-            return app.UseCors(policy =>
-                policy
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .WithOrigins(
-                        "https://localhost:443",
-                        "https://localhost:443/",
-                        "http://localhost:80",
-                        "http://localhost:80/",
-                        "https://localhost",
-                        "https://localhost/"
-                    )
-                    .AllowCredentials());
+            return app;
         }
 
         return app.UseCors(policy =>

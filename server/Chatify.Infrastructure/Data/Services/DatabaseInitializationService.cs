@@ -24,7 +24,7 @@ public class DatabaseInitializationService(
 {
     private const string KeyspaceName = "chatify";
 
-    private readonly string _schemaFilePath = Path.Combine(environment.ContentRootPath, "Data", "schema.cql");
+    private readonly string _schemaFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "schema.cql");
 
     private static Regex GetUdtCollectionRegex(string keyspaceName)
     {

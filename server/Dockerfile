@@ -21,7 +21,8 @@ ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "Chatify.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
-ENV ASPNETCORE_URLS=http://+:8080
 WORKDIR /app
 COPY --from=publish /app/publish .
+EXPOSE 80/tcp
+EXPOSE 443/tcp
 ENTRYPOINT ["dotnet", "Chatify.Web.dll"]

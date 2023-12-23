@@ -24,8 +24,8 @@ import {
 import * as yup from "yup";
 import { Form, Formik } from "formik";
 import PasswordInput from "./PasswordInput";
-import { GoogleIcon, GithubIcon, FacebookIcon } from "@icons";
-import { useGoogleSignIn } from "@hooks";
+import { FacebookIcon, GithubIcon, GoogleIcon } from "@web/components";
+import { useGoogleSignIn } from "@web/hooks";
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 const PASSWORD_REGEX =
