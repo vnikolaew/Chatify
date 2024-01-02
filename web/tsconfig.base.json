@@ -21,6 +21,9 @@
       "@components/*": [
         "apps/app/components/*"
       ],
+       "@hub/*": [
+          "apps/app/hub/*"
+       ],
       "@hooks": [
         "apps/app/hooks/index.ts"
       ],

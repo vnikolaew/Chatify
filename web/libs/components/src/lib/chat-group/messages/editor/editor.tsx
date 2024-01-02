@@ -18,8 +18,9 @@ export const CustomEditor = {
       const [match] = Editor.nodes(editor, {
          match: (n) => n.type === "code",
       });
+      const marks = Editor.marks(editor);
 
-      return !!match;
+      return !!match || marks?.code;
    },
    serialize(node: any): string {
       if (Editor.isEditor(node)) {
@@ -89,11 +90,18 @@ export const CustomEditor = {
 
    toggleCodeBlock(editor: BaseEditor & ReactEditor) {
       const isActive = CustomEditor.isCodeBlockActive(editor);
-      Transforms.setNodes(
-         editor,
-         { type: isActive ? null : "code" },
-         { match: (n) => Editor.isBlock(editor, n) },
-      );
+      console.log(`Is code block active: `, isActive);
+
+      if (isActive) {
+         Editor.removeMark(editor, "code");
+      } else {
+         Editor.addMark(editor, "code", true);
+      }
+      // Transforms.setNodes(
+      //    editor,
+      //    { type: isActive ? null : "code" },
+      //    { match: (n) => Editor.isBlock(editor, n) },
+      // );
    },
 
    toggleStrikethroughMark(editor: BaseEditor & ReactEditor) {
@@ -118,6 +126,12 @@ export const CustomEditor = {
 
       Transforms.insertNodes(editor, link);
       Transforms.collapse(editor, { edge: "end" });
+   },
+   insertLineBreak(editor: BaseEditor & ReactEditor) {
+      Transforms.insertNodes(editor, {
+         children: [{ text: `` }],
+         type: `line-break`,
+      });
    },
 };
 
@@ -145,6 +159,12 @@ export const Leaf = (props) => {
          </Link>
       );
    }
+   if (props.leaf.code) {
+      return (
+         <code {...props.attributes}>{props.children}</code>
+      );
+   }
+
    return (
       <span
          {...props.attributes}

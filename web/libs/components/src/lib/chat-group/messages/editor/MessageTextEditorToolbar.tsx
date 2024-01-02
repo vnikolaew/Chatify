@@ -49,6 +49,7 @@ const MessageTextEditorToolbar = ({}: MessageTextEditorToolbarProps) => {
                text={t(`Strikethrough`)}
             />
             <ToolbarButton
+               isActive={editor.getMarks()?.code}
                onPress={(_) => CustomEditor.toggleCodeBlock(editor)}
                icon={<CodeIcon className={`stroke-foreground`} size={16} />}
                text={t(`Code`)}

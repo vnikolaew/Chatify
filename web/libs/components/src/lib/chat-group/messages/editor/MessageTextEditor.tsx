@@ -70,6 +70,9 @@ function serializer(node: any) {
       if (node.strikethrough) {
          string = `<s>${string}</s>`;
       }
+      if (node.code) {
+         string = `<code>${string}</code>`;
+      }
       return string;
    }
 
@@ -95,6 +98,12 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                                                                                  ...props
                                                                               }, ref) => {
    const [editor] = useState(() => withReact(createEditor()));
+   const editorLines = useCallback(() =>
+         editor.children
+            .filter(n => n.type === `line-break`)
+            .length,
+      [editor]);
+
    const [replyTo] = useReplyToMessageContext();
    const hubClient = useChatifyClientContext();
    const [isUserTyping, setIsUserTyping] = useState(false);
@@ -106,6 +115,14 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
       handleRemoveFile,
       clearFiles,
    } = useFileUpload([...(initialAttachments?.values() ?? [])]);
+
+   const attachedFilesMap = useMemo<Record<string, ChatifyFile>>(() =>
+      attachedFiles.reduce((acc, file) =>
+         ({
+            ...acc,
+            [file.id]: file,
+         }), {}), [attachedFiles]);
+
    const t = useTranslations(`MainArea.ChatMessages.MessageTextEditor`);
    const isPrivate = useIsChatGroupPrivate(chatGroup);
 
@@ -244,27 +261,36 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
    }
 
    const handleDraftMessage = useCallback(async (groupId: string) => {
-            const content = plateToMarkdown(editor.children);
-            CustomEditor.clear(editor);
+         const content = plateToMarkdown(editor.children);
+         CustomEditor.clear(editor);
 
-            if (content?.trim()?.length === 0) return;
+         if (content?.trim()?.length === 0) return;
 
-            await draftChatMessage(
-               {
-                  content: markdownProcessor.processSync(content).value as string,
-                  chatGroupId: groupId,
-                  files: attachedFiles.map((_) => _.file),
-               },
-               {
-                  onSuccess: (_, {}) => clearFiles(),
-                  onSettled: () => setIsUserTyping(false),
-               },
-            );
-         }
-         ,
-         [editor, draftChatMessage, attachedFiles, clearFiles],
-      )
-   ;
+         await draftChatMessage(
+            {
+               content: markdownProcessor.processSync(content).value as string,
+               chatGroupId: groupId,
+               files: attachedFiles.map((_) => _.file),
+            },
+            {
+               onSuccess: (_, {}) => clearFiles(),
+               onSettled: () => setIsUserTyping(false),
+            },
+         );
+      }
+      ,
+      [editor, draftChatMessage, attachedFiles, clearFiles],
+   );
+
+   const [editorHeight, setEditorHeight]
+      = useState(140);
+
+   function handleInsertLineBreak() {
+      CustomEditor.insertLineBreak(editor)
+
+      // Re-calculate editor height:
+      setEditorHeight(h => h + 20);
+   }
 
    return (
       <Slate
@@ -275,20 +301,25 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
          editor={editor}
          initialValue={initialValue}
       >
-         <div ref={ref} className={`relative h-fit w-5/6 mr-12 ${className}`} {...props}>
+         <div ref={ref} className={`relative h-fit w-5/6 mr-12 ${className ?? ``}`} {...props}>
             <Editable
+               style={{
+                  minHeight: `${editorHeight + (attachedFilesUrls?.size ? 60 : 0)}px`,
+                  maxHeight: `${editorHeight + (attachedFilesUrls?.size ? 60 : 0)}px`,
+               }}
                placeholder={replyTo ? `Reply ...` : placeholder}
-               className={`bg-zinc-900 !break-words !whitespace-nowrap ${
-                  attachedFilesUrls?.size
-                     ? `!min-h-[200px] !max-h-[200px]`
-                     : `!min-h-[140px] !max-h-[140px]`
-               } relative text-sm px-6 pt-14 rounded-medium text-white border-default-200 border-1 !active:border-default-300 !focus:border-default-300`}
+               className={`bg-zinc-900 resize-y !break-words !whitespace-nowrap relative text-sm px-6 pt-14 rounded-medium text-white border-default-200 border-1 !active:border-default-300 !focus:border-default-300`}
                autoFocus
                renderElement={renderElement}
                renderLeaf={renderLeaf}
                onKeyDown={async (e) => {
                   if (e.key === "Enter") {
                      e.preventDefault();
+                     if (e.shiftKey) {
+                        handleInsertLineBreak();
+                        return;
+                     }
+
                      await handleSendMessage();
                      return;
                   }
@@ -351,7 +382,6 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                         className={`text-foreground !min-w-fit !max-w-fit m-0 !p-2 h-6 w-6`}
                         color={"primary"}
                         radius={"full"}
-                        // size={"sm"}
                         startContent={
                            <span className={`fill-foreground text-sm`}>
                               +
@@ -373,7 +403,7 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                         key={MessageAction.FileUpload}
                         description={
                            <span dangerouslySetInnerHTML={{ __html: t(`FileUpload.Description`) }}
-                                 className={`text-[.7rem] mt-1 leading-2`}>
+                                 className={`text-[.6rem] mt-1 leading-3`}>
                            </span>
                         }
                         classNames={{
@@ -394,7 +424,7 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                <Spacer y={4} />
                {[...attachedFilesUrls?.entries()].map(([id, url], i) => (
                   <ChatMessageAttachmentEntry
-                     attachment={attachedFiles.find((_) => _.id === id)!}
+                     attachment={attachedFilesMap[id]!}
                      url={url}
                      onRemove={() => handleRemoveFile(id)}
                   />

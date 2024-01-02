@@ -13,7 +13,7 @@ async function server() {
    const nextApp = next({ dev });
    const handle = nextApp.getRequestHandler();
 
-   const certsFolder = join(__dirname, "certs");
+   const certsFolder = join(__dirname, "certificates");
 
    const httpsOptions = {
       key: readFileSync(join(certsFolder, "localhost-key.pem")),
