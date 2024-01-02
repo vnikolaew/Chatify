@@ -150,7 +150,7 @@ export const NotificationsDropdown = ({}: NotificationsDropdownProps) => {
                      <Tab title={"Unread"} key={NotificationTab.UNREAD}>
                         <NotificationsTab
                            noNotificationsMessage={
-                              "No new unread notifications."
+                              "You have no unread notifications."
                            }
                            notifications={unreadNotifications!}
                            loading={unreadLoading}

@@ -3,6 +3,7 @@ using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Services;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Humanizer;
 using Mapper = Cassandra.Mapping.Mapper;
 
@@ -18,19 +19,20 @@ public sealed class FriendInvitationRepository(IMapper mapper, Mapper dbMapper, 
         IFriendInvitationRepository
 {
     public async Task<List<FriendInvitation>> AllSentByUserAsync(
-        Guid userId, CancellationToken cancellationToken = default)
+        Guid userId,
+        CancellationToken cancellationToken = default)
     {
         var invites = await DbMapper
             .FetchAsync<Models.FriendInvitation>("WHERE inviter_id = ?", userId);
 
         return invites?
-                   .Where(i => i.Status == ( sbyte )FriendInvitationStatus.Pending)
-                   .ToList<FriendInvitation>(Mapper) ??
-               new List<FriendInvitation>();
+            .Where(i => i.Status == ( sbyte )FriendInvitationStatus.Pending)
+            .ToList<FriendInvitation>(Mapper) ?? [];
     }
 
     public override Task<FriendInvitation?> GetAsync(
-        Guid id, CancellationToken cancellationToken = default)
+        Guid id,
+        CancellationToken cancellationToken = default)
         => DbMapper
             .FirstOrDefaultAsync<Models.FriendInvitation>(
                 "WHERE id = ? ALLOW FILTERING;", id)
@@ -51,7 +53,7 @@ public sealed class FriendInvitationRepository(IMapper mapper, Mapper dbMapper, 
                 userTwoId, userOneId)
         };
 
-        var friendInvites = await Task.WhenAll(dbTasks);
+        var friendInvites = await dbTasks;
         return friendInvites.FirstOrDefault(_ => _ is not null) is { } invite
             ? Mapper.Map<FriendInvitation>(invite)
             : default;
@@ -65,7 +67,6 @@ public sealed class FriendInvitationRepository(IMapper mapper, Mapper dbMapper, 
 
         return invites?
                    .Where(i => i.Status == ( sbyte )FriendInvitationStatus.Pending)
-                   .ToList<FriendInvitation>(Mapper) ??
-               new List<FriendInvitation>();
+                   .ToList<FriendInvitation>(Mapper) ?? [];
     }
 }

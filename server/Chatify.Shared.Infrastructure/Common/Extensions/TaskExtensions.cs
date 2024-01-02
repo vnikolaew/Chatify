@@ -47,7 +47,13 @@ public static class TaskExtensions
         var combined = Task.WhenAll(tasks);
         return combined.GetAwaiter();
     }
-    
+
+    public static TaskAwaiter GetAwaiter(this IEnumerable<Task> tasks)
+    {
+        var combined = Task.WhenAll(tasks);
+        return combined.GetAwaiter();
+    }
+
     public static TaskAwaiter<T[]> GetAwaiter<T>(this List<Task<T>> tasks)
     {
         var combined = Task.WhenAll(tasks);

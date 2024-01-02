@@ -10,6 +10,7 @@ using AutoMapper.Extensions.ExpressionMapping;
 using Chatify.Application.ChatGroups.Queries.Models;
 using Chatify.Domain.Entities;
 using Chatify.Infrastructure;
+using Chatify.Infrastructure.Data.Conversions;
 using Chatify.Web.Common;
 using Chatify.Web.Middleware;
 using Microsoft.AspNetCore.Authorization;

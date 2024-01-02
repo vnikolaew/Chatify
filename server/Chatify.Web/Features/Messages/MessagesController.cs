@@ -9,6 +9,7 @@ using Chatify.Application.Messages.Replies.Commands;
 using Chatify.Application.Messages.Replies.Queries;
 using Chatify.Domain.Entities;
 using Chatify.Shared.Abstractions.Queries;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
 using Chatify.Web.Common.Attributes;
 using Chatify.Web.Extensions;
@@ -45,35 +46,30 @@ public class MessagesController : ApiController
     [Route("{groupId:guid}")]
     [ProducesBadRequestApiResponse]
     [ProducesOkApiResponse<CursorPaged<ChatGroupMessageEntry>>]
-    public async Task<IActionResult> GetPaginatedMessagesByGroup(
+    public Task<IActionResult> GetPaginatedMessagesByGroup(
         [FromQuery] GetMessagesByChatGroupRequest request,
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetMessagesForChatGroup, GetMessagesForChatGroupResult>(
-            ( request with { GroupId = groupId } ).ToCommand(), cancellationToken);
-
-        return result.Match(BadRequest, Ok);
-    }
+        => QueryAsync<GetMessagesForChatGroup, GetMessagesForChatGroupResult>(
+                ( request with { GroupId = groupId } ).ToCommand(), cancellationToken)
+            .MatchAsync(BadRequest, Ok);
 
     [HttpGet]
     [Route("{messageId:guid}/replies")]
     [ProducesBadRequestApiResponse]
     [ProducesNotFoundApiResponse]
     [ProducesOkApiResponse<CursorPaged<ChatMessageReply>>]
-    public async Task<IActionResult> GetPaginatedRepliesByMessage(
+    public Task<IActionResult> GetPaginatedRepliesByMessage(
         [FromQuery] GetRepliesByForMessageRequest request,
         [FromRoute] Guid messageId,
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetRepliesForMessage, GetMessageRepliesForChatGroupMessageResult>(
-            ( request with { MessageId = messageId } ).ToCommand(), cancellationToken);
-
-        return result.Match<IActionResult>(
-            _ => NotFound(),
-            _ => BadRequest(),
-            Ok);
-    }
+        => QueryAsync<GetRepliesForMessage, GetMessageRepliesForChatGroupMessageResult>(
+                ( request with { MessageId = messageId } ).ToCommand(), cancellationToken)
+            .MatchAsync(
+                _ => NotFound(),
+                _ => BadRequest(),
+                Ok
+            );
 
     [HttpPost]
     [Route("{groupId:guid}")]
@@ -86,14 +82,14 @@ public class MessagesController : ApiController
         [FromForm] SendGroupChatMessageRequest request,
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
-    {
-        var result = await SendAsync<SendGroupChatMessage, SendGroupChatMessageResult>(
-            ( request with { ChatGroupId = groupId } ).ToCommand(), cancellationToken);
-        return result.Match<IActionResult>(
-            _ => NotFound(),
-            _ => BadRequest(),
-            id => Accepted(ApiResponse<object>.Success(new { id }, "Chat message successfully sent.")));
-    }
+        => await SendAsync<SendGroupChatMessage, SendGroupChatMessageResult>(
+                ( request with { ChatGroupId = groupId } ).ToCommand(), cancellationToken)
+            .MatchAsync(
+                _ => NotFound(),
+                _ => BadRequest(),
+                id => ( IActionResult )Accepted(ApiResponse<object>.Success(new { id },
+                    "Chat message successfully sent."))
+            );
 
     [HttpDelete]
     [Route("replies/{messageId:guid}")]
@@ -105,12 +101,13 @@ public class MessagesController : ApiController
         [FromRoute] Guid messageId,
         CancellationToken cancellationToken = default)
     {
-        var result = await SendAsync<DeleteChatMessageReply, DeleteChatMessageReplyResult>(
-            ( request with { MessageId = messageId } ).ToReplyCommand(), cancellationToken);
-        return result.Match(
-            _ => NotFound(),
-            _ => _.ToBadRequest(),
-            NoContent);
+        return await SendAsync<DeleteChatMessageReply, DeleteChatMessageReplyResult>(
+                ( request with { MessageId = messageId } ).ToReplyCommand(), cancellationToken)
+            .MatchAsync(
+                _ => NotFound(),
+                _ => _.ToBadRequest(),
+                NoContent
+            );
     }
 
     [HttpPost]
@@ -123,13 +120,13 @@ public class MessagesController : ApiController
         [FromRoute] Guid messageId,
         CancellationToken cancellationToken = default)
     {
-        var result = await SendAsync<ReplyToChatMessage, ReplyToChatMessageResult>(
-            ( request with { ReplyToId = messageId } ).ToCommand(), cancellationToken);
-
-        return result.Match<IActionResult>(
-            _ => _.ToBadRequest(),
-            _ => NotFound(),
-            id => Accepted(ApiResponse<object>.Success(new { id }, "Chat message reply successfully sent.")));
+        return await SendAsync<ReplyToChatMessage, ReplyToChatMessageResult>(
+                ( request with { ReplyToId = messageId } ).ToCommand(), cancellationToken)
+            .MatchAsync(
+                _ => _.ToBadRequest(),
+                NotFound,
+                id => Accepted(ApiResponse<object>.Success(new { id }, "Chat message reply successfully sent."))
+            );
     }
 
     [HttpPut]
@@ -142,13 +139,13 @@ public class MessagesController : ApiController
         [FromRoute] Guid messageId,
         CancellationToken cancellationToken = default)
     {
-        var result = await SendAsync<EditGroupChatMessage, EditGroupChatMessageResult>(
-            ( request with { MessageId = messageId } ).ToCommand(), cancellationToken);
-
-        return result.Match<IActionResult>(
-            _ => NotFound(),
-            _ => _.ToBadRequest(),
-            Accepted);
+        return await SendAsync<EditGroupChatMessage, EditGroupChatMessageResult>(
+                ( request with { MessageId = messageId } ).ToCommand(), cancellationToken)
+            .MatchAsync(
+                NotFound,
+                _ => _.ToBadRequest(),
+                Accepted
+            );
     }
 
     [HttpPut]
@@ -161,12 +158,13 @@ public class MessagesController : ApiController
         [FromRoute] Guid messageId,
         CancellationToken cancellationToken = default)
     {
-        var result = await SendAsync<EditChatMessageReply, EditChatMessageReplyResult>(
-            ( request with { MessageId = messageId } ).ToReplyCommand(), cancellationToken);
-        return result.Match(
-            _ => NotFound(),
-            _ => _.ToBadRequest(),
-            Accepted);
+        return await SendAsync<EditChatMessageReply, EditChatMessageReplyResult>(
+                ( request with { MessageId = messageId } ).ToReplyCommand(), cancellationToken)
+            .MatchAsync(
+                NotFound,
+                _ => _.ToBadRequest(),
+                Accepted
+            );
     }
 
 
@@ -180,13 +178,13 @@ public class MessagesController : ApiController
         [FromRoute] Guid messageId,
         CancellationToken cancellationToken = default)
     {
-        var result = await SendAsync<DeleteGroupChatMessage, DeleteGroupChatMessageResult>(
-            ( request with { MessageId = messageId } ).ToCommand(), cancellationToken);
-
-        return result.Match<IActionResult>(
-            _ => NotFound(),
-            _ => _.ToBadRequest(),
-            _ => NoContent());
+        return await SendAsync<DeleteGroupChatMessage, DeleteGroupChatMessageResult>(
+                ( request with { MessageId = messageId } ).ToCommand(), cancellationToken)
+            .MatchAsync(
+                NotFound,
+                _ => _.ToBadRequest(),
+                _ => NoContent()
+            );
     }
 
     [HttpPost]
@@ -200,12 +198,14 @@ public class MessagesController : ApiController
     {
         var result = await SendAsync<PinChatGroupMessage, PinChatGroupMessageResult>(
             new PinChatGroupMessage(messageId), cancellationToken);
-        return result.Match<IActionResult>(
-            _ => NotFound(),
-            _ => NotFound(),
-            _ => _.ToBadRequest(),
-            _ => NoContent()
-        );
+
+        return result
+            .Match(
+                _ => NotFound(),
+                _ => NotFound(),
+                _ => _.ToBadRequest(),
+                _ => ( IActionResult )NoContent()
+            );
     }
 
     [HttpDelete]
@@ -237,17 +237,15 @@ public class MessagesController : ApiController
         [FromBody] ForwardMessage request,
         [FromRoute] Guid messageId,
         CancellationToken cancellationToken = default)
-    {
-        var result = await SendAsync<ForwardMessage, ForwardMessageResult>(
-            request with { MessageId = messageId }, cancellationToken);
-        return result.Match<IActionResult>(
-            _ => NotFound(),
-            _ => _.ToBadRequest(),
-            _ => NotFound(),
-            _ => _.ToBadRequest(),
-            Accepted
-        );
-    }
+        => await SendAsync<ForwardMessage, ForwardMessageResult>(
+                request with { MessageId = messageId }, cancellationToken)
+            .MatchAsync(
+                _ => NotFound(),
+                _ => _.ToBadRequest(),
+                _ => NotFound(),
+                _ => _.ToBadRequest(),
+                Accepted
+            );
 
     [HttpGet]
     [Route("drafts")]
@@ -256,9 +254,11 @@ public class MessagesController : ApiController
     public async Task<IActionResult> DraftedMessages(
         CancellationToken cancellationToken = default)
     {
-        var result = await QueryAsync<GetDraftedMessages, GetDraftedMessagesResult>(
-            new GetDraftedMessages(), cancellationToken);
-        return result.Match<IActionResult>(_ => NotFound(), Ok);
+        return await QueryAsync<GetDraftedMessages, GetDraftedMessagesResult>(
+                new GetDraftedMessages(), cancellationToken)
+            .MatchAsync(
+                _ => NotFound(), Ok
+            );
     }
 
     [HttpGet]
@@ -268,11 +268,9 @@ public class MessagesController : ApiController
     public async Task<IActionResult> DraftedForGroup(
         Guid groupId,
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetDraftedMessageForGroup, GetDraftedMessageForGroupResult>(
-            new GetDraftedMessageForGroup(groupId), cancellationToken);
-        return result.Match<IActionResult>(_ => NotFound(), Ok);
-    }
+        => await QueryAsync<GetDraftedMessageForGroup, GetDraftedMessageForGroupResult>(
+                new GetDraftedMessageForGroup(groupId), cancellationToken)
+            .MatchAsync(_ => NotFound(), Ok);
 
 
     [HttpPost]
@@ -282,12 +280,11 @@ public class MessagesController : ApiController
     public async Task<IActionResult> DraftMessage(
         [FromForm] DraftChatMessage draftChatMessage,
         CancellationToken cancellationToken = default)
-    {
-        var result = await SendAsync<DraftChatMessage, DraftChatMessageResult>(
-            draftChatMessage, cancellationToken);
-        return result.Match<IActionResult>(
-            _ => NotFound(),
-            _ => _.ToBadRequest(),
-            Ok);
-    }
+        => await SendAsync<DraftChatMessage, DraftChatMessageResult>(
+                draftChatMessage, cancellationToken)
+            .MatchAsync(
+                _ => NotFound(),
+                _ => _.ToBadRequest(),
+                Ok
+            );
 }

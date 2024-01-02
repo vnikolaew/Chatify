@@ -17,5 +17,5 @@ public sealed class FriendInvitationStatusSerializer
     public override byte[] Serialize(
         ushort protocolVersion,
         FriendInvitationStatus value)
-        => new[] { ( byte )( sbyte )value };
+        => [( byte )( sbyte )value];
 }

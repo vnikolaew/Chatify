@@ -14,7 +14,6 @@ export const UserNotFound = ({}: UserNotFoundProps) => {
          <AlertCircle
             className={`stroke-default-400`}
             size={28}
-            // color={"white"}
          />
          <span className={`text-default-400`}>
             No user was found with the given handle.

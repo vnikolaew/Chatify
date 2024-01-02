@@ -4,6 +4,7 @@ using Chatify.Application.Friendships.Commands;
 using Chatify.Application.Friendships.Queries;
 using Chatify.Application.User.Common;
 using Chatify.Domain.Entities;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
 using Chatify.Web.Common.Attributes;
 using Chatify.Web.Extensions;
@@ -11,6 +12,7 @@ using LanguageExt;
 using LanguageExt.Common;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
+using OneOfExtensions = Chatify.Shared.Infrastructure.Common.Extensions.OneOfExtensions;
 
 namespace Chatify.Web.Features.Friendships;
 
@@ -24,61 +26,56 @@ using GetMyFriendsResult = OneOf<BaseError, List<User>>;
 
 public class FriendshipsController : ApiController
 {
-    private const string SentFriendshipsEndpoint = "sent";
-    private const string IncomingFriendshipsEndpoint = "incoming";
+    private const string SentFriendshipsRoute = "sent";
+    private const string IncomingFriendshipsRoute = "incoming";
 
-    private const string InviteEndpoint = "invite";
+    private const string InviteRoute = "invite";
 
-    private const string AcceptEndpoint = "accept";
-    private const string DeclineEndpoint = "decline";
+    private const string AcceptRoute = "accept";
+    private const string DeclineRoute = "decline";
+    
+    private const string SuggestionsRoute = "suggestions";
 
     [HttpGet]
     [ProducesBadRequestApiResponse]
     [ProducesOkApiResponse<List<User>>]
-    public async Task<IActionResult> GetMyFriends(
+    public Task<IActionResult> GetMyFriends(
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetMyFriends, GetMyFriendsResult>(
-            new GetMyFriends(),
-            cancellationToken);
-        return result.Match(
-            err => err.ToBadRequest(),
-            Ok);
-    }
+        => OneOfExtensions.MatchAsync(QueryAsync<GetMyFriends, GetMyFriendsResult>(
+                new GetMyFriends(),
+                cancellationToken),
+            err => err.ToBadRequest(), Ok);
 
     [HttpGet]
-    [Route(SentFriendshipsEndpoint)]
+    [Route(SentFriendshipsRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesOkApiResponse<List<FriendInvitation>>]
-    public async Task<IActionResult> GetSentInvitations(
+    public Task<IActionResult> GetSentInvitations(
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetSentInvitations, GetSentInvitationsResult>(
-            new GetSentInvitations(),
-            cancellationToken);
-
-        return result.Match(
-            err => err.ToBadRequest(),
-            Ok);
-    }
+        => QueryAsync<GetSentInvitations, GetSentInvitationsResult>(
+                new GetSentInvitations(),
+                cancellationToken)
+            .MatchAsync(
+                err => err.ToBadRequest(),
+                Ok
+            );
 
     [HttpGet]
-    [Route(IncomingFriendshipsEndpoint)]
+    [Route(IncomingFriendshipsRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesOkApiResponse<List<FriendInvitation>>]
-    public async Task<IActionResult> GetIncomingInvitations(
+    public Task<IActionResult> GetIncomingInvitations(
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetIncomingInvitations, GetIncomingInvitationsResult>(
-            new GetIncomingInvitations(),
-            cancellationToken);
-        return result.Match(
-            err => err.ToBadRequest(),
-            Ok);
-    }
+        => QueryAsync<GetIncomingInvitations, GetIncomingInvitationsResult>(
+                new GetIncomingInvitations(),
+                cancellationToken)
+            .MatchAsync(
+                err => err.ToBadRequest(),
+                Ok
+            );
 
     [HttpPost]
-    [Route($"{InviteEndpoint}/{{userId:guid}}")]
+    [Route($"{InviteRoute}/{{userId:guid}}")]
     [ProducesNotFoundApiResponse]
     [ProducesAcceptedApiResponse<ApiResponse<object>>]
     public async Task<IActionResult> SendFriendInvite(
@@ -95,7 +92,7 @@ public class FriendshipsController : ApiController
     }
 
     [HttpPost]
-    [Route($"{AcceptEndpoint}/{{inviteId:guid}}")]
+    [Route($"{AcceptRoute}/{{inviteId:guid}}")]
     [ProducesBadRequestApiResponse]
     [ProducesAcceptedApiResponse<ApiResponse<object>>]
     public async Task<IActionResult> AcceptFriendInvite(
@@ -117,7 +114,7 @@ public class FriendshipsController : ApiController
     }
 
     [HttpPost]
-    [Route($"{DeclineEndpoint}/{{inviteId:guid}}")]
+    [Route($"{DeclineRoute}/{{inviteId:guid}}")]
     [ProducesBadRequestApiResponse]
     [ProducesNotFoundApiResponse]
     [ProducesNoContentApiResponse]
@@ -147,9 +144,9 @@ public class FriendshipsController : ApiController
             _ => BadRequest(),
             _ => NoContent());
     }
-    
+
     [HttpGet]
-    [Route("suggestions")]
+    [Route(SuggestionsRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesNoContentApiResponse]
     public async Task<IActionResult> GetFriendSuggestions(CancellationToken cancellationToken = default)

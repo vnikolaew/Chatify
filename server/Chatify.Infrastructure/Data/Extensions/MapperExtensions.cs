@@ -9,19 +9,20 @@ public static class MapperExtensions
     public static async Task<List<T>> FetchListAsync<T>(this IMapper mapper)
         => ( await mapper.FetchAsync<T>() ).ToList();
 
-    public static async Task<List<T>> FetchListAsync<T>(
+    public static async Task<List<T>> FetchListAsync<T, TId>(
         this IMapper mapper,
+        TId id,
         Expression<Func<T, object>> selection)
     {
         var selectedColumns = GetSelectedColumns(selection);
         var selectAllColumns = new List<string> { "*" };
-        
+
         var tableName = MappingConfiguration.Global.Get<T>().TableName;
         var idColumn = MappingConfiguration.Global.Get<T>().PartitionKeys[0];
 
         var cql =
             $"SELECT {string.Join(", ", selectedColumns ?? selectAllColumns)} FROM {tableName} WHERE {idColumn} = ? ALLOW FILTERING;";
-        return ( await mapper.FetchAsync<T>(cql) ).ToList();
+        return ( await mapper.FetchAsync<T>(cql, [id]) ).ToList();
     }
 
     private static List<string>? GetSelectedColumns<T>(

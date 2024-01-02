@@ -42,6 +42,7 @@ internal sealed class LeaveChatGroupHandler(
 
         var success = await members.DeleteAsync(
             identityContext.Id, cancellationToken);
+        if ( !success ) return Unit.Default;
 
         // TODO: Fire an event:
         await eventDispatcher.PublishAsync(new ChatGroupMemberLeftEvent

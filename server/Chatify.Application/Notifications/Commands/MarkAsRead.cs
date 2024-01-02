@@ -14,12 +14,9 @@ public record MarkAsRead(
     [Required] Guid NotificationId
 ) : ICommand<MarkAsReadResult>;
 
-internal sealed class MarkAsReadHandler(IIdentityContext identityContext,
-        INotificationRepository notifications)
+internal sealed class MarkAsReadHandler(INotificationRepository notifications)
     : ICommandHandler<MarkAsRead, MarkAsReadResult>
 {
-    private readonly IIdentityContext _identityContext = identityContext;
-
     public async Task<MarkAsReadResult> HandleAsync(
         MarkAsRead command,
         CancellationToken cancellationToken = default)

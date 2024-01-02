@@ -5,6 +5,7 @@ using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Services;
 using Chatify.Shared.Abstractions.Serialization;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Humanizer;
 using Redis.OM.Contracts;
 using StackExchange.Redis;
@@ -40,7 +41,7 @@ public sealed class FriendshipsRepository(
 
         var saveOne = base.SaveAsync(entity, cancellationToken);
         var saveTwo = base.SaveAsync(swappedFriendRelation, cancellationToken);
-        await Task.WhenAll(saveOne, saveTwo);
+        await (saveOne, saveTwo);
 
         return saveOne.Result;
     }
@@ -56,7 +57,7 @@ public sealed class FriendshipsRepository(
         foreach ( var idsChunk in friendsIds.Chunk(10) )
         {
             var usersChunk = await users.GetByIds(idsChunk, cancellationToken);
-            friends.AddRange(usersChunk ?? new List<Domain.Entities.User>());
+            friends.AddRange(usersChunk ?? []);
         }
 
         return friends;
@@ -89,7 +90,7 @@ public sealed class FriendshipsRepository(
             ),
         };
 
-        await Task.WhenAll(deleteTasks);
+        await deleteTasks;
         return true;
     }
 

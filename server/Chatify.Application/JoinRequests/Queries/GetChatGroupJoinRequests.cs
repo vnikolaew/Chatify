@@ -36,7 +36,7 @@ internal sealed class GetChatGroupJoinRequestsHandler(IChatGroupJoinRequestRepos
         var group = await groups.GetAsync(query.GroupId, cancellationToken);
         if ( group is null ) return new ChatGroupNotFoundError();
 
-        var isCurrentUserAdmin = group.AdminIds.Any(_ => _ == identityContext.Id);
+        var isCurrentUserAdmin = group.AdminIds.Contains(identityContext.Id);
         if ( !isCurrentUserAdmin ) return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
 
         var requests = await joinRequests

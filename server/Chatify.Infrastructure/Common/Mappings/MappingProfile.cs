@@ -48,7 +48,7 @@ public class MappingProfile : Profile
                          ?? type.GetInterface(mapFromInterface)?
                              .GetMethod(mappingMethod);
 
-            method!.Invoke(instance, new object[] { this });
+            method!.Invoke(instance, [this]);
         }
     }
 

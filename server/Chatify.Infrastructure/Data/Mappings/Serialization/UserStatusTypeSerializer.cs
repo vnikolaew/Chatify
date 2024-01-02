@@ -56,7 +56,7 @@ public sealed class UserStatusTypeSerializer :
     public override ColumnTypeCode CqlType => ColumnTypeCode.TinyInt;
 
     public override byte[] Serialize(ushort protocolVersion, UserStatus value)
-        => new[] { ( byte )( sbyte )value };
+        => [( byte )( sbyte )value];
 }
 
 public class CustomTypeConverter : TypeConverter
@@ -69,7 +69,7 @@ public class CustomTypeConverter : TypeConverter
             return ( Func<IDictionary<string, string>, UserNotificationMetadata> )(
                 database => new UserNotificationMetadata
                 {
-                    UserMedia = JsonSerializer.Deserialize<Domain.Entities.Media?>(
+                    UserMedia = JsonSerializer.Deserialize<Media?>(
                         database.TryGetValue("user_media", out var media)
                             ? media
                             : default!)
@@ -88,7 +88,7 @@ public class CustomTypeConverter : TypeConverter
                 userNotification => new Dictionary<string, string>
                 {
                     {
-                        "user_media", JsonSerializer.Serialize(userNotification, new JsonSerializerOptions()
+                        "user_media", JsonSerializer.Serialize(userNotification, new JsonSerializerOptions
                         {
                             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
                             PropertyNameCaseInsensitive = true

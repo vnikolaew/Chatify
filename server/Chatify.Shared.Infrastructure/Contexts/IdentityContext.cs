@@ -22,8 +22,6 @@ public class IdentityContext : IIdentityContext
     public GeoLocation? UserLocation { get; }
     public Dictionary<string, IEnumerable<string>> Claims { get; }
 
-    public string? WebSocketConnectionId { get; set; }
-
     private IdentityContext()
     {
     }
@@ -49,9 +47,6 @@ public class IdentityContext : IIdentityContext
                        && GeoLocation.TryParse(location[0]!, out var geoLocation)
             ? geoLocation
             : default;
-        WebSocketConnectionId = context.Request.Cookies.TryGetValue(ConnectionIdCookieName, out var connectionId)
-            ? connectionId
-            : default;
     }
 
     public IdentityContext(ClaimsPrincipal principal)
@@ -70,9 +65,10 @@ public class IdentityContext : IIdentityContext
             : Guid.Empty;
 
         Username = IsAuthenticated ? principal.FindFirstValue(ClaimTypes.Name)! : default!;
-        Role = principal?.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Role)?.Value;
-        Claims = principal?.Claims?.GroupBy(x => x.Type)?
-            .ToDictionary(x => x.Key, x => x.Select(c => c.Value.ToString()));
+        Role = principal.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Role)?.Value ?? string.Empty;
+        Claims = principal.Claims.GroupBy(x => x.Type)?
+                     .ToDictionary(x => x.Key, x => x.Select(c => c.Value.ToString()))
+                 ?? new Dictionary<string, IEnumerable<string>>();
     }
 
     public static IIdentityContext Empty => new IdentityContext();

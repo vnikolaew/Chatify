@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
 
-namespace Chatify.Infrastructure;
+namespace Chatify.Infrastructure.Data.Conversions;
 
 public sealed class IPAddressConverter
     : System.Text.Json.Serialization.JsonConverter<IPAddress>

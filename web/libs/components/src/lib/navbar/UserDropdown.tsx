@@ -31,8 +31,7 @@ import { useTheme } from "next-themes";
 import { useIsUserLoggedIn } from "@web/hooks";
 import { UserStatus } from "@openapi";
 import { useTranslations } from "next-intl";
-import { ExitIcon, PlusIcon, ProfileIcon, RightArrow } from "@web/components";
-import ChatBubbleIcon from "../icons/ChatBubbleIcon";
+import { ChatBubbleIcon, ExitIcon, PlusIcon, ProfileIcon, RightArrow } from "@web/components";
 
 export const USER_STATUSES = new Set<{
    status: UserStatus;
@@ -63,7 +62,6 @@ export const UserDropdown = ({}: UserDropdownProps) => {
    );
 
    const {
-      data: _,
       error: changeStatusError,
       isLoading: changeStatusLoading,
       mutateAsync: changeUserStatus,
@@ -73,12 +71,9 @@ export const UserDropdown = ({}: UserDropdownProps) => {
    const [loadingAction, setLoadingAction] = useState<string>(null!);
    const [isStatusPopoverOpen, setIsStatusPopoverOpen] = useState(false);
    const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
-   const visibleStatuses = useMemo(() => {
-      return [...USER_STATUSES]
-         .filter(
-            (s) => s.status !== userDetails?.user!.status,
-         );
-   }, [userDetails?.user]);
+   const visibleStatuses = useMemo(() =>
+      [...USER_STATUSES].filter((s) =>
+         s.status !== userDetails?.user!.status), [userDetails?.user]);
 
    const t = useTranslations(`MainNavbar`);
 
@@ -96,9 +91,8 @@ export const UserDropdown = ({}: UserDropdownProps) => {
    };
    const { mutateAsync: signOut } = useSignOutMutation();
 
-   const handleSignOut = async () => {
+   const handleSignOut = async () =>
       signOut(null!).then(_ => window.location.reload());
-   };
 
    return (
       <Dropdown

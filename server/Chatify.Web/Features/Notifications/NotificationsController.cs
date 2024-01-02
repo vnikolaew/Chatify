@@ -2,6 +2,7 @@
 using Chatify.Application.Notifications.Queries;
 using Chatify.Domain.Entities;
 using Chatify.Shared.Abstractions.Queries;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
 using Chatify.Web.Common.Attributes;
 using Chatify.Web.Extensions;
@@ -23,19 +24,16 @@ public class NotificationsController : ApiController
     [HttpGet]
     [ProducesBadRequestApiResponse]
     [ProducesOkApiResponse<CursorPaged<UserNotification>>]
-    public async Task<IActionResult> Paginated(
+    public Task<IActionResult> Paginated(
         [FromQuery] int pageSize,
         [FromQuery] string? pagingCursor,
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetAllNotifications, GetAllNotificationsResult>(
-            new GetAllNotifications(pageSize, pagingCursor),
-            cancellationToken);
-
-        return result.Match(
-            err => err.ToBadRequest(),
-            Ok);
-    }
+        => QueryAsync<GetAllNotifications, GetAllNotificationsResult>(
+                new GetAllNotifications(pageSize, pagingCursor),
+                cancellationToken)
+            .MatchAsync(
+                err => err.ToBadRequest(),
+                Ok);
 
     [HttpGet]
     [Route("unread")]
@@ -44,13 +42,13 @@ public class NotificationsController : ApiController
     public async Task<IActionResult> Unread(
         CancellationToken cancellationToken = default)
     {
-        var result = await QueryAsync<GetUnreadNotifications, GetUnreadNotificationsResult>(
-            new GetUnreadNotifications(),
-            cancellationToken);
-        return result
-            .Match(
+        return await QueryAsync<GetUnreadNotifications, GetUnreadNotificationsResult>(
+                new GetUnreadNotifications(),
+                cancellationToken)
+            .MatchAsync(
                 err => err.ToBadRequest(),
-                Ok);
+                Ok
+            );
     }
 
     [HttpPut]
@@ -60,10 +58,11 @@ public class NotificationsController : ApiController
     public async Task<IActionResult> MarkAsRead(
         CancellationToken cancellationToken = default)
     {
-        var result = await SendAsync<MarkAllAsRead, MarkAllAsReadResult>(
-            new MarkAllAsRead(),
-            cancellationToken);
-        
-        return result.Match(err => err.ToBadRequest(), Accepted);
+        return await SendAsync<MarkAllAsRead, MarkAllAsReadResult>(
+                new MarkAllAsRead(),
+                cancellationToken)
+            .MatchAsync(
+                err => err.ToBadRequest(), Accepted
+            );
     }
 }

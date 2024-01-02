@@ -36,7 +36,8 @@ internal sealed class FindByUserHandleHandler
         var userFriendships = await friendships
             .AllFriendshipsForUser(user.Id, cancellationToken);
 
-        var invite = await invites.ForUsersAsync(identityContext.Id, user.Id, cancellationToken);
+        var invite = await invites
+            .ForUsersAsync(identityContext.Id, user.Id, cancellationToken);
 
         return new UserDetailsEntry(
             user,

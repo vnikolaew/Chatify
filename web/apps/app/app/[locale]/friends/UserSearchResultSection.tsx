@@ -139,7 +139,8 @@ const FriendInvitationSection = ({
    return (
       <div className={`flex items-center gap-2`}>
          <Button
-            onPress={async (_) => await acceptInvite({ inviteId, userId })}
+            onPress={async (_) =>
+               await acceptInvite({ inviteId, userId })}
             isLoading={acceptLoading}
             spinner={<Spinner size={`sm`} color={`white`} />}
             isDisabled={acceptLoading}

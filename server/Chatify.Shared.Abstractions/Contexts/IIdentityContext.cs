@@ -14,8 +14,6 @@ public interface IIdentityContext
     string Role { get; }
 
     string? UserLocale { get; }
-    
-    string? WebSocketConnectionId { get; set; }
 
     GeoLocation? UserLocation { get; }
 
@@ -27,24 +25,26 @@ public record GeoLocation(double Latitude, double Longitude)
     public static GeoLocation FromString(string input)
     {
         var parts = input.Split(";", StringSplitOptions.RemoveEmptyEntries);
+
         return new GeoLocation(
-            double.TryParse(parts[0], out var lat) ? lat : default,
-            double.TryParse(parts[1], out var @long) ? @long : default
+            parseDouble(parts[0]).Match(_ => _, default(double)),
+            parseDouble(parts[1]).Match(_ => _, default(double))
         );
     }
 
-    public static bool TryParse([NotNull] string input, out GeoLocation? geoLocation)
+    public static bool TryParse([NotNull] string input,
+        out GeoLocation? geoLocation)
     {
         var parts = input.Split(";", StringSplitOptions.RemoveEmptyEntries);
         double lat = 0, @long = 0;
         var success = parts.Length == 2
                       && double.TryParse(parts[0], out lat)
                       && double.TryParse(parts[1], out @long);
-        
+
         geoLocation = success
             ? new GeoLocation(lat, @long)
             : default;
-        
+
         return success;
     }
 

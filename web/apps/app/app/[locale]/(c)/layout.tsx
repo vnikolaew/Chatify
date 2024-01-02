@@ -1,5 +1,6 @@
 import React, { PropsWithChildren } from "react";
-import { ChatifyHubInitializer, ChatClientProvider } from "apps/app/hub";
+// @ts-ignore
+import { ChatifyHubInitializer, ChatClientProvider } from "@hub/index";
 import MainLayout from "./MainLayout";
 
 export interface LayoutProps extends PropsWithChildren {

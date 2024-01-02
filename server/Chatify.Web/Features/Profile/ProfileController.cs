@@ -63,15 +63,13 @@ public class ProfileController : ApiController
     public async Task<IActionResult> ChangeUserPassword(
         [FromBody] ChangeUserPassword request,
         CancellationToken cancellationToken = default)
-    {
-        var result = await SendAsync<ChangeUserPassword, ChangeUserPasswordResult>(
-            request, cancellationToken);
-
-        return result.Match<IActionResult>(
-            _ => NotFound(),
-            _ => _.ToBadRequest(),
-            Accepted);
-    }
+        => await SendAsync<ChangeUserPassword, ChangeUserPasswordResult>(
+                request, cancellationToken)
+            .MatchAsync(
+                _ => NotFound(),
+                _ => _.ToBadRequest(),
+                Accepted
+            );
 
     [HttpGet]
     [Route("{userId:guid}/details")]

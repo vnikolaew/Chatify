@@ -178,6 +178,8 @@ const Page = ({}: PageProps) => {
                                  className={`mb-2`}
                                  classNames={{
                                     input: `pl-2 font-light`,
+                                    inputWrapper: `py-0`,
+                                    innerWrapper: `py-0 !h-5`
                                  }}
                                  onValueChange={setNewDisplayName}
                                  value={newDisplayName}
@@ -238,7 +240,6 @@ const Page = ({}: PageProps) => {
                                        className={`w-2 h-2 rounded-full ${statusColor}`}
                                     />
                                  }
-                                 // size={`sm`}
                                  color={`default`}
                               >
                                  Change status
@@ -297,7 +298,6 @@ const Page = ({}: PageProps) => {
                   placeholder={`Enter your new e-mail`}
                   startContent={<Mail size={16} />}
                   size={`md`}
-                  // className={`pl-8 gap-2`}
                   classNames={{
                      input: `pl-2 font-light`,
                      label: `text-lg`,
@@ -318,7 +318,6 @@ const Page = ({}: PageProps) => {
                   placeholder={`Enter your new phone number`}
                   startContent={<Phone size={16} />}
                   size={`md`}
-                  // className={`pl-8 gap-2`}
                   classNames={{
                      input: `pl-2 font-light`,
                      label: `text-lg`,

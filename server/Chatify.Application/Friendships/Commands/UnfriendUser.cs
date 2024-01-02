@@ -6,6 +6,7 @@ using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using LanguageExt;
 using LanguageExt.Common;
 using OneOf;
@@ -39,11 +40,12 @@ internal sealed class UnfriendUserHandler(IFriendshipsRepository friendships,
         
         if (friendship is null) return new UsersAreNotFriendsError(identityContext.Id, command.UserId);
 
-        var success = await friendships.DeleteForUsers(identityContext.Id, command.UserId, cancellationToken);
-        if ( !success ) return Error.New("");
-
-        success = await groups.DeleteAsync(friendship.GroupId, cancellationToken);
-        if ( !success ) return Error.New("");
+        var successes = await ( Task<bool>[] )[
+            friendships.DeleteForUsers(identityContext.Id, command.UserId, cancellationToken),
+            groups.DeleteAsync(friendship.GroupId, cancellationToken)
+        ];
+        
+        if(!successes.All(_ => _)) return Error.New(string.Empty);
 
         await eventDispatcher.PublishAsync(new UserUnfriendedEvent
         {

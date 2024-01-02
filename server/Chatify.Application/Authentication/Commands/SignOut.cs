@@ -16,7 +16,10 @@ internal sealed class SignOutHandler(IAuthenticationService authenticationServic
     public async Task<SignOutResult> HandleAsync(
         SignOut command,
         CancellationToken cancellationToken = default)
-        => await authenticationService
+    {
+        new Identity<int>(10);
+        return await authenticationService
             .SignOutAsync(cancellationToken)
-            .MatchAsync(err => (SignOutResult) err, _ => _);
+            .MatchAsync(err => ( SignOutResult )err, _ => _);
+    }
 }

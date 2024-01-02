@@ -18,5 +18,5 @@ public sealed class UserNotificationTypeSerializer
     public override ColumnTypeCode CqlType => ColumnTypeCode.TinyInt;
 
     public override byte[] Serialize(ushort protocolVersion, UserNotificationType value)
-        => new[] { ( byte )( sbyte )value };
+        => [( byte )( sbyte )value];
 }

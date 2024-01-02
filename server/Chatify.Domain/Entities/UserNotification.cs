@@ -1,14 +1,10 @@
 ﻿namespace Chatify.Domain.Entities;
 
-using Metadata = Dictionary<string, string>;
-
 public class UserNotification
 {
     public Guid Id { get; set; }
 
     public Guid UserId { get; set; }
-
-    public User? User { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
 

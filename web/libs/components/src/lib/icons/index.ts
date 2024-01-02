@@ -15,9 +15,11 @@ export * from "./Emoji";
 export * from "./ProfileIcon";
 export * from "./RightArrow";
 export * from "./SearchIcon";
+export * from "./ChatBubbleIcon";
 export * from "./UploadIcon";
 export * from "./CheckIcon"
 export * from "./ThrashIcon";
 export * from "./SadFaceIcon";
+export * from "./NoNotificationsIcon";
 export { CircleMinusIcon } from "./CircleMinusIcon";
 export * from "./PinOffIcon";

@@ -29,7 +29,7 @@ public sealed class NotificationRepository(
     {
         var notificationsPage = await DbMapper.FetchPageAsync<Models.UserNotification>(
             pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE user_id = ?",
-            new object[] { userId });
+            [userId]);
 
         var total = await DbMapper.FirstOrDefaultAsync<long>(
             "SELECT COUNT(*) FROM user_notifications WHERE user_id = ?;", userId);

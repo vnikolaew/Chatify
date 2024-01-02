@@ -1,6 +1,7 @@
 ﻿using Cassandra.Mapping;
 using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Data.Models;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 
@@ -95,7 +96,7 @@ internal sealed class FriendsSeeder(IServiceScopeFactory scopeFactory)
             await mapper.InsertAsync(newGroup, insertNulls: false);
 
             // Insert friend Ids in Redis Sorted set caches:
-            var cacheSaveTasks = new Task[]
+            var cacheSaveTasks = new[]
             {
                 cache.AddUserFriendAsync(
                     userOne.Id,
@@ -107,7 +108,8 @@ internal sealed class FriendsSeeder(IServiceScopeFactory scopeFactory)
                     userOne.Id,
                     friendshipTwo.CreatedAt),
             };
-            await Task.WhenAll(cacheSaveTasks);
+            
+            await cacheSaveTasks;
         }
     }
 }

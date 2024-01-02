@@ -13,17 +13,16 @@ public abstract class ValueObject : IEquatable<ValueObject>
     {
         if ( obj == null || GetType() != obj.GetType() )
             return false;
-        foreach ( FieldInfo field in ( obj as ValueObject ).GetFields() )
+        foreach ( var field in ( obj as ValueObject ).GetFields() )
         {
-            object obj1 = field.GetValue(this);
-            object obj2 = field.GetValue(obj);
+            var obj1 = field.GetValue(this);
+            var obj2 = field.GetValue(obj);
+            
             if ( obj1 == null )
             {
-                if ( obj2 != null )
-                    return false;
+                if ( obj2 != null ) return false;
             }
-            else if ( !obj1.Equals(obj2) )
-                return false;
+            else if ( !obj1.Equals(obj2) ) return false;
         }
 
         return true;
@@ -35,7 +34,7 @@ public abstract class ValueObject : IEquatable<ValueObject>
             .Where(value => value != null)
             .Aggregate(31, (acc, current) => acc * 57 + current.GetHashCode());
 
-    private IEnumerable<FieldInfo> GetFields()
+    private List<FieldInfo> GetFields()
     {
         var fields = new List<FieldInfo>();
 

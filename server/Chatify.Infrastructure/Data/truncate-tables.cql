@@ -1,5 +1,5 @@
 USE chatify;
-                                                        }
+
 truncate table chat_group_attachments;
 
 truncate table chat_group_join_requests;

@@ -13,12 +13,32 @@ import {
    Quote,
    Strong,
    AlertDialog,
-   Button, AspectRatio, Avatar, Badge, Callout, Card, Inset, Checkbox, ContextMenu, Dialog, TextField, DropdownMenu, HoverCard, Link, IconButton, Popover, TextArea, ScrollArea, Select, Slider, Tooltip,
+   Button,
+   AspectRatio,
+   Avatar,
+   Badge,
+   Callout,
+   Card,
+   Inset,
+   Checkbox,
+   ContextMenu,
+   Dialog,
+   TextField,
+   DropdownMenu,
+   HoverCard,
+   Link,
+   IconButton,
+   Popover,
+   TextArea,
+   ScrollArea,
+   Select,
+   Slider,
+   Tooltip,
 } from "@radix-ui/themes";
 import React from "react";
 import { Image } from "@nextui-org/react";
 import { BookmarkIcon, ChevronDownIcon, InfoIcon, PlusIcon, SearchIcon } from "lucide-react";
-import ChatBubbleIcon from "@components/icons/ChatBubbleIcon";
+import { ChatBubbleIcon } from "@web/components";
 
 export interface PageProps {
 
@@ -323,13 +343,16 @@ const Page = ({}: PageProps) => {
                         for updates.
                      </Text>
                      <Flex gap={`2`} direction={`row`}>
-                        <IconButton onClick={console.log} className={`cursor-pointer`} radius={`full`} color={`crimson`} variant={`surface`} size={`3`}>
+                        <IconButton onClick={console.log} className={`cursor-pointer`} radius={`full`} color={`crimson`}
+                                    variant={`surface`} size={`3`}>
                            <SearchIcon width="18" height="18" />
                         </IconButton>
-                        <IconButton onClick={console.log} className={`cursor-pointer`} radius={`full`} color={`jade`} variant={`outline`} size={`3`}>
+                        <IconButton onClick={console.log} className={`cursor-pointer`} radius={`full`} color={`jade`}
+                                    variant={`outline`} size={`3`}>
                            <SearchIcon width="18" height="18" />
                         </IconButton>
-                        <IconButton onClick={console.log} className={`cursor-pointer`} radius={`full`} color={`blue`} variant={`solid`} size={`3`}>
+                        <IconButton onClick={console.log} className={`cursor-pointer`} radius={`full`} color={`blue`}
+                                    variant={`solid`} size={`3`}>
                            <SearchIcon width="18" height="18" />
                         </IconButton>
                      </Flex>
@@ -366,7 +389,8 @@ const Page = ({}: PageProps) => {
                            </Flex>
                         </Popover.Content>
                      </Popover.Root>
-                     <ScrollArea className={`w-1/2 mx-auto`} type="always" scrollbars="vertical" style={{ height: 180 }}>
+                     <ScrollArea className={`w-1/2 mx-auto`} type="always" scrollbars="vertical"
+                                 style={{ height: 180 }}>
                         <Box p="2" pr="8">
                            <Heading size="4" mb="2" trim="start">
                               Principles of the typographic craft

@@ -9,8 +9,7 @@ import { useCurrentChatGroup, useIsUserLoggedIn } from "@web/hooks";
 
 function IndexPage() {
    let { isUserLoggedIn } = useIsUserLoggedIn();
-   console.log({ isUserLoggedIn });
-   if (!isUserLoggedIn) return redirect(`/signin`);
+   // if (!isUserLoggedIn) return redirect(`/signin`);
 
    const params = useSearchParams();
    const isNew = params.get("new") === "true";

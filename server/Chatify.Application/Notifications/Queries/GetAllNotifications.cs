@@ -16,8 +16,9 @@ public record GetAllNotifications(
     [Required] string? PagingCursor
 ) : IQuery<GetAllNotificationsResult>;
 
-internal sealed class GetAllNotificationsHandler(IIdentityContext identityContext,
-        INotificationRepository notifications)
+internal sealed class GetAllNotificationsHandler(
+    IIdentityContext identityContext,
+    INotificationRepository notifications)
     : IQueryHandler<GetAllNotifications, GetAllNotificationsResult>
 {
     public async Task<GetAllNotificationsResult> HandleAsync(GetAllNotifications query,

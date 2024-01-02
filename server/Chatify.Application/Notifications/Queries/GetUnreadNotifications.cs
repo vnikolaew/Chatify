@@ -11,8 +11,9 @@ using GetUnreadNotificationsResult = OneOf<BaseError, List<UserNotification>>;
 
 public record GetUnreadNotifications : IQuery<GetUnreadNotificationsResult>;
 
-internal sealed class GetUnreadNotificationsHandler(IIdentityContext identityContext,
-        INotificationRepository notifications)
+internal sealed class GetUnreadNotificationsHandler(
+    IIdentityContext identityContext,
+    INotificationRepository notifications)
     : IQueryHandler<GetUnreadNotifications, GetUnreadNotificationsResult>
 {
     public async Task<GetUnreadNotificationsResult> HandleAsync(GetUnreadNotifications _,
@@ -21,9 +22,9 @@ internal sealed class GetUnreadNotificationsHandler(IIdentityContext identityCon
         var allNotifications = await notifications.AllForUserAsync(
             identityContext.Id,
             cancellationToken);
-        
+
         return allNotifications
-            .Where(_ => !_.Read)
+            .Where(n => !n.Read)
             .ToList();
     }
 }

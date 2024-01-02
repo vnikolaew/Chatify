@@ -26,7 +26,7 @@ internal sealed class FriendInvitationAcceptedEventHandler(
         FriendInvitationAcceptedEvent @event,
         CancellationToken cancellationToken = default)
     {
-        _ = await
+        await
             ( Task<bool>[] )
             [
                 cache.AddUserFriendAsync(

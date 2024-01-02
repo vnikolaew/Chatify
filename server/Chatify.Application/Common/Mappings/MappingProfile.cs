@@ -20,7 +20,7 @@ public class MappingProfile : AutoMapper.Profile
                           == typeof(IMapFrom<>)))
             .ToList();
 
-        foreach (var type in types)
+        foreach ( var type in types )
         {
             var instance = Activator.CreateInstance(type);
 
@@ -28,7 +28,7 @@ public class MappingProfile : AutoMapper.Profile
                          ?? type.GetInterface(mapFromInterface)?
                              .GetMethod(mappingMethod);
 
-            method!.Invoke(instance, new object[] { this });
+            method!.Invoke(instance, [this]);
         }
     }
 }

@@ -108,7 +108,7 @@ export const PinnedMessagesPopover = ({}) => {
    ) : (
       <div className={`flex rounded-md my-2 flex-col items-start gap-2`}>
          {pinnedMessages && !pinnedMessages.length && (
-            <span className={`text-xs rounded-md text-default-300 my-4 mx-2`}>
+            <span className={`text-xs rounded-md text-default-400 my-4 mx-2`}>
                There are no pinned messages in this group.
             </span>
          )}

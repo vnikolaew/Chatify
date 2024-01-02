@@ -31,6 +31,7 @@ public sealed class UserRepository(
         var users = await _cacheUsers
             .Where(u => u.UserName == usernameQuery)
             .ToListAsync();
+        
         return users
             .To<Domain.Entities.User>(Mapper)
             .ToList();
@@ -70,8 +71,9 @@ public sealed class UserRepository(
 
         if ( missingUserIds.Any() )
         {
-            var cql = new Cql($"WHERE id IN ({string.Join(", ", missingUserIds.Select(_ => "?"))}) ALLOW FILTERING;")
-                .WithArguments(missingUserIds.Cast<object>().ToArray());
+            var cqlQuery = $"WHERE id IN ({string.Join(", ", missingUserIds.Select(_ => "?"))}) ALLOW FILTERING;";
+            
+            var cql = new Cql(cqlQuery).WithArguments(missingUserIds.Cast<object>().ToArray());
 
             var missingUsers = ( await DbMapper.FetchListAsync<ChatifyUser>(cql) )
                 .ToDictionary(_ => _.Id, _ => _);

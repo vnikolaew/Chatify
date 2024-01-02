@@ -2,6 +2,7 @@
 using Chatify.Application.Messages.Reactions.Commands;
 using Chatify.Application.Messages.Reactions.Queries;
 using Chatify.Domain.Entities;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
 using Chatify.Web.Common.Attributes;
 using Chatify.Web.Extensions;
@@ -56,15 +57,13 @@ public class ReactionsController : ApiController
     public async Task<IActionResult> GetMessageReactions(
         [FromRoute] Guid messageId,
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetAllReactionsForMessage, GetAllForMessageResult>(
-            new GetAllReactionsForMessage(messageId), cancellationToken);
-
-        return result.Match<IActionResult>(
-            _ => BadRequest(),
-            _ => _.ToBadRequest(),
-            Ok);
-    }
+        => await QueryAsync<GetAllReactionsForMessage, GetAllForMessageResult>(
+                new GetAllReactionsForMessage(messageId), cancellationToken)
+            .MatchAsync(
+                _ => BadRequest(),
+                _ => _.ToBadRequest(),
+                Ok
+            );
 
 
     [HttpPost]
@@ -79,6 +78,7 @@ public class ReactionsController : ApiController
     {
         var result = await SendAsync<ReactToChatMessageReply, ReactToChatMessageReplyResult>(
             ( request with { MessageId = messageId } ).ToReplyCommand(), cancellationToken);
+        
         return result.Match<IActionResult>(
             _ => _.ToBadRequest(),
             _ => NotFound(),

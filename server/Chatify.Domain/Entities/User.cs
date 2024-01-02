@@ -25,7 +25,7 @@ public class User : IDomainEntity
 
     public UserStatus Status { get; set; }
 
-    public List<string> Roles { get; set; } = new();
+    public List<string> Roles { get; set; } = [];
 
     public ISet<PhoneNumber> PhoneNumbers { get; set; } = new HashSet<PhoneNumber>();
 
@@ -37,7 +37,7 @@ public class User : IDomainEntity
 
     public DateTimeOffset LastLogin { get; set; } = DateTimeOffset.Now;
 
-    public HashSet<IPAddress> DeviceIps { get; init; } = new();
+    public HashSet<IPAddress> DeviceIps { get; init; } = [];
 
     public Metadata Metadata { get; init; } = new Dictionary<string, string>();
 

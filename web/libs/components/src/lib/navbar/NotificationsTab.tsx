@@ -2,7 +2,7 @@
 import React from "react";
 import { UserNotification } from "@openapi";
 import { Avatar, Listbox, ListboxItem, Skeleton } from "@nextui-org/react";
-import { AddUserIcon } from "@web/components";
+import { AddUserIcon, NoNotificationsIcon } from "@web/components";
 import { NotificationEntry } from "./NotificationEntry";
 
 export interface NotificationsTabProps {
@@ -28,9 +28,10 @@ export const NotificationsTab = ({
             <LoadingNotifications count={4} />
          ) : !notifications.length ? (
             <div
-               className={`text-default-400 text-small text-center`}
+               className={`text-default-400 mx-auto flex justify-center items-center gap-2 text-small text-center`}
                key={`none`}
             >
+               <NoNotificationsIcon className={`fill-default-400 color-white stroke-white`} size={24} />
                {noNotificationsMessage ?? "You have no new notifications."}
             </div>
          ) : (

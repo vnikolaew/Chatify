@@ -25,7 +25,7 @@ public sealed partial class UserSeeder(IServiceScopeFactory factory)
         .RuleFor(u => u.Status, f => ( sbyte )f.PickRandom(Enum.GetValues<UserStatus>()))
         .RuleFor(u => u.ProfilePicture, f => new Media { MediaUrl = f.Internet.Avatar(), Id = Guid.NewGuid() })
         .RuleFor(u => u.PhoneNumbers,
-            f => new HashSet<string> { f.Phone.PhoneNumber(), f.Phone.PhoneNumber() })
+            f => [f.Phone.PhoneNumber(), f.Phone.PhoneNumber()])
         .RuleFor(u => u.EmailConfirmed, _ => true)
         .RuleFor(u => u.Logins,
             (_,
