@@ -112,18 +112,19 @@ public class DatabaseInitializationService(
                  | StringSplitOptions.RemoveEmptyEntries);
 
         logger.LogInformation("Starting creation of database tables ...");
+        var tablesCreated = 0;
         foreach ( var cqlClause in cqlClauses )
         {
             var statement = new SimpleStatement(cqlClause);
             statement.SetKeyspace(Constants.KeyspaceName);
 
-            logger.LogInformation("Executing statement: {Statement}", statement.QueryString);
             var rs = await session.ExecuteAsync(statement);
+            if ( rs?.Any() ?? false ) tablesCreated++;
         }
 
         logger.LogInformation(
             "Finished creation of database tables. Created {TableCount} tables",
-            cqlClauses.Length);
+            tablesCreated);
     }
 
     private async Task CreateIdentityTablesAsync(CassandraOptions options)

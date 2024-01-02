@@ -1,5 +1,5 @@
 "use client";
-import React  from "react";
+import React from "react";
 import { Formik } from "formik";
 import {
    CreateChatGroupModel,
@@ -49,7 +49,10 @@ const createChatGroupSchema = yup.object({
 
 const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
    const router = useRouter();
-   const { selectedFile, fileUrl, setSelectedFile, fileInputRef, normalizedFileName } = useSingleFileUpload();
+   const {
+      selectedFile, fileUrl, setSelectedFile, fileInputRef, normalizedFileName,
+   } =
+      useSingleFileUpload();
 
    const {
       isLoading,
@@ -98,8 +101,6 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                <Input
                   isClearable
                   onClear={() => setFieldValue("name", "")}
-                  // value={values.name}
-                  // onChange={handleChange}
                   {...getFieldProps("name")}
                   labelPlacement={"outside"}
                   isRequired

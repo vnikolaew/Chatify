@@ -26,6 +26,8 @@ public class AuthController : ApiController
     private const string RegularSignUpRoute = "signup";
     private const string SignOutRoute = "signout";
     private const string RegularSignInRoute = "signin";
+    
+    private const string MeInfoRoute = "me";
 
     private const string GoogleSignUpRoute = $"{RegularSignUpRoute}/google";
     private const string FacebookSignUpRoute = $"{RegularSignUpRoute}/facebook";
@@ -36,19 +38,19 @@ public class AuthController : ApiController
 
     [HttpGet]
     [Authorize]
-    [Route("me")]
+    [Route(MeInfoRoute)]
     [ProducesOkApiResponse<object>]
     public IActionResult Info()
-        => Ok(new
-        {
-            Claims = User.Identity?.IsAuthenticated ?? false
-                ? User.Claims
-                    .DistinctBy(c => c.Type)
-                    .ToDictionary(
-                        c => c.Type.Split("/", StringSplitOptions.RemoveEmptyEntries).Last(),
-                        c => c.Value)
-                : null!
-        });
+    {
+        var claims = User.Identity?.IsAuthenticated ?? false
+            ? User.Claims
+                .DistinctBy(c => c.Type)
+                .ToDictionary(
+                    c => c.Type.Split("/", StringSplitOptions.RemoveEmptyEntries).Last(),
+                    c => c.Value)
+            : null!;
+        return Ok(new { Claims = claims });
+    }
 
     [HttpPost]
     [Route(RegularSignUpRoute)]

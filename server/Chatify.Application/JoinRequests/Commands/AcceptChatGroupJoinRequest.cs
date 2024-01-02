@@ -20,14 +20,15 @@ public record AcceptChatGroupJoinRequest(
     [Required] Guid RequestId
 ) : ICommand<AcceptChatGroupJoinRequestResult>;
 
-internal sealed class AcceptChatGroupJoinRequestHandler(IChatGroupMemberRepository members,
-        IIdentityContext identityContext,
-        IDomainRepository<ChatGroupJoinRequest, Guid> joinRequests,
-        IChatGroupRepository groups,
-        IGuidGenerator guidGenerator,
-        IClock clock,
-        IEventDispatcher eventDispatcher,
-        IUserRepository users)
+internal sealed class AcceptChatGroupJoinRequestHandler(
+    IChatGroupMemberRepository members,
+    IIdentityContext identityContext,
+    IDomainRepository<ChatGroupJoinRequest, Guid> joinRequests,
+    IChatGroupRepository groups,
+    IGuidGenerator guidGenerator,
+    IClock clock,
+    IEventDispatcher eventDispatcher,
+    IUserRepository users)
     : ICommandHandler<AcceptChatGroupJoinRequest, AcceptChatGroupJoinRequestResult>
 {
     public async Task<AcceptChatGroupJoinRequestResult> HandleAsync(
@@ -42,7 +43,7 @@ internal sealed class AcceptChatGroupJoinRequestHandler(IChatGroupMemberReposito
 
         var isCurrentUserGroupAdmin = group
             .AdminIds
-            .Any(_ => _ == identityContext.Id);
+            .Contains(identityContext.Id);
         if ( !isCurrentUserGroupAdmin ) return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
 
         var user = await users.GetAsync(request.UserId, cancellationToken);

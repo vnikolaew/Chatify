@@ -37,6 +37,8 @@ public abstract class ApiController : ControllerBase
         => Dispatcher.QueryAsync(query, cancellationToken);
 
     protected IActionResult Accepted(Unit _) => Accepted();
+    
+    protected IActionResult NotFound<T>(T _) => NotFound();
 
     protected new IActionResult Accepted(string? message = default)
         => Accepted(ApiResponse<Unit>.Success(Unit.Default, message));

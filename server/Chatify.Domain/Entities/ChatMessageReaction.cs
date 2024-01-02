@@ -1,6 +1,4 @@
-﻿using Metadata = System.Collections.Generic.IDictionary<string, string>;
-
-namespace Chatify.Domain.Entities;
+﻿namespace Chatify.Domain.Entities;
 
 public class ChatMessageReaction
 {
@@ -17,8 +15,6 @@ public class ChatMessageReaction
     public Guid UserId { get; set; }
     
     public string Username { get; set; } = default!;
-    
-    public User User { get; set; }
     
     public long ReactionCode { get; set; }
     

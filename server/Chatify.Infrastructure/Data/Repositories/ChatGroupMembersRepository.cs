@@ -51,7 +51,7 @@ public sealed class ChatGroupMembersRepository(
             cache.RemoveGroupMemberAsync(member.ChatGroupId, member.UserId)
         };
 
-        var results = await Task.WhenAll(deleteTasks);
+        var results = await deleteTasks;
         return results.All(_ => _);
     }
 

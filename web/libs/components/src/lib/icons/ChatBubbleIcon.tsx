@@ -5,7 +5,7 @@ export interface ChatBubbleIconProps extends SVGProps<SVGSVGElement> {
    size: string | number;
 }
 
-const ChatBubbleIcon = ({ size, fill, ...rest }: ChatBubbleIconProps) => {
+export const ChatBubbleIcon = ({ size, fill, ...rest }: ChatBubbleIconProps) => {
    return (
       <div>
          <svg
@@ -21,5 +21,3 @@ const ChatBubbleIcon = ({ size, fill, ...rest }: ChatBubbleIconProps) => {
       </div>
    );
 };
-
-export default ChatBubbleIcon;

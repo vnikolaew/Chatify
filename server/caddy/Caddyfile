@@ -1,5 +1,5 @@
 localhost {
-   reverse_proxy * http://chatify-web:3000
+   reverse_proxy * http://web-server:80
 
    encode gzip
    header -Server
@@ -7,6 +7,13 @@ localhost {
    tls /etc/caddy/localhost-cert.pem  /etc/caddy/localhost-key.pem {
    }
 
+   header {
+       Access-Control-Allow-Origin *
+       Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+       Access-Control-Allow-Headers *
+       Access-Control-Max-Age "3600"
+   }
+    
    log {
       output stdout
       format console

@@ -38,8 +38,8 @@ internal sealed class DeclineChatGroupJoinRequestHandler(IChatGroupRepository gr
 
         var isCurrentUserGroupAdmin = group
             .AdminIds
-            .Any(_ => _ == identityContext.Id);
-        if ( !isCurrentUserGroupAdmin ) return Error.New("");
+            .Contains(identityContext.Id);
+        if ( !isCurrentUserGroupAdmin ) return Error.New(string.Empty);
 
         await joinRequests.DeleteAsync(request.Id, cancellationToken);
         await eventDispatcher.PublishAsync(new ChatGroupJoinRequestDeclined

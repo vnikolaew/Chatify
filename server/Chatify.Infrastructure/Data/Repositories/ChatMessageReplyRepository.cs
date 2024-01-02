@@ -41,7 +41,7 @@ public sealed class ChatMessageReplyRepository(IMapper mapper,
     {
         var messagesPage = await DbMapper.FetchPageAsync<Models.ChatMessageReply>(
             pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE reply_to_id = ?;",
-            new object[] { messageId });
+            [messageId]);
         var total = await DbMapper.FirstOrDefaultAsync<long>(
             "SELECT COUNT(*) FROM chat_message_replies WHERE reply_to_id = ?;",
             messageId);

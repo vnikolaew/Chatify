@@ -52,7 +52,6 @@ const ChatGroupMembersTab = ({ chatGroupId }: ChatGroupMembersTabProps) => {
    // @ts-ignore
    return (
       <div>
-         // @ts-ignore
          {Object.entries(membersByCategory).map(([category, members]: [MemberCategory, User[]], id) => (
             <div key={id} className={`mt-4 w-full`}>
                <div

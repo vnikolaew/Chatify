@@ -17,7 +17,7 @@ namespace Chatify.Infrastructure.Data.Models;
 [Document(
     StorageType = StorageType.Json,
     IndexName = "users",
-    Prefixes = new[] { nameof(User) })]
+    Prefixes = [nameof(User)])]
 public class ChatifyUser() :
     CassandraIdentityUser(Guid.NewGuid()),
     IMapFrom<Domain.Entities.User>

@@ -75,8 +75,8 @@ const AddNewMemberPopover = () => {
          )}
          {isGroupPrivate ? (
             <div
-               className={`flex w-full text-xs items-center text-default-300 justify-between gap-4`}
-            >Cannot add new members to a private group.</div>
+               className={`flex w-full text-xs items-center text-default-400 justify-between gap-4`}
+            >You cannot add new members to a private group.</div>
          ) : (addMemberSuggestedUsers?.length === 0 && !isLoading ? (
             <div
                className={`text-default-300 my-2 gap-1 flex-col flex items-center w-full`}

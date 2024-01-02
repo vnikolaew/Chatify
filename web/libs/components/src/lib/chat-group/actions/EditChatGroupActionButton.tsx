@@ -79,7 +79,9 @@ const EditChatGroupModal = ({ onClose, onOpenChange, isOpen, chatGroup }: EditCh
    }
 
    return (
-      <Modal motionProps={{
+      <Modal classNames={{
+         closeButton: `mt-3 mr-3`
+      }} motionProps={{
          variants: {
             enter: {
                y: 0,
@@ -197,23 +199,23 @@ const EditChatGroupModal = ({ onClose, onOpenChange, isOpen, chatGroup }: EditCh
                         </div>
                      )}
                   </ModalBody>
-                  <ModalFooter>
+                  <ModalFooter className={`mt-2`}>
                      <Button
                         variant={`shadow`}
-                        size={`md`}
+                        size={`sm`}
                         color={`danger`}
-                        className={``}
+                        className={`px-4`}
                         onPress={onClose}
                      >
                         Cancel
                      </Button>
                      <Button
-                        size={`md`}
+                        size={`sm`}
                         variant={`shadow`}
                         onPress={handleSaveChanges}
                         isDisabled={!isDirty}
-                        color={`default`}
-                        className={`ml-2`}
+                        color={`primary`}
+                        className={`ml-2 px-4`}
                      >
                         Save changes
                      </Button>

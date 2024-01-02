@@ -123,7 +123,7 @@ internal sealed class CompositeSeeder(IServiceScopeFactory scopeFactory) : ISeed
             await cache.DeleteAllKeysByPattern(server, keyPattern);
         }
 
-        var jsonPatterns = new[] { "User:*", "ChatGroup:*" };
+        string[] jsonPatterns = ["User:*", "ChatGroup:*"];
         if ( deleteJsonDocuments )
         {
             foreach ( var jsonPattern in jsonPatterns )

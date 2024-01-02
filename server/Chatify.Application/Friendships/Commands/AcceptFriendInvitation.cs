@@ -11,6 +11,7 @@ using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using OneOf;
 
 namespace Chatify.Application.Friendships.Commands;
@@ -99,9 +100,8 @@ internal sealed class AcceptFriendInvitationHandler(
             }
         };
 
-        await Task.WhenAll(groupMembers
-            .Select(m =>
-                members.SaveAsync(m, cancellationToken)));
+        await groupMembers.Select(m =>
+            members.SaveAsync(m, cancellationToken));
 
         // Update friend invite:
         await friendInvites.UpdateAsync(
@@ -132,6 +132,7 @@ internal sealed class AcceptFriendInvitationHandler(
                 Timestamp = clock.Now
             }
         };
+        
         await eventDispatcher.PublishAsync(events, cancellationToken);
         return friendsRelation.Id;
     }

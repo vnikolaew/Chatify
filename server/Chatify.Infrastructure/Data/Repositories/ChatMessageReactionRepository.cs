@@ -5,6 +5,7 @@ using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Services;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Humanizer;
 using StackExchange.Redis;
 using Guid = System.Guid;
@@ -12,10 +13,11 @@ using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
-public sealed class ChatMessageReactionRepository(IMapper mapper,
-        Mapper dbMapper,
-        IDatabase cache,
-        IEntityChangeTracker changeTracker)
+public sealed class ChatMessageReactionRepository(
+    IMapper mapper,
+    Mapper dbMapper,
+    IDatabase cache,
+    IEntityChangeTracker changeTracker)
     : BaseCassandraRepository<ChatMessageReaction, Models.ChatMessageReaction, Guid>(mapper, dbMapper, changeTracker,
             nameof(Models.ChatMessageReaction.Id).Underscore()),
         IChatMessageReactionRepository
@@ -31,7 +33,7 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
         var userId = new RedisValue(messageReaction.UserId.ToString());
 
         // Add messageId -> reactionCode to User reactions Hash:
-        var cacheSaveTasks = new Task[]
+        var cacheSaveTasks = new[]
         {
             // Add user to message reactors:
             cache.SetAddAsync(messageReactionsKey, userId),
@@ -43,7 +45,7 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
                 messageReaction.ReactionCode)
         };
 
-        await Task.WhenAll(cacheSaveTasks);
+        await cacheSaveTasks;
         return model;
     }
 
@@ -67,7 +69,7 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
                 messageReaction.MessageId)
         };
 
-        var results = await Task.WhenAll(removeTasks);
+        var results = await removeTasks;
         return results.All(_ => _);
     }
 
@@ -86,7 +88,7 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
             cache.HashExistsAsync(userReactionsKey, messageId.ToString())
         };
 
-        return ( await Task.WhenAll(existTasks) ).Any(_ => _);
+        return ( await existTasks ).Any(_ => _);
     }
 
     public async Task<List<ChatMessageReaction>?> AllForMessage(
@@ -108,7 +110,7 @@ public sealed class ChatMessageReactionRepository(IMapper mapper,
             userId,
             messageIdValues
         );
-        
+
         return messageIds
             .Zip(reactionCodes)
             .ToDictionary(pair => pair.Item1, pair => pair.Item2 ?? null);

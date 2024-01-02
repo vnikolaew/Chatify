@@ -22,12 +22,14 @@ public sealed class EmailConfirmationService(IServiceScopeFactory scopeFactory,
 {
     private HttpContext HttpContext => contextAccessor.HttpContext!;
 
+    private const string ConfirmEmailRoute = "auth/confirm-email";
+    
     private string GetEmailConfirmationCallbackUrl(string code)
         => new UriBuilder
         {
             Scheme = HttpContext.Request.Scheme,
             Host = HttpContext.Request.Host.Host,
-            Path = "auth/confirm-email",
+            Path = ConfirmEmailRoute,
             Query = QueryString.Create("token", code).ToUriComponent(),
         }.ToString();
 

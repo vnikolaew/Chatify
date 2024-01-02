@@ -69,11 +69,7 @@ internal sealed class ChatGroupSeeder(IServiceScopeFactory scopeFactory)
         while ( true )
         {
             user = users[Random.Shared.Next(0, users.Count)];
-            if ( !seenUserIds.Contains(user.Id) )
-            {
-                seenUserIds.Add(user.Id);
-                break;
-            }
+            if ( seenUserIds.Add(user.Id) ) break;
         }
 
         return user;

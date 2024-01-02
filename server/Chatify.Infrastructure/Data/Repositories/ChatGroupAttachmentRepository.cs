@@ -6,6 +6,7 @@ using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Services;
 using Chatify.Shared.Abstractions.Queries;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Humanizer;
 using LanguageExt;
 using Mapper = Cassandra.Mapping.Mapper;
@@ -28,9 +29,10 @@ public class ChatGroupAttachmentRepository(IMapper mapper,
         {
             var saveTasks = chunk
                 .Select(a =>
-                    DbMapper.InsertAsync(a.To<Models.ChatGroupAttachment>(Mapper), insertNulls: true));
+                    DbMapper.InsertAsync(a.To<Models.ChatGroupAttachment>(Mapper), insertNulls: true))
+                .ToArray();
 
-            await Task.WhenAll(saveTasks);
+            await saveTasks;
         }
 
         return attachments;
@@ -49,8 +51,7 @@ public class ChatGroupAttachmentRepository(IMapper mapper,
                     return true;
                 })
             .Try()
-            .Map(r =>
-                r.Match(_ => true, _ => false));
+            .Map(r => r.Match(_ => true, _ => false));
 
     public async Task<CursorPaged<ChatGroupAttachment>> GetPaginatedAttachmentsByGroupAsync(
         Guid groupId, int pageSize, string pagingCursor,
@@ -58,7 +59,7 @@ public class ChatGroupAttachmentRepository(IMapper mapper,
     {
         var attachmentsPage = await DbMapper.FetchPageAsync<Models.ChatGroupAttachment>(
             pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?",
-            new object[] { groupId });
+            [groupId]);
         
         var total = await DbMapper.FirstOrDefaultAsync<long>(
             "SELECT COUNT(*) FROM chat_group_attachments WHERE chat_group_id = ?;", groupId);

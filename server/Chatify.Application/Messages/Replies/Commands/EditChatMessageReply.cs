@@ -18,19 +18,19 @@ namespace Chatify.Application.Messages.Replies.Commands;
 using EditChatMessageReplyResult = OneOf<MessageNotFoundError, UserIsNotMessageSenderError, Unit>;
 
 public record EditChatMessageReply(
-        [Required] Guid GroupId,
-        [Required] Guid MessageId,
-        [Required] string NewContent,
-        IEnumerable<AttachmentOperation>? AttachmentOperations = default)
+    [Required] Guid GroupId,
+    [Required] Guid MessageId,
+    [Required] string NewContent,
+    IEnumerable<AttachmentOperation>? AttachmentOperations = default)
     : ICommand<EditChatMessageReplyResult>;
 
 internal sealed class EditChatMessageReplyHandler(
-        IChatGroupMemberRepository members,
-        IIdentityContext identityContext,
-        IDomainRepository<ChatMessageReply, Guid> messageReplies,
-        IEventDispatcher eventDispatcher,
-        IClock clock,
-        IAttachmentOperationHandler attachmentOperationHandler)
+    IChatGroupMemberRepository members,
+    IIdentityContext identityContext,
+    IDomainRepository<ChatMessageReply, Guid> messageReplies,
+    IEventDispatcher eventDispatcher,
+    IClock clock,
+    IAttachmentOperationHandler attachmentOperationHandler)
     : ICommandHandler<EditChatMessageReply, EditChatMessageReplyResult>
 {
     public async Task<EditChatMessageReplyResult> HandleAsync(
@@ -48,13 +48,15 @@ internal sealed class EditChatMessageReplyHandler(
             chatMessage.Content = command.NewContent;
             if ( command.AttachmentOperations is not null )
             {
+                var attachmentOperations = command
+                    .AttachmentOperations
+                    .Select(o =>
+                        o is AddAttachmentOperation ao
+                            ? ao with { Location = FolderConstants.ChatGroups.Media.Root }
+                            : o);
+
                 await attachmentOperationHandler
-                    .HandleAsync(replyMessage,
-                        command.AttachmentOperations.Select(o =>
-                            o is AddAttachmentOperation ao
-                                ? ao with { Location = FolderConstants.ChatGroups.Media.Root }
-                                : o),
-                        cancellationToken);
+                    .HandleAsync(replyMessage, attachmentOperations, cancellationToken);
             }
         }, cancellationToken);
 

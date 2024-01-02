@@ -71,9 +71,8 @@ internal sealed class ChatGroupMemberSeeder(IServiceScopeFactory scopeFactory)
         while ( true )
         {
             var user = users[Random.Shared.Next(0, users.Count)];
-            if ( insertedMembers.Contains(user.Id) ) continue;
+            if ( !insertedMembers.Add(user.Id) ) continue;
 
-            insertedMembers.Add(user.Id);
             return user;
         }
     }

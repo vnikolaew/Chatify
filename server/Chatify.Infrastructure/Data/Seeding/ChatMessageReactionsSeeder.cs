@@ -4,6 +4,7 @@ using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 
@@ -20,7 +21,7 @@ internal sealed class ChatMessageReactionsSeeder(IServiceScopeFactory scopeFacto
         .RuleFor(r => r.ReactionCode, f => f.Random.ArrayElement(EmojiCodes));
 
     private static readonly long[] EmojiCodes =
-    {
+    [
         128512,
         128514,
         128516,
@@ -30,8 +31,8 @@ internal sealed class ChatMessageReactionsSeeder(IServiceScopeFactory scopeFacto
         128517,
         128540,
         128565,
-        128562,
-    };
+        128562
+    ];
 
     protected override async Task SeedCoreAsync(CancellationToken cancellationToken = default)
     {
@@ -75,7 +76,7 @@ internal sealed class ChatMessageReactionsSeeder(IServiceScopeFactory scopeFacto
                     "SELECT reaction_counts FROM chat_message_reactions WHERE message_id = ?;",
                     reaction.MessageId) ?? new Dictionary<long, long>();
 
-                if ( !reactionCounts.ContainsKey(reaction.ReactionCode) ) reactionCounts[reaction.ReactionCode] = 0;
+                reactionCounts.TryAdd(reaction.ReactionCode, 0);
                 reactionCounts[reaction.ReactionCode]++;
                 reaction.ReactionCounts = reactionCounts;
 
@@ -84,12 +85,13 @@ internal sealed class ChatMessageReactionsSeeder(IServiceScopeFactory scopeFacto
 
                 // Update Message Reaction Counts:
                 var chatMessage = groupMessages.FirstOrDefault(m => m.Id == reaction.MessageId)!;
-                if ( !chatMessage.ReactionCounts.ContainsKey(reaction.ReactionCode) )
+                if ( !chatMessage.ReactionCounts.TryGetValue(reaction.ReactionCode, out var value) )
                 {
-                    chatMessage.ReactionCounts[reaction.ReactionCode] = 0;
+                    value = 0;
+                    chatMessage.ReactionCounts[reaction.ReactionCode] = value;
                 }
 
-                chatMessage.ReactionCounts[reaction.ReactionCode]++;
+                chatMessage.ReactionCounts[reaction.ReactionCode] = ++value;
                 await dbMapper.InsertAsync(chatMessage);
 
                 // Update cache entries:
@@ -104,7 +106,7 @@ internal sealed class ChatMessageReactionsSeeder(IServiceScopeFactory scopeFacto
     {
         var messageReactionsKey = reaction.MessageId.GetMessageReactionsKey();
         var userId = new RedisValue(reaction.UserId.ToString());
-        var cacheSaveTasks = new Task[]
+        var cacheSaveTasks = new[]
         {
             // Add user to message reactors:
             cache.SetAddAsync(messageReactionsKey, userId),
@@ -116,6 +118,6 @@ internal sealed class ChatMessageReactionsSeeder(IServiceScopeFactory scopeFacto
                 reaction.ReactionCode),
         };
 
-        await Task.WhenAll(cacheSaveTasks);
+        await cacheSaveTasks;
     }
 }

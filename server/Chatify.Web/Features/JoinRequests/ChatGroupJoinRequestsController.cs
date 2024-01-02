@@ -1,7 +1,7 @@
-﻿using System.Net;
-using Chatify.Application.ChatGroups.Commands;
+﻿using Chatify.Application.ChatGroups.Commands;
 using Chatify.Application.JoinRequests.Commands;
 using Chatify.Application.JoinRequests.Queries;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using Chatify.Web.Common;
 using Chatify.Web.Common.Attributes;
 using Chatify.Web.Extensions;
@@ -16,7 +16,6 @@ using AcceptChatGroupJoinRequestResult = OneOf.OneOf<ChatGroupNotFoundError, Use
 using DeclineChatGroupJoinRequestResult = OneOf.OneOf<ChatGroupNotFoundError, UserIsNotGroupAdminError, Error, Unit>;
 using GetChatGroupJoinRequestsResult =
     OneOf.OneOf<ChatGroupNotFoundError, UserIsNotGroupAdminError, List<GroupJoinRequestEntry>>;
-
 
 [Route("api/chatgroups")]
 public class ChatGroupJoinRequestsController : ApiController
@@ -81,16 +80,14 @@ public class ChatGroupJoinRequestsController : ApiController
     [ProducesBadRequestApiResponse]
     [ProducesNotFoundApiResponse]
     [ProducesOkApiResponse<List<GroupJoinRequestEntry>>]
-    public async Task<IActionResult> GetForChatGroup(
+    public Task<IActionResult> GetForChatGroup(
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetChatGroupJoinRequests, GetChatGroupJoinRequestsResult>(
-            new GetChatGroupJoinRequests(groupId), cancellationToken);
-
-        return result.Match<IActionResult>(
-            _ => NotFound(),
-            err => err.ToBadRequest(),
-            Ok);
-    }
+        => QueryAsync<GetChatGroupJoinRequests, GetChatGroupJoinRequestsResult>(
+                new GetChatGroupJoinRequests(groupId), cancellationToken)
+            .MatchAsync(
+                _ => NotFound(),
+                err => err.ToBadRequest(),
+                Ok
+            );
 }

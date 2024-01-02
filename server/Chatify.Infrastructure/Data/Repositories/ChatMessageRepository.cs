@@ -40,7 +40,7 @@ public sealed class ChatMessageRepository(
     {
         var messagesPage = await DbMapper.FetchPageAsync<Models.ChatMessage>(
             pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?",
-            new object[] { groupId });
+            [groupId]);
 
         var total = await GetTotalMessagesCount(groupId);
         return new CursorPaged<ChatMessage>(
@@ -60,7 +60,7 @@ public sealed class ChatMessageRepository(
     {
         var replierInfoes = await DbMapper.FetchPageAsync<ChatMessageRepliesSummary>(
             pageSize, pagingCursorHelper.ToPagingState(pagingCursor), "WHERE chat_group_id = ?;",
-            new object[] { groupId });
+            [groupId]);
 
         var total = await GetTotalMessagesRepliersCount(groupId);
         return new CursorPaged<MessageRepliersInfo>(

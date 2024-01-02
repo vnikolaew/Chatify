@@ -17,6 +17,7 @@ using Chatify.Infrastructure.Common;
 using Chatify.Infrastructure.Common.Caching;
 using Chatify.Infrastructure.Common.Security;
 using Chatify.Infrastructure.Data;
+using Chatify.Infrastructure.Data.Conversions;
 using Chatify.Infrastructure.Data.Repositories;
 using Chatify.Infrastructure.Data.Services;
 using Chatify.Infrastructure.FileStorage;
@@ -67,7 +68,7 @@ public static class DependencyInjection
             .AddSeeding()
             .AddRepositories()
             .AddBackgroundJobs()
-            .AddOtel()
+            .AddApplicationTelemetry()
             .AddServices(configuration)
             .AddCaching(configuration)
             .AddContexts();
@@ -106,7 +107,7 @@ public static class DependencyInjection
             .AddNotifications()
             .AddCounters();
 
-    public static IServiceCollection AddOtel(this IServiceCollection services)
+    public static IServiceCollection AddApplicationTelemetry(this IServiceCollection services)
     {
         services
             .AddOpenTelemetry()

@@ -76,7 +76,7 @@ internal sealed class ChatGroupMessageSeeder(IServiceScopeFactory scopeFactory)
             CreatedAt = message.CreatedAt,
             Total = 0,
             MessageId = message.Id,
-            ReplierInfos = new HashSet<MessageReplierInfo>()
+            ReplierInfos = []
         };
         await mapper.InsertAsync(repliesSummary, insertNulls: true);
     }

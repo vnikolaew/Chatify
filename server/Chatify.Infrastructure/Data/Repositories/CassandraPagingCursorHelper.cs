@@ -77,7 +77,7 @@ public class CassandraPagingCursorHelper : IPagingCursorHelper
         var pagingStatesSpan = Convert.FromBase64String(pagingCursor).AsSpan();
 
         int currIdx = 0;
-        List<string> cursors = new();
+        List<string> cursors = [];
         while ( currIdx < pagingStatesSpan.Length )
         {
             var psLength = BitConverter.ToInt32(pagingStatesSpan[currIdx..( currIdx + 4 )]);

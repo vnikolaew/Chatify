@@ -25,11 +25,9 @@ public class ChatMessage
 
     public Guid UserId { get; set; }
 
-    public User User { get; set; }
-
     public string Content { get; set; } = default!;
 
-    private readonly HashSet<Media> _attachments = new();
+    private readonly HashSet<Media> _attachments = [];
 
     public Guid? ForwardedMessageId
     {

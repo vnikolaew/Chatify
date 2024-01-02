@@ -18,7 +18,7 @@ import {
    IUserStatusChanged,
 } from "./messages";
 // @ts-ignore
-const Cookies = require("js-cookie");
+import Cookies from "js-cookie";
 
 export enum HubMethods {
    ReceiveGroupChatMessage = "ReceiveGroupChatMessage",

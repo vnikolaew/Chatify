@@ -16,8 +16,6 @@ public class ChatGroup
 
     public ISet<Guid> AdminIds { get; set; } = new HashSet<Guid>();
 
-    public ISet<User> Admins { get; set; } = new HashSet<User>();
-
     public ISet<PinnedMessage> PinnedMessages { get; set; } = new HashSet<PinnedMessage>();
 
     public Metadata Metadata { get; set; } = new Dictionary<string, string>();

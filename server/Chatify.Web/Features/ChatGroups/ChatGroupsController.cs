@@ -64,14 +64,39 @@ using StarChatGroupResult =
 using GetStarredGroupsResult =
     OneOf.OneOf<Chatify.Application.User.Common.UserNotFound,
         System.Collections.Generic.List<Chatify.Domain.Entities.ChatGroup>>;
-using UnstarChatGroupResult = OneOf.OneOf<Chatify.Application.User.Common.UserNotFound, Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError, LanguageExt.Unit>;
-
+using UnstarChatGroupResult =
+    OneOf.OneOf<Chatify.Application.User.Common.UserNotFound,
+        Chatify.Application.ChatGroups.Commands.ChatGroupNotFoundError, LanguageExt.Unit>;
 using static Chatify.Web.Features.ChatGroups.Models.Models;
 
 namespace Chatify.Web.Features.ChatGroups;
 
 public class ChatGroupsController : ApiController
 {
+    private const string GroupDetailsRoute = "{groupId:guid}";
+    
+    private const string FeedRoute = "feed";
+    private const string StarredFeedRoute = "starred/feed";
+    
+    private const string SearchMembersRoute = "{groupId:guid}/members/search";
+    private const string SearchRoute = "search";
+        
+    private const string AttachmentsRoute = "{groupId:guid}/attachments";
+    private const string PinnedRoute = "{groupId:guid}/pins";
+        
+    private const string EditGroupRoute = "{groupId:guid}";
+    private const string MembersRoute = "members";
+        
+    private const string MembershipDetailsRoute = "members/{groupId:guid}/{memberId:guid}";
+    private const string DeleteMemberRoute = "members";
+    
+    private const string LeaveChatGroupRoute = "leave";
+    private const string AddAminRoute = "admins";
+        
+    private const string RemoveAdminRoute = "{chatGroupId:guid}/admins/{adminId:guid}";
+    private const string StarChatGroupRoute = "starred/{chatGroupId:guid}";
+    private const string StarredRoute = "starred";
+    
     [HttpPost]
     [ProducesBadRequestApiResponse]
     [ProducesCreatedAtApiResponse]
@@ -90,113 +115,104 @@ public class ChatGroupsController : ApiController
     }
 
     [HttpGet]
-    [Route("{groupId:guid}")]
+    [Route(GroupDetailsRoute)]
     [ProducesNotFoundApiResponse]
     [ProducesOkApiResponse<ChatGroupDetailsEntry>]
     public Task<IActionResult> Details(
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
         => QueryAsync<GetChatGroupDetails, GetChatGroupDetailsResult>(
-                new GetChatGroupDetails(groupId),cancellationToken)
+                new GetChatGroupDetails(groupId), cancellationToken)
             .MatchAsync(_ => NotFound(),
                 _ => _.ToBadRequest(),
                 Ok);
 
     [HttpGet]
-    [Route("feed")]
+    [Route(FeedRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesOkApiResponse<List<ChatGroupFeedEntry>>]
-    public async Task<IActionResult> Feed(
+    public Task<IActionResult> Feed(
         [FromQuery] int limit,
         [FromQuery] int offset,
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetChatGroupsFeed, GetChatGroupsFeedResult>(
-            new GetChatGroupsFeed(limit, offset), cancellationToken);
-        return result.Match(
-            err => err.ToBadRequest(),
-            Ok);
-    }
-    
-    [HttpGet]
-    [Route("starred/feed")]
-    [ProducesBadRequestApiResponse]
-    [ProducesOkApiResponse<List<ChatGroupFeedEntry>>]
-    public async Task<IActionResult> StarredFeed(CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetStarredChatGroupsFeed, GetChatGroupsFeedResult>(
-            new GetStarredChatGroupsFeed(), cancellationToken);
-        
-        return result.Match(
-            err => err.ToBadRequest(),
-            Ok);
-    }
+        => QueryAsync<GetChatGroupsFeed, GetChatGroupsFeedResult>(
+                new GetChatGroupsFeed(limit, offset), cancellationToken)
+            .MatchAsync(
+                err => err.ToBadRequest(),
+                Ok
+            );
 
     [HttpGet]
-    [Route("{groupId:guid}/members/search")]
+    [Route(StarredFeedRoute)]
+    [ProducesBadRequestApiResponse]
+    [ProducesOkApiResponse<List<ChatGroupFeedEntry>>]
+    public Task<IActionResult> StarredFeed(CancellationToken cancellationToken = default)
+        => QueryAsync<GetStarredChatGroupsFeed, GetChatGroupsFeedResult>(
+                new GetStarredChatGroupsFeed(), cancellationToken)
+            .MatchAsync(
+                err => err.ToBadRequest(), Ok
+            );
+
+    [HttpGet]
+    [Route(SearchMembersRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesOkApiResponse<List<User>>]
-    public async Task<IActionResult> SearchMembers(
+    public Task<IActionResult> SearchMembers(
         [FromQuery(Name = "q")] string usernameQuery,
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<SearchChatGroupMembersByName, SearchChatGroupMembersByNameResult>(
-            new SearchChatGroupMembersByName(groupId, usernameQuery), cancellationToken);
-
-        return result.Match(err => err.ToBadRequest(), Ok);
-    }
+        => QueryAsync<SearchChatGroupMembersByName, SearchChatGroupMembersByNameResult>(
+                new SearchChatGroupMembersByName(groupId, usernameQuery), cancellationToken)
+            .MatchAsync(
+                err => err.ToBadRequest(), Ok
+            );
 
     [HttpGet]
-    [Route("search")]
+    [Route(SearchRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesOkApiResponse<List<ChatGroup>>]
-    public async Task<IActionResult> Search(
+    public Task<IActionResult> Search(
         [FromQuery(Name = "q")] string? nameQuery,
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<SearchChatGroupsByName, SearchChatGroupsByNameResult>(
-            new SearchChatGroupsByName(nameQuery ?? string.Empty), cancellationToken);
-
-        return result.Match(err => err.ToBadRequest(), Ok);
-    }
+        => QueryAsync<SearchChatGroupsByName, SearchChatGroupsByNameResult>(
+                new SearchChatGroupsByName(nameQuery ?? string.Empty), cancellationToken)
+            .MatchAsync(
+                err => err.ToBadRequest(), Ok
+            );
 
     [HttpGet]
-    [Route("{groupId:guid}/attachments")]
+    [Route(AttachmentsRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesOkApiResponse<CursorPaged<ChatGroupAttachment>>]
-    public async Task<IActionResult> Attachments(
+    public Task<IActionResult> Attachments(
         [FromQuery] GetChatGroupSharedAttachmentsRequest request,
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetChatGroupSharedAttachments, GetChatGroupSharedAttachmentsResult>(
-            ( request with { GroupId = groupId } ).ToCommand(), cancellationToken);
-        return result.Match<IActionResult>(
-            _ => _.ToBadRequest(),
-            Ok);
-    }
+        => QueryAsync<GetChatGroupSharedAttachments, GetChatGroupSharedAttachmentsResult>(
+                ( request with { GroupId = groupId } ).ToCommand(), cancellationToken)
+            .MatchAsync(
+                _ => _.ToBadRequest(),
+                Ok
+            );
 
     [HttpGet]
-    [Route("{groupId:guid}/pins")]
+    [Route(PinnedRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesNotFoundApiResponse]
     [ProducesOkApiResponse<List<ChatMessage>>]
-    public async Task<IActionResult> PinnedMessages(
+    public Task<IActionResult> PinnedMessages(
         [FromRoute] Guid groupId,
         CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetChatGroupPinnedMessages, GetChatGroupPinnedMessagesResult>(
-            new GetChatGroupPinnedMessages(groupId), cancellationToken);
-
-        return result.Match<IActionResult>(
-            _ => NotFound(),
-            _ => _.ToBadRequest(),
-            Ok);
-    }
+        => QueryAsync<GetChatGroupPinnedMessages, GetChatGroupPinnedMessagesResult>(
+                new GetChatGroupPinnedMessages(groupId), cancellationToken)
+            .MatchAsync(
+                _ => NotFound(),
+                _ => _.ToBadRequest(),
+                Ok
+            );
 
     [HttpPatch]
-    [Route("{groupId:guid}")]
+    [Route(EditGroupRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesNotFoundApiResponse]
     [ProducesAcceptedApiResponse]
@@ -215,7 +231,7 @@ public class ChatGroupsController : ApiController
                 Accepted);
 
     [HttpPost]
-    [Route("members")]
+    [Route(MembersRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesNotFoundApiResponse]
     [ProducesAcceptedApiResponse<Guid>]
@@ -233,7 +249,7 @@ public class ChatGroupsController : ApiController
                 id => Accepted(id));
 
     [HttpGet]
-    [Route("members/{groupId:guid}/{memberId:guid}")]
+    [Route(MembershipDetailsRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesNotFoundApiResponse]
     [ProducesOkApiResponse<ChatGroupMember>]
@@ -251,7 +267,7 @@ public class ChatGroupsController : ApiController
 
 
     [HttpDelete]
-    [Route("members")]
+    [Route(DeleteMemberRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesNotFoundApiResponse]
     [ProducesNoContentApiResponse]
@@ -273,24 +289,23 @@ public class ChatGroupsController : ApiController
     }
 
     [HttpPost]
-    [Route("leave")]
+    [Route(LeaveChatGroupRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesAcceptedApiResponse]
-    public async Task<IActionResult> LeaveChatGroup(
+    public Task<IActionResult> LeaveChatGroup(
         [FromBody] LeaveChatGroup leaveChatGroup,
         CancellationToken cancellationToken = default)
-    {
-        var result = await SendAsync<LeaveChatGroup, LeaveChatGroupResult>(
-            leaveChatGroup,
-            cancellationToken);
-        return result.Match(
-            _ => BadRequest(),
-            _ => _.ToBadRequest(),
-            Accepted);
-    }
+        => SendAsync<LeaveChatGroup, LeaveChatGroupResult>(
+                leaveChatGroup,
+                cancellationToken)
+            .MatchAsync(
+                _ => BadRequest(),
+                _ => _.ToBadRequest(),
+                Accepted
+            );
 
     [HttpPost]
-    [Route("admins")]
+    [Route(AddAminRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesNotFoundApiResponse]
     [ProducesAcceptedApiResponse]
@@ -301,6 +316,7 @@ public class ChatGroupsController : ApiController
         var result = await SendAsync<AddChatGroupAdmin, AddChatGroupAdminResult>(
             addChatGroupAdmin,
             cancellationToken);
+
         return result
             .Match(
                 _ => NotFound(),
@@ -310,7 +326,7 @@ public class ChatGroupsController : ApiController
     }
 
     [HttpDelete]
-    [Route("{chatGroupId:guid}/admins/{adminId:guid}")]
+    [Route(RemoveAdminRoute)]
     [ProducesBadRequestApiResponse]
     [ProducesNotFoundApiResponse]
     [ProducesAcceptedApiResponse]
@@ -322,61 +338,53 @@ public class ChatGroupsController : ApiController
         var result = await SendAsync<RemoveChatGroupAdmin, RemoveChatGroupAdminResult>(
             removeChatGroupAdmin,
             cancellationToken);
-
-        return result
-            .Match(
+        return result.Match(
                 _ => NotFound(),
                 _ => _.ToBadRequest(),
                 _ => _.ToBadRequest(),
-                _ => Accepted());
+                _ => Accepted()
+            );
     }
 
     [HttpPost]
-    [Route("starred/{chatGroupId:guid}")]
+    [Route(StarChatGroupRoute)]
     [ProducesNotFoundApiResponse]
     [ProducesAcceptedApiResponse]
-    public async Task<IActionResult> StarChatGroup(
+    public Task<IActionResult> StarChatGroup(
         [FromRoute] Guid chatGroupId,
         CancellationToken cancellationToken = default)
-    {
-        var result = await SendAsync<StarChatGroup, StarChatGroupResult>(
-            new StarChatGroup(chatGroupId),
-            cancellationToken);
-
-        return result.Match(
-            _ => NotFound(),
-            _ => NotFound(),
-            _ => Accepted());
-    }
+        => SendAsync<StarChatGroup, StarChatGroupResult>(
+                new StarChatGroup(chatGroupId),
+                cancellationToken)
+            .MatchAsync(
+                _ => NotFound(),
+                _ => NotFound(),
+                _ => Accepted()
+            );
 
     [HttpDelete]
-    [Route("starred/{chatGroupId:guid}")]
+    [Route(StarChatGroupRoute)]
     [ProducesNotFoundApiResponse]
     [ProducesAcceptedApiResponse]
-    public async Task<IActionResult> UnstarChatGroup(
+    public Task<IActionResult> UnstarChatGroup(
         [FromRoute] Guid chatGroupId,
         CancellationToken cancellationToken = default)
-    {
-        var result = await SendAsync<UnstarChatGroup, UnstarChatGroupResult>(
-            new  UnstarChatGroup(chatGroupId),
-            cancellationToken);
-
-        return result.Match(
-            _ => NotFound(),
-            _ => NotFound(),
-            _ => Accepted());
-    }
+        => SendAsync<UnstarChatGroup, UnstarChatGroupResult>(
+                new UnstarChatGroup(chatGroupId),
+                cancellationToken)
+            .MatchAsync(
+                _ => NotFound(),
+                _ => NotFound(),
+                _ => Accepted()
+            );
 
     [HttpGet]
-    [Route("starred")]
+    [Route(StarredRoute)]
     [ProducesNotFoundApiResponse]
     [ProducesOkApiResponse<List<ChatGroup>>]
-    public async Task<IActionResult> StarredGroups(CancellationToken cancellationToken = default)
-    {
-        var result = await QueryAsync<GetStarredGroups, GetStarredGroupsResult>(
-            new GetStarredGroups(),
-            cancellationToken);
-
-        return result.Match(_ => NotFound(), Ok);
-    }
+    public Task<IActionResult> StarredGroups(CancellationToken cancellationToken = default)
+        => QueryAsync<GetStarredGroups, GetStarredGroupsResult>(
+                new GetStarredGroups(),
+                cancellationToken)
+            .MatchAsync(_ => NotFound(), Ok);
 }
