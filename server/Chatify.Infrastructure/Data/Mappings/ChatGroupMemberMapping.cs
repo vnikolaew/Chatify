@@ -14,7 +14,7 @@ public class ChatGroupMemberMapping : Cassandra.Mapping.Mappings
             .PartitionKey(cgm => cgm.ChatGroupId)
             .ClusteringKey(
                 new Tuple<string, SortOrder>(nameof(ChatGroupMember.CreatedAt), SortOrder.Descending),
-                new Tuple<string, SortOrder>(nameof(ChatGroupMember.Id), SortOrder.Ascending)
+                new Tuple<string, SortOrder>(nameof(ChatGroupMember.UserId), SortOrder.Ascending)
             )
             .UnderscoreColumn(cgm => cgm.Id)
             .UnderscoreColumn(cgm => cgm.UserId)

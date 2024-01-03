@@ -6,7 +6,6 @@ using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Hubs.Models.Server;
 using Chatify.Shared.Abstractions.Events;
-using Chatify.Shared.Infrastructure.Common.Extensions;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
@@ -31,13 +30,10 @@ internal sealed class ChatGroupMemberAddedEventHandler(
         var member = await users.GetAsync(@event.MemberId, cancellationToken);
 
         // Add group to users:id:feed / user to groups:id:members
-        await (
-            cache.AddGroupMemberAsync(@event.GroupId, @event.MemberId),
-            cache.AddUserFeedEntryAsync(
-                @event.MemberId,
-                @event.GroupId,
-                @event.Timestamp
-            )
+        await cache.AddUserFeedEntryAsync(
+            @event.MemberId,
+            @event.GroupId,
+            @event.Timestamp
         );
 
         if ( chatifyHubContext?.Clients is not null )

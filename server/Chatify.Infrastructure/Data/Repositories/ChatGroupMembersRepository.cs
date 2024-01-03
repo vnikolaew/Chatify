@@ -20,7 +20,7 @@ public sealed class ChatGroupMembersRepository(
         IEntityChangeTracker changeTracker)
     :
         BaseCassandraRepository<ChatGroupMember, Models.ChatGroupMember, Guid>(mapper, dbMapper, changeTracker,
-            nameof(ChatGroupMember.ChatGroupId).Underscore()),
+            nameof(ChatGroupMember.Id).Underscore()),
         IChatGroupMemberRepository
 
 {
@@ -37,6 +37,13 @@ public sealed class ChatGroupMembersRepository(
         return member;
     }
 
+    // private static async Task<bool> DeleteAsync(
+    //     ChatGroupMember member,
+    //     CancellationToken cancellationToken = default)
+    // {
+    //     
+    // }
+
     public new async Task<bool> DeleteAsync(
         Guid id,
         CancellationToken cancellationToken = default)
@@ -47,7 +54,7 @@ public sealed class ChatGroupMembersRepository(
         // Delete member from both the database and the cache:
         var deleteTasks = new[]
         {
-            base.DeleteAsync(member.Id, cancellationToken),
+            base.DeleteAsync(member, cancellationToken),
             cache.RemoveGroupMemberAsync(member.ChatGroupId, member.UserId)
         };
 

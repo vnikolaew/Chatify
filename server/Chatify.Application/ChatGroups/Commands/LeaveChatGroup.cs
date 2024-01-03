@@ -35,13 +35,10 @@ internal sealed class LeaveChatGroupHandler(
         var group = await groups.GetAsync(command.GroupId, cancellationToken);
         if ( group is null ) return new ChatGroupNotFoundError();
 
-        var memberExists = await members.Exists(
-            command.GroupId,
-            identityContext.Id, cancellationToken);
-        if ( !memberExists ) return new UserIsNotMemberError(identityContext.Id, group.Id);
+        var member = await members.ByGroupAndUser(command.GroupId, identityContext.Id, cancellationToken);
+        if ( member is null ) return new UserIsNotMemberError(identityContext.Id, group.Id);
 
-        var success = await members.DeleteAsync(
-            identityContext.Id, cancellationToken);
+        var success = await members.DeleteAsync(member.Id, cancellationToken);
         if ( !success ) return Unit.Default;
 
         // TODO: Fire an event:

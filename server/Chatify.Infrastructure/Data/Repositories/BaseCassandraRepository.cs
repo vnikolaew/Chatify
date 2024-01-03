@@ -103,7 +103,7 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
             .ClusteringKeys
             .Select(tuple => tuple.Item1)
             .ToHashSet();
-        
+
         primaryKeys.UnionWith(clusteringKeys);
 
         var partitionKeyValues = entity
@@ -185,7 +185,11 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
             var dataEntity = Mapper.Map<TDataEntity>(entity);
 
             var pKeys = MappingDefinition.PartitionKeys;
-            var cKeys = MappingDefinition.ClusteringKeys.Select(_ => _.Item1).ToArray();
+            var cKeys = MappingDefinition.ClusteringKeys
+                .Select(_ => MappingDefinition.GetColumnDefinition(typeof(TDataEntity).GetProperty(_.Item1)))
+                .Where(_ => _ is not null)
+                .Select(cd => cd.ColumnName.Trim())
+                .ToArray();
 
             var primaryKeys = pKeys.Concat(cKeys).ToHashSet();
             var primaryColumnValues = MappingDefinition.PocoType
@@ -195,15 +199,14 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
                 .Select(pi => pi.GetValue(dataEntity))
                 .ToArray();
 
-            var filterStatement = string.Join(" AND ",
-                primaryKeys.OrderBy(_ => _).Select(k => $"{k} = ?"));
+            var filterStatement = string.Join(
+                " AND ",
+                primaryKeys
+                    .OrderBy(_ => _)
+                    .Select(k => $"{k} = ?"));
 
-            var cql = new Cql($" WHERE {filterStatement}");
-
-            cql.GetType()
-                .GetProperty(nameof(Cql.Arguments),
-                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
-                .SetValue(cql, primaryColumnValues);
+            var cql = new Cql($" WHERE {filterStatement}")
+                .WithArguments(primaryColumnValues);
 
             await DbMapper.DeleteAsync<TDataEntity>(cql);
             return true;
