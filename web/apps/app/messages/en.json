@@ -52,6 +52,7 @@
          "Popups": {
             "EditChatGroup": "Edit Chat Group",
             "PinnedMessages": "Pinned messages",
+            "LeaveChatGroup": "Leave Chat Group",
             "AddNewMember": "Add a new member"
          }
       },

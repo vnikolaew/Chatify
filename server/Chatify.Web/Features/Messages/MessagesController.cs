@@ -256,9 +256,7 @@ public class MessagesController : ApiController
     {
         return await QueryAsync<GetDraftedMessages, GetDraftedMessagesResult>(
                 new GetDraftedMessages(), cancellationToken)
-            .MatchAsync(
-                _ => NotFound(), Ok
-            );
+            .MatchAsync(_ => NotFound(), Ok);
     }
 
     [HttpGet]

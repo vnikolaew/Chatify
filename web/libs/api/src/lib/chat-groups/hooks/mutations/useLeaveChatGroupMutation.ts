@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 
 export interface LeaveChatGroupModel {
-   chatGroupId: string;
+   groupId: string;
    reason?: string;
 }
 
@@ -19,10 +19,10 @@ const leaveChatGroup = async (model: LeaveChatGroupModel) => {
    return data;
 };
 
-export const useLeaveChatGroup = () => {
+export const useLeaveChatGroupMutation = () => {
    const client = useQueryClient();
 
-   return useMutation(leaveChatGroup, {
+   return useMutation<any, Error, LeaveChatGroupModel, any>(leaveChatGroup, {
       onError: console.error,
       onSuccess: (data) => console.log("Chat group left successfully: " + data),
       onSettled: (res) => console.log(res),

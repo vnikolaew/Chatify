@@ -5,7 +5,7 @@ import {
    UseQueryOptions,
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
-import { ChatMessageDraft, ChatMessageDraftListApiResponse } from "@openapi";
+import { ChatMessageDraft } from "@openapi";
 
 const getDraftedMessageForGroup = async (
    groupId: string
@@ -45,8 +45,7 @@ export const useGetDraftedMessageForGroup = (
       ({ queryKey: [_, id] }) => getDraftedMessageForGroup(id as string),
       // @ts-ignore
       {
-         onError: console.error,
-         onSuccess: (data) => console.log("Chat message draft: "),
+         // onSuccess: (data) => console.log("Chat message draft: "),
          ...options,
       }
    );

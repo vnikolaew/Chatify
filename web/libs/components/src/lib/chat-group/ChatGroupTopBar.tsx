@@ -10,7 +10,7 @@ import { UserStatus } from "@openapi";
 import {
    EditChatGroupActionButton,
    AddNewMemberActionButton,
-   PinnedMessagesActionButton,
+   PinnedMessagesActionButton, LeaveChatGroupActionButton,
 } from "libs/components/src/lib/chat-group/actions";
 import { useTranslations } from "next-intl";
 import ChatGroupStarSection from "../ChatGroupStarSection";
@@ -180,6 +180,7 @@ export const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                <EditChatGroupActionButton chatGroup={chatGroupDetails!} />
             )}
             <PinnedMessagesActionButton />
+            <LeaveChatGroupActionButton />
             {isUserGroupAdmin && <AddNewMemberActionButton />}
          </div>
       </div>
