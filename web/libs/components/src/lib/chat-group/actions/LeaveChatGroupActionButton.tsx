@@ -16,6 +16,7 @@ import { LogOutIcon } from "lucide-react";
 import { useLeaveChatGroupMutation } from "@web/api";
 import { useCurrentChatGroup } from "@web/hooks";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 export interface LeaveChatGroupActionButtonProps {
 
@@ -31,10 +32,15 @@ export const LeaveChatGroupActionButton = ({}: LeaveChatGroupActionButtonProps) 
    const router = useRouter();
    const [leaveReason, setLeaveReason] = useState(``);
 
+   const client = useQueryClient();
+
    async function handleLeaveGroup() {
       await leaveChatGroup({ groupId: chatGroupId, reason: leaveReason },
          {
-            onSuccess: (_, { groupId }) => router.push(`/`, {}),
+            onSuccess: async (_, { groupId }) => {
+               router.push(`/`, {});
+               await client.refetchQueries([`feed`], { exact: true, type: `all` });
+            },
             onError: console.error,
          });
    }
@@ -123,12 +129,15 @@ export const LeaveChatGroupActionButton = ({}: LeaveChatGroupActionButtonProps) 
                            isLoading={isLoading}
                            spinner={<Spinner className={`self-center`} classNames={{
                               circle1: `h-4 w-4`,
-                              circle2: `h-4 w-4`
-                           } } size={`sm`} color={`white`} />}
+                              circle2: `h-4 w-4`,
+                           }} size={`sm`} color={`white`} />}
                            size={`sm`}
                            startContent={!isLoading && <LogOutIcon className={`stroke-white `} size={8} />}
                            variant={`shadow`}
-                           onPress={handleLeaveGroup}
+                           onPress={async () => {
+                              await handleLeaveGroup();
+                              onClose();
+                           }}
                            color={`danger`}
                            className={`ml-2 px-4 `}
                         >

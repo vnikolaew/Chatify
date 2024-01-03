@@ -5,7 +5,7 @@ import {
    useGetChatGroupDetailsQuery,
    useGetMyClaimsQuery,
 } from "@web/api";
-import { Avatar, AvatarGroup, Skeleton,  } from "@nextui-org/react";
+import { Avatar, AvatarGroup, Skeleton } from "@nextui-org/react";
 import { UserStatus } from "@openapi";
 import {
    EditChatGroupActionButton,
@@ -21,7 +21,6 @@ export interface ChatGroupTopBarProps {
 
 export const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
    const { isUserLoggedIn } = useIsUserLoggedIn();
-
    const chatGroupId = useCurrentChatGroup()!;
 
    const t = useTranslations("MainArea.TopBar");
@@ -76,6 +75,11 @@ export const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
          )}...` : chatGroupDetails?.chatGroup?.about
          : t(`ChatGroupNoDescription`);
    }, [chatGroupDetails?.chatGroup!.about, t]);
+
+   const showLeaveGroupButton = useMemo(() =>
+      (
+         !isPrivateGroup && (!isUserGroupAdmin || chatGroupDetails.chatGroup.adminIds.length >= 2)
+      ), [isPrivateGroup, isUserGroupAdmin, chatGroupDetails]);
 
    return (
       <div
@@ -180,7 +184,7 @@ export const ChatGroupTopBar = ({}: ChatGroupTopBarProps) => {
                <EditChatGroupActionButton chatGroup={chatGroupDetails!} />
             )}
             <PinnedMessagesActionButton />
-            <LeaveChatGroupActionButton />
+            {showLeaveGroupButton && <LeaveChatGroupActionButton />}
             {isUserGroupAdmin && <AddNewMemberActionButton />}
          </div>
       </div>
