@@ -28,10 +28,10 @@ export const NotificationsTab = ({
             <LoadingNotifications count={4} />
          ) : !notifications.length ? (
             <div
-               className={`text-default-400 mx-auto flex justify-center items-center gap-2 text-small text-center`}
+               className={`text-default-400 mx-auto flex justify-center items-center gap-2 text-xs text-center`}
                key={`none`}
             >
-               <NoNotificationsIcon className={`fill-default-400 color-white stroke-white`} size={24} />
+               <NoNotificationsIcon className={`fill-default-400 color-white stroke-white`} size={20} />
                {noNotificationsMessage ?? "You have no new notifications."}
             </div>
          ) : (

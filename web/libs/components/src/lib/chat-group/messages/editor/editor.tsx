@@ -14,6 +14,11 @@ export const CustomEditor = {
       return marks?.italic ?? false;
    },
 
+   isLinkActive(editor: BaseEditor & ReactEditor) {
+      const marks = Editor.marks(editor);
+      return marks?.link ?? false;
+   },
+
    isCodeBlockActive(editor: BaseEditor & ReactEditor) {
       const [match] = Editor.nodes(editor, {
          match: (n) => n.type === "code",
@@ -88,6 +93,16 @@ export const CustomEditor = {
       }
    },
 
+   toggleLink(editor: BaseEditor & ReactEditor, href?: string) {
+      const isActive = CustomEditor.isLinkActive(editor);
+      if (isActive) {
+         Editor.removeMark(editor, "link");
+      } else {
+         Editor.addMark(editor, "link", true);
+         Editor.addMark(editor, `href`, href);
+      }
+   },
+
    toggleCodeBlock(editor: BaseEditor & ReactEditor) {
       const isActive = CustomEditor.isCodeBlockActive(editor);
       console.log(`Is code block active: `, isActive);
@@ -97,11 +112,6 @@ export const CustomEditor = {
       } else {
          Editor.addMark(editor, "code", true);
       }
-      // Transforms.setNodes(
-      //    editor,
-      //    { type: isActive ? null : "code" },
-      //    { match: (n) => Editor.isBlock(editor, n) },
-      // );
    },
 
    toggleStrikethroughMark(editor: BaseEditor & ReactEditor) {
@@ -120,13 +130,16 @@ export const CustomEditor = {
    addLink(editor: BaseEditor & ReactEditor, title: string, href: string) {
       const link = {
          type: "link",
+         link: true,
          href,
          children: [{ text: title || href }],
       };
 
+      // Transforms.insertNodes(editor, link);
       Transforms.insertNodes(editor, link);
       Transforms.collapse(editor, { edge: "end" });
    },
+
    insertLineBreak(editor: BaseEditor & ReactEditor) {
       Transforms.insertNodes(editor, {
          children: [{ text: `` }],
@@ -146,14 +159,18 @@ export const CodeElement = (props) => {
 
 // Define a React component to render leaves with bold text.
 export const Leaf = (props) => {
-   if (props.leaf.type === "link") {
+   console.log({ props });
+   if (props.leaf.link) {
       return (
          <Link
             underline={"hover"}
             color={"primary"}
-            className={`cursor-pointer`}
+            className={`cursor-pointer select-auto`}
+            target={`_blank`}
+            isExternal
             size={"sm"}
-            href={props.leaf.href}
+            href={(!props.leaf.href.startsWith(`http`) ? `https://` : ``) + props.leaf.href}
+            /*{...props.attributes}*/
          >
             {props.children}
          </Link>

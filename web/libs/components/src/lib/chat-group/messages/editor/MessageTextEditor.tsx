@@ -184,6 +184,7 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
    // Define a rendering function based on the element passed to `props`. We use
    // `useCallback` here to memoize the function for subsequent renders.
    const renderElement = useCallback((props) => {
+      console.log({ props });
       switch (props.element.type) {
          case "code":
             return <CodeElement {...props} />;
@@ -197,7 +198,7 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                   href={props.element.href}
                   {...props}
                >
-                  Link
+                  {props.element.children[0].text}
                </Link>
             );
          default:

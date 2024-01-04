@@ -75,7 +75,8 @@
                "Bold": "Bold",
                "Italic": "Italic",
                "Strikethrough": "Strikethrough",
-               "Code": "Code"
+               "Code": "Code",
+               "Link": "Link"
             },
             "Send": "Send",
             "Sending": "Sending",

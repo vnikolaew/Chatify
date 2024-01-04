@@ -1,10 +1,10 @@
 "use client";
-import React, { useCallback } from "react";
+import React, { useCallback, useRef } from "react";
 import { FriendInvitationStatus, User, UserStatus } from "@openapi";
-import { Avatar, Badge, BadgeProps, Button, Chip, Skeleton, Spinner } from "@nextui-org/react";
+import { Avatar, AvatarProps, Badge, BadgeProps, Button, Chip, Skeleton, Spinner } from "@nextui-org/react";
 import { useGetFriendSuggestions, useGetUserDetailsQuery, useSendFriendInviteMutation } from "@web/api";
 import { useTranslations } from "next-intl";
-import { AddUserIcon } from "@web/components";
+import { AddUserIcon, Divider } from "@web/components";
 
 export interface SuggestedFriendsSectionProps {
 }
@@ -14,9 +14,9 @@ const SuggestedFriendsSection = ({}: SuggestedFriendsSectionProps) => {
 
    return (
       <section className={`mt-4`}>
-         <h2 className={`text-default-400 text-large`}>Some user suggestions:</h2>
+         <h2 className={`text-default-400 text-large`}>Users you might know:</h2>
          <div className={`flex flex-col ${isLoading && isFetching ? `gap-2` : `gap-4`} mt-4`}>
-            {(isLoading && isFetching ) && Array.from({ length: 3 }).map((_, i) => (
+            {(isLoading && isFetching) && Array.from({ length: 3 }).map((_, i) => (
                <div
                   key={i}
                   className={`w-11/12 ml-4 mt-2 flex items-center gap-2`}
@@ -30,7 +30,10 @@ const SuggestedFriendsSection = ({}: SuggestedFriendsSectionProps) => {
                </div>
             ))}
             {suggestedFriends?.map((user, i) => (
-               <SuggestedFriend key={user.id} user={user} />
+               <div key={user.id}>
+                  <SuggestedFriend index={i} key={user.id} user={user} />
+                  <Divider className={`w-full mt-3 text-default-300`} orientation={`horizontal`} />
+               </div>
             ))}
          </div>
       </section>
@@ -39,9 +42,12 @@ const SuggestedFriendsSection = ({}: SuggestedFriendsSectionProps) => {
 
 export interface SuggestedFriendProps {
    user: User;
+   index: number;
 }
 
-const SuggestedFriend = ({ user }: SuggestedFriendProps) => {
+const AVATAR_COLORS: AvatarProps["color"][] = [`primary`, `secondary`, `warning`, `danger`];
+
+const SuggestedFriend = ({ user, index }: SuggestedFriendProps) => {
    const t = useTranslations(`Friends`);
    const {
       mutateAsync: sendFriendInvite,
@@ -49,20 +55,6 @@ const SuggestedFriend = ({ user }: SuggestedFriendProps) => {
       error: inviteError,
    } = useSendFriendInviteMutation();
    const { data: userDetails } = useGetUserDetailsQuery(user.id, { networkMode: "offlineFirst" });
-
-   const statusColor = useCallback<(user: User) => BadgeProps["color"]>((user: User) => {
-      if (!user) return "default";
-      switch (user.status) {
-         case UserStatus.AWAY:
-            return "warning";
-         case UserStatus.ONLINE:
-            return "success";
-         case UserStatus.OFFLINE:
-            return "default";
-      }
-      return "default";
-   }, []);
-   console.log({ userDetails });
 
    const handleSendFriendInvite = async (userId: string) => {
       console.log(userId);
@@ -72,21 +64,13 @@ const SuggestedFriend = ({ user }: SuggestedFriendProps) => {
    return (
       <div key={user.id} className={`flex w-full items-center justify-between gap-4`}>
          <div className={`flex items-center justify-between gap-4`}>
-            <Badge
-               content={""}
-               shape={"circle"}
-               placement={"bottom-right"}
-               variant={"solid"}
-               color={statusColor(user)}
-               size={`sm`}
-            >
-               <Avatar
-                  src={user?.profilePicture.mediaUrl}
-                  color={"danger"}
-                  size={`md`}
-                  isBordered={true}
-               />
-            </Badge>
+
+            <Avatar
+               src={user?.profilePicture.mediaUrl}
+               color={AVATAR_COLORS[index % AVATAR_COLORS.length]}
+               size={`md`}
+               isBordered={true}
+            />
             <div
                className={`flex flex-col items-start justify-evenly gap-0 `}
             >
@@ -99,7 +83,8 @@ const SuggestedFriend = ({ user }: SuggestedFriendProps) => {
             </div>
          </div>
          {userDetails?.friendInvitation?.status === FriendInvitationStatus.PENDING ? (
-            <Chip className={`!px-3`} radius={`sm`} size={`sm`} variant={`shadow`} color={`primary`}>Friend invite is pending.</Chip>
+            <Chip className={`!px-3`} radius={`sm`} size={`sm`} variant={`shadow`} color={`primary`}>Friend invite is
+               pending.</Chip>
          ) : (
             <Button
                onPress={async (_) => await handleSendFriendInvite(user?.id)}

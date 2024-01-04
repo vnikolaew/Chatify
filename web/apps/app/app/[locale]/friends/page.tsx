@@ -59,14 +59,15 @@ const FriendsPage = ({}: PageProps) => {
                   validationState={validationState}
                   errorMessage={errorMessage}
                   startContent={
-                     <UserIcon className={`fill-foreground`} size={16} />
+                     <UserIcon className={`fill-foreground !ml-2`} size={16} />
                   }
                   variant={"flat"}
                   description={
                      t(`DescriptionTwo`)
                   }
                   classNames={{
-                     input: `pl-3`,
+                     input: `!pl-4`,
+                     // inputWrapper: `pl-2`
                   }}
                   className={`w-full shadow-md`}
                   size={"md"}

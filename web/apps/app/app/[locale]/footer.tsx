@@ -1,5 +1,6 @@
 import React from "react";
 import { Divider, Link } from "@nextui-org/react";
+import NextLink from "next/link";
 
 export interface FooterProps {
 
@@ -15,11 +16,11 @@ const Footer = ({}: FooterProps) => {
                     Chatify, Inc. © {new Date().getFullYear()} |  All rights reserved
                 </h2>
                 <div className={`flex items-center justify-center text-xxs gap-2`}>
-                    <Link underline={`none`} href={`/about`} className={`cursor-pointer text-xs`}>About</Link>
+                    <Link as={NextLink} underline={`none`} href={`/about`} className={`cursor-pointer text-xs`}>About</Link>
                     <Divider className={`w-[1px] h-4`} orientation={`vertical`} />
-                    <Link underline={`none`} href={`/contact`} className={`cursor-pointer text-xs`}>Contact</Link>
+                    <Link as={NextLink} underline={`none`} href={`/contact`} className={`cursor-pointer text-xs`}>Contact</Link>
                     <Divider className={`w-[1px] h-4`} orientation={`vertical`} />
-                    <Link underline={`none`} href={`/help`} className={`cursor-pointer text-xs`}>Help</Link>
+                    <Link as={NextLink} underline={`none`} href={`/help`} className={`cursor-pointer text-xs`}>Help</Link>
                 </div>
             </div>
         </footer>
