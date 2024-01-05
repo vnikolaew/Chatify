@@ -20,7 +20,7 @@ const editChatGroup = async (model: EditChatGroupModel) => {
          headers: {
             "Content-Type": "multipart/form-data",
          },
-      },
+      }
    );
 
    if (status === HttpStatusCode.BadRequest) {
@@ -32,19 +32,26 @@ const editChatGroup = async (model: EditChatGroupModel) => {
 
 export const useEditChatGroupMutation = () => {
    const client = useQueryClient();
-   return useMutation<any, Error, EditChatGroupModel, any>(editChatGroup, {
+   return useMutation<any, Error, EditChatGroupModel, any>({
+      mutationFn: editChatGroup,
       onError: console.error,
       onSuccess: async (data, { chatGroupId, about }) => {
-         client.setQueryData<ChatGroupDetailsEntry>([`chat-group`, chatGroupId], (old: ChatGroupDetailsEntry) => {
-            if (!old) return old;
-            return produce(old, (group: ChatGroupDetailsEntry) => {
-               if (group.chatGroup?.about && about) group.chatGroup.about = about;
-               return group;
-            });
+         client.setQueryData<ChatGroupDetailsEntry>(
+            [`chat-group`, chatGroupId],
+            (old: ChatGroupDetailsEntry) => {
+               if (!old) return old;
+               return produce(old, (group: ChatGroupDetailsEntry) => {
+                  if (group.chatGroup?.about && about)
+                     group.chatGroup.about = about;
+                  return group;
+               });
+            }
+         );
+         await client.refetchQueries({
+            queryKey: [`chat-group`, chatGroupId],
+            exact: true,
          });
-         await client.refetchQueries([`chat-group`, chatGroupId], { exact: true });
       },
       onSettled: (res) => console.log(res),
-      cacheTime: 60 * 60 * 1000,
    });
 };

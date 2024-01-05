@@ -10,10 +10,16 @@ export interface RemoveChatGroupAdminModel {
    adminId: string;
 }
 
-const removeChatGroupAdmin = async ({ adminId, chatGroupId }: RemoveChatGroupAdminModel) => {
-   const { status, data } = await chatGroupsClient.delete(`${chatGroupId}/admins/${adminId}`, {
-      headers: {},
-   });
+const removeChatGroupAdmin = async ({
+   adminId,
+   chatGroupId,
+}: RemoveChatGroupAdminModel) => {
+   const { status, data } = await chatGroupsClient.delete(
+      `${chatGroupId}/admins/${adminId}`,
+      {
+         headers: {},
+      }
+   );
 
    if (status === HttpStatusCode.BadRequest) {
       throw new Error("error");
@@ -24,33 +30,34 @@ const removeChatGroupAdmin = async ({ adminId, chatGroupId }: RemoveChatGroupAdm
 
 export const useRemoveChatGroupAdmin = () => {
    const client = useQueryClient();
-   return useMutation<any, Error, RemoveChatGroupAdminModel, any>(
-      removeChatGroupAdmin,
-      {
-         onError: console.error,
-         onSuccess: (_, { chatGroupId, adminId }) => {
-
-            // Remove admin member from chat group admin Ids / Admins:
-            client.setQueryData<ChatGroupDetailsEntry>([`chat-group`, chatGroupId], (old: ChatGroupDetailsEntry) => {
+   return useMutation<any, Error, RemoveChatGroupAdminModel, any>({
+      mutationFn: removeChatGroupAdmin,
+      onError: console.error,
+      onSuccess: (_, { chatGroupId, adminId }) => {
+         // Remove admin member from chat group admin Ids / Admins:
+         client.setQueryData<ChatGroupDetailsEntry>(
+            [`chat-group`, chatGroupId],
+            (old: ChatGroupDetailsEntry) => {
                return produce(old, (groupDetails: ChatGroupDetailsEntry) => {
                   if (groupDetails.chatGroup?.adminIds) {
                      groupDetails.chatGroup.adminIds =
-                        groupDetails.chatGroup.adminIds.filter((id: string) =>
-                           id !== adminId);
+                        groupDetails.chatGroup.adminIds.filter(
+                           (id: string) => id !== adminId
+                        );
                   }
 
                   if (groupDetails.chatGroup?.admins) {
                      groupDetails.chatGroup.admins =
-                        groupDetails.chatGroup.admins?.filter((admin: User) =>
-                           admin.id !== adminId) ?? [];
+                        groupDetails.chatGroup.admins?.filter(
+                           (admin: User) => admin.id !== adminId
+                        ) ?? [];
                   }
 
                   groupDetails.chatGroup.updatedAt = new Date().toISOString();
                });
-
-            });
-         },
-         onSettled: (res) => console.log(res),
+            }
+         );
       },
-   );
+      onSettled: (res) => console.log(res),
+   });
 };

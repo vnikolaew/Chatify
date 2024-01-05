@@ -26,7 +26,8 @@ const regularSignIn = async (model: RegularSignInModel) => {
 };
 
 export const useRegularSignInMutation = () => {
-   return useMutation<any, Error, RegularSignInModel, any>(regularSignIn, {
+   return useMutation<any, Error, RegularSignInModel, any>({
+      mutationFn: regularSignIn,
       onError: console.error,
       onSuccess: (data) => console.log("Sign in success: " + data),
       onSettled: (res) => console.log(res),

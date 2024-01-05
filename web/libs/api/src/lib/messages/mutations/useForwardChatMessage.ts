@@ -41,78 +41,69 @@ const forwardChatMessage = async (model: ForwardChatMessageModel) => {
 export const useForwardChatMessage = () => {
    const client = useQueryClient();
 
-   return useMutation<any, Error, ForwardChatMessageModel, any>(
-      forwardChatMessage,
-      {
-         onError: (error, { messageId, groupIds }) => {
-            groupIds.forEach((groupId) => {
-               queryClient.setQueryData<
-                  InfiniteData<CursorPaged<ChatGroupMessageEntry>>
-               >(GET_PAGINATED_GROUP_MESSAGES_KEY(groupId), (old) => {
-                  return produce(
-                     old,
-                     (
-                        draft: InfiniteData<CursorPaged<ChatGroupMessageEntry>>
-                     ) => {
-                        draft?.pages?.[0]?.items?.shift();
-                     }
-                  );
-               });
+   return useMutation<any, Error, ForwardChatMessageModel, any>({
+      mutationFn: forwardChatMessage,
+      onError: (error, { messageId, groupIds }) => {
+         groupIds.forEach((groupId) => {
+            queryClient.setQueryData<
+               InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+            >(GET_PAGINATED_GROUP_MESSAGES_KEY(groupId), (old) => {
+               return produce(
+                  old,
+                  (draft: InfiniteData<CursorPaged<ChatGroupMessageEntry>>) => {
+                     draft?.pages?.[0]?.items?.shift();
+                  }
+               );
             });
-            console.error(error);
-         },
-         onMutate: ({ messageId, groupIds, groupId, content }) => {
-            const meId = client.getQueryData<GetMyClaimsResponse>([
-               `me`,
-               `claims`,
-            ])?.claims["nameidentifier"];
-            const me = client.getQueryData<UserDetailsEntry>([
-               `user-details`,
-               meId,
-            ]);
+         });
+         console.error(error);
+      },
+      onMutate: ({ messageId, groupIds, groupId, content }) => {
+         const meId = client.getQueryData<GetMyClaimsResponse>([`me`, `claims`])
+            ?.claims["nameidentifier"];
+         const me = client.getQueryData<UserDetailsEntry>([
+            `user-details`,
+            meId,
+         ]);
 
-            const forwardedMessage = queryClient
-               .getQueryData<InfiniteData<CursorPaged<ChatGroupMessageEntry>>>(
-                  GET_PAGINATED_GROUP_MESSAGES_KEY(groupId)
-               )
-               ?.pages.flatMap((_) => _.items)
-               .find((m) => m.message?.id === messageId);
+         const forwardedMessage = queryClient
+            .getQueryData<InfiniteData<CursorPaged<ChatGroupMessageEntry>>>(
+               GET_PAGINATED_GROUP_MESSAGES_KEY(groupId)
+            )
+            ?.pages.flatMap((_) => _.items)
+            .find((m) => m.message?.id === messageId);
 
-            // Retrieve all groups with the ids:
-            groupIds.forEach((groupId) => {
-               queryClient.setQueryData<
-                  InfiniteData<CursorPaged<ChatGroupMessageEntry>>
-               >(GET_PAGINATED_GROUP_MESSAGES_KEY(groupId), (old) => {
-                  return produce(
-                     old,
-                     (
-                        draft: InfiniteData<CursorPaged<ChatGroupMessageEntry>>
-                     ) => {
-                        draft?.pages?.[0]?.items?.unshift({
-                           message: {
-                              userId: meId,
-                              chatGroupId: groupId,
-                              content,
-                              createdAt: new Date().toISOString(),
-                              attachments: [],
-                           },
-                           repliersInfo: { total: 0, replierInfos: [] },
-                           senderInfo: {
-                              userId: meId,
-                              username: me.user?.username,
-                              profilePictureUrl:
-                                 me.user?.profilePicture?.mediaUrl,
-                           },
-                           forwardedMessage,
-                        });
-                     }
-                  );
-               });
+         // Retrieve all groups with the ids:
+         groupIds.forEach((groupId) => {
+            queryClient.setQueryData<
+               InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+            >(GET_PAGINATED_GROUP_MESSAGES_KEY(groupId), (old) => {
+               return produce(
+                  old,
+                  (draft: InfiniteData<CursorPaged<ChatGroupMessageEntry>>) => {
+                     draft?.pages?.[0]?.items?.unshift({
+                        message: {
+                           userId: meId,
+                           chatGroupId: groupId,
+                           content,
+                           createdAt: new Date().toISOString(),
+                           attachments: [],
+                        },
+                        repliersInfo: { total: 0, replierInfos: [] },
+                        senderInfo: {
+                           userId: meId,
+                           username: me.user?.username,
+                           profilePictureUrl: me.user?.profilePicture?.mediaUrl,
+                        },
+                        forwardedMessage,
+                     });
+                  }
+               );
             });
-         },
-         onSuccess: (data) =>
-            console.log("Chat message forwarded successfully: " + data),
-         onSettled: (res) => console.log(res),
-      }
-   );
+         });
+      },
+      onSuccess: (data) =>
+         console.log("Chat message forwarded successfully: " + data),
+      onSettled: (res) => console.log(res),
+   });
 };

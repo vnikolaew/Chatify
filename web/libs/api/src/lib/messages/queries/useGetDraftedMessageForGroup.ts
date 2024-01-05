@@ -1,5 +1,6 @@
 import { messagesClient } from "../client";
 import {
+   QueryKey,
    useQuery,
    useQueryClient,
    UseQueryOptions,
@@ -39,14 +40,11 @@ export const useGetDraftedMessageForGroup = (
    >
 ) => {
    const client = useQueryClient();
-   return useQuery<ChatMessageDraft, Error, ChatMessageDraft, [string, string]>(
-      [`chat-message-draft`, groupId],
-      // @ts-ignore
-      ({ queryKey: [_, id] }) => getDraftedMessageForGroup(id as string),
-      // @ts-ignore
-      {
-         // onSuccess: (data) => console.log("Chat message draft: "),
-         ...options,
-      }
-   );
+   return useQuery<ChatMessageDraft, Error, ChatMessageDraft, QueryKey>({
+      queryKey: [`chat-message-draft`, groupId] as QueryKey,
+      queryFn: ({ queryKey: [_, id] }) =>
+         getDraftedMessageForGroup(id as string),
+      onSuccess: (data) => console.log("Chat message draft: "),
+      ...options,
+   });
 };

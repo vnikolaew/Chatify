@@ -24,14 +24,11 @@ const declineFriendInvite = async (model: DeclineFriendInvitationModel) => {
 export const useDeclineFriendInviteMutation = () => {
    const client = useQueryClient();
 
-   return useMutation<any, Error, DeclineFriendInvitationModel, any>(
-      declineFriendInvite,
-      {
-         onError: console.error,
-         onSuccess: (data) =>
-            console.log("Friend invite declined successfully: " + data),
-         onSettled: (res) => console.log(res),
-         cacheTime: 60 * 60 * 1000,
-      }
-   );
+   return useMutation<any, Error, DeclineFriendInvitationModel, any>({
+      mutationFn: declineFriendInvite,
+      onError: console.error,
+      onSuccess: (data) =>
+         console.log("Friend invite declined successfully: " + data),
+      onSettled: (res) => console.log(res),
+   });
 };

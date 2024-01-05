@@ -26,10 +26,10 @@ const googleSignUp = async ({ returnUrl, accessToken }: GoogleSignUpModel) => {
 };
 export const useGoogleSignUpMutation = () => {
    const client = useQueryClient();
-   return useMutation(googleSignUp, {
+   return useMutation({
+      mutationFn: googleSignUp,
       onError: (err) => console.error("A sign up error occurred: ", err),
       onSuccess: (data) => console.log("Sign up success: " + data),
       onSettled: (res) => console.log(res),
-      cacheTime: 60 * 60 * 1000,
    });
 };

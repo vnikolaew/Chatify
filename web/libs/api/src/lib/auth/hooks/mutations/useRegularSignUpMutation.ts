@@ -20,9 +20,9 @@ const regularSignUp = async (model: RegularSignUpModel) => {
 
 export const useRegularSignUpMutation = () => {
    const client = useQueryClient();
-   return useMutation(regularSignUp, {
+   return useMutation({
+      mutationFn: regularSignUp,
       onError: console.error,
       onSuccess: (data) => console.log("Sign up success: " + data),
-      cacheTime: 60 * 60 * 1000,
    });
 };

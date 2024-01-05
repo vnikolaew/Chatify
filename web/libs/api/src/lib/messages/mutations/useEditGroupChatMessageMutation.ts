@@ -24,7 +24,8 @@ const editGroupChatMessage = async (model: EditGroupChatMessageModel) => {
 export const useEditGroupChatMessageMutation = () => {
    const client = useQueryClient();
 
-   return useMutation(editGroupChatMessage, {
+   return useMutation({
+      mutationFn: editGroupChatMessage,
       onError: console.error,
       onSuccess: (data) =>
          console.log("Chat message edited successfully: " + data),

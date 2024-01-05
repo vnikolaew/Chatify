@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .AddApplication(builder.Configuration)
-    .AddInfrastructure(builder.Configuration, builder.Environment)
+    .AddInfrastructure(builder.Configuration)
     .AddAutoMapper(config =>
     {
         config

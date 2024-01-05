@@ -27,8 +27,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { UploadIcon } from "@web/components";
 import { useSingleFileUpload } from "@web/hooks";
 
-export interface CreateChatGroupFormProps {
-}
+export interface CreateChatGroupFormProps {}
 
 const createChatGroupSchema = yup.object({
    about: yup.string().max(300, "About must be less than 300 characters."),
@@ -50,15 +49,19 @@ const createChatGroupSchema = yup.object({
 const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
    const router = useRouter();
    const {
-      selectedFile, fileUrl, setSelectedFile, fileInputRef, normalizedFileName,
-   } =
-      useSingleFileUpload();
+      selectedFile,
+      fileUrl,
+      setSelectedFile,
+      fileInputRef,
+      normalizedFileName,
+   } = useSingleFileUpload();
 
    const {
-      isLoading,
+      isPending,
       error,
       mutateAsync: createChatGroup,
    } = useCreateChatGroupMutation();
+
    const {
       data: friends,
       isLoading: friendsLoading,
@@ -83,19 +86,19 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
          onSubmit={handleSubmit}
       >
          {({
-              values,
-              errors,
-              touched,
-              setFieldValue,
-              handleChange,
-              handleSubmit,
-              isSubmitting,
-              getFieldProps,
-              setFieldTouched,
-           }) => (
+            values,
+            errors,
+            touched,
+            setFieldValue,
+            handleChange,
+            handleSubmit,
+            isSubmitting,
+            getFieldProps,
+            setFieldTouched,
+         }) => (
             <form
                onSubmit={handleSubmit}
-               className={`w-[320px] flex flex-col gap-4 mt-8`}
+               className={`mt-8 flex w-[320px] flex-col gap-4`}
                autoComplete={"off"}
             >
                <Input
@@ -117,7 +120,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                   placeholder={"Think of a cool name."}
                   size={"md"}
                   radius={`sm`}
-                  className={`py-1 text-md`}
+                  className={`text-md py-1`}
                   type={"text"}
                   name={"name"}
                   id={"name"}
@@ -140,19 +143,19 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                   placeholder={"Give your group a brief description."}
                   size={"md"}
                   radius={`sm`}
-                  className={`py-1 text-md`}
+                  className={`text-md py-1`}
                   type={"text"}
                   name={"about"}
                   id={"about"}
                />
-               <div className={`flex items-center flex-col mt-2 gap-4`}>
+               <div className={`mt-2 flex flex-col items-center gap-4`}>
                   <Input
-                     className={`py-2 w-full`}
+                     className={`w-full py-2`}
                      labelPlacement={"outside"}
                      label={"Select a group picture:"}
                      variant={"flat"}
                      color={"primary"}
-                     onClick={_ => fileInputRef.current?.click()}
+                     onClick={(_) => fileInputRef.current?.click()}
                      classNames={{
                         inputWrapper: "py-2 px-2",
                         input: `cursor-pointer`,
@@ -178,7 +181,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                   />
                   {selectedFile && (
                      <div
-                        className={`w-full flex gap-4 flex-col items-center justify-center`}
+                        className={`flex w-full flex-col items-center justify-center gap-4`}
                      >
                         <Image
                            shadow={"md"}
@@ -222,7 +225,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                                  }}
                                  size={`sm`}
                                  src={getMediaUrl(
-                                    user.data.profilePicture.mediaUrl,
+                                    user.data.profilePicture.mediaUrl
                                  )}
                               />
                            }
@@ -245,7 +248,10 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                   }}
                   label={"Add friends to group:"}
                   description={
-                     <span><b className={`text-primary mr-1`}>*</b> Add one or more of your friends to chat group</span>
+                     <span>
+                        <b className={`text-primary mr-1`}>*</b> Add one or more
+                        of your friends to chat group
+                     </span>
                   }
                   labelPlacement={"outside"}
                   placeholder={"Select users"}
@@ -270,7 +276,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                   )}
                </Select>
                <div
-                  className={`flex-col self-center flex items-center gap-4 w-3/4`}
+                  className={`flex w-3/4 flex-col items-center gap-4 self-center`}
                >
                   <Button
                      variant={"solid"}
@@ -284,7 +290,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                      }
                      color={"primary"}
                      size={"md"}
-                     className={`text-white w-full mt-4 py-2 text-medium hover:opacity-80 self-center shadow-sm rounded-md`}
+                     className={`text-medium mt-4 w-full self-center rounded-md py-2 text-white shadow-sm hover:opacity-80`}
                      type={`submit`}
                   >
                      {isSubmitting ? "Creating" : "Create"}

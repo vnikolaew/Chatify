@@ -21,6 +21,6 @@ export const useGetIncomingInvitationsQuery = () => {
    return useQuery<FriendInvitation[], Error, FriendInvitation[], any>({
       queryKey: [`friend-invites-incoming`],
       queryFn: () => getIncomingInvitations(),
-      cacheTime: 60 * 60 * 1000,
+      gcTime: 60 * 60 * 1000,
    });
 };

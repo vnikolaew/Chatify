@@ -2,6 +2,7 @@ import { friendshipsClient } from "../../client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { FriendInvitationListApiResponse, FriendInvitation } from "@openapi";
+import { DEFAULT_CACHE_TIME } from "../../../constants";
 
 const getSentInvitations = async (): Promise<FriendInvitation[]> => {
    const { status, data } =
@@ -23,6 +24,6 @@ export const useGetSentInvitationsQuery = () => {
    return useQuery<FriendInvitation[], Error, FriendInvitation[], any>({
       queryKey: [`friend-invites-sent`],
       queryFn: () => getSentInvitations(),
-      cacheTime: 60 * 60 * 1000,
+      gcTime: DEFAULT_CACHE_TIME,
    });
 };

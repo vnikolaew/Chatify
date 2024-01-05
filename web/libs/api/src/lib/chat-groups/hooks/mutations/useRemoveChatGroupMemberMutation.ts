@@ -23,11 +23,11 @@ const removeChatGroupMember = async (model: RemoveChatGroupMemberModel) => {
 export const useRemoveChatGroupMember = () => {
    const client = useQueryClient();
 
-   return useMutation(removeChatGroupMember, {
+   return useMutation({
+      mutationFn: removeChatGroupMember,
       onError: console.error,
       onSuccess: (data) =>
          console.log("Chat group member removed successfully: " + data),
       onSettled: (res) => console.log(res),
-      cacheTime: 60 * 60 * 1000,
    });
 };

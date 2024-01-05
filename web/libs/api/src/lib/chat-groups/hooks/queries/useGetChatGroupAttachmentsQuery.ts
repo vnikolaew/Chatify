@@ -1,8 +1,5 @@
 import { chatGroupsClient } from "../../client";
-import {
-   useInfiniteQuery,
-   useQueryClient,
-} from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import {
    ChatGroupAttachment,
@@ -54,6 +51,7 @@ export const useGetChatGroupAttachmentsQuery = (
    >({
       queryKey: [`chat-groups`, model.groupId, `attachments`],
       queryFn: () => getChatGroupAttachments(model),
+      initialPageParam: null!,
       getNextPageParam: (lastPage: CursorPaged<ChatGroupAttachment>) => {
          return lastPage.pagingCursor;
       },

@@ -9,17 +9,21 @@ import { HttpStatusCode } from "axios";
 import {
    ChatGroupFeedEntryListApiResponse,
    ChatGroupFeedEntry,
-// @ts-ignore
+   // @ts-ignore
 } from "@openapi";
 import { sleep } from "../../../utils";
 import { DEFAULT_CACHE_TIME } from "../../../constants";
 
-
-const getStarredChatGroupsFeedQuery = async (): Promise<ChatGroupFeedEntry[]> => {
+const getStarredChatGroupsFeedQuery = async (): Promise<
+   ChatGroupFeedEntry[]
+> => {
    const { status, data } =
-      await chatGroupsClient.get<ChatGroupFeedEntryListApiResponse>(`starred/feed`, {
-         headers: {},
-      });
+      await chatGroupsClient.get<ChatGroupFeedEntryListApiResponse>(
+         `starred/feed`,
+         {
+            headers: {},
+         }
+      );
 
    await sleep(2000);
 
@@ -30,7 +34,7 @@ const getStarredChatGroupsFeedQuery = async (): Promise<ChatGroupFeedEntry[]> =>
    return data.data!;
 };
 
-export const STARRED_FEED_KEY = [`feed`, `starred`]
+export const STARRED_FEED_KEY = [`feed`, `starred`];
 
 export const useGetStarredChatGroupsFeedQuery = (
    options?: Omit<
@@ -43,7 +47,7 @@ export const useGetStarredChatGroupsFeedQuery = (
       "initialData"
    > & {
       initialData?: (() => undefined) | undefined;
-   },
+   }
 ) => {
    const client = useQueryClient();
    return useQuery({
@@ -51,7 +55,7 @@ export const useGetStarredChatGroupsFeedQuery = (
       queryFn: getStarredChatGroupsFeedQuery,
       refetchOnWindowFocus: false,
       refetchInterval: 60 * 5 * 1000,
-      cacheTime: DEFAULT_CACHE_TIME,
+      gcTime: DEFAULT_CACHE_TIME,
       ...options,
    });
 };

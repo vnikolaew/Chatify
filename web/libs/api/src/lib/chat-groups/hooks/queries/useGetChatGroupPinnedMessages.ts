@@ -55,7 +55,7 @@ export const useGetChatGroupPinnedMessages = (
    const client = useQueryClient();
    return useQuery<ChatMessage[], Error, ChatMessage[], string[]>({
       queryKey: GET_PINNED_GROUP_MESSAGES_KEY(groupId),
-      queryFn: ({ queryKey: [_, groupId, __], pageParam = null! }) => {
+      queryFn: ({ queryKey: [_, groupId, __] }) => {
          return getChatGroupPinnedMessages({
             groupId,
          });

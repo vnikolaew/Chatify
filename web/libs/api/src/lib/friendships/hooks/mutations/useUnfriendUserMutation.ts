@@ -21,10 +21,10 @@ const unfriendUser = async (model: UnfriendUserModel) => {
 export const useUnfriendUserMutation = () => {
    const client = useQueryClient();
 
-   return useMutation(unfriendUser, {
+   return useMutation({
+      mutationFn: unfriendUser,
       onError: console.error,
       onSuccess: (data) => console.log("User unfriended successfully: " + data),
       onSettled: (res) => console.log(res),
-      cacheTime: 60 * 60 * 1000,
    });
 };

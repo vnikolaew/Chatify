@@ -31,7 +31,8 @@ const deleteGroupChatMessageReply = async (
 export const useDeleteGroupChatMessageReplyMutation = () => {
    const client = useQueryClient();
 
-   return useMutation(deleteGroupChatMessageReply, {
+   return useMutation({
+      mutationFn: deleteGroupChatMessageReply,
       onError: console.error,
       onSuccess: (data) =>
          console.log("Chat message deleted successfully: " + data),

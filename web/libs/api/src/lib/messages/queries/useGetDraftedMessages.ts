@@ -1,5 +1,6 @@
 import { messagesClient } from "../client";
 import {
+   QueryKey,
    useQuery,
    useQueryClient,
    UseQueryOptions,
@@ -34,16 +35,14 @@ export const useGetDraftedMessages = (
    >
 ) => {
    const client = useQueryClient();
-   return useQuery<ChatMessageDraft[], Error, ChatMessageDraft[], [string]>(
-      [`chat-message-drafts`],
-      // @ts-ignore
-      {
-         queryFn: getDraftedMessages,
-         onError: console.error,
-         onSuccess: (data: ChatMessageDraft[]) =>
-            console.log("Chat message drafts: " + data),
-         onSettled: (res: any) => console.log(res),
-         ...options,
-      }
-   );
+   // @ts-ignore
+   return useQuery<ChatMessageDraft[], Error, ChatMessageDraft[], QueryKey>({
+      queryKey: [`chat-message-drafts`],
+      queryFn: getDraftedMessages,
+      onError: console.error,
+      onSuccess: (data: ChatMessageDraft[]) =>
+         console.log("Chat message drafts: " + data),
+      onSettled: (res: any) => console.log(res),
+      ...options,
+   });
 };

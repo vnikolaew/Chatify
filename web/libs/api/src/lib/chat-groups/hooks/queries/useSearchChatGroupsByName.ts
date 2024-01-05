@@ -53,7 +53,7 @@ export const useSearchChatGroupsByName = (
       queryFn: () => searchChatGroupsByName(model),
       refetchOnWindowFocus: false,
       refetchInterval: 60 * 5 * 1000,
-      cacheTime: 60 * 60 * 1000,
+      gcTime: 60 * 60 * 1000,
       ...options,
    });
 };

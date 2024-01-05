@@ -56,7 +56,7 @@ export const useGetUserMembershipDetailsQuery = (
          model.userId
       ),
       queryFn: ({ queryKey: [_, id] }) => getUserMembershipDetails(model),
-      cacheTime: 60 * 60 * 1000,
+      gcTime: 60 * 60 * 1000,
       ...options,
    });
 };

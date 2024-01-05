@@ -15,7 +15,7 @@ const sendFriendInvite = async (model: SendFriendInvitationModel) => {
       `invite/${model.userId}`,
       {
          headers: {},
-      },
+      }
    );
 
    if (status === HttpStatusCode.BadRequest) {
@@ -28,36 +28,34 @@ const sendFriendInvite = async (model: SendFriendInvitationModel) => {
 export const useSendFriendInviteMutation = () => {
    const client = useQueryClient();
 
-   return useMutation<any, Error, SendFriendInvitationModel, any>(
-      sendFriendInvite,
-      {
-         onError: console.error,
-         onSuccess: (data, { userId }) => {
-            console.log("Friend invite sent successfully: " + data);
-            const meId = client.getQueryData<GetMyClaimsResponse>([`me`, `claims`])?.claims?.["nameidentifier"];
+   return useMutation<any, Error, SendFriendInvitationModel, any>({
+      mutationFn: sendFriendInvite,
+      onError: console.error,
+      onSuccess: (data, { userId }) => {
+         console.log("Friend invite sent successfully: " + data);
+         const meId = client.getQueryData<GetMyClaimsResponse>([`me`, `claims`])
+            ?.claims?.["nameidentifier"];
 
-            // Update friend invitation user details:
-            client.setQueryData<UserDetailsEntry>(
-               [USER_DETAILS_KEY, userId],
-               (old: UserDetailsEntry) => {
-                  if (!old) return old;
-                  return produce(old, (draft: UserDetailsEntry) => {
-                     draft.friendInvitation = {
-                        ...draft.friendInvitation,
-                        status: FriendInvitationStatus.PENDING,
-                        createdAt: new Date().toISOString(),
-                        id: data.data.id,
-                        inviterId: meId,
-                        inviteeId: userId,
-                     };
+         // Update friend invitation user details:
+         client.setQueryData<UserDetailsEntry>(
+            [USER_DETAILS_KEY, userId],
+            (old: UserDetailsEntry) => {
+               if (!old) return old;
+               return produce(old, (draft: UserDetailsEntry) => {
+                  draft.friendInvitation = {
+                     ...draft.friendInvitation,
+                     status: FriendInvitationStatus.PENDING,
+                     createdAt: new Date().toISOString(),
+                     id: data.data.id,
+                     inviterId: meId,
+                     inviteeId: userId,
+                  };
 
-                     return draft;
-                  });
-               },
-            );
-         },
-         onSettled: (res) => console.log(res),
-         cacheTime: 60 * 60 * 1000,
+                  return draft;
+               });
+            }
+         );
       },
-   );
+      onSettled: (res) => console.log(res),
+   });
 };

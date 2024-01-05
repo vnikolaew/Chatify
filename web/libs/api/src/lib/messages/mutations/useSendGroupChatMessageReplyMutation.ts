@@ -33,7 +33,8 @@ const sendGroupChatMessageReply = async (
 export const useSendGroupChatMessageReplyMutation = () => {
    const client = useQueryClient();
 
-   return useMutation(sendGroupChatMessageReply, {
+   return useMutation({
+      mutationFn: sendGroupChatMessageReply,
       onError: console.error,
       onSuccess: (data) =>
          console.log("Chat message reply sent successfully: " + data),

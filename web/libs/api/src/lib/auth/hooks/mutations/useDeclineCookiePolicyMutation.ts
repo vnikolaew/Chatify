@@ -15,10 +15,10 @@ const declineCookiePolicy = async () => {
 export const useDeclineCookiePolicyMutation = () => {
    const client = useQueryClient();
 
-   return useMutation(declineCookiePolicy, {
+   return useMutation({
+      mutationFn: declineCookiePolicy,
       onError: console.error,
       onSuccess: (data) => console.log("Declined cookie policy: " + data),
       onSettled: (res) => console.log(res),
-      cacheTime: 60 * 60 * 1000,
    });
 };

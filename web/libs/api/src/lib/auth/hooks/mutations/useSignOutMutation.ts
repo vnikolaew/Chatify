@@ -25,14 +25,14 @@ export const useSignOutMutation = (
 ) => {
    const client = useQueryClient();
 
-   return useMutation(signOut, {
+   return useMutation({
+      mutationFn: signOut,
       onError: console.error,
       onSuccess: (data) => {
          console.log("Sign out success: " + data);
          client.clear();
       },
       onSettled: (res) => console.log(res),
-      cacheTime: 60 * 60 * 1000,
       ...options,
    });
 };

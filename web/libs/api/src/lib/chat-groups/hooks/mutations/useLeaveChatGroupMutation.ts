@@ -22,10 +22,10 @@ const leaveChatGroup = async (model: LeaveChatGroupModel) => {
 export const useLeaveChatGroupMutation = () => {
    const client = useQueryClient();
 
-   return useMutation<any, Error, LeaveChatGroupModel, any>(leaveChatGroup, {
+   return useMutation<any, Error, LeaveChatGroupModel, any>({
+      mutationFn: leaveChatGroup,
       onError: console.error,
       onSuccess: (data) => console.log("Chat group left successfully: " + data),
       onSettled: (res) => console.log(res),
-      cacheTime: 60 * 60 * 1000,
    });
 };

@@ -24,6 +24,7 @@ import { LoadingChatMessageEntry } from "./LoadingChatMessageEntry";
 import ChatMessageEntries from "./ChatMessageEntries";
 import MembersTypingSection from "./MembersTypingSection";
 import MessageTextEditor from "./editor/MessageTextEditor";
+import PlateMessageEditor from "./editor/PlateMessageEditor";
 
 export interface ChatMessagesSectionProps {
    groupId: string;
@@ -221,6 +222,9 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                   >
                      <MessageTextEditor chatGroup={groupDetails} />
                   </Suspense>
+                  <div className={`w-2/3`}>
+                     <PlateMessageEditor />
+                  </div>
                </div>
             </ReplyToMessageContextProvider>
          )}

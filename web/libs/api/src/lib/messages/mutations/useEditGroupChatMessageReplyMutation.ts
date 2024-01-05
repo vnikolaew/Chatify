@@ -35,7 +35,8 @@ const editGroupChatMessageReply = async (
 export const useEditGroupChatMessageReplyMutation = () => {
    const client = useQueryClient();
 
-   return useMutation(editGroupChatMessageReply, {
+   return useMutation({
+      mutationFn: editGroupChatMessageReply,
       onError: console.error,
       onSuccess: (data) =>
          console.log("Chat message reply edited successfully: " + data),

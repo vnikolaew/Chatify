@@ -18,10 +18,10 @@ const facebookSignUp = async (model: FacebookSignUpModel) => {
 
 export const useFacebookSignUpMutation = () => {
    const client = useQueryClient();
-   return useMutation(facebookSignUp, {
+   return useMutation({
+      mutationFn: facebookSignUp,
       onError: console.error,
       onSuccess: (data) => console.log("Sign up success: " + data),
       onSettled: (res) => console.log(res),
-      cacheTime: 60 * 60 * 1000,
    });
 };

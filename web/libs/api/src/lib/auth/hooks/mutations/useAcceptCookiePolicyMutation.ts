@@ -15,10 +15,10 @@ const acceptCookiePolicy = async () => {
 export const useAcceptCookiePolicyMutation = () => {
    const client = useQueryClient();
 
-   return useMutation(acceptCookiePolicy, {
+   return useMutation({
+      mutationFn: acceptCookiePolicy,
       onError: console.error,
       onSuccess: (data) => console.log("Accepted cookie policy: " + data),
       onSettled: (res) => console.log(res),
-      cacheTime: 60 * 60 * 1000,
    });
 };

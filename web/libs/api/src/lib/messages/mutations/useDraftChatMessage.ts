@@ -29,13 +29,11 @@ const draftChatMessage = async (model: DraftChatMessageModel) => {
 
 export const useDraftChatMessage = () => {
    const client = useQueryClient();
-   return useMutation<any, Error, DraftChatMessageModel, any>(
-      draftChatMessage,
-      {
-         onError: console.error,
-         onSuccess: (data) =>
-            console.log("Chat message drafted successfully: " + data),
-         onSettled: (res) => console.log(res),
-      }
-   );
+   return useMutation<any, Error, DraftChatMessageModel, any>({
+      mutationFn: draftChatMessage,
+      onError: console.error,
+      onSuccess: (data) =>
+         console.log("Chat message drafted successfully: " + data),
+      onSettled: (res) => console.log(res),
+   });
 };

@@ -6,10 +6,10 @@
     "config": "apps/app/tailwind.config.js",
     "css": "apps/app/app/styles.css",
     "baseColor": "slate",
-    "cssVariables": true
+    "cssVariables": true,
+    "prefix": ""
   },
   "aliases": {
-    "components": "@/components",
-    "utils": "@/lib/utils"
+    "components": "@/components"
   }
 }

@@ -1,5 +1,9 @@
 import { friendshipsClient } from "../../client";
-import { useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
+import {
+   useQuery,
+   useQueryClient,
+   UseQueryOptions,
+} from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { DEFAULT_CACHE_TIME, DEFAULT_STALE_TIME } from "../../../constants";
 //@ts-ignore
@@ -23,15 +27,20 @@ const getMyFriends = async (): Promise<User[]> => {
 export const FRIENDS_KEY = `friends`;
 type GetMyFriendsResult = Awaited<ReturnType<typeof getMyFriends>>;
 
-export const useGetMyFriendsQuery = (options?: Omit<UseQueryOptions<User[], Error, User[], string[]>, "initialData"> & {initialData?: (() => undefined) | undefined}) => {
+export const useGetMyFriendsQuery = (
+   options?: Omit<
+      UseQueryOptions<User[], Error, User[], string[]>,
+      "initialData"
+   > & { initialData?: (() => undefined) | undefined }
+) => {
    const client = useQueryClient();
    // Get current User Id somehow:
 
    return useQuery<User[], Error, User[], string[]>({
       queryKey: [FRIENDS_KEY],
       queryFn: () => getMyFriends(),
-      cacheTime: DEFAULT_CACHE_TIME,
+      gcTime: DEFAULT_CACHE_TIME,
       staleTime: DEFAULT_STALE_TIME,
-      ...options
+      ...options,
    });
 };

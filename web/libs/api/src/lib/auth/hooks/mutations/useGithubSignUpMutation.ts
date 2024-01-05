@@ -41,11 +41,11 @@ export const useGithubSignUpMutation = (
 ) => {
    const client = useQueryClient();
 
-   return useMutation(githubSignUp, {
+   return useMutation({
+      mutationFn: githubSignUp,
       onError: (err) => console.error("A sign up error occurred: ", err),
       onSuccess: (data) => console.log("Sign up success: " + data),
       onSettled: (res) => console.log(res),
-      cacheTime: 60 * 60 * 1000,
       ...options,
    });
 };

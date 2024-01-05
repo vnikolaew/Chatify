@@ -63,37 +63,33 @@ const sendGroupChatMessage = async (
 export const useSendGroupChatMessageMutation = () => {
    const client = useQueryClient();
 
-   return useMutation<string, Error, SendGroupChatMessageModel, any>(
-      sendGroupChatMessage,
-      {
-         onError: (error, { chatGroupId }) => {
-            console.error(error);
-            // Update client cache with by deleting message:
-            client.setQueryData<
-               InfiniteData<CursorPaged<ChatGroupMessageEntry>>
-            >(GET_PAGINATED_GROUP_MESSAGES_KEY(chatGroupId), (messages) =>
+   return useMutation<string, Error, SendGroupChatMessageModel, any>({
+      mutationFn: sendGroupChatMessage,
+      onError: (error, { chatGroupId }) => {
+         console.error(error);
+         // Update client cache with by deleting message:
+         client.setQueryData<InfiniteData<CursorPaged<ChatGroupMessageEntry>>>(
+            GET_PAGINATED_GROUP_MESSAGES_KEY(chatGroupId),
+            (messages) =>
                produce(messages, (draft) => {
                   (
                      draft!.pages[0] as CursorPaged<ChatGroupMessageEntry>
                   ).items.pop();
                   return draft;
                })
-            );
-         },
-         onMutate: ({ chatGroupId, content, metadata, files }) => {
-            const me = client.getQueryData<GetMyClaimsResponse>([
-               `me`,
-               `claims`,
-            ]);
-            const meDetails = client.getQueryData<UserDetailsEntry>([
-               `user-details`,
-               me!.claims["nameidentifier"]!,
-            ]);
+         );
+      },
+      onMutate: ({ chatGroupId, content, metadata, files }) => {
+         const me = client.getQueryData<GetMyClaimsResponse>([`me`, `claims`]);
+         const meDetails = client.getQueryData<UserDetailsEntry>([
+            `user-details`,
+            me!.claims["nameidentifier"]!,
+         ]);
 
-            // Update client cache with new message:
-            client.setQueryData<
-               InfiniteData<CursorPaged<ChatGroupMessageEntry>>
-            >(GET_PAGINATED_GROUP_MESSAGES_KEY(chatGroupId), (messages) =>
+         // Update client cache with new message:
+         client.setQueryData<InfiniteData<CursorPaged<ChatGroupMessageEntry>>>(
+            GET_PAGINATED_GROUP_MESSAGES_KEY(chatGroupId),
+            (messages) =>
                produce(messages, (draft) => {
                   (
                      draft!.pages[0] as CursorPaged<ChatGroupMessageEntry>
@@ -122,23 +118,22 @@ export const useSendGroupChatMessageMutation = () => {
                   });
                   return draft;
                })
-            );
-         },
-         onSuccess: (id, { chatGroupId, content, metadata, files }) => {
-            console.log("Chat message sent successfully. Id is " + id);
+         );
+      },
+      onSuccess: (id, { chatGroupId, content, metadata, files }) => {
+         console.log("Chat message sent successfully. Id is " + id);
 
-            // Only update message with its new id:
-            client.setQueryData<
-               InfiniteData<CursorPaged<ChatGroupMessageEntry>>
-            >(GET_PAGINATED_GROUP_MESSAGES_KEY(chatGroupId), (messages) =>
+         // Only update message with its new id:
+         client.setQueryData<InfiniteData<CursorPaged<ChatGroupMessageEntry>>>(
+            GET_PAGINATED_GROUP_MESSAGES_KEY(chatGroupId),
+            (messages) =>
                produce(messages, (draft) => {
                   (
                      draft!.pages[0] as CursorPaged<ChatGroupMessageEntry>
                   ).items[0].message.id = id;
                   return draft;
                })
-            );
-         },
-      }
-   );
+         );
+      },
+   });
 };

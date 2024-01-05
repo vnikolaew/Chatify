@@ -1,7 +1,6 @@
 import { chatGroupsClient } from "../../client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
-import { DEFAULT_CACHE_TIME } from "../../../constants";
 import { sleep } from "../../../utils";
 
 export interface CreateChatGroupModel {
@@ -29,11 +28,11 @@ const createChatGroup = async (model: CreateChatGroupModel) => {
 export const useCreateChatGroupMutation = () => {
    const client = useQueryClient();
 
-   return useMutation(createChatGroup, {
+   return useMutation<any, Error, CreateChatGroupModel, any>({
+      mutationFn: createChatGroup,
       onError: console.error,
       onSuccess: (data) =>
          console.log("Chat group created successfully: " + data),
       onSettled: (res) => console.log(res),
-      cacheTime: DEFAULT_CACHE_TIME,
    });
 };

@@ -9,7 +9,7 @@ import { HttpStatusCode } from "axios";
 import {
    ChatGroupFeedEntryListApiResponse,
    ChatGroupFeedEntry,
-// @ts-ignore
+   // @ts-ignore
 } from "@openapi";
 import { sleep } from "../../../utils";
 
@@ -19,7 +19,7 @@ export interface GetChatGroupsFeedModel {
 }
 
 const getChatGroupsFeed = async (
-   model: GetChatGroupsFeedModel,
+   model: GetChatGroupsFeedModel
 ): Promise<ChatGroupFeedEntry[]> => {
    const params = new URLSearchParams({
       limit: `${model.limit}`,
@@ -53,7 +53,7 @@ export const useGetChatGroupsFeedQuery = (
       "initialData"
    > & {
       initialData?: (() => undefined) | undefined;
-   },
+   }
 ) => {
    const client = useQueryClient();
 
@@ -62,7 +62,6 @@ export const useGetChatGroupsFeedQuery = (
       queryFn: () => getChatGroupsFeed(model),
       refetchOnWindowFocus: false,
       refetchInterval: 60 * 5 * 1000,
-      cacheTime: 60 * 60 * 1000,
       ...options,
    });
 };
