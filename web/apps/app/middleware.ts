@@ -1,15 +1,20 @@
 import createMiddleware from "next-intl/middleware";
 import { NextMiddleware, NextResponse } from "next/server";
 
+const LOCALES = ["en", "de"] as const;
+
 const intlMiddleware = createMiddleware({
    // A list of all locales that are supported
-   locales: ["en", "de"],
+   locales: LOCALES,
 
    // If this locale is matched, pathnames work without a prefix (e.g. `/about`)
    defaultLocale: "en",
 });
 
-function stackMiddlewares(functions: MiddlewareFactory[] = [], index = 0): NextMiddleware {
+function stackMiddlewares(
+   functions: MiddlewareFactory[] = [],
+   index = 0
+): NextMiddleware {
    const current = functions[index];
    if (current) {
       const next = stackMiddlewares(functions, index + 1);
@@ -18,20 +23,27 @@ function stackMiddlewares(functions: MiddlewareFactory[] = [], index = 0): NextM
    return () => NextResponse.next();
 }
 
-
 export type MiddlewareFactory = (middleware: NextMiddleware) => NextMiddleware;
 
 const withAuth: MiddlewareFactory = (next) => {
    return async (request, _next) => {
-      const isUserLoggedIn = request.cookies.has(process.env.NEXT_PUBLIC_APPLICATION_COOKIE_NAME);
-      const pathname = request.nextUrl.pathname;
+      const isUserLoggedIn = request.cookies.has(
+         process.env.NEXT_PUBLIC_APPLICATION_COOKIE_NAME
+      );
+      const signInRoutes = [`signin`, `/signin`] as const;
 
-      if (isUserLoggedIn && (pathname === "/signin")) {
+      let pathname = request.nextUrl.pathname;
+      const match = pathname.match(/\/([^\/]+)\/([^\/]+)/);
+      if (match?.length >= 2 && LOCALES.some((l) => match[1].includes(l))) {
+         pathname = match[2];
+      }
+
+      if (isUserLoggedIn && signInRoutes.some((r) => pathname === r)) {
          request.nextUrl.pathname = `/`;
          return NextResponse.redirect(request.nextUrl);
       }
 
-      if (!isUserLoggedIn && pathname !== "/signin") {
+      if (!isUserLoggedIn && signInRoutes.every((r) => r !== pathname)) {
          request.nextUrl.pathname = `signin`;
          return NextResponse.redirect(request.nextUrl);
       }
