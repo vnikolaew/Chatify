@@ -8,12 +8,11 @@ export const createClient = (
    config?: AxiosRequestConfig
 ) => {
    const client = axios.create({
-      baseURL: `${
-         process.env["NEXT_PUBLIC_BACKEND_API_URL"] ?? ""
-      }/${endpoint}`,
+      baseURL: `/api/${endpoint}`,
       headers: {
          "Content-Type": "application/json; charset=utf-8",
          "Accept": "*/*",
+         "X-Api-Call": `true`,
          "X-User-Locale": isServer() ? "" : window.navigator.language,
          "X-User-Location": ``,
       },

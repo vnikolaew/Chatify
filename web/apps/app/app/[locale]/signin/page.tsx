@@ -78,7 +78,7 @@ const SignInPage: NextPage = () => {
    }
 
    return (
-      <div className={`w-1/3 mx-auto max-w-[500px] mt-24`}>
+      <div className={`mx-auto mt-24 w-1/3 max-w-[500px]`}>
          <Card shadow={"lg"} className={`p-6`} radius={"md"}>
             <CardHeader className={`text-2xl`}>
                Sign in with your account
@@ -120,7 +120,7 @@ const SignInPage: NextPage = () => {
                            }
                            placeholder={"Enter your email"}
                            size={"md"}
-                           className={`py-1 text-md rounded-lg`}
+                           className={`text-md rounded-lg py-1`}
                            type={"email"}
                            name={"email"}
                            id={"email"}
@@ -130,10 +130,12 @@ const SignInPage: NextPage = () => {
                            value={values.password}
                            onChange={handleChange}
                            errorMessage={errors.password}
-                           isInvalid={Boolean(touched.password && errors.password)}
+                           isInvalid={Boolean(
+                              touched.password && errors.password
+                           )}
                            label={"Password"}
                            placeholder={"Choose a strong one"}
-                           className={`py-1 text-md rounded-lg`}
+                           className={`text-md rounded-lg py-1`}
                            name={"password"}
                            id={"password"}
                         />
@@ -149,11 +151,11 @@ const SignInPage: NextPage = () => {
                            Remember me
                         </Checkbox>
                         <div
-                           className={`w-full mt-2 flex flex-col justify-between`}
+                           className={`mt-2 flex w-full flex-col justify-between`}
                         >
                            <div>
                               <span className={`text-default-500 text-small`}>
-                                 Don't have an account yet?
+                                 Don&apos;t have an account yet?
                               </span>
                               <Link
                                  className={`ml-2`}
@@ -179,30 +181,30 @@ const SignInPage: NextPage = () => {
                               }
                               color={"primary"}
                               size={"sm"}
-                              className={`text-white mt-12 py-5 w-full text-[1.0rem] hover:opacity-80 self-center shadow-sm rounded-md`}
+                              className={`mt-12 w-full self-center rounded-md py-5 text-[1.0rem] text-white shadow-sm hover:opacity-80`}
                               type={`submit`}
                            >
                               {isSubmitting ? "Loading" : "Sign In"}
                            </Button>
                            <div
-                              className={`w-full mt-2 flex items-center space-x-4`}
+                              className={`mt-2 flex w-full items-center space-x-4`}
                            >
                               <Divider
                                  orientation={"horizontal"}
-                                 className={"h-[1px] flex-1 my-4"}
+                                 className={"my-4 h-[1px] flex-1"}
                               />
                               <span
-                                 className={`text-medium font-semibold text-default-600`}
+                                 className={`text-medium text-default-600 font-semibold`}
                               >
                                  OR
                               </span>
                               <Divider
                                  orientation={"horizontal"}
-                                 className={"h-[1px] flex-1 my-4"}
+                                 className={"my-4 h-[1px] flex-1"}
                               />
                            </div>
                            <div
-                              className={`w-full mt-4 gap-4 justify-center flex items-center`}
+                              className={`mt-4 flex w-full items-center justify-center gap-4`}
                            >
                               <Button
                                  color={"default"}
@@ -214,7 +216,7 @@ const SignInPage: NextPage = () => {
                               <GithubLogin
                                  redirectUri={`http://localhost:4200`}
                                  buttonText={
-                                    <div className={`bg-black p-2 rounded-xl`}>
+                                    <div className={`rounded-xl bg-black p-2`}>
                                        <GithubIcon size={24} />
                                     </div>
                                  }

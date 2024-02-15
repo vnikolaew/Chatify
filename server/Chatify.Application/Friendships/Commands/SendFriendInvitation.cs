@@ -19,7 +19,7 @@ public record SendFriendInvitation([Required] Guid InviteeId) : ICommand<SendFri
 
 internal sealed class SendFriendInvitationHandler(IFriendInvitationRepository friendInvites,
         IIdentityContext identityContext,
-        IDomainRepository<Domain.Entities.User, Guid> users,
+        IUserRepository users,
         IClock clock,
         IEventDispatcher eventDispatcher,
         IGuidGenerator guidGenerator)

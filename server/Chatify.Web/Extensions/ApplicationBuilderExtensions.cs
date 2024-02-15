@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http.Features;
+﻿using Chatify.Infrastructure;
+using Chatify.Web.Middleware;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Net.Http.Headers;
@@ -10,6 +12,28 @@ public static class ApplicationBuilderExtensions
 {
     private const string StaticFilesDirectoryName = "Files";
     private const string ConsentCookieName = "Cookie-Consent";
+
+    public static IApplicationBuilder UseWebInfrastructure(
+        this IApplicationBuilder app,
+        IWebHostEnvironment environment)
+        => app
+            .UseHttpsRedirection()
+            .UseConfiguredCors(environment)
+            .UseSecureHeaders()
+            // .UseTraceIdentifier()
+            .UseCachedStaticFiles(environment)
+            .UseDevelopmentSwagger(environment)
+            .UseConfiguredCookiePolicy();
+
+    public static IApplicationBuilder UseAppEndpoints(this IApplicationBuilder app)
+        => app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+            endpoints
+                .MapNotifications()
+                .MapFallback(() => TypedResults.NotFound());
+        });
+
 
     public static IApplicationBuilder UseDevelopmentSwagger(
         this IApplicationBuilder app,
@@ -49,24 +73,23 @@ public static class ApplicationBuilderExtensions
 
     public static IApplicationBuilder UseConfiguredCookiePolicy(
         this IApplicationBuilder app)
-        => app
-            .UseCookiePolicy(new CookiePolicyOptions
+        => app.UseCookiePolicy(new CookiePolicyOptions
+        {
+            Secure = CookieSecurePolicy.Always,
+            MinimumSameSitePolicy = SameSiteMode.None,
+            ConsentCookieValue = true.ToString(),
+            CheckConsentNeeded = _ => true,
+            ConsentCookie = new CookieBuilder
             {
-                Secure = CookieSecurePolicy.Always,
-                MinimumSameSitePolicy = SameSiteMode.None,
-                ConsentCookieValue = true.ToString(),
-                CheckConsentNeeded = _ => true,
-                ConsentCookie = new CookieBuilder
-                {
-                    Name = ConsentCookieName,
-                    Expiration = TimeSpan.FromHours(24 * 30 * 6),
-                    MaxAge = TimeSpan.FromHours(24 * 30 * 6),
-                    HttpOnly = false,
-                    SameSite = SameSiteMode.None,
-                    IsEssential = true,
-                    SecurePolicy = CookieSecurePolicy.Always
-                }
-            });
+                Name = ConsentCookieName,
+                Expiration = TimeSpan.FromHours(24 * 30 * 6),
+                MaxAge = TimeSpan.FromHours(24 * 30 * 6),
+                HttpOnly = false,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                SecurePolicy = CookieSecurePolicy.Always
+            }
+        });
 
     public static IApplicationBuilder UseCachedStaticFiles(
         this IApplicationBuilder app,

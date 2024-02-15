@@ -1,6 +1,7 @@
 import { messagesClient } from "../client";
 import {
    QueryKey,
+   UndefinedInitialDataOptions,
    useQuery,
    useQueryClient,
    UseQueryOptions,
@@ -22,16 +23,11 @@ const getDraftedMessages = async (): Promise<ChatMessageDraft[]> => {
 };
 
 export const useGetDraftedMessages = (
-   options?: UseQueryOptions<
-      Omit<
-         UseQueryOptions<
-            ChatMessageDraft[],
-            Error,
-            ChatMessageDraft[],
-            [string]
-         >,
-         "initialData"
-      > & { initialData?: () => undefined }
+   options?: UndefinedInitialDataOptions<
+      ChatMessageDraft[],
+      Error,
+      ChatMessageDraft[],
+      QueryKey
    >
 ) => {
    const client = useQueryClient();

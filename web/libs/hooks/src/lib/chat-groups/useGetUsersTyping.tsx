@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { IUserTyping } from "../../../../../apps/app/hub/ChatifyHubInitializer";
+
+export interface IUserTyping {
+   userId: string;
+   username: string;
+   groupId: string;
+}
 
 export function useGetUsersTyping(groupId: string) {
-   const { data: usersTyping } = useQuery<Set<IUserTyping>>([
-      `chat-group`,
-      groupId,
-      `typing`,
-   ]);
-
+   const { data: usersTyping } = useQuery<Set<IUserTyping>>({
+      queryKey: [`chat-group`, groupId, `typing`],
+   });
    return usersTyping ?? new Set<IUserTyping>();
 }

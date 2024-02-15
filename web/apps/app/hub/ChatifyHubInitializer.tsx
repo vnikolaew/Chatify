@@ -20,15 +20,11 @@ import {
    USER_DETAILS_KEY,
 } from "@web/api";
 import { enableMapSet, produce } from "immer";
+import { IUserTyping } from "@web/hooks";
 
 export interface ChatifyHubInitializerProps {
 }
 
-export interface IUserTyping {
-   userId: string;
-   username: string;
-   groupId: string;
-}
 
 export const ChatifyHubInitializer = ({}: ChatifyHubInitializerProps) => {
    const client = useChatifyClientContext();

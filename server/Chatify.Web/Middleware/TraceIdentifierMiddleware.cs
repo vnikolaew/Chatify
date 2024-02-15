@@ -1,4 +1,4 @@
-﻿using Chatify.Shared.Infrastructure.Contexts;
+﻿using Chatify.Shared.Abstractions.Contexts;
 
 namespace Chatify.Web.Middleware;
 
@@ -11,7 +11,7 @@ internal sealed class TraceIdentifierMiddleware : IMiddleware
         {
             var traceIdentifier = context
                 .RequestServices
-                .GetRequiredService<Context>()
+                .GetRequiredService<IContext>()
                 .TraceId;
             
             context.Response.Headers["X-Trace-Id"] = traceIdentifier;
@@ -21,6 +21,6 @@ internal sealed class TraceIdentifierMiddleware : IMiddleware
 
 internal static class TraceIdentifierMiddlewareExtensions
 {
-    public static IApplicationBuilder UseTraceIdentifierMiddleware(this IApplicationBuilder app)
+    public static IApplicationBuilder UseTraceIdentifier(this IApplicationBuilder app)
         => app.UseMiddleware<TraceIdentifierMiddleware>();
 }

@@ -46,7 +46,11 @@ export const useEditUserDetailsMutation = () => {
       },
       onSettled: async (res) => {
          console.log(res);
-         await client.refetchQueries([`me`, `claims`], { exact: true, type: "all" });
+         await client.refetchQueries({
+            queryKey: [`me`, `claims`],
+            exact: true,
+            type: "all"
+         });
       },
    });
 };

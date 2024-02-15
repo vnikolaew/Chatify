@@ -5,12 +5,10 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Chatify.Web.Middleware;
 
-internal sealed class GlobalExceptionFilter : IAsyncExceptionFilter
+internal sealed class GlobalExceptionFilter(IHostEnvironment environment)
+    : IAsyncExceptionFilter
 {
-    private readonly bool _isDevelopment;
-
-    public GlobalExceptionFilter(IHostEnvironment environment)
-        => _isDevelopment = environment.IsDevelopment();
+    private readonly bool _isDevelopment = environment.IsDevelopment();
 
     public Task OnExceptionAsync(ExceptionContext context)
     {

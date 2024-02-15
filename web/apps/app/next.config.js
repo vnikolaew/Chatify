@@ -1,10 +1,9 @@
 //@ts-check
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { composePlugins, withNx } = require("@nx/next");
 const withNextIntl = require("next-intl/plugin")(
    // This is the default (also the `src` folder is supported out of the box)
-   "./i18n.ts",
+   "./i18n.ts"
 );
 
 /**
@@ -45,7 +44,13 @@ const nextConfig = {
          },
       ]);
    },
-   experimental: { typedRoutes: true, },
+   rewrites: async () => [
+      {
+         source: `/api/:catchAll*`,
+         destination: `http://localhost:5289/api/:catchAll*`,
+      },
+   ],
+   experimental: { typedRoutes: true },
    reactStrictMode: false,
    optimizeFonts: true,
    poweredByHeader: true,

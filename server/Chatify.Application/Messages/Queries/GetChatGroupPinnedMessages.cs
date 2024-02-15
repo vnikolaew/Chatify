@@ -20,10 +20,10 @@ public record GetChatGroupPinnedMessages(
 
 [Timed]
 internal sealed class GetChatGroupPinnedMessagesHandler(
-        IChatGroupMemberRepository members,
-        IChatGroupRepository groups,
-        IIdentityContext identityContext,
-        IChatMessageRepository messages)
+    IChatGroupMemberRepository members,
+    IChatGroupRepository groups,
+    IIdentityContext identityContext,
+    IChatMessageRepository messages)
     : IQueryHandler<GetChatGroupPinnedMessages, GetChatGroupPinnedMessagesResult>
 {
     public async Task<GetChatGroupPinnedMessagesResult> HandleAsync(GetChatGroupPinnedMessages query,
@@ -36,10 +36,10 @@ internal sealed class GetChatGroupPinnedMessagesHandler(
         if ( !isMember ) return new ChatGroups.Commands.UserIsNotMemberError(identityContext.Id, group.Id);
 
         if ( !group.PinnedMessages.Any() ) return new List<ChatMessage>();
-        var pinnedMessages =
-            await messages.GetByIds(group.PinnedMessages.Select(_ => _.MessageId),
-                cancellationToken)
-            ?? new List<ChatMessage>();
+        var pinnedMessages = await messages
+                                 .GetByIds(group.PinnedMessages.Select(_ => _.MessageId),
+                                     cancellationToken)
+                             ?? [];
 
         return pinnedMessages;
     }

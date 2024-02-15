@@ -39,35 +39,32 @@ const unreactToGroupMessage = async (model: UnreactToGroupMessageModel) => {
 export const useUnreactToGroupMessageMutation = () => {
    const client = useQueryClient();
 
-   return useMutation<string, Error, UnreactToGroupMessageModel, any>(
-      unreactToGroupMessage,
-      {
-         onError: console.error,
-         onSuccess: (data, { messageReactionId, messageId, groupId }) => {
-            console.log(
-               "Successfully unreacted to chat group message: " + data
-            );
+   return useMutation<string, Error, UnreactToGroupMessageModel, any>({
+      mutationFn: unreactToGroupMessage,
+      onError: console.error,
+      onSuccess: (data, { messageReactionId, messageId, groupId }) => {
+         console.log("Successfully unreacted to chat group message: " + data);
 
-            const reaction = client
-               .getQueryData<ChatMessageReaction[]>(
-                  GET_ALL_REACTIONS_KEY(messageId)
-               )!
-               .find((r) => r.id === messageReactionId);
+         const reaction = client
+            .getQueryData<ChatMessageReaction[]>(
+               GET_ALL_REACTIONS_KEY(messageId)
+            )!
+            .find((r) => r.id === messageReactionId);
 
-            client.setQueryData<ChatMessageReaction[]>(
-               GET_ALL_REACTIONS_KEY(messageId),
-               (reactions) => {
-                  return [
-                     ...(reactions ?? []).filter(
-                        (r) => r.id !== messageReactionId
-                     ),
-                  ];
-               }
-            );
+         client.setQueryData<ChatMessageReaction[]>(
+            GET_ALL_REACTIONS_KEY(messageId),
+            (reactions) => {
+               return [
+                  ...(reactions ?? []).filter(
+                     (r) => r.id !== messageReactionId
+                  ),
+               ];
+            }
+         );
 
-            client.setQueryData<
-               InfiniteData<CursorPaged<ChatGroupMessageEntry>>
-            >(GET_PAGINATED_GROUP_MESSAGES_KEY(groupId), (old) => {
+         client.setQueryData<InfiniteData<CursorPaged<ChatGroupMessageEntry>>>(
+            GET_PAGINATED_GROUP_MESSAGES_KEY(groupId),
+            (old) => {
                // Update reaction counts for the message:
                return produce(old, (draft) => {
                   const message = draft!.pages
@@ -87,9 +84,9 @@ export const useUnreactToGroupMessageMutation = () => {
                         ) - 1;
                   }
                });
-            });
-         },
-         onSettled: (res) => console.log(res),
-      }
-   );
+            }
+         );
+      },
+      onSettled: (res) => console.log(res),
+   });
 };

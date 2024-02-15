@@ -47,14 +47,12 @@ export const useGetAllReactionsForMessage = (
       "initialData" | "queryFn" | "queryKey"
    > & {}
 ) => {
-   return useQuery<ChatMessageReaction[], Error, ChatMessageReaction[], any>(
-      GET_ALL_REACTIONS_KEY(messageId),
-      () => getAllReactionsForMessage({ messageId }),
-      {
-         onError: console.error,
-         cacheTime: DEFAULT_CACHE_TIME,
-         staleTime: DEFAULT_STALE_TIME,
-         ...options,
-      }
-   );
+   return useQuery({
+      queryKey: GET_ALL_REACTIONS_KEY(messageId),
+      queryFn: () => getAllReactionsForMessage({ messageId }),
+      onError: console.error,
+      cacheTime: DEFAULT_CACHE_TIME,
+      staleTime: DEFAULT_STALE_TIME,
+      ...options,
+   });
 };

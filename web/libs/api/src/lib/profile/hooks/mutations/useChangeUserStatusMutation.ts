@@ -35,7 +35,8 @@ export const useChangeUserStatusMutation = () => {
       select: (data) => data.claims["nameidentifier"],
    });
 
-   return useMutation(changeUserStatus, {
+   return useMutation({
+      mutationFn: changeUserStatus,
       onError: console.error,
       onSuccess: (data, { newStatus }) => {
          console.log("Updating User status to " + newStatus);
@@ -47,26 +48,34 @@ export const useChangeUserStatusMutation = () => {
                      ...draft.user,
                      status: newStatus as UserStatus,
                   };
-               }),
+               })
          );
 
          // Find all groups the user is member of:
          const groups = client
-            .getQueriesData<ChatGroupDetailsEntry>({ queryKey: [`chat-group`], exact: false })
+            .getQueriesData<ChatGroupDetailsEntry>({
+               queryKey: [`chat-group`],
+               exact: false,
+            })
             .map(([_, group]: [QueryKey, ChatGroupDetailsEntry]) => group)
-            .filter(g => !!g?.chatGroup
-               && g?.members?.some((m: User) => m.id === userId));
+            .filter(
+               (g) =>
+                  !!g?.chatGroup &&
+                  g?.members?.some((m: User) => m.id === userId)
+            );
 
-         groups.forEach(group => {
+         groups.forEach((group) => {
             client.setQueryData<ChatGroupDetailsEntry>(
-               [`chat-group`, group.chatGroup?.id], (group: ChatGroupDetailsEntry) =>
+               [`chat-group`, group.chatGroup?.id],
+               (group: ChatGroupDetailsEntry) =>
                   produce(group, (draft: ChatGroupDetailsEntry) => {
                      const user = draft?.members?.find(
-                        (m: User) => m.id === userId,
+                        (m: User) => m.id === userId
                      );
                      if (user) user.status = newStatus;
                      return draft;
-                  }));
+                  })
+            );
          });
       },
    });

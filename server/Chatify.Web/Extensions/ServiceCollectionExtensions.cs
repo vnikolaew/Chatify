@@ -43,6 +43,7 @@ public static class ServiceCollectionExtensions
         services
             .AddSingleton<IAuthorizationMiddlewareResultHandler,
                 AuthorizationResultMiddlewareHandler>()
+            .AddUserRateLimiting()
             .AddMappers()
             .AddSingleton<SecureHeadersMiddleware>()
             .AddSingleton<IActionContextAccessor, ActionContextAccessor>()

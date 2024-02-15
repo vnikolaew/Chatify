@@ -80,7 +80,7 @@ const SignUpPage: NextPage = () => {
    }
 
    return (
-      <div className={`w-1/3 max-w-[600px] mx-auto mt-24`}>
+      <div className={`mx-auto mt-24 w-1/3 max-w-[600px]`}>
          <Card shadow={"lg"} className={`p-6`} radius={"md"}>
             <CardHeader className={`text-2xl`}>Create an account</CardHeader>
             <CardBody className={`mt-0`}>
@@ -133,7 +133,7 @@ const SignUpPage: NextPage = () => {
                               }
                               placeholder={"How are people going to call you?"}
                               size={"md"}
-                              className={`py-1 text-md rounded-lg`}
+                              className={`text-md rounded-lg py-1`}
                               type={"text"}
                               name={"username"}
                               id={"username"}
@@ -162,7 +162,7 @@ const SignUpPage: NextPage = () => {
                               }
                               placeholder={"Type in your email"}
                               size={"md"}
-                              className={`py-1 text-md rounded-lg`}
+                              className={`text-md rounded-lg py-1`}
                               type={"email"}
                               name={"email"}
                               id={"email"}
@@ -184,7 +184,7 @@ const SignUpPage: NextPage = () => {
                               }
                               label={"Password"}
                               placeholder={"Choose a strong one"}
-                              className={`py-1 text-md rounded-lg`}
+                              className={`text-md rounded-lg py-1`}
                               name={"password"}
                               id={"password"}
                            />
@@ -201,8 +201,9 @@ const SignUpPage: NextPage = () => {
                               color={"primary"}
                               size={"sm"}
                            >
-                              By clicking "Accept," you acknowledge that you
-                              have read, understood, and agree to abide by our{" "}
+                              By clicking &quot;Accept,&quot; you acknowledge
+                              that you have read, understood, and agree to abide
+                              by our{" "}
                               <Link
                                  className={`text-xs`}
                                  size={"sm"}
@@ -213,7 +214,7 @@ const SignUpPage: NextPage = () => {
                               </Link>
                            </Checkbox>
                            <div
-                              className={`w-full flex flex-col justify-between`}
+                              className={`flex w-full flex-col justify-between`}
                            >
                               <Button
                                  variant={"solid"}
@@ -227,12 +228,12 @@ const SignUpPage: NextPage = () => {
                                  }
                                  color={"primary"}
                                  size={"sm"}
-                                 className={`text-white w-full mt-8 py-5 text-[1.0rem] hover:opacity-80 self-center shadow-sm rounded-md`}
+                                 className={`mt-8 w-full self-center rounded-md py-5 text-[1.0rem] text-white shadow-sm hover:opacity-80`}
                                  type={`submit`}
                               >
                                  {isSubmitting ? "Loading" : "Sign Up"}
                               </Button>
-                              <div className={`self-center mt-1`}>
+                              <div className={`mt-1 self-center`}>
                                  <span
                                     className={`text-default-500 text-small`}
                                  >
@@ -249,40 +250,40 @@ const SignUpPage: NextPage = () => {
                               </div>
                               {!googleSignUpError && (
                                  <span
-                                    className={`text-small my-2 w-full text-center text-danger-500`}
+                                    className={`text-small text-danger-500 my-2 w-full text-center`}
                                  >
                                     {(googleSignUpError as Error)?.message}{" "}
                                     Please try again.
                                  </span>
                               )}
                               <div
-                                 className={`w-full mt-4 flex items-center space-x-4`}
+                                 className={`mt-4 flex w-full items-center space-x-4`}
                               >
                                  <Divider
                                     orientation={"horizontal"}
-                                    className={"h-[1px] flex-1 my-6"}
+                                    className={"my-6 h-[1px] flex-1"}
                                  />
                                  <span
-                                    className={`text-large font-semibold text-default-600`}
+                                    className={`text-large text-default-600 font-semibold`}
                                  >
                                     OR
                                  </span>
                                  <Divider
                                     orientation={"horizontal"}
-                                    className={"h-[1px] flex-1 my-6"}
+                                    className={"my-6 h-[1px] flex-1"}
                                  />
                               </div>
                               <GoogleSignInButton
                                  isLoading={isLoading}
-                                 className={`w-4/5 self-center mt-4 py-2 text-small`}
+                                 className={`text-small mt-4 w-4/5 self-center py-2`}
                                  onClick={(_) => login()}
                               />
                               <FacebookSignInButton
-                                 className={`w-4/5 mt-4 self-center py-2 text-small`}
+                                 className={`text-small mt-4 w-4/5 self-center py-2`}
                               />
                               <GithubSignInButton
                                  onError={console.error}
-                                 className={`mb-2 transition-opacity duration-200 self-center w-4/5`}
+                                 className={`mb-2 w-4/5 self-center transition-opacity duration-200`}
                                  onSuccess={async ({ code }) => {
                                     githubSignUp({ code })
                                        .then((res) => {
@@ -302,7 +303,6 @@ const SignUpPage: NextPage = () => {
                   }}
                </Formik>
             </CardBody>
-            {/*<CardFooter></CardFooter>*/}
          </Card>
       </div>
    );

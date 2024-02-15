@@ -7,10 +7,11 @@ using Mapper = Cassandra.Mapping.Mapper;
 
 namespace Chatify.Infrastructure.Data.Repositories;
 
-internal sealed class ChatGroupJoinRequestRepository(IMapper mapper,
-        Mapper dbMapper,
-        IEntityChangeTracker changeTracker,
-        string? idColumn = default)
+internal sealed class ChatGroupJoinRequestRepository(
+    IMapper mapper,
+    Mapper dbMapper,
+    IEntityChangeTracker changeTracker,
+    string? idColumn = default)
     : BaseCassandraRepository<ChatGroupJoinRequest, Models.ChatGroupJoinRequest, Guid>(mapper, dbMapper, changeTracker,
             idColumn),
         IChatGroupJoinRequestRepository
@@ -19,10 +20,11 @@ internal sealed class ChatGroupJoinRequestRepository(IMapper mapper,
         Guid groupId,
         CancellationToken cancellationToken = default)
     {
-        var requests = await DbMapper
-            .FetchAsync<Models.ChatGroupJoinRequest>(" WHERE chat_group_id = ?", groupId);
-        
-        return requests.To<ChatGroupJoinRequest>(Mapper)
+        const string filter = " WHERE chat_group_id = ?";
+
+        return ( await DbMapper
+                .FetchAsync<Models.ChatGroupJoinRequest>(filter, groupId) )
+            .To<ChatGroupJoinRequest>(Mapper)
             .ToList();
     }
 }

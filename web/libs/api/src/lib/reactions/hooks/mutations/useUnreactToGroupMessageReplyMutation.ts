@@ -29,7 +29,8 @@ const unreactToGroupMessageReply = async (
 export const useUnreactToGroupMessageReplyMutation = () => {
    const client = useQueryClient();
 
-   return useMutation<any, Error, UnreactToGroupMessageReplyModel, any>(unreactToGroupMessageReply, {
+   return useMutation<any, Error, UnreactToGroupMessageReplyModel, any>({
+      mutationFn: unreactToGroupMessageReply,
       onError: console.error,
       onSuccess: (data) =>
          console.log(

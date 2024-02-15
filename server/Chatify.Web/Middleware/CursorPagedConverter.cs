@@ -2,7 +2,6 @@
 using System.Text.Json.Serialization;
 using Chatify.Shared.Abstractions.Queries;
 using Humanizer;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Chatify.Web.Middleware;
 
@@ -14,13 +13,12 @@ public sealed class CursorPagedConverter<T>
         Type typeToConvert,
         JsonSerializerOptions options)
     {
-        using JsonDocument doc = JsonDocument.ParseValue(ref reader);
-        JsonElement root = doc.RootElement;
+        using var doc = JsonDocument.ParseValue(ref reader);
+        var root = doc.RootElement;
 
-        string pagingCursor = root.GetProperty(nameof(CursorPaged<T>.PagingCursor)).GetString()!;
+        var pagingCursor = root.GetProperty(nameof(CursorPaged<T>.PagingCursor)).GetString()!;
         int pageSize = root.GetProperty(nameof(CursorPaged<T>.PageSize)).GetInt32()!;
-        List<T> items =
-            JsonSerializer.Deserialize<List<T>>(root.GetProperty(nameof(CursorPaged<T>.Items)).GetRawText(), options)!;
+        var items = JsonSerializer.Deserialize<List<T>>(root.GetProperty(nameof(CursorPaged<T>.Items)).GetRawText(), options)!;
 
         return new CursorPaged<T>(items, pagingCursor, pageSize);
     }
@@ -50,9 +48,8 @@ public sealed class CursorPagedConverter<T>
         {
             JsonSerializer.Serialize(writer, item, item.GetType(), options);
         }
+        
         writer.WriteEndArray();
-
-
         writer.WriteEndObject();
     }
 }

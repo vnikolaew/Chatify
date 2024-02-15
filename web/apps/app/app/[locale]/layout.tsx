@@ -1,4 +1,3 @@
-import "../styles.css";
 import React, { PropsWithChildren } from "react";
 import { Metadata } from "next";
 import { Inter, Roboto } from "next/font/google";
@@ -25,12 +24,15 @@ const roboto = Roboto({
    subsets: ["latin"],
 });
 
-
 export function __IS_COOKIE_CONSENT_ENABLED__() {
    return process.env.COOKIE_CONSENT_ENABLED === "1";
 }
 
-async function ChatifyLayout({ children, params: { locale }, ...rest }: PropsWithChildren & { params: any }) {
+async function ChatifyLayout({
+   children,
+   params: { locale },
+   ...rest
+}: PropsWithChildren & { params: any }) {
    // Validate that the incoming `locale` parameter is valid
    let messages;
    try {
@@ -40,17 +42,22 @@ async function ChatifyLayout({ children, params: { locale }, ...rest }: PropsWit
    }
 
    return (
-      <html lang={locale} className={`${inter.className} bg-gray-950 text-white`}>
-      <body className={`dark`}>
-      <Providers>
-         <NextIntlClientProvider locale={locale} messages={messages}>
-            <MainNavbar />
-            <main className="app">{children}</main>
-            {__IS_COOKIE_CONSENT_ENABLED__() && <CookieConsentBannerModal />}
-            <Footer />
-         </NextIntlClientProvider>
-      </Providers>
-      </body>
+      <html
+         lang={locale}
+         className={`${inter.className} bg-gray-950 text-white`}
+      >
+         <body className={`dark`}>
+            <Providers>
+               <NextIntlClientProvider locale={locale} messages={messages}>
+                  <MainNavbar />
+                  <main className="app">{children}</main>
+                  {__IS_COOKIE_CONSENT_ENABLED__() && (
+                     <CookieConsentBannerModal />
+                  )}
+                  <Footer />
+               </NextIntlClientProvider>
+            </Providers>
+         </body>
       </html>
    );
 }

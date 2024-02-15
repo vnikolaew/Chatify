@@ -21,24 +21,26 @@ using EditGroupChatMessageResult = OneOf<MessageNotFoundError, UserIsNotMessageS
 
 public abstract record AttachmentOperation;
 
-public record AddAttachmentOperation(InputFile InputFile,
+public record AddAttachmentOperation(
+    InputFile InputFile,
     string? Location = default) : AttachmentOperation;
 
 public record DeleteAttachmentOperation(Guid AttachmentId) : AttachmentOperation;
 
 public record EditGroupChatMessage(
-        [Required] Guid GroupId,
-        [Required] Guid MessageId,
-        [Required] string NewContent,
-        IEnumerable<AttachmentOperation>? AttachmentOperations = default)
+    [Required] Guid GroupId,
+    [Required] Guid MessageId,
+    [Required] string NewContent,
+    IEnumerable<AttachmentOperation>? AttachmentOperations = default)
     : ICommand<EditGroupChatMessageResult>;
 
-internal sealed class EditGroupChatMessageHandler(IIdentityContext identityContext,
-        IMessageContentNormalizer contentNormalizer,
-        IDomainRepository<ChatMessage, Guid> messages,
-        IEventDispatcher eventDispatcher,
-        IClock clock,
-        IAttachmentOperationHandler attachmentOperationHandler)
+internal sealed class EditGroupChatMessageHandler(
+    IIdentityContext identityContext,
+    IMessageContentNormalizer contentNormalizer,
+    IDomainRepository<ChatMessage, Guid> messages,
+    IEventDispatcher eventDispatcher,
+    IClock clock,
+    IAttachmentOperationHandler attachmentOperationHandler)
     : ICommandHandler<EditGroupChatMessage, EditGroupChatMessageResult>
 {
     public async Task<EditGroupChatMessageResult> HandleAsync(
@@ -50,22 +52,9 @@ internal sealed class EditGroupChatMessageHandler(IIdentityContext identityConte
         if ( message.UserId != identityContext.Id )
             return new UserIsNotMessageSenderError(message.Id, identityContext.Id);
 
-        await messages.UpdateAsync(message, async chatMessage =>
-        {
-            chatMessage.UpdatedAt = clock.Now;
-            chatMessage.Content = contentNormalizer.Normalize(command.NewContent);
-
-            if ( command.AttachmentOperations?.Any() ?? false )
-            {
-                await attachmentOperationHandler
-                    .HandleAsync(message,
-                        command.AttachmentOperations.Select(o =>
-                            o is AddAttachmentOperation ao
-                                ? ao with { Location = FolderConstants.ChatGroups.Media.Root }
-                                : o),
-                        cancellationToken);
-            }
-        }, cancellationToken);
+        await messages.UpdateAsync(message,
+            chatMessage => HandleUpdate(command, chatMessage, cancellationToken),
+            cancellationToken);
 
         await eventDispatcher.PublishAsync(new ChatMessageEditedEvent
         {
@@ -77,5 +66,26 @@ internal sealed class EditGroupChatMessageHandler(IIdentityContext identityConte
         }, cancellationToken);
 
         return Unit.Default;
+    }
+
+    private async Task HandleUpdate(
+        EditGroupChatMessage command,
+        ChatMessage message,
+        CancellationToken cancellationToken
+    )
+    {
+        message.UpdatedAt = clock.Now;
+        message.Content = contentNormalizer.Normalize(command.NewContent);
+
+        if ( command.AttachmentOperations?.Any() ?? false )
+        {
+            await attachmentOperationHandler
+                .HandleAsync(message,
+                    command.AttachmentOperations.Select(o =>
+                        o is AddAttachmentOperation ao
+                            ? ao with { Location = FolderConstants.ChatGroups.Media.Root }
+                            : o),
+                    cancellationToken);
+        }
     }
 }

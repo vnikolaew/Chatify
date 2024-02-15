@@ -184,6 +184,7 @@ const CreateChatGroupForm = ({}: CreateChatGroupFormProps) => {
                         className={`flex w-full flex-col items-center justify-center gap-4`}
                      >
                         <Image
+                           alt={`File ${selectedFile.name}`}
                            shadow={"md"}
                            className={`mx-auto`}
                            radius={"md"}

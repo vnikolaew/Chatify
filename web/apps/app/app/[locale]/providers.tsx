@@ -10,8 +10,7 @@ import { useRouter } from "next/navigation";
 import process from "process";
 import { DevOnly } from "@web/components";
 
-export interface ProvidersProps extends PropsWithChildren {
-}
+export interface ProvidersProps extends PropsWithChildren {}
 
 export const OAuthProvider = ({ children }: PropsWithChildren) => {
    return (
@@ -24,7 +23,10 @@ export const OAuthProvider = ({ children }: PropsWithChildren) => {
 const RememberUserGeolocation = () => {
    useEffect(() => {
       window.navigator.geolocation.getCurrentPosition((position) => {
-         queryClient?.setQueryData([USER_LOCATION_LOCAL_STORAGE_KEY], position.coords);
+         queryClient?.setQueryData(
+            [USER_LOCATION_LOCAL_STORAGE_KEY],
+            position.coords
+         );
          localStorage.setItem(
             USER_LOCATION_LOCAL_STORAGE_KEY,
             `${position.coords.latitude};${position.coords.longitude}`
@@ -46,7 +48,7 @@ const Providers = ({ children }: ProvidersProps) => {
             </NextThemesProvider>
          </NextUIProvider>
          <DevOnly>
-            <ReactQueryDevtools position={"bottom-left"} initialIsOpen={true} />
+            <ReactQueryDevtools position={"bottom"} initialIsOpen={true} />
          </DevOnly>
       </QueryClientProvider>
    );

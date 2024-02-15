@@ -3,7 +3,7 @@ import React from "react";
 import Link from "next/link";
 import { useGetChatGroupDetailsQuery } from "@web/api";
 import { useDisclosure } from "@nextui-org/react";
-import { redirect, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ChatGroupTopBar, ChatMessagesSection, Toast } from "@web/components";
 import { useCurrentChatGroup, useIsUserLoggedIn } from "@web/hooks";
 
@@ -31,7 +31,7 @@ function IndexPage() {
 
    return (
       <div
-         className={`flex min-h-[60vh] text-xl flex-col items-center shadow-gray-300 w-full rounded-md mb-6`}
+         className={`mb-6 flex min-h-[60vh] w-full flex-col items-center rounded-md text-xl shadow-gray-300`}
       >
          <ChatGroupTopBar />
          {isNew && chatGroupDetails && (
@@ -55,7 +55,7 @@ function IndexPage() {
             <UserNotLoggedInSection />
          ) : (
             <div
-               className={`self-center w-full flex flex-col items-center mt-4`}
+               className={`mt-4 flex w-full flex-col items-center self-center`}
             >
                <ChatMessagesSection groupId={chatGroupId} />
             </div>
@@ -67,12 +67,12 @@ function IndexPage() {
 const UserNotLoggedInSection = () => (
    <div className={`mt-12`}>
       <h2 className={`font-bold`}>You are currently not logged in.</h2>
-      <div className={`flex justify-center items-center gap-8`}>
-         <Link className={`hover:underline text-blue-600`} href={`/signup`}>
+      <div className={`flex items-center justify-center gap-8`}>
+         <Link className={`text-blue-600 hover:underline`} href={`/signup`}>
             {" "}
             Sign Up
          </Link>
-         <Link className={`hover:underline text-blue-600`} href={`/signin`}>
+         <Link className={`text-blue-600 hover:underline`} href={`/signin`}>
             Sign In
          </Link>
       </div>

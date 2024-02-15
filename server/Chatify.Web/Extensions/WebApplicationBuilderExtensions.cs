@@ -2,26 +2,20 @@
 
 public static class WebApplicationBuilderExtensions
 {
-    public static WebApplicationBuilder UseUrls(
-        this WebApplicationBuilder app,
-        params string[] urls)
-    {
-        app.WebHost.UseUrls(urls);
-        return app;
-    }
+    private const string HttpPortEnvVariableName = "ASPNETCORE_HTTP_PORT";
+    private const string HttpsPortEnvVariableName = "ASPNETCORE_HTTPS_PORT";
 
     public static IWebHostBuilder UseProductionHttps(
         this IWebHostBuilder webHostBuilder,
         IWebHostEnvironment environment)
     {
         if ( !environment.IsProduction() ) return webHostBuilder;
-        var httpPort = int.TryParse(Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORT"), out var port)
-            ? port
-            : 80;
-        var httpsPort = int.TryParse(Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORT"), out var port2)
-            ? port2
-            : 443;
-
+        var httpPort = int.TryParse(
+            Environment.GetEnvironmentVariable(HttpPortEnvVariableName), out var port)
+            ? port : 80;
+        var httpsPort = int.TryParse(
+            Environment.GetEnvironmentVariable(HttpsPortEnvVariableName), out var port2)
+            ? port2 : 443;
 
         var pfxFilePath = Path.Combine("certs", "myapp.pfx");
         return webHostBuilder.UseKestrel((_, opts) =>

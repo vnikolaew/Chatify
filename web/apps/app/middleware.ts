@@ -27,17 +27,21 @@ export type MiddlewareFactory = (middleware: NextMiddleware) => NextMiddleware;
 
 const withAuth: MiddlewareFactory = (next) => {
    return async (request, _next) => {
+      if (request.headers.has(`X-Api-Call`)) return next(request, _next);
+
       const isUserLoggedIn = request.cookies.has(
          process.env.NEXT_PUBLIC_APPLICATION_COOKIE_NAME
       );
       const signInRoutes = [`signin`, `/signin`] as const;
 
       let pathname = request.nextUrl.pathname;
+
       const match = pathname.match(/\/([^\/]+)\/([^\/]+)/);
       if (match?.length >= 2 && LOCALES.some((l) => match[1].includes(l))) {
          pathname = match[2];
       }
 
+      console.log(`Pathname: ${pathname}`);
       if (isUserLoggedIn && signInRoutes.some((r) => pathname === r)) {
          request.nextUrl.pathname = `/`;
          return NextResponse.redirect(request.nextUrl);
