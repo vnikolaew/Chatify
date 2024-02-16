@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: caddy
+spec:
+  type: NodePort
+  selector:
+    name: caddy
+    app: chatify
+  ports:
+  - protocol: TCP
+    name: http
+    targetPort: 80
+    port: 80
+    nodePort: 30007
+  - protocol: TCP
+    name: https
+    targetPort: 443
+    port: 443
+    nodePort: 30008
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: caddy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: caddy
+      app: chatify
+  template:
+    metadata:
+      labels:
+        name: caddy
+        app: chatify
+    spec:
+      containers:
+      - name: caddy
+        image: vnikolaew/chatify.caddy:1.0.1
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 443
+          name: https
