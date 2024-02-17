@@ -55,10 +55,9 @@ spec:
   volumeClaimTemplates:
   - metadata:
       name: redis-data
-      annotations:
-        volume.beta.kubernetes.io/storage-class: ""
     spec:
       accessModes: ["ReadWriteOnce"]
+      storageClassName: standard
       resources:
         requests:
           storage: 1Gi
