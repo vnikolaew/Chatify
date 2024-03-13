@@ -1,6 +1,24 @@
 apiVersion: v1
 kind: Service
 metadata:
+  annotations: {}
+  labels: {}
+  name: "web-serber-lb"
+spec:
+  selector:
+    app: chatify
+    name: web-server
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 8083
+    targetPort: 80
+    nodePort: 32010
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: web-server
 spec:
   selector:
@@ -17,12 +35,11 @@ spec:
     targetPort: 80
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: web-server
 spec:
   replicas: 1
-  serviceName: web-server
   selector:
     matchLabels:
       app: chatify
@@ -51,7 +68,7 @@ spec:
         - name: Cassandra__Port
           value: "9042"
         - name: UseSeeding
-          value: "true"
+          value: "false"
         ports:
         - containerPort: 80
           name: http

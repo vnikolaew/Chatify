@@ -47,15 +47,15 @@ internal sealed class AddChatGroupAdminHandler(
         var isMember = await members.Exists(chatGroup.Id, identityContext.Id, cancellationToken);
         if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, command.ChatGroupId);
 
-        if ( !chatGroup.AdminIds.Contains(identityContext.Id) )
+        if ( !chatGroup.HasAdmin(identityContext.Id) )
             return new UserIsNotGroupAdminError(identityContext.Id, command.ChatGroupId);
 
-        if ( chatGroup.AdminIds.Contains(command.NewAdminId) )
+        if ( chatGroup.HasAdmin(command.NewAdminId) )
             return new UserIsNotGroupAdminError(identityContext.Id, command.ChatGroupId);
 
         await groups.UpdateAsync(chatGroup, group =>
         {
-            group.AdminIds.Add(command.NewAdminId);
+            group.AddAdmin(command.NewAdminId);
             group.UpdatedAt = clock.Now;
         }, cancellationToken);
 

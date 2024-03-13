@@ -36,10 +36,9 @@ internal sealed class GetChatGroupPinnedMessagesHandler(
         if ( !isMember ) return new ChatGroups.Commands.UserIsNotMemberError(identityContext.Id, group.Id);
 
         if ( !group.PinnedMessages.Any() ) return new List<ChatMessage>();
-        var pinnedMessages = await messages
-                                 .GetByIds(group.PinnedMessages.Select(_ => _.MessageId),
-                                     cancellationToken)
-                             ?? [];
+        var pinnedMessagesIds = group.PinnedMessages.Select(_ => _.MessageId);
+        var pinnedMessages = await
+            messages.GetByIds(pinnedMessagesIds, cancellationToken) ?? [];
 
         return pinnedMessages;
     }

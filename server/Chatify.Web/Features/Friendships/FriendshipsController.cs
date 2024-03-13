@@ -41,10 +41,10 @@ public class FriendshipsController : ApiController
     [ProducesOkApiResponse<List<User>>]
     public Task<IActionResult> GetMyFriends(
         CancellationToken cancellationToken = default)
-        => OneOfExtensions.MatchAsync(QueryAsync<GetMyFriends, GetMyFriendsResult>(
-                new GetMyFriends(),
-                cancellationToken),
-            err => err.ToBadRequest(), Ok);
+        => QueryAsync<GetMyFriends, GetMyFriendsResult>(
+            new GetMyFriends(),
+            cancellationToken)
+            .MatchAsync(err => err.ToBadRequest(), Ok);
 
     [HttpGet]
     [Route(SentFriendshipsRoute)]
@@ -102,11 +102,6 @@ public class FriendshipsController : ApiController
         var result = await SendAsync<AcceptFriendInvitation, AcceptFriendInvitationResult>(
             new AcceptFriendInvitation(inviteId),
             cancellationToken);
-
-        var pd = ProblemDetailsFactory.CreateProblemDetails(
-            HttpContext, ( int )HttpStatusCode.BadRequest,
-            "Bad request");
-
         return result.Match<IActionResult>(
             _ => _.ToBadRequest(),
             _ => _.ToBadRequest(),

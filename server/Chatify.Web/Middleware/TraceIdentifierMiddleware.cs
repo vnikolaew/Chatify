@@ -4,6 +4,8 @@ namespace Chatify.Web.Middleware;
 
 internal sealed class TraceIdentifierMiddleware : IMiddleware
 {
+    private const string XTraceIdHeader = "X-Trace-Id";
+    
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         await next(context);
@@ -14,7 +16,7 @@ internal sealed class TraceIdentifierMiddleware : IMiddleware
                 .GetRequiredService<IContext>()
                 .TraceId;
             
-            context.Response.Headers["X-Trace-Id"] = traceIdentifier;
+            context.Response.Headers[XTraceIdHeader] = traceIdentifier;
         }
     }
 }

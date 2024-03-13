@@ -204,7 +204,7 @@ public class MessagesController : ApiController
                 _ => NotFound(),
                 _ => NotFound(),
                 _ => _.ToBadRequest(),
-                _ => ( IActionResult )NoContent()
+                _ => NoContent()
             );
     }
 

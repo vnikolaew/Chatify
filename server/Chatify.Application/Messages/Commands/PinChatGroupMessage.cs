@@ -18,10 +18,11 @@ public record PinChatGroupMessage(
     [Required] Guid MessageId
 ) : ICommand<PinChatGroupMessageResult>;
 
-internal sealed class PinChatGroupMessageHandler(IIdentityContext identityContext,
-        IClock clock,
-        IChatGroupRepository groups,
-        IChatMessageRepository messages)
+internal sealed class PinChatGroupMessageHandler(
+    IIdentityContext identityContext,
+    IClock clock,
+    IChatGroupRepository groups,
+    IChatMessageRepository messages)
     : ICommandHandler<PinChatGroupMessage, PinChatGroupMessageResult>
 {
     public async Task<PinChatGroupMessageResult> HandleAsync(
@@ -34,13 +35,13 @@ internal sealed class PinChatGroupMessageHandler(IIdentityContext identityContex
         var group = await groups.GetAsync(message.ChatGroupId, cancellationToken);
         if ( group is null ) return new ChatGroupNotFoundError();
 
-        if ( !group.AdminIds.Contains(identityContext.Id) )
+        if ( !group.HasAdmin(identityContext.Id) )
             return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
 
-        await groups.UpdateAsync(group, group =>
+        await groups.UpdateAsync(group, g =>
         {
-            group.PinnedMessages.Add(new PinnedMessage(message.Id, clock.Now, identityContext.Id));
-            group.UpdatedAt = clock.Now;
+            g.PinnedMessages.Add(new PinnedMessage(message.Id, clock.Now, identityContext.Id));
+            g.UpdatedAt = clock.Now;
         }, cancellationToken);
 
         return Unit.Default;

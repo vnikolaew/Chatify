@@ -20,7 +20,8 @@ internal sealed class GetDraftedMessagesHandler(
     IChatMessageDraftRepository drafts
     ) : IQueryHandler<GetDraftedMessages, GetDraftedMessagesResult>
 {
-    public async Task<GetDraftedMessagesResult> HandleAsync(GetDraftedMessages query,
+    public async Task<GetDraftedMessagesResult> HandleAsync(
+        GetDraftedMessages _,
         CancellationToken cancellationToken = default)
         => await drafts.AllForUser(identityContext.Id, cancellationToken);
 }

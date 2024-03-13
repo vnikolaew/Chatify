@@ -6,6 +6,7 @@ using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using OneOf;
 
 namespace Chatify.Application.User.Queries;
@@ -24,10 +25,11 @@ public record GetUserDetails(
     [Required] [property: CacheKey] Guid UserId
 ) : IQuery<GetUserDetailsResult>;
 
-internal sealed class GetUserDetailsHandler(IIdentityContext identityContext,
-        IUserRepository users,
-        IFriendshipsRepository friendships,
-        IFriendInvitationRepository friendInvites)
+internal sealed class GetUserDetailsHandler(
+    IIdentityContext identityContext,
+    IUserRepository users,
+    IFriendshipsRepository friendships,
+    IFriendInvitationRepository friendInvites)
     : IQueryHandler<GetUserDetails, GetUserDetailsResult>
 {
     public async Task<GetUserDetailsResult> HandleAsync(GetUserDetails query,
@@ -38,8 +40,10 @@ internal sealed class GetUserDetailsHandler(IIdentityContext identityContext,
         if ( user is null ) return new UserNotFound();
         if ( query.UserId == identityContext.Id ) return new UserDetailsEntry(user);
 
-        var userFriendships = await friendships.AllFriendshipsForUser(identityContext.Id, cancellationToken);
-        var friendInvite = await friendInvites.ForUsersAsync(identityContext.Id, query.UserId, cancellationToken);
+        var (userFriendships, friendInvite) = await (
+            friendships.AllFriendshipsForUser(identityContext.Id, cancellationToken),
+            friendInvites.ForUsersAsync(identityContext.Id, query.UserId, cancellationToken)
+        );
 
         return new UserDetailsEntry(
             user,

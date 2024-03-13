@@ -146,6 +146,17 @@ public abstract class BaseCassandraRepository<TEntity, TDataEntity, TId> :
         return await ExecuteUpdateAsync(entity, dataEntity);
     }
 
+    public async Task<TEntity?> UpdateAsync(
+        TEntity entity,
+        Func<TEntity, Task> updateAction,
+        CancellationToken cancellationToken = default)
+    {
+        var dataEntity = Mapper.Map<TDataEntity>(entity);
+        await updateAction(entity);
+
+        return await ExecuteUpdateAsync(entity, dataEntity);
+    }
+
     private async Task<TEntity?> ExecuteUpdateAsync(
         TEntity entity,
         TDataEntity dataEntity)

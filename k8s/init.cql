@@ -4,6 +4,41 @@ CREATE KEYSPACE IF NOT EXISTS chatify
 USE chatify;
 
 // UDTs:
+create type if not exists lockoutinfo
+    (
+        enddate           timestamp,
+        enabled           boolean,
+        accessfailedcount int
+    );
+
+create type if not exists logininfo
+    (
+        loginprovider       text,
+        providerkey         text,
+        providerdisplayname text
+    );
+
+create type if not exists phoneinfo
+    (
+        number           text,
+        confirmationtime timestamp
+    );
+
+create type if not exists tokeninfo
+    (
+        loginprovider text,
+        name          text,
+        value         text
+    );
+
+CREATE TYPE IF NOT EXISTS attachment_info
+    (
+        absolute_url text,
+        filename     text,
+        type         text,
+        metadata     map<text,text>
+    );
+
 CREATE TYPE IF NOT EXISTS media
     (
         id        uuid,
@@ -74,6 +109,13 @@ WHERE NormalizedUserName IS NOT NULL
   AND Id IS NOT NULL
 PRIMARY KEY (NormalizedUserName, Id);
 
+create table if not exists roles
+(
+    id             uuid primary key,
+    name           text,
+    normalizedname text
+);
+
 CREATE MATERIALIZED VIEW IF NOT EXISTS roles_by_name AS
 SELECT *
 FROM chatify.roles
@@ -84,6 +126,14 @@ PRIMARY KEY (NormalizedName, Id);
 CREATE MATERIALIZED VIEW IF NOT EXISTS userclaims_by_type_and_value AS
     SELECT * FROM chatify.userclaims WHERE Type IS NOT NULL
     AND Value IS NOT NULL AND userid IS NOT NULL PRIMARY KEY ((Type, Value), UserId);
+
+create table if not exists userclaims
+(
+    userid uuid,
+    type   text,
+    value  text,
+    primary key (userid, type, value)
+);
 
 CREATE TABLE IF NOT EXISTS friends
 (
@@ -142,7 +192,6 @@ WHERE id IS NOT NULL
 PRIMARY KEY ( id, chat_group_id, created_at );
 
 CREATE INDEX IF NOT EXISTS chat_messages_id_idx ON chat_messages (id);
-
 
 CREATE TABLE IF NOT EXISTS chat_message_drafts
 (
@@ -268,14 +317,6 @@ CREATE TABLE IF NOT EXISTS chat_message_replies_summaries
    AND CACHING = { 'keys': 'ALL', 'rows_per_partition': 100 };
 
 CREATE INDEX IF NOT EXISTS chat_message_reply_summaries_message_id_idx on chat_message_replies_summaries (message_id);
-
-CREATE TYPE IF NOT EXISTS attachment_info
-    (
-        absolute_url text,
-        filename     text,
-        type         text,
-        metadata     map<text,text>
-    );
 
 CREATE TABLE IF NOT EXISTS chat_group_attachments
 (

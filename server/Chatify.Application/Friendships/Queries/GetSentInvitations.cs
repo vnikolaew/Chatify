@@ -17,8 +17,5 @@ internal sealed class GetSentInvitationsHandler(IIdentityContext identityContext
 {
     public async Task<GetSentInvitationsResult> HandleAsync(GetSentInvitations query,
         CancellationToken cancellationToken = default)
-    {
-        var invites = await friendInvitations.AllSentByUserAsync(identityContext.Id, cancellationToken);
-        return invites;
-    }
+        => await friendInvitations.AllSentByUserAsync(identityContext.Id, cancellationToken);
 }

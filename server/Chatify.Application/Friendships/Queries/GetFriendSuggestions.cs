@@ -24,14 +24,14 @@ internal sealed class GetFriendSuggestionsHandler(
     {
         // Get user's friends:
         var (friendIds, userInviteeIds) = (
-            ( await friendships.AllForUser(_identityContext.Id, cancellationToken) )
+            ( await friendships.AllForUser(IdentityContext.Id, cancellationToken) )
             .Select(u => u.Id)
             .ToHashSet(),
-            ( await invites.AllSentByUserAsync(_identityContext.Id, cancellationToken) )
+            ( await invites.AllSentByUserAsync(IdentityContext.Id, cancellationToken) )
             .Select(fi => fi.InviteeId)
             .ToHashSet() );
 
-        var userGroupsMemberIds = await ( await members.GroupsIdsByUser(_identityContext.Id, cancellationToken) )
+        var userGroupsMemberIds = await ( await members.GroupsIdsByUser(IdentityContext.Id, cancellationToken) )
             .Select(groupId => members.UserIdsByGroup(groupId, cancellationToken));
 
         // Get members from user's chat groups they are member of:
@@ -41,13 +41,13 @@ internal sealed class GetFriendSuggestionsHandler(
                 .Distinct().Take(10), cancellationToken);
 
         // Filter out friends / self / exclude those whom the user has sent invitations to:
-        return groupsUsers?
-            .Where(u => IsNotFriendOrMe(u, friendIds) && !userInviteeIds.Contains(u.Id))
-            .ToList() ?? [];
+        return groupsUsers?.Where(Filter).ToList() ?? [];
+
+        bool Filter(Domain.Entities.User user) => IsNotFriendOrMe(user, friendIds) && !userInviteeIds.Contains(user.Id);
     }
 
     private bool IsNotFriendOrMe(
         Domain.Entities.User user,
-        HashSet<Guid> friendIds)
-        => !friendIds.Contains(user.Id) && user.Id != _identityContext.Id;
+        IReadOnlySet<Guid> friendIds)
+        => !friendIds.Contains(user.Id) && user.Id != IdentityContext.Id;
 }

@@ -4,6 +4,18 @@ namespace Chatify.Shared.Infrastructure.Common.Extensions;
 
 public static class OneOfExtensions
 {
+    public static IEnumerable<T2> OfType2<T1, T2>(this IEnumerable<OneOf<T1, T2>> value)
+        => value
+            .Where(x => x.IsT1)
+            .Select(x => x.AsT1)
+            .ToList();
+
+    public static IEnumerable<T1> OfType1<T1, T2>(this IEnumerable<OneOf<T1, T2>> value)
+        => value
+            .Where(x => x.IsT0)
+            .Select(x => x.AsT0)
+            .ToList();
+
     public static async Task<TResult> MatchAsync<T1, T2, TResult>(
         this Task<OneOf<T1, T2>> task,
         Func<T1, TResult> f1,
@@ -13,7 +25,7 @@ public static class OneOfExtensions
         var value = await task;
         return value.Match(f1, f2);
     }
-    
+
     public static async Task<TResult> MatchAsync<T1, T2, T3, TResult>(
         this Task<OneOf<T1, T2, T3>> task,
         Func<T1, TResult> f1,
@@ -24,7 +36,7 @@ public static class OneOfExtensions
         var value = await task;
         return value.Match(f1, f2, f3);
     }
-    
+
     public static async Task<TResult> MatchAsync<T1, T2, T3, T4, TResult>(
         this Task<OneOf<T1, T2, T3, T4>> task,
         Func<T1, TResult> f1,
@@ -36,7 +48,7 @@ public static class OneOfExtensions
         var value = await task;
         return value.Match(f1, f2, f3, f4);
     }
-    
+
     public static async Task<TResult> MatchAsync<T1, T2, T3, T4, T5, TResult>(
         this Task<OneOf<T1, T2, T3, T4, T5>> task,
         Func<T1, TResult> f1,

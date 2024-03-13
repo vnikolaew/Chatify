@@ -1,8 +1,10 @@
 FROM scylladb/scylla:latest
 
 COPY entrypoint.sh /entrypoint.sh
+COPY init-cql.sh /init-cql.sh
 COPY init.cql /init.cql
 
 RUN chmod +x entrypoint.sh
+RUN chmod +x init-cql.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

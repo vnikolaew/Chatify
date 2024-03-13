@@ -22,6 +22,15 @@ public static class EnumerableExtensions
         }
     }
 
+    /// <summary>
+    /// Combine the elements of 2 collections using a zipping function.
+    /// </summary>
+    /// <param name="enumerable">The first enumerable.</param>
+    /// <param name="enumerableTwo">The second enumerable.</param>
+    /// <param name="enumerableKeySelector">A key selector for the first enumerable.</param>
+    /// <param name="enumerableTwoKeySelector">A key selector for the second enumerable.</param>
+    /// <param name="zipper"></param>
+    /// <returns>The resulting combined list.</returns>
     public static List<TResult?> ZipOn<T1, T2, TKey, TResult>(
         this IEnumerable<T1> enumerable,
         IEnumerable<T2> enumerableTwo,

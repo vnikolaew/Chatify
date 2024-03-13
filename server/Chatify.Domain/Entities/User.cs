@@ -43,6 +43,12 @@ public class User : IDomainEntity
 
     public HashSet<Guid> StarredChatGroups { get; init; } = [];
 
+    public bool HasStarredGroup(Guid groupId) => StarredChatGroups.Contains(groupId);
+    
+    public bool StarGroup(Guid groupId) => StarredChatGroups.Add(groupId);
+    
+    public bool UnstarGroup(Guid groupId) => StarredChatGroups.Remove(groupId);
+
     public string DisplayName { get; set; }
 
     public string UserHandle { get; set; }

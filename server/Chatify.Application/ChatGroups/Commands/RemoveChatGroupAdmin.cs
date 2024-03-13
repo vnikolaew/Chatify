@@ -40,12 +40,12 @@ internal sealed class RemoveChatGroupAdminHandler(
         if ( chatGroup.CreatorId != identityContext.Id )
             return new UserIsNotMemberError(identityContext.Id, chatGroup.Id);
 
-        if ( !chatGroup.AdminIds.Contains(command.AdminId) )
+        if ( !chatGroup.HasAdmin(command.AdminId) )
             return new UserIsNotGroupAdminError(command.AdminId, command.ChatGroupId);
 
         await groups.UpdateAsync(chatGroup, group =>
         {
-            group.AdminIds.Remove(command.AdminId);
+            group.RemoveAdmin(command.AdminId);
             group.UpdatedAt = clock.Now;
         }, cancellationToken);
 

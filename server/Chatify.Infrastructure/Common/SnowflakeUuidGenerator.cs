@@ -1,4 +1,5 @@
 ﻿using Chatify.Application.Common.Contracts;
+using Chatify.Shared.Abstractions.Common;
 using IdGen;
 
 namespace Chatify.Infrastructure.Common;
@@ -10,9 +11,9 @@ internal sealed class SnowflakeUuidGenerator : IGuidGenerator
     public Guid New()
     {
         var id = new IdGenerator(0).CreateId();
-        long additionalData = 9876543210;
+        const long additionalData = 9876543210;
 
-        long combinedData = id ^ additionalData;
+        var combinedData = id ^ additionalData;
 
         Span<byte> buffer = stackalloc byte[16];
         

@@ -35,6 +35,41 @@ internal sealed class EditChatGroupDetailsHandler(
     IEventDispatcher eventDispatcher)
     : BaseCommandHandler<EditChatGroupDetails, EditChatGroupDetailsResult>(eventDispatcher, identityContext, clock)
 {
+    private async Task<OneOf<Media, FileUploadError>> UploadNewMediaAsync(
+        ChatGroup group,
+        InputFile newMedia,
+        CancellationToken cancellationToken
+    )
+    {
+        if ( group.Picture is not null )
+        {
+            var deleteResult = await fileUploadService.DeleteAsync(
+                new SingleFileDeleteRequest
+                {
+                    UserId = identityContext.Id,
+                    FileUrl = group.Picture.MediaUrl
+                }, cancellationToken);
+
+            if ( deleteResult.Value is Error error ) return new FileUploadError(error.Message);
+        }
+
+        var result = await fileUploadService.UploadChatGroupMediaAsync(
+            new SingleFileUploadRequest
+            {
+                UserId = identityContext.Id,
+                File = newMedia
+            }, cancellationToken);
+        if ( result.Value is Error uploadError ) return new FileUploadError(uploadError.Message);
+
+            return new Media
+            {
+                Id = result.AsT1.FileId,
+                FileName = newMedia.FileName,
+                MediaUrl = result.AsT1.FileUrl,
+                Type = result.AsT1.FileType
+            };
+    }
+
     public override async Task<EditChatGroupDetailsResult> HandleAsync(
         EditChatGroupDetails command,
         CancellationToken cancellationToken = default)
@@ -45,50 +80,27 @@ internal sealed class EditChatGroupDetailsHandler(
         var isMember = await members.Exists(group.Id, identityContext.Id, cancellationToken);
         if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, group.Id);
 
-        if ( !group.AdminIds.Contains(identityContext.Id) )
+        if ( !group.HasAdmin(identityContext.Id) )
             return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
 
         Media? groupPicture = default;
         if ( command.Picture is not null )
         {
-            if ( group.Picture is not null )
-            {
-                var deleteResult = await fileUploadService.DeleteAsync(
-                    new SingleFileDeleteRequest
-                    {
-                        UserId = identityContext.Id,
-                        FileUrl = group.Picture.MediaUrl
-                    }, cancellationToken);
-
-                if ( deleteResult.Value is Error error ) return new FileUploadError(error.Message);
-            }
-
-            var result = await fileUploadService.UploadChatGroupMediaAsync(
-                new SingleFileUploadRequest
-                {
-                    UserId = identityContext.Id,
-                    File = command.Picture
-                }, cancellationToken);
+            var result = await UploadNewMediaAsync(
+                group,
+                command.Picture,
+                cancellationToken);
             if ( result.Value is Error uploadError ) return new FileUploadError(uploadError.Message);
-
-            if ( result.Value is FileUploadResult newMedia )
-            {
-                groupPicture = new Media
-                {
-                    Id = newMedia.FileId,
-                    FileName = newMedia.FileName,
-                    MediaUrl = newMedia.FileUrl,
-                    Type = newMedia.FileType
-                };
-            }
+            
+            groupPicture = result.AsT0;
         }
 
-        await groups.UpdateAsync(group, group =>
+        await groups.UpdateAsync(group, g =>
         {
-            group.Name = command.Name ?? group.Name;
-            group.About = command.About ?? group.About;
-            group.Picture = groupPicture;
-            group.UpdatedAt = clock.Now;
+            g.Name = command.Name ?? g.Name;
+            g.About = command.About ?? g.About;
+            g.Picture = groupPicture;
+            g.UpdatedAt = clock.Now;
         }, cancellationToken);
         return Unit.Default;
     }

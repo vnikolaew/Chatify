@@ -16,18 +16,19 @@ using Mapper = Cassandra.Mapping.Mapper;
 namespace Chatify.Infrastructure.Data.Repositories;
 
 public sealed class ChatMessageRepository(
-        IMapper mapper,
-        Mapper dbMapper,
-        IEntityChangeTracker changeTracker,
-        IPagingCursorHelper pagingCursorHelper)
+    IMapper mapper,
+    Mapper dbMapper,
+    IEntityChangeTracker changeTracker,
+    IPagingCursorHelper pagingCursorHelper)
     :
-        BaseCassandraRepository<ChatMessage, Models.ChatMessage, Guid>(mapper, dbMapper, changeTracker, nameof(ChatMessage.Id).Underscore()),
+        BaseCassandraRepository<ChatMessage, Models.ChatMessage, Guid>(mapper, dbMapper, changeTracker,
+            nameof(ChatMessage.Id).Underscore()),
         IChatMessageRepository
 {
     private Task<long> GetTotalMessagesCount(Guid groupId)
         => DbMapper.FirstOrDefaultAsync<long>(
             "SELECT COUNT(*) FROM chat_messages WHERE chat_group_id = ?", groupId);
-    
+
     private Task<long> GetTotalMessagesRepliersCount(Guid groupId)
         => DbMapper.FirstOrDefaultAsync<long>(
             "SELECT COUNT(*) FROM chat_message_replies_summaries WHERE chat_group_id = ?", groupId);
@@ -71,7 +72,7 @@ public sealed class ChatMessageRepository(
             replierInfoes.Count,
             total,
             replierInfoes.PagingState is not null
-            );
+        );
     }
 
     public async Task<IDictionary<Guid, ChatMessage?>> GetLatestForGroups(
@@ -79,18 +80,12 @@ public sealed class ChatMessageRepository(
         CancellationToken cancellationToken = default)
     {
         var paramPlaceholders = string.Join(", ", groupIds.Select(_ => "?"));
-        var cql = new Cql($" WHERE chat_group_id IN ({paramPlaceholders}) PER PARTITION LIMIT 1;");
+        var cql = new Cql($" WHERE chat_group_id IN ({paramPlaceholders}) PER PARTITION LIMIT 1;")
+            .WithArguments(groupIds.Cast<object>().ToArray());
 
-        cql.GetType()
-            .GetProperty(nameof(Cql.Arguments),
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
-            .SetValue(cql, groupIds.Cast<object>().ToArray());
+        var messages = await DbMapper.FetchListAsync<Models.ChatMessage>(cql);
 
-        var messages = await DbMapper
-            .FetchListAsync<Models.ChatMessage>(cql);
-
-        return groupIds
-            .ToDictionary(id => id, id =>
+        return groupIds.ToDictionary(id => id, id =>
                 messages
                     .FirstOrDefault(m => m.ChatGroupId == id)?
                     .To<ChatMessage>(Mapper));
@@ -101,12 +96,8 @@ public sealed class ChatMessageRepository(
         CancellationToken cancellationToken = default)
     {
         var paramPlaceholders = string.Join(", ", messageIds.Select(_ => "?"));
-        var cql = new Cql($"SELECT * FROM chat_messages_by_id WHERE id IN ({paramPlaceholders}) ALLOW FILTERING;");
-
-        cql.GetType()
-            .GetProperty(nameof(Cql.Arguments),
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?
-            .SetValue(cql, messageIds.Cast<object>().ToArray());
+        var cql = new Cql($"SELECT * FROM chat_messages_by_id WHERE id IN ({paramPlaceholders}) ALLOW FILTERING;")
+            .WithArguments(messageIds.Cast<object>().ToArray());
 
         var messages = await DbMapper
             .FetchListAsync<Models.ChatMessage>(cql);

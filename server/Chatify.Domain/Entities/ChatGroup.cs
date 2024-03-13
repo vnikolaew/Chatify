@@ -16,7 +16,13 @@ public class ChatGroup
 
     public ISet<Guid> AdminIds { get; set; } = new HashSet<Guid>();
 
-    public ISet<PinnedMessage> PinnedMessages { get; set; } = new HashSet<PinnedMessage>();
+    public bool HasAdmin(Guid adminId) => AdminIds.Contains(adminId);
+    
+    public bool AddAdmin(Guid adminId) => AdminIds.Add(adminId);
+    
+    public bool RemoveAdmin(Guid adminId) => AdminIds.Remove(adminId);
+    
+    public ISet<PinnedMessage> PinnedMessages { get; init; } = new HashSet<PinnedMessage>();
 
     public Metadata Metadata { get; set; } = new Dictionary<string, string>();
 

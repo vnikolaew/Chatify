@@ -17,8 +17,7 @@ public static class Extensions
             .AddTransient(sp => sp.GetRequiredService<ContextAccessor>().Context);
 
     public static IApplicationBuilder UseContext(this IApplicationBuilder app)
-        => app
-            .UseMiddleware<ContextMiddleware>();
+        => app.UseMiddleware<ContextMiddleware>();
 
     public sealed class ContextMiddleware : IMiddleware
     {

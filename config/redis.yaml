@@ -1,14 +1,14 @@
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: redis-data
-# spec:
-#   accessModes:
-#   - ReadWriteOnce
-#   resources:
-#     requests:
-#       storage: 10Gi
-# ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -52,13 +52,16 @@ spec:
         - name: redis-data
           mountPath: /data
           readOnly: false
+      volumes:
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: redis-data
   volumeClaimTemplates:
   - metadata:
       name: redis-data
-      annotations:
-        volume.beta.kubernetes.io/storage-class: ""
     spec:
       accessModes: ["ReadWriteOnce"]
+      # storageClassName: fast
       resources:
         requests:
           storage: 1Gi

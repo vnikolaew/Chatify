@@ -30,9 +30,9 @@ internal sealed class StarChatGroupHandler(
         var user = await users.GetAsync(identityContext.Id, cancellationToken);
         
         if ( user is null ) return new UserNotFound();
-        if ( user.StarredChatGroups.Contains(command.ChatGroupId) ) return new ChatGroupNotFoundError();
+        if ( user.HasStarredGroup(command.ChatGroupId) ) return new ChatGroupNotFoundError();
 
-        await users.UpdateAsync(user, u => u.StarredChatGroups.Add(command.ChatGroupId), cancellationToken);
+        await users.UpdateAsync(user, u => u.StarGroup(command.ChatGroupId), cancellationToken);
         return Unit.Default;
     }
 }

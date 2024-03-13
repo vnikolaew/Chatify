@@ -28,9 +28,9 @@ internal sealed class UnstarChatGroupHandler(
         var user = await users.GetAsync(identityContext.Id, cancellationToken);
 
         if ( user is null ) return new UserNotFound();
-        if ( !user.StarredChatGroups.Contains(command.ChatGroupId) ) return new ChatGroupNotFoundError();
+        if ( !user.HasStarredGroup(command.ChatGroupId) ) return new ChatGroupNotFoundError();
 
-        await users.UpdateAsync(user, u => u.StarredChatGroups.Remove(command.ChatGroupId), cancellationToken);
+        await users.UpdateAsync(user, u => u.UnstarGroup(command.ChatGroupId), cancellationToken);
         return Unit.Default;
     }
 }

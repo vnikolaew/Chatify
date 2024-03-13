@@ -60,7 +60,7 @@ internal sealed class GetMessagesByChatGroupHandler(
 
 
         var (groupMessages, messageReplySummaries) =
-            await ( messagesTask, messageReplierInfosTask ).WhenAll();
+            await ( messagesTask, messageReplierInfosTask );
 
         // Determine if user has reacted to each message:
         var userMessageReactions = await reactions.AllByUserAndMessageIds(

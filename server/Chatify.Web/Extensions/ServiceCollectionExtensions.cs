@@ -24,18 +24,6 @@ namespace Chatify.Web.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddMappers(this IServiceCollection services)
-        => services.AddAutoMapper(config =>
-        {
-            config
-                .AddExpressionMapping()
-                .AddMaps(
-                    typeof(IAssemblyMarker),
-                    typeof(Application.IAssemblyMarker));
-
-            config.AllowNullDestinationValues = true;
-        });
-
     public static IServiceCollection AddWebComponents(
         this IServiceCollection services,
         IWebHostEnvironment environment)

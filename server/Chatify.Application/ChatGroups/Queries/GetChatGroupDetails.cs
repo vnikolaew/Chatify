@@ -43,11 +43,12 @@ internal sealed class GetChatGroupDetailsHandler(
         var isMember = await members.Exists(query.GroupId, identityContext.Id, cancellationToken);
         if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, group.Id);
 
-        var adminTask = users.GetAsync(group.CreatorId, cancellationToken);
-        var groupMembersTask = members.ByGroup(group.Id, cancellationToken);
-        var (admin, groupMembers) = await ( adminTask, groupMembersTask ).WhenAll();
+        var (admin, groupMembers) = await (
+            users.GetAsync(group.CreatorId, cancellationToken),
+            members.ByGroup(group.Id, cancellationToken) );
 
-        var membersUsers = await users.GetByIds(groupMembers!.Select(_ => _.UserId), cancellationToken);
+        var membersUsers = await users
+            .GetByIds(groupMembers!.Select(_ => _.UserId), cancellationToken);
         return new ChatGroupDetailsEntry(group, membersUsers!, admin!);
     }
 }

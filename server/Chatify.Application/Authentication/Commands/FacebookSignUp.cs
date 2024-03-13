@@ -23,11 +23,11 @@ internal sealed class FacebookSignUpHandler(
         var result = await authService.FacebookSignUpAsync(command, cancellationToken);
         if ( result.IsT0 ) return new SignUpError(result.AsT0.Message);
 
-        var res = result.AsT1!;
+        var res = result.Value as UserSignedUpResult;
         await eventDispatcher.PublishAsync(new UserSignedUpEvent
         {
             Timestamp = DateTime.Now,
-            UserId = res.UserId,
+            UserId = res!.UserId,
             AuthenticationProvider = res.AuthenticationProvider
         }, cancellationToken);
 

@@ -8,6 +8,7 @@ using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Groups;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
+using Chatify.Shared.Abstractions.Common;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
@@ -38,6 +39,29 @@ internal sealed class CreateChatGroupHandler(
     IClock clock)
     : BaseCommandHandler<CreateChatGroup, CreateChatGroupResult>(eventDispatcher, identityContext, clock)
 {
+    private async Task<OneOf<Media, FileUploadError>> UploadFileAsync(
+        InputFile inputFile,
+        CancellationToken cancellationToken)
+    {
+        var fileUploadRequest = new SingleFileUploadRequest
+        {
+            File = inputFile,
+            UserId = identityContext.Id,
+        };
+
+        var result = await fileUploadService.UploadChatGroupMediaAsync(fileUploadRequest, cancellationToken);
+        if ( result.Value is Error error ) return new FileUploadError(error.Message);
+
+        var newMedia = result.Value as FileUploadResult;
+        return new Media
+        {
+            Id = newMedia!.FileId,
+            FileName = newMedia.FileName,
+            MediaUrl = newMedia.FileUrl,
+            Type = newMedia.FileType
+        };
+    }
+
     public override async Task<CreateChatGroupResult> HandleAsync(
         CreateChatGroup command,
         CancellationToken cancellationToken = default)
@@ -45,23 +69,9 @@ internal sealed class CreateChatGroupHandler(
         Media? groupPicture = default;
         if ( command.InputFile is not null )
         {
-            var fileUploadRequest = new SingleFileUploadRequest
-            {
-                File = command.InputFile,
-                UserId = identityContext.Id,
-            };
-
-            var result = await fileUploadService.UploadChatGroupMediaAsync(fileUploadRequest, cancellationToken);
+            var result = await UploadFileAsync(command.InputFile, cancellationToken);
             if ( result.Value is Error error ) return new FileUploadError(error.Message);
-
-            var newMedia = result.Value as FileUploadResult;
-            groupPicture = new Media
-            {
-                Id = newMedia!.FileId,
-                FileName = newMedia.FileName,
-                MediaUrl = newMedia.FileUrl,
-                Type = newMedia.FileType
-            };
+            groupPicture = result.AsT0;
         }
 
         var groupId = guidGenerator.New();
@@ -89,7 +99,8 @@ internal sealed class CreateChatGroupHandler(
             Username = identityContext.Username,
             MembershipType = 0
         };
-        var groupMembers = await ( await users.GetByIds(command.MemberIds ?? new List<Guid>(), cancellationToken) )!
+
+        var groupUsers = ( await users.GetByIds(command.MemberIds ?? new List<Guid>(), cancellationToken) )!
             .Select(user => new ChatGroupMember
             {
                 Id = guidGenerator.New(),
@@ -98,12 +109,14 @@ internal sealed class CreateChatGroupHandler(
                 UserId = user.Id,
                 Username = user.Username,
                 MembershipType = 0
-            })
+            });
+
+        var groupMembers = await groupUsers
             .Append(groupMember)
             .Select(member => members.SaveAsync(member, cancellationToken))
             .ToList();
 
-        var @events = groupMembers
+        var events = groupMembers
             .Select(m => new ChatGroupMemberAddedEvent
             {
                 GroupId = groupId,
@@ -114,7 +127,7 @@ internal sealed class CreateChatGroupHandler(
                 AddedByUsername = identityContext.Username
             });
 
-        await eventDispatcher.PublishAsync(@events, cancellationToken);
+        await eventDispatcher.PublishAsync(events, cancellationToken);
         return chatGroup.Id;
     }
 }

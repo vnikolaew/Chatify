@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Reflection;
+using AutoMapper.Extensions.ExpressionMapping;
 using AutoMapper.Internal;
 using Chatify.Application.Authentication.Contracts;
 using Chatify.Application.ChatGroups.Contracts;
@@ -26,6 +27,8 @@ using Chatify.Infrastructure.Messages;
 using Chatify.Infrastructure.Messages.BackgroundJobs;
 using Chatify.Infrastructure.Messages.Hubs;
 using Chatify.Infrastructure.Messages.Services;
+using Chatify.Infrastructure.Services.External;
+using Chatify.Shared.Abstractions.Common;
 using Chatify.Shared.Abstractions.Serialization;
 using Chatify.Shared.Abstractions.Time;
 using Chatify.Shared.Infrastructure.Contexts;
@@ -44,6 +47,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Polly;
 using Polly.Extensions.Http;
+using Polly.Retry;
 using Quartz;
 using Redis.OM;
 using Redis.OM.Contracts;
@@ -62,13 +66,13 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
         => services
-            .AddAuthorization()
             .AddData(configuration)
-            .AddCassandraIdentity()
+            .AddCassandraIdentity(configuration)
             .AddSeeding()
             .AddRepositories()
             .AddBackgroundJobs()
             .AddApplicationTelemetry()
+            .AddGrpcClients(configuration)
             .AddServices(configuration)
             .AddCaching(configuration)
             .AddContexts();
@@ -86,12 +90,27 @@ public static class DependencyInjection
             .AddQuartzHostedService(opts =>
                 opts.WaitForJobsToComplete = true);
 
+    public static IServiceCollection AddMappers(this IServiceCollection services)
+        => services.AddAutoMapper(config =>
+        {
+            config
+                .AddExpressionMapping()
+                .AddMaps(
+                    typeof(IAssemblyMarker),
+                    typeof(Application.IAssemblyMarker));
+
+            config.AllowNullDestinationValues = true;
+        });
+
     public static IServiceCollection AddServices(
         this IServiceCollection services,
         IConfiguration configuration)
         => services
             .Configure<HostOptions>(opts =>
-                opts.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore)
+            {
+                opts.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+                opts.ServicesStartConcurrently = false;
+            })
             .AddAuthenticationServices(configuration)
             .AddEvents(new[] { Assembly.GetExecutingAssembly() }, Extensions.EventDispatcherType.FireAndForget)
             .AddTransient<IEmailSender, NullEmailSender>()
@@ -121,12 +140,14 @@ public static class DependencyInjection
                     .AddOtlpExporter(opts => { opts.Endpoint = new Uri("http://localhost:14268"); })
                     .AddRedisInstrumentation();
             })
-            .WithMetrics(builder => builder.AddAspNetCoreInstrumentation());
+            .WithMetrics(builder =>
+                builder
+                    .AddAspNetCoreInstrumentation()
+                    .AddCassandraInstrumentation());
         return services;
     }
 
-    public static IServiceCollection AddNotifications(
-        this IServiceCollection services)
+    public static IServiceCollection AddNotifications(this IServiceCollection services)
     {
         services
             .AddScoped<INotificationService, SignalRNotificationService>()
@@ -160,7 +181,9 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         var endpoint = configuration.GetValue<string>("Redis:Endpoint")!;
-        var connectionMultiplexer = ConnectionMultiplexer.Connect(endpoint);
+
+        var multiplexer = RedisRetryPolicy.Execute(
+            () => ConnectionMultiplexer.Connect(endpoint, opts => { opts.AbortOnConnectFail = false; }));
 
         services
             .AddSingleton(sp =>
@@ -199,7 +222,8 @@ public static class DependencyInjection
         }
 
         return services
-            .AddSingleton<IConnectionMultiplexer>(connectionMultiplexer)
+            .AddSingleton<IConnectionMultiplexer>(multiplexer)
+            .AddSingleton(multiplexer)
             .AddScoped<ICacheService, RedisCacheService>()
             .AddSingleton<IDatabase>(sp =>
                 sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase())
@@ -300,4 +324,36 @@ public static class DependencyInjection
             .HandleTransientHttpError()
             .OrResult(msg => msg.StatusCode == HttpStatusCode.NotFound)
             .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+
+    private static readonly ResiliencePipeline<IConnectionMultiplexer> RedisRetryPolicy
+        = new ResiliencePipelineBuilder<IConnectionMultiplexer>()
+            .AddRetry(new RetryStrategyOptions<IConnectionMultiplexer>
+            {
+                ShouldHandle = args =>
+                    ValueTask.FromResult(args.Outcome.Exception is RedisConnectionException),
+                OnRetry = arguments =>
+                {
+                    Console.WriteLine($"Retrying Redis connection. Attempt: {arguments.AttemptNumber}");
+                    return ValueTask.CompletedTask;
+                },
+                Delay = TimeSpan.FromSeconds(2),
+                MaxDelay = TimeSpan.FromSeconds(8),
+                MaxRetryAttempts = 5,
+                DelayGenerator = arguments =>
+                    ValueTask.FromResult(( TimeSpan? )TimeSpan.FromSeconds(Math.Pow(2, arguments.AttemptNumber)))
+            }).Build();
+
+    public static TSettings AddSettings<TSettings>(
+        this IServiceCollection serviceCollection,
+        IConfiguration configuration,
+        string? sectionName = default)
+        where TSettings : class, new()
+    {
+        var settings = new TSettings();
+        configuration.Bind(sectionName ?? typeof(TSettings).Name, settings);
+
+        // serviceCollection.Configure<TSettings>(configuration);
+        serviceCollection.AddSingleton(settings);
+        return settings;
+    }
 }

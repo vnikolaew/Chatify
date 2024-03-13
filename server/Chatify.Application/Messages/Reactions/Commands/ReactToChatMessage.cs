@@ -5,6 +5,7 @@ using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
+using Chatify.Shared.Abstractions.Common;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;

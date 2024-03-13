@@ -64,7 +64,7 @@ public sealed class UserRepository(
             .FindByIdsAsync(userIds.Select(_ => _.ToString()));
 
         // It's possible some users are not found from cache, so fetch them from DB:
-        Guid[] missingUserIds = usersById
+        var missingUserIds = usersById
             .Where(_ => _.Value is null)
             .Select(_ => Guid.TryParse(_.Key, out var id) ? id : default)
             .ToArray();
@@ -72,7 +72,6 @@ public sealed class UserRepository(
         if ( missingUserIds.Any() )
         {
             var cqlQuery = $"WHERE id IN ({string.Join(", ", missingUserIds.Select(_ => "?"))}) ALLOW FILTERING;";
-            
             var cql = new Cql(cqlQuery).WithArguments(missingUserIds.Cast<object>().ToArray());
 
             var missingUsers = ( await DbMapper.FetchListAsync<ChatifyUser>(cql) )

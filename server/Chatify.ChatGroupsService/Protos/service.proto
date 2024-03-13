@@ -1,0 +1,43 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Chatify.ChatGroupsService.Messages";
+
+
+service ChatGroupsServicer {
+    rpc CreateChatGroup(CreateChatGroupRequest) returns (CreateChatGroupResponse);
+}
+
+message CreateChatGroupRequest {
+    string about = 1;
+    string name = 2;
+    repeated string member_ids = 3;
+    optional Media group_picture = 4;
+}
+
+message Media {
+    string id = 1;
+    string media_url = 2;
+    string file_name = 3;
+    string type = 4;
+}
+
+message CreateChatGroupResponse {
+    bool success = 1;
+    optional ErrorDetails error_details = 2;
+    optional string chat_group_id = 3;
+}
+
+message ErrorDetails {
+    repeated ErrorDetail errors = 1;
+}
+
+message ErrorDetail {
+    // Error code
+    string errorCode = 1;
+
+    //Error message
+    string message = 2;
+
+    // Additional metadata associated with the Error
+    map<string, string> metadata = 3;
+}

@@ -33,7 +33,7 @@ public sealed class ChatMessageReactionRepository(
         var userId = new RedisValue(messageReaction.UserId.ToString());
 
         // Add messageId -> reactionCode to User reactions Hash:
-        var cacheSaveTasks = new[]
+        await new[]
         {
             // Add user to message reactors:
             cache.SetAddAsync(messageReactionsKey, userId),
@@ -45,7 +45,6 @@ public sealed class ChatMessageReactionRepository(
                 messageReaction.ReactionCode)
         };
 
-        await cacheSaveTasks;
         return model;
     }
 
@@ -82,13 +81,13 @@ public sealed class ChatMessageReactionRepository(
         var userIdValue = new RedisValue(userId.ToString());
 
         var userReactionsKey = userId.GetUserReactionsKey();
-        var existTasks = new[]
+        var existTasks = await new[]
         {
             cache.SetContainsAsync(messageReactionsKey, userIdValue),
             cache.HashExistsAsync(userReactionsKey, messageId.ToString())
         };
 
-        return ( await existTasks ).Any(_ => _);
+        return existTasks.Any(_ => _);
     }
 
     public async Task<List<ChatMessageReaction>?> AllForMessage(

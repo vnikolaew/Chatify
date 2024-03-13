@@ -65,8 +65,7 @@ internal sealed class ChatGroupsFeedService(
         var user = await users.GetAsync(userId, cancellationToken);
         if ( user is null ) return [];
 
-        var starredGroupIds = user.StarredChatGroups;
-        return await GetFeedByGroups(starredGroupIds.ToList(), cancellationToken);
+        return await GetFeedByGroups(user.StarredChatGroups.ToList(), cancellationToken);
     }
 
     private async Task<List<ChatGroupFeedEntry>> GetFeedByGroups(List<Guid> groupIds, CancellationToken cancellationToken)

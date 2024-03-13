@@ -6,15 +6,16 @@ using AspNetCore.Identity.Cassandra.Models;
 using Cassandra;
 using Cassandra.Mapping;
 using Cassandra.Serialization;
+using Chatify.Infrastructure.Common.Security;
+using Chatify.Infrastructure.Common.Settings;
 using Chatify.Infrastructure.Data.Mappings.Serialization;
 using Chatify.Infrastructure.Data.Seeding;
 using Chatify.Infrastructure.Data.Services;
+using Chatify.Shared.Abstractions.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Retry;
 using ChatifyUser = Chatify.Infrastructure.Data.Models.ChatifyUser;
@@ -42,41 +43,35 @@ public static class DependencyInjection
         // TODO: Figure out auto-registration of serializers:
         var definitions = GetTypeSerializerDefinitions();
 
+        CassandraOptions cassandraOptions = new CassandraOptions();
+        configuration.GetSection("Cassandra").Bind(cassandraOptions, opts => { opts.BindNonPublicProperties = true; });
+        services.Configure<CassandraOptions>(configuration.GetSection("Cassandra"));
+
+        var options = new QueryOptions();
+
+        if ( cassandraOptions.Query is { ConsistencyLevel: not null } &&
+             Enum.TryParse(cassandraOptions.Query.ConsistencyLevel.ToString(), true,
+                 out ConsistencyLevel result) )
+            options.SetConsistencyLevel(result);
+
+        var cluster = Cluster.Builder()
+            .AddContactPoints(cassandraOptions.ContactPoints)
+            .WithPort(cassandraOptions.Port)
+            .WithCredentials(
+                cassandraOptions.Credentials.UserName,
+                cassandraOptions.Credentials.Password)
+            .WithTypeSerializers(definitions)
+            .WithQueryOptions(options)
+            .Build();
+
+        var session = RetryPolicy(cassandraOptions.RetryCount)
+            .Execute(cluster.Connect);
+
         return services
-            .Configure<CassandraOptions>(configuration.GetSection("Cassandra"))
-            .AddSingleton(x => x.GetRequiredService<IOptions<CassandraOptions>>().Value)
-            .AddTransient<IMapper>(sp =>
-                new Mapper(sp.GetRequiredService<ISession>()))
-            .AddSingleton<ISession>(
-                sp =>
-                {
-                    var requiredService = sp.GetRequiredService<CassandraOptions>();
-                    var logger = sp.GetRequiredService<ILogger<CassandraOptions>>();
-                    var options = new QueryOptions();
-
-                    if ( requiredService.Query is { ConsistencyLevel: not null } &&
-                         Enum.TryParse(requiredService.Query.ConsistencyLevel.ToString(), true,
-                             out ConsistencyLevel result) )
-                        options.SetConsistencyLevel(result);
-
-                    var cluster = Cluster.Builder()
-                        .AddContactPoints(requiredService.ContactPoints)
-                        .WithPort(requiredService.Port)
-                        .WithCredentials(
-                            requiredService.Credentials.UserName,
-                            requiredService.Credentials.Password)
-                        .WithTypeSerializers(definitions)
-                        .WithQueryOptions(options).Build();
-
-                    ISession session = null!;
-                    RetryPolicy(requiredService.RetryCount, logger)
-                        .Execute(() => session = cluster.Connect());
-                    if ( session is null )
-                        throw new ApplicationException("FATAL ERROR: Cassandra session could not be created");
-
-                    logger.LogInformation("Cassandra session created");
-                    return session;
-                });
+            .AddSingleton(_ => cassandraOptions)
+            .AddSingleton(_ => session)
+            .AddTransient<IMapper>(sp => new Mapper(sp.GetRequiredService<ISession>()))
+            .AddTransient<Mapper>(sp => ( sp.GetRequiredService<IMapper>() as Mapper )!);
     }
 
     public static TypeSerializerDefinitions? GetTypeSerializerDefinitions()
@@ -100,51 +95,43 @@ public static class DependencyInjection
                 .MakeGenericMethod(type)
                 .Invoke(defs, new[] { typeSerializer });
         }
-        return defs;
 
+        return defs;
     }
 
-    private static RetryPolicy RetryPolicy(
-        int retryCount,
-        ILogger<CassandraOptions> logger)
-        => Policy
-            .Handle<SocketException>()
-            .Or<NoHostAvailableException>()
-            .WaitAndRetry(retryCount,
-                ( Func<int, TimeSpan> )( retryAttempt =>
-                    TimeSpan.FromSeconds(Math.Pow(2.0, retryAttempt)) ),
-                ( Action<Exception, TimeSpan, Context> )( (exception, retryCount, _) =>
-                    logger.LogWarning("Retry {RetryCount} due to: {Exception}", retryCount, exception) ));
+    private static ResiliencePipeline<ISession> RetryPolicy(
+        int retryCount
+    )
+        => new ResiliencePipelineBuilder<ISession>()
+            .AddRetry(new RetryStrategyOptions<ISession>
+            {
+                ShouldHandle = args =>
+                    ValueTask.FromResult(
+                        args.Outcome.Exception is NoHostAvailableException or SocketException or Exception),
+                OnRetry = _ => ValueTask.CompletedTask,
+                Delay = TimeSpan.FromSeconds(2),
+                MaxDelay = TimeSpan.FromSeconds(8),
+                MaxRetryAttempts = retryCount,
+                DelayGenerator = arguments =>
+                    ValueTask.FromResult(( TimeSpan? )TimeSpan.FromSeconds(Math.Pow(2, arguments.AttemptNumber)))
+            }).Build();
 
     public static IServiceCollection AddData(
         this IServiceCollection services,
         IConfiguration configuration)
-    {
-        var mappingsList = Assembly
-            .GetExecutingAssembly()
-            .GetTypes()
-            .Where(t => t is { IsAbstract: false, IsInterface: false } &&
-                        t.IsSubclassOf(typeof(Cassandra.Mapping.Mappings)))
-            .Select(Activator.CreateInstance)
-            .Cast<Cassandra.Mapping.Mappings>()
-            .Where(m => m is not null)
-            .ToList();
-
-        MappingConfiguration.Global.ConvertTypesUsing(new CustomTypeConverter());
-
-        foreach ( var mapping in mappingsList )
-            MappingConfiguration.Global.Define(mapping);
-
-        return services
+        => services
             .AddCassandra(configuration)
-            .AddTransient<Mapper>(sp => ( sp.GetRequiredService<IMapper>() as Mapper )!)
             .AddHostedService<RedisIndicesCreationService>()
             .AddHostedService<DatabaseInitializationService>();
-    }
 
     public static IServiceCollection AddCassandraIdentity(
-        this IServiceCollection services)
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
+        services
+            .AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>()
+            .AddSettings<JwtSettings>(configuration);
+
         services
             .AddIdentity<ChatifyUser, CassandraIdentityRole>(ConfigureIdentityOptions)
             .AddCassandraErrorDescriber<CassandraErrorDescriber>()
@@ -152,6 +139,7 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();
 
         services
+            .AddAuthorization()
             .ConfigureExternalCookie(opts =>
             {
                 opts.Cookie.SameSite = SameSiteMode.None;

@@ -12,7 +12,6 @@ using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
 using OneOf;
-using static Chatify.Application.Common.Contracts.FolderConstants;
 using MessageNotFoundError = Chatify.Application.Messages.Common.MessageNotFoundError;
 
 namespace Chatify.Application.Messages.Commands;
@@ -53,7 +52,7 @@ internal sealed class EditGroupChatMessageHandler(
             return new UserIsNotMessageSenderError(message.Id, identityContext.Id);
 
         await messages.UpdateAsync(message,
-            chatMessage => HandleUpdate(command, chatMessage, cancellationToken),
+            async chatMessage => await HandleUpdate(command, chatMessage, cancellationToken),
             cancellationToken);
 
         await eventDispatcher.PublishAsync(new ChatMessageEditedEvent
@@ -62,7 +61,7 @@ internal sealed class EditGroupChatMessageHandler(
             NewContent = command.NewContent,
             UserId = identityContext.Id,
             Timestamp = clock.Now,
-            GroupId = message.ChatGroupId,
+            GroupId = message.ChatGroupId
         }, cancellationToken);
 
         return Unit.Default;
@@ -79,13 +78,13 @@ internal sealed class EditGroupChatMessageHandler(
 
         if ( command.AttachmentOperations?.Any() ?? false )
         {
+            var attachmentOperations = command.AttachmentOperations
+                .Select(o =>
+                    o is AddAttachmentOperation ao
+                        ? ao with { Location = FolderConstants.ChatGroups.Media.Root }
+                        : o);
             await attachmentOperationHandler
-                .HandleAsync(message,
-                    command.AttachmentOperations.Select(o =>
-                        o is AddAttachmentOperation ao
-                            ? ao with { Location = FolderConstants.ChatGroups.Media.Root }
-                            : o),
-                    cancellationToken);
+                .HandleAsync(message, attachmentOperations, cancellationToken);
         }
     }
 }

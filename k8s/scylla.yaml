@@ -43,7 +43,7 @@ spec:
       containers:
       - name: scylla
         image: vnikolaew/chatify.scylla:1.0.0
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         args: ["--seeds", "scylla-0.scylla.default.svc.cluster.local", "--smp", "1"]
         ports:
         - containerPort: 7000

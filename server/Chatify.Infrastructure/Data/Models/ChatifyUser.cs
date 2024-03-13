@@ -17,13 +17,13 @@ namespace Chatify.Infrastructure.Data.Models;
 [Document(
     StorageType = StorageType.Json,
     IndexName = "users",
-    Prefixes = [nameof(User)])]
+    Prefixes = new[] { nameof(Domain.Entities.User) })]
 public class ChatifyUser() :
     CassandraIdentityUser(Guid.NewGuid()),
     IMapFrom<Domain.Entities.User>
 {
     public const string CookieConsentMetadata = "Cookie-Consent";
-    
+
     [RedisIdField]
     [Indexed]
     [Ignore]

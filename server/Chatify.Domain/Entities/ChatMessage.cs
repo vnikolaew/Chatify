@@ -44,7 +44,7 @@ public class ChatMessage
         init => _attachments = value.ToHashSet();
     }
 
-    public ReactionCounts ReactionCounts { get; set; } = new Dictionary<long, long>();
+    public ReactionCounts ReactionCounts { get; init; } = new Dictionary<long, long>();
 
     public void AddAttachment(Media media) => _attachments.Add(media);
 

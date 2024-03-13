@@ -24,10 +24,13 @@ internal sealed class
         IChatMessageDraftRepository drafts
     ) : IQueryHandler<GetDraftedMessageForGroup, GetDraftedMessageForGroupResult>
 {
-    public async Task<GetDraftedMessageForGroupResult> HandleAsync(GetDraftedMessageForGroup query,
+    public async Task<GetDraftedMessageForGroupResult> HandleAsync(
+        GetDraftedMessageForGroup query,
         CancellationToken cancellationToken = default)
     {
-        var draftMessage = await drafts.ForUserAndGroup(identityContext.Id, query.GroupId, cancellationToken);
+        var draftMessage = await drafts
+            .ForUserAndGroup(identityContext.Id, query.GroupId, cancellationToken);
+        
         return draftMessage is null
             ? new MessageNotFoundError(default!)
             : draftMessage;

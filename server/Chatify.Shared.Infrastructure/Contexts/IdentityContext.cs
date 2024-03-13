@@ -10,8 +10,6 @@ public class IdentityContext : IIdentityContext
 
     private const string UserLocationHeader = "X-User-Location";
 
-    private const string ConnectionIdCookieName = "Connection-Id";
-
     public bool IsAuthenticated { get; }
     public Guid Id { get; }
     public string Username { get; set; }

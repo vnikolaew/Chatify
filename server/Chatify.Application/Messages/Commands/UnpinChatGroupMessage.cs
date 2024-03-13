@@ -34,15 +34,15 @@ internal sealed class UnpinChatGroupMessageHandler(
         var group = await groups.GetAsync(message.ChatGroupId, cancellationToken);
         if ( group is null ) return new ChatGroupNotFoundError();
 
-        if ( !group.AdminIds.Contains(identityContext.Id) )
+        if ( !group.HasAdmin(identityContext.Id) )
             return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
 
-        await groups.UpdateAsync(group, group =>
+        await groups.UpdateAsync(group, g =>
         {
-            var pinnedMessage = group.PinnedMessages
+            var pinnedMessage = g.PinnedMessages
                 .FirstOrDefault(m => m.MessageId == message.Id);
-            if ( pinnedMessage is not null ) group.PinnedMessages.Remove(pinnedMessage);
-            group.UpdatedAt = clock.Now;
+            if ( pinnedMessage is not null ) g.PinnedMessages.Remove(pinnedMessage);
+            g.UpdatedAt = clock.Now;
         }, cancellationToken);
 
         return Unit.Default;

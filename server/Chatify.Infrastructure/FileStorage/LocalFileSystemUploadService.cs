@@ -1,4 +1,5 @@
 ﻿using Chatify.Application.Common.Contracts;
+using Chatify.Shared.Abstractions.Common;
 using LanguageExt;
 using LanguageExt.Common;
 using Microsoft.AspNetCore.Hosting;

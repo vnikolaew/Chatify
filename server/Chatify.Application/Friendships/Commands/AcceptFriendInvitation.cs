@@ -8,6 +8,7 @@ using Chatify.Domain.Events.Friendships;
 using Chatify.Domain.Events.Groups;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
+using Chatify.Shared.Abstractions.Common;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
@@ -100,8 +101,7 @@ internal sealed class AcceptFriendInvitationHandler(
             }
         };
 
-        await groupMembers.Select(m =>
-            members.SaveAsync(m, cancellationToken));
+        await groupMembers.Select(m => members.SaveAsync(m, cancellationToken));
 
         // Update friend invite:
         await friendInvites.UpdateAsync(

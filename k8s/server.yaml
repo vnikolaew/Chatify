@@ -33,6 +33,7 @@ spec:
         name: web-server
         app: chatify
     spec:
+      restartPolicy: Always
       containers:
       - name: web-server
         image: vnikolaew/chatify.server:1.0.2
@@ -48,6 +49,8 @@ spec:
           value: Production
         - name: Redis__Endpoint
           value: "redis:6379"
+        - name: Redis__PurgeCache
+          value: "true"
         - name: Cassandra__ContactPoints__0
           value: "scylla"
         - name: Cassandra__Port

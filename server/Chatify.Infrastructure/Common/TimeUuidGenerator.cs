@@ -1,11 +1,12 @@
 ﻿using Chatify.Application.Common.Contracts;
+using Chatify.Shared.Abstractions.Common;
 using shortid;
 using shortid.Configuration;
 using SkbKontur.Cassandra.TimeBasedUuid;
 
 namespace Chatify.Infrastructure.Common;
 
-internal sealed class TimeUuidGenerator : IGuidGenerator
+public sealed class TimeUuidGenerator : IGuidGenerator
 {
     public Guid New() => TimeGuid.NowGuid().ToGuid();
     public string NewStringId()

@@ -5,7 +5,6 @@ using Chatify.Application.Messages.Common;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
-using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
@@ -25,7 +24,6 @@ public record EditChatMessageReply(
     : ICommand<EditChatMessageReplyResult>;
 
 internal sealed class EditChatMessageReplyHandler(
-    IChatGroupMemberRepository members,
     IIdentityContext identityContext,
     IDomainRepository<ChatMessageReply, Guid> messageReplies,
     IEventDispatcher eventDispatcher,

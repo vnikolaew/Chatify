@@ -7,7 +7,7 @@ internal abstract class BaseQueryHandler<TRequest, TResponse>(IIdentityContext i
     : IQueryHandler<TRequest, TResponse>
     where TRequest : class, IQuery<TResponse>
 {
-    protected readonly IIdentityContext _identityContext = identityContext;
+    protected readonly IIdentityContext IdentityContext = identityContext;
 
     public abstract Task<TResponse> HandleAsync(TRequest command,
         CancellationToken cancellationToken = default);

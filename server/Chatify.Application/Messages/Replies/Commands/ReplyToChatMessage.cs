@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
+using Chatify.Application.Messages.Commands.Common;
 using Chatify.Application.Messages.Common;
 using Chatify.Application.Messages.Contracts;
 using Chatify.Domain.Common;
@@ -8,6 +9,7 @@ using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
+using Chatify.Shared.Abstractions.Common;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
@@ -25,17 +27,19 @@ public record ReplyToChatMessage(
     [Required] IEnumerable<InputFile>? Attachments
 ) : ICommand<ReplyToChatMessageResult>;
 
-internal sealed class ReplyToChatMessageHandler(IChatGroupMemberRepository members,
-        IMessageContentNormalizer contentNormalizer,
-        IIdentityContext identityContext,
-        IDomainRepository<ChatMessage, Guid> messages,
-        IEventDispatcher eventDispatcher,
-        IClock clock,
-        IGuidGenerator guidGenerator,
-        IDomainRepository<ChatMessageReply, Guid> replies)
-    : ICommandHandler<ReplyToChatMessage, ReplyToChatMessageResult>
+internal sealed class ReplyToChatMessageHandler(
+    IChatGroupMemberRepository members,
+    IFileUploadService fileUploadService,
+    IMessageContentNormalizer contentNormalizer,
+    IIdentityContext identityContext,
+    IDomainRepository<ChatMessage, Guid> messages,
+    IEventDispatcher eventDispatcher,
+    IClock clock,
+    IGuidGenerator guidGenerator,
+    IDomainRepository<ChatMessageReply, Guid> replies)
+    : SendChatMessageBaseHandler<ReplyToChatMessage, ReplyToChatMessageResult>(fileUploadService, identityContext)
 {
-    public async Task<ReplyToChatMessageResult> HandleAsync(
+    public override async Task<ReplyToChatMessageResult> HandleAsync(
         ReplyToChatMessage command,
         CancellationToken cancellationToken = default)
     {
@@ -47,6 +51,11 @@ internal sealed class ReplyToChatMessageHandler(IChatGroupMemberRepository membe
         var message = await messages.GetAsync(command.ReplyToId, cancellationToken);
         if ( message is null ) return new MessageNotFoundError(command.ReplyToId);
 
+        var uploadedFileResults = await HandleFileUploads(
+            command.Attachments,
+            cancellationToken);
+        var attachments = GetMediae(uploadedFileResults);
+
         var messageReplyId = guidGenerator.New();
         var messageReply = new ChatMessageReply
         {
@@ -56,7 +65,7 @@ internal sealed class ReplyToChatMessageHandler(IChatGroupMemberRepository membe
             ReplyToId = message.Id,
             Content = contentNormalizer.Normalize(command.Content),
             CreatedAt = clock.Now,
-            ReactionCounts = new Dictionary<long, long>()
+            Attachments = attachments
         };
 
         await replies.SaveAsync(messageReply, cancellationToken);
@@ -69,7 +78,7 @@ internal sealed class ReplyToChatMessageHandler(IChatGroupMemberRepository membe
             ReplyToId = messageReply.ReplyToId,
             MessageId = messageReply.Id
         }, cancellationToken);
-        
+
         return messageReply.Id;
     }
 }

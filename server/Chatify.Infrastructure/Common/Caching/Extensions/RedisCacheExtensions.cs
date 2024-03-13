@@ -93,4 +93,9 @@ public static class RedisCacheExtensions
         => redisValue.TryParse(out long number)
             ? number
             : 0L;
+    
+    public static Guid? ToGuid(this RedisValue redisValue)
+        => Guid.TryParse(redisValue, out var guid)
+            ? guid
+            : default;
 }

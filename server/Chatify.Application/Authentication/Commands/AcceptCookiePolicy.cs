@@ -17,7 +17,7 @@ internal sealed class AcceptCookiePolicyHandler(
     : ICommandHandler<AcceptCookiePolicy, AcceptCookiePolicyResult>
 {
     public async Task<AcceptCookiePolicyResult> HandleAsync(
-        AcceptCookiePolicy command,
+        AcceptCookiePolicy _,
         CancellationToken cancellationToken = default)
     {
         await authService.AcceptCookiePolicy(

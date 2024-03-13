@@ -32,7 +32,7 @@ public class CassandraPagingCursorHelper : IPagingCursorHelper
         if ( string.IsNullOrEmpty(pagingCursorOne)
              || string.IsNullOrEmpty(pagingCursorTwo) )
         {
-            return default;
+            return default!;
         }
 
         var pagingStateOne = ToPagingState(pagingCursorOne) ?? Array.Empty<byte>();

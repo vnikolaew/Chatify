@@ -39,11 +39,13 @@ public sealed class FriendshipsRepository(
             CreatedAt = entity.CreatedAt
         };
 
-        var saveOne = base.SaveAsync(entity, cancellationToken);
-        var saveTwo = base.SaveAsync(swappedFriendRelation, cancellationToken);
-        await (saveOne, saveTwo);
+        var saveTasks = await new []
+        {
+            base.SaveAsync(entity, cancellationToken),
+            base.SaveAsync(swappedFriendRelation, cancellationToken)
+        };
 
-        return saveOne.Result;
+        return saveTasks[0];
     }
 
     public async Task<List<Domain.Entities.User>> AllForUser(

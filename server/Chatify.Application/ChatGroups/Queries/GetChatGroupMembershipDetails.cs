@@ -35,6 +35,6 @@ internal sealed class
         var membership = await members
             .ByGroupAndUser(query.GroupId, query.UserId, cancellationToken);
 
-        return membership is not null ? membership : Error.New("");
+        return membership is not null ? membership : Error.New(string.Empty);
     }
 }

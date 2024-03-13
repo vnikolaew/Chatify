@@ -1,4 +1,4 @@
-﻿namespace Chatify.Application.Common.Contracts;
+﻿namespace Chatify.Shared.Abstractions.Common;
 
 public interface IGuidGenerator
 {

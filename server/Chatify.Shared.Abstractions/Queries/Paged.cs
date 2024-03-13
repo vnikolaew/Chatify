@@ -1,11 +1,10 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Chatify.Shared.Abstractions.Queries;
 
 public class Paged<T> : PagedBase
 {
-    public IReadOnlyList<T> Items { get; set; } = System.Array.Empty<T>();
+    public IReadOnlyList<T> Items { get; } = System.Array.Empty<T>();
 
     public bool Empty => !Items?.Any() ?? false;
 
@@ -20,9 +19,7 @@ public class Paged<T> : PagedBase
         int currentPage, int resultsPerPage,
         int totalPages, long totalResults) :
         base(currentPage, resultsPerPage, totalPages, totalResults)
-    {
-        Items = items;
-    }
+        => Items = items;
 
     public static Paged<T> Create(IReadOnlyList<T> items,
         int currentPage, int resultsPerPage,
@@ -42,14 +39,14 @@ public class Paged<T> : PagedBase
 public sealed class CursorPaged<T> : List<T>
 {
     [JsonPropertyName(nameof(PagingCursor))]
-    public string PagingCursor { get; set; }
+    public string PagingCursor { get; init; }
     
     [JsonPropertyName(nameof(PageSize))]
-    public int PageSize { get; set; }
+    public int PageSize { get; init; }
 
-    public long Total { get; set; }
+    public long Total { get; init; }
     
-    public bool HasMore { get; set; }
+    public bool HasMore { get; init; }
     
     public IReadOnlyCollection<T> Items => AsReadOnly();
 

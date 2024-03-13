@@ -3,14 +3,15 @@ using Chatify.Application.Common.Models;
 using Chatify.Domain.Entities;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using LanguageExt.Common;
 using OneOf;
 
 namespace Chatify.Application.Messages.Commands.Common;
 
 internal abstract class SendChatMessageBaseHandler<TRequest, TResponse>(
-        IFileUploadService fileUploadService,
-        IIdentityContext identityContext)
+    IFileUploadService fileUploadService,
+    IIdentityContext identityContext)
     : ICommandHandler<TRequest, TResponse> where TRequest : class, ICommand<TResponse>
 {
     public abstract Task<TResponse> HandleAsync(TRequest command,
@@ -18,8 +19,7 @@ internal abstract class SendChatMessageBaseHandler<TRequest, TResponse>(
 
     protected static List<Media> GetMediae(IEnumerable<OneOf<Error, FileUploadResult>> fileUploadResults)
         => fileUploadResults
-            .Where(r => r.IsT1)
-            .Select(r => r.AsT1)
+            .OfType2()
             .Select(r => new Media
             {
                 Id = r.FileId,
@@ -32,7 +32,10 @@ internal abstract class SendChatMessageBaseHandler<TRequest, TResponse>(
         IEnumerable<InputFile>? inputFiles,
         CancellationToken cancellationToken)
     {
-        if ( inputFiles is null || !inputFiles.Any() ) return new List<OneOf<Error, FileUploadResult>>();
+        if ( inputFiles is null || !inputFiles.Any() )
+        {
+            return new List<OneOf<Error, FileUploadResult>>();
+        }
 
         var uploadRequest = new MultipleFileUploadRequest
         {

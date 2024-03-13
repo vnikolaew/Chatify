@@ -8,12 +8,12 @@ using Chatify.Web.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 {
     var urls = builder.Configuration.GetValue<string[]>("Urls");
-    if(urls is not null) builder.WebHost.UseUrls(urls);
-    
+    if ( urls is not null ) builder.WebHost.UseUrls(urls);
+
     builder
         .WebHost
         .UseProductionHttps(builder.Environment);
-    
+
     builder
         .Services
         .AddWebComponents(builder.Environment)
@@ -32,6 +32,7 @@ var app = builder.Build();
         .UseContext()
         .UseAppEndpoints();
 
+    app.Logger.LogInformation("Running as host {HostName}", Environment.MachineName);
     app.Run();
 }
 
