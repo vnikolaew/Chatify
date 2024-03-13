@@ -1,20 +1,23 @@
 "use client";
 import React, { forwardRef, HTMLAttributes, useCallback, useEffect, useMemo, useState } from "react";
 import { DefaultElement, Editable, Slate, withReact } from "slate-react";
-import { createEditor, Text, Transforms } from "slate";
+import { createEditor, Editor, Text, Transforms } from "slate";
 import {
+   Avatar,
    Button,
    Dropdown,
    DropdownItem,
    DropdownMenu,
    DropdownTrigger,
-   Link,
+   Link, Listbox, ListboxItem,
    Spacer,
    Spinner,
    Tooltip,
 } from "@nextui-org/react";
-import { ChatGroupDetailsEntry } from "@openapi";
+import NextLink from "next/link";
+import { ChatGroupDetailsEntry, UserStatus } from "@openapi";
 import {
+   getMediaUrl,
    useDraftChatMessage,
    useGetDraftedMessageForGroup,
    useSendGroupChatMessageMutation,
@@ -37,6 +40,7 @@ import { RightArrow, UploadIcon } from "@web/components";
 import { useReplyToMessageContext } from "../ChatMessagesSection";
 import ReplyToMessagePreview from "./ReplyToMessagePreview";
 import MessageTextEditorToolbar from "./MessageTextEditorToolbar";
+import { Portal } from "@radix-ui/themes";
 
 export class ChatifyFile {
    public readonly id: string;
@@ -98,12 +102,6 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                                                                                  ...props
                                                                               }, ref) => {
    const [editor] = useState(() => withReact(createEditor()));
-   const editorLines = useCallback(() =>
-         editor.children
-            .filter(n => n.type === `line-break`)
-            .length,
-      [editor]);
-
    const [replyTo] = useReplyToMessageContext();
    const hubClient = useChatifyClientContext();
    const [isUserTyping, setIsUserTyping] = useState(false);
@@ -184,22 +182,15 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
    // Define a rendering function based on the element passed to `props`. We use
    // `useCallback` here to memoize the function for subsequent renders.
    const renderElement = useCallback((props) => {
-      console.log({ props });
       switch (props.element.type) {
          case "code":
             return <CodeElement {...props} />;
          case "link":
             return (
-               <Link
-                  underline={"hover"}
-                  size={"sm"}
-                  className={`cursor-pointer inline`}
-                  color={"primary"}
-                  href={props.element.href}
-                  {...props}
-               >
-                  {props.element.children[0].text}
-               </Link>
+               <NextLink tabIndex={0} role={`link`} onClick={_ => window.open(props.element.href, `_blank`)}
+                         className={`text-primary-500 tap-highlight-transparent cursor-pointer hover:underline`}
+                         target={`_blank`}
+                         href={props.element.href}>{props.element.children[0].text}</NextLink>
             );
          default:
             return <DefaultElement {...props} />;
@@ -250,12 +241,10 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
             files: attachedFiles.map((_) => _.file),
          },
          {
-            onSuccess: (_, {}) => {
-               clearFiles();
-               CustomEditor.clear(editor);
-            },
             onSettled: () => {
                setIsUserTyping(false);
+               clearFiles();
+               CustomEditor.clear(editor);
             },
          },
       );
@@ -287,11 +276,59 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
       = useState(140);
 
    function handleInsertLineBreak() {
-      CustomEditor.insertLineBreak(editor)
+      CustomEditor.insertLineBreak(editor);
 
       // Re-calculate editor height:
       setEditorHeight(h => h + 20);
    }
+
+   const [showUserMentionSuggestions, setShowUserMentionSuggestions] = useState(false);
+   useEffect(() => {
+      if (showUserMentionSuggestions) {
+         // @ts-ignore
+         console.log([...((ref.current as HTMLDivElement).children)]
+            .find(node => node.id === `editable`),
+         );
+      }
+   }, [showUserMentionSuggestions]);
+
+   const getStatusColor = useCallback((status: UserStatus) => {
+      if (!status) return "default";
+      switch (status) {
+         case UserStatus.AWAY:
+            return "bg-warning";
+         case UserStatus.ONLINE:
+            return "bg-success";
+         case UserStatus.OFFLINE:
+            return "bg-default";
+      }
+      return "bg-default";
+   }, []);
+
+   const handleSelectUserMention = useCallback((key: string) => {
+      const selectedUser = chatGroup.members.find(m => m.id === key);
+      console.log(selectedUser);
+      if (selectedUser) {
+         editor.deleteBackward(`word`);
+
+         let isActive = CustomEditor.isUserMentionActive(editor);
+         console.log({ isActive });
+
+         CustomEditor.toggleUserMention(editor);
+
+         isActive = CustomEditor.isUserMentionActive(editor);
+         console.log({ isActive });
+
+         Editor.addMark(editor, `userMention`, true);
+         // @ts-ignore
+         Transforms.insertNodes(editor, { text: `@${selectedUser.username}`, userMention: true }, {});
+         CustomEditor.toggleUserMention(editor);
+         Transforms.insertNodes(editor, { text: `.` }, {});
+         Transforms.move(editor, { edge: `end` });
+      }
+
+      setShowUserMentionSuggestions(false);
+   }, [chatGroup?.members, editor]);
 
    return (
       <Slate
@@ -303,7 +340,25 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
          initialValue={initialValue}
       >
          <div ref={ref} className={`relative h-fit w-5/6 mr-12 ${className ?? ``}`} {...props}>
+            {showUserMentionSuggestions && (
+               <Listbox
+                  aria-label={`user-mentions-list`}
+                  onAction={handleSelectUserMention} color={`default`} variant={`faded`}
+                  className={`-top-10 w-fit rounded-md bg-zinc-900 text-xs z-10 absolute p-2 gap-2`}>
+                  {chatGroup?.members?.map((m, i) => (
+                     <ListboxItem startContent={
+                        <Avatar classNames={{
+                           base: `w-6 h-6`,
+                           img: `w-6 h-6`,
+                        }} radius={`sm`} color={`default`} src={getMediaUrl(m.profilePicture?.mediaUrl)} />
+                     } endContent={<div className={`rounded-full ml-2 w-2 h-2 ${getStatusColor(m?.status)}`} />}
+                                  className={`pr-8 text-xs`}
+                                  key={m.id}>{m.username} {m.id === meId && `(you)`}</ListboxItem>
+                  ))}
+               </Listbox>
+            )}
             <Editable
+               id={`editable`}
                style={{
                   minHeight: `${editorHeight + (attachedFilesUrls?.size ? 60 : 0)}px`,
                   maxHeight: `${editorHeight + (attachedFilesUrls?.size ? 60 : 0)}px`,
@@ -314,6 +369,18 @@ const MessageTextEditor = forwardRef<HTMLDivElement, MessageTextEditorProps>(({
                renderElement={renderElement}
                renderLeaf={renderLeaf}
                onKeyDown={async (e) => {
+                  if (e.key === "@") {
+                     e.preventDefault();
+
+                     CustomEditor.toggleUserMention(editor);
+                     Transforms.insertText(editor, `@`);
+
+                     // Show suggested users from the group:
+                     setShowUserMentionSuggestions(true);
+
+                     console.log({ children: editor.children, editor });
+                     return;
+                  }
                   if (e.key === "Enter") {
                      e.preventDefault();
                      if (e.shiftKey) {

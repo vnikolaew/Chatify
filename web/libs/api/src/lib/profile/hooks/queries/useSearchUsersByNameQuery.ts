@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { profileClient } from "../../client";
+import { DEFAULT_CACHE_TIME } from "../../../constants";
 
 export interface SearchUsersByNameModel {
    usernameQuery: string;
@@ -35,6 +36,6 @@ export const useSearchUsersByNameQuery = (usernameQuery: string) => {
       queryKey: GET_USERS_SEARCH_KEY(usernameQuery),
       queryFn: ({ queryKey: [_, usernameQuery] }) =>
          searchUsersByName({ usernameQuery }),
-      cacheTime: 60 * 60 * 1000,
+      gcTime: DEFAULT_CACHE_TIME,
    });
 };

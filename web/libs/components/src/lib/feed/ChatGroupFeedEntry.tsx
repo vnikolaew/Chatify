@@ -28,11 +28,14 @@ function formatDate(dateTime: string) {
    return date.isSame(new Date(), "date")
       ? date.format("HH:MM A")
       : date.isSame(new Date(), "year")
-         ? date.format("MMM D")
-         : date.format("M/D/YY");
+        ? date.format("MMM D")
+        : date.format("M/D/YY");
 }
 
-const ChatGroupFeedEntry = ({ feedEntry, avatarColor }: ChatGroupFeedEntryProps) => {
+const ChatGroupFeedEntry = ({
+   feedEntry,
+   avatarColor,
+}: ChatGroupFeedEntryProps) => {
    const client = useQueryClient();
    const meId = useCurrentUserId();
    const groupId = useCurrentChatGroup();
@@ -40,34 +43,32 @@ const ChatGroupFeedEntry = ({ feedEntry, avatarColor }: ChatGroupFeedEntryProps)
    const usersTyping = useGetUsersTyping(feedEntry?.chatGroup?.id!);
    const isActive = useMemo(
       () => feedEntry?.chatGroup?.id === groupId,
-      [groupId, feedEntry?.chatGroup?.id],
+      [groupId, feedEntry?.chatGroup?.id]
    );
 
    const handlePrefetchGroupDetails = async () => {
-      await client.prefetchQuery([`chat-group`, feedEntry?.chatGroup?.id], {
+      await client.prefetchQuery({
+         queryKey: [`chat-group`, feedEntry?.chatGroup?.id],
          queryFn: ({ queryKey: [_, id] }) =>
             getChatGroupDetails({ chatGroupId: id! }),
          staleTime: 30 * 60 * 1000,
       });
 
-      await client.prefetchInfiniteQuery(
-         GET_PAGINATED_GROUP_MESSAGES_KEY(feedEntry.chatGroup!.id!),
-         {
-            queryFn: ({ queryKey: [_, groupId] }) =>
-               getPaginatedGroupMessages({
-                  groupId,
-                  pageSize: 5,
-                  pagingCursor: null!,
-               }),
-            getNextPageParam: (lastPage) => lastPage.pagingCursor,
-            getPreviousPageParam: (_, allPages) =>
-               allPages.at(-1)?.pagingCursor,
-         },
-      );
+      await client.prefetchInfiniteQuery({
+         queryKey: GET_PAGINATED_GROUP_MESSAGES_KEY(feedEntry.chatGroup!.id!),
+         queryFn: ({ queryKey: [_, groupId] }) =>
+            getPaginatedGroupMessages({
+               groupId,
+               pageSize: 5,
+               pagingCursor: null!,
+            }),
+         getNextPageParam: (lastPage) => lastPage.pagingCursor,
+         getPreviousPageParam: (_, allPages) => allPages.at(-1)?.pagingCursor,
+      });
    };
    const isPrivateGroup = useMemo(
       () => feedEntry?.chatGroup?.metadata?.private === `true`,
-      [feedEntry?.chatGroup?.metadata?.private],
+      [feedEntry?.chatGroup?.metadata?.private]
    );
 
    const {
@@ -76,7 +77,7 @@ const ChatGroupFeedEntry = ({ feedEntry, avatarColor }: ChatGroupFeedEntryProps)
       error,
    } = useGetUserDetailsQuery(
       feedEntry?.chatGroup?.adminIds?.filter((id) => id !== meId)?.[0]!,
-      { enabled: isPrivateGroup },
+      { enabled: isPrivateGroup }
    );
 
    const sideBgColor = useMemo(() => {
@@ -99,23 +100,23 @@ const ChatGroupFeedEntry = ({ feedEntry, avatarColor }: ChatGroupFeedEntryProps)
          }
       }
       return `border-l-transparent`;
-
    }, [avatarColor, isActive]);
 
    const messageSummary = useMemo(() => {
-      const usersTypingWithoutMe = [...usersTyping]
-         .filter((_) => _.userId !== meId);
+      const usersTypingWithoutMe = [...usersTyping].filter(
+         (_) => _.userId !== meId
+      );
 
       return usersTypingWithoutMe.length > 0
-         ? `${usersTypingWithoutMe
-            .map((_) => _.username)
-            .join(", ")} ${
-            usersTyping.size === 1 ? ` is ` : ` are `
-         } currently typing ...`
-         : `${feedEntry.latestMessage?.content ? feedEntry.latestMessage?.content?.substring(0, 30) : ``}${
-         feedEntry.latestMessage?.content?.length! > 30 ? `...` : ``
-      }` ?? `No messages yet.`;
-
+         ? `${usersTypingWithoutMe.map((_) => _.username).join(", ")} ${
+              usersTyping.size === 1 ? ` is ` : ` are `
+           } currently typing ...`
+         : `${
+              feedEntry.latestMessage?.content
+                 ? feedEntry.latestMessage?.content?.substring(0, 30)
+                 : ``
+           }${feedEntry.latestMessage?.content?.length! > 30 ? `...` : ``}` ??
+              `No messages yet.`;
    }, [usersTyping, feedEntry?.latestMessage?.content, meId]);
 
    return (
@@ -127,11 +128,11 @@ const ChatGroupFeedEntry = ({ feedEntry, avatarColor }: ChatGroupFeedEntryProps)
          size={"lg"}
          variant={"light"}
          radius={"md"}
-         className={`flex h-fit shadow-md transition-background duration-100 hover:bg-default-500 ${
+         className={`transition-background hover:bg-default-500 flex h-fit shadow-md duration-100 ${
             isActive
                ? `bg-default-100 border-l-2 ${sideBgColor}`
                : `bg-transparent`
-         } items-center cursor-pointer w-full gap-4 p-3`}
+         } w-full cursor-pointer items-center gap-4 p-3`}
       >
          <Avatar
             fallback={<Skeleton className={`h-10 w-10 rounded-full`} />}
@@ -139,23 +140,23 @@ const ChatGroupFeedEntry = ({ feedEntry, avatarColor }: ChatGroupFeedEntryProps)
             radius={"full"}
             color={avatarColor ?? "primary"}
             size={"md"}
-            className={`aspect-square ml-2 object-cover`}
+            className={`ml-2 aspect-square object-cover`}
             src={getMediaUrl(
                isPrivateGroup
                   ? user?.user?.profilePicture?.mediaUrl!
-                  : feedEntry?.chatGroup?.picture?.mediaUrl!,
+                  : feedEntry?.chatGroup?.picture?.mediaUrl!
             )}
          />
          <div
-            className={`flex flex-1 flex-col justify-evenly items-center gap-0`}
+            className={`flex flex-1 flex-col items-center justify-evenly gap-0`}
          >
-            <div className={`flex w-full gap-2 items-center justify-between`}>
-               <span className="text-sm w-3/4 truncate font-semibold text-default-800">
+            <div className={`flex w-full items-center justify-between gap-2`}>
+               <span className="text-default-800 w-3/4 truncate text-sm font-semibold">
                   {isPrivateGroup
                      ? user?.user?.username
                      : feedEntry?.chatGroup?.name?.substring(0, 20)}
                </span>
-               <time className={`text-xxs font-light text-default-500`}>
+               <time className={`text-xxs text-default-500 font-light`}>
                   {feedEntry?.latestMessage?.createdAt
                      ? formatDate(feedEntry.latestMessage.createdAt)
                      : "-"}
@@ -165,7 +166,8 @@ const ChatGroupFeedEntry = ({ feedEntry, avatarColor }: ChatGroupFeedEntryProps)
                meId={meId}
                feedEntry={feedEntry}
                isPrivateGroup={isPrivateGroup}
-               messageSummary={messageSummary} />
+               messageSummary={messageSummary}
+            />
          </div>
       </Button>
    );
@@ -178,55 +180,53 @@ interface ChatFeedEntryMessageSummaryProps {
    messageSummary: string;
 }
 
-
 const ChatFeedEntryMessageSummary = ({
-                                        messageSummary,
-                                        feedEntry,
-                                        meId,
-                                        isPrivateGroup,
-                                     }: ChatFeedEntryMessageSummaryProps) => {
+   messageSummary,
+   feedEntry,
+   meId,
+   isPrivateGroup,
+}: ChatFeedEntryMessageSummaryProps) => {
    const messageSenderId = feedEntry!.latestMessage?.userId;
 
    if (!messageSenderId && !messageSummary?.length) {
-      return <div className={`w-full flex items-center gap-1 h-4 rounded-full`}>
-            <span className={`text-xs text-default-400 font-semibold`}>
-         No messages yet.
+      return (
+         <div className={`flex h-4 w-full items-center gap-1 rounded-full`}>
+            <span className={`text-default-400 text-xs font-semibold`}>
+               No messages yet.
             </span>
-      </div>;
+         </div>
+      );
    }
 
    return (
-      <div className={`w-full flex items-center gap-1 h-4 rounded-full`}>
+      <div className={`flex h-4 w-full items-center gap-1 rounded-full`}>
          {isPrivateGroup && messageSenderId === meId && (
-            <span className={`text-xs text-default-400 font-semibold`}>
+            <span className={`text-default-400 text-xs font-semibold`}>
                You:
             </span>
          )}
-         {isPrivateGroup && messageSenderId !== meId && (
-            <Fragment />
-         )}
+         {isPrivateGroup && messageSenderId !== meId && <Fragment />}
 
          {!isPrivateGroup && messageSenderId === meId && (
-            <span className={`text-xs text-default-400 font-semibold`}>
+            <span className={`text-default-400 text-xs font-semibold`}>
                You:
             </span>
          )}
 
          {!isPrivateGroup && messageSenderId !== meId && (
-            <span className={`text-xs text-default-400 font-semibold`}>
+            <span className={`text-default-400 text-xs font-semibold`}>
                {feedEntry!.messageSender?.username}:
             </span>
          )}
 
          <p
-            className={`text-[.7rem] font-normal w-full truncate leading-3 text-default-500`}
+            className={`text-default-500 w-full truncate text-[.7rem] font-normal leading-3`}
             dangerouslySetInnerHTML={{
                __html: messageSummary,
             }}
          ></p>
       </div>
    );
-
 };
 
 export default ChatGroupFeedEntry;

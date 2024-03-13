@@ -67,7 +67,8 @@ const FriendsPage = ({}: PageProps) => {
                   }
                   classNames={{
                      input: `!pl-4`,
-                     // inputWrapper: `pl-2`
+                     inputWrapper: `!py-0 !h-12`,
+                     innerWrapper: `!h-10`
                   }}
                   className={`w-full shadow-md`}
                   size={"md"}
@@ -80,13 +81,13 @@ const FriendsPage = ({}: PageProps) => {
                   onPress={handleClick}
                   spinner={<Spinner color={`white`} size={`sm`} />}
                   isDisabled={!!errorMessage || userHandle.length === 0}
-                  className={`self-end px-6 disabled:cursor-not-allowed ${
+                  className={`self-end px-8 py-2 disabled:cursor-not-allowed ${
                      userHandle.length === 0 && `hover:cursor-not-allowed`
                   }`}
                   disabled={userHandle.length === 0}
                   variant={"shadow"}
                   color={"primary"}
-                  size={"md"}
+                  size={"sm"}
                >
                   {isLoading && isFetching ? t(`Searching`) : t(`Search`)}
                </Button>

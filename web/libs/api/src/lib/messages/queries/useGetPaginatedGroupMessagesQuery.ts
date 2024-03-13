@@ -69,6 +69,7 @@ export const useGetPaginatedGroupMessagesQuery = (
       QueryKey
    >({
       queryKey: GET_PAGINATED_GROUP_MESSAGES_KEY(groupId),
+      initialPageParam: null! as string,
       getNextPageParam: (lastPage) => {
          return lastPage.pagingCursor;
       },
@@ -76,7 +77,7 @@ export const useGetPaginatedGroupMessagesQuery = (
       queryFn: ({ queryKey: [_, groupId, __], pageParam = null! }) => {
          return getPaginatedGroupMessages({
             groupId: (groupId as string).toString(),
-            pagingCursor: pageParam,
+            pagingCursor: (pageParam as string) ?? undefined,
             pageSize: pageSize,
          });
       },

@@ -21,14 +21,12 @@ const changeUserPassword = async (model: ChangeUserPasswordModel) => {
 
 export const useChangeUserPasswordMutation = () => {
    const client = useQueryClient();
-   return useMutation<any, Error, ChangeUserPasswordModel, any>(
-      changeUserPassword,
-      {
-         onError: console.error,
-         onSuccess: (data) => {
-            console.log("User password changed successfully: " + data);
-         },
-         onSettled: (res) => console.log(res),
-      }
-   );
+   return useMutation<any, Error, ChangeUserPasswordModel, any>({
+      mutationFn: changeUserPassword,
+      onError: console.error,
+      onSuccess: (data) => {
+         console.log("User password changed successfully: " + data);
+      },
+      onSettled: (res) => console.log(res),
+   });
 };

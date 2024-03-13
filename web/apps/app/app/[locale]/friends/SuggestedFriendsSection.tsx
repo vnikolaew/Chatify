@@ -5,6 +5,7 @@ import { Avatar, AvatarProps, Badge, BadgeProps, Button, Chip, Skeleton, Spinner
 import { useGetFriendSuggestions, useGetUserDetailsQuery, useSendFriendInviteMutation } from "@web/api";
 import { useTranslations } from "next-intl";
 import { AddUserIcon, Divider } from "@web/components";
+import { FrownIcon } from "lucide-react";
 
 export interface SuggestedFriendsSectionProps {
 }
@@ -35,6 +36,12 @@ const SuggestedFriendsSection = ({}: SuggestedFriendsSectionProps) => {
                   <Divider className={`w-full mt-3 text-default-300`} orientation={`horizontal`} />
                </div>
             ))}
+            {suggestedFriends?.length === 0 && (
+               <div className={`self-center flex items-center gap-2 mt-2 text-default-300`}>
+                  <FrownIcon size={16} className={`stroke-default-300`} />
+                  <span>You have no suggestions.</span>
+               </div>
+            )}
          </div>
       </section>
    );

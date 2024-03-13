@@ -1,6 +1,6 @@
 import { BaseEditor, Editor, Element, Transforms } from "slate";
 import { ReactEditor } from "slate-react";
-import { Link } from "@nextui-org/react";
+import { Chip, Link } from "@nextui-org/react";
 import React from "react";
 
 export const CustomEditor = {
@@ -17,6 +17,11 @@ export const CustomEditor = {
    isLinkActive(editor: BaseEditor & ReactEditor) {
       const marks = Editor.marks(editor);
       return marks?.link ?? false;
+   },
+
+   isUserMentionActive(editor: BaseEditor & ReactEditor) {
+      const marks = Editor.marks(editor);
+      return marks?.[`user-mention`] ?? false;
    },
 
    isCodeBlockActive(editor: BaseEditor & ReactEditor) {
@@ -114,6 +119,17 @@ export const CustomEditor = {
       }
    },
 
+   toggleUserMention(editor: BaseEditor & ReactEditor) {
+      const mark = `userMention`;
+      const isActive = CustomEditor.isUserMentionActive(editor);
+
+      if (isActive) {
+         Editor.removeMark(editor, mark);
+      } else {
+         Editor.addMark(editor, mark, true);
+      }
+   },
+
    toggleStrikethroughMark(editor: BaseEditor & ReactEditor) {
       const isActive = CustomEditor.isStrikethroughMarkActive(editor);
       if (isActive) {
@@ -131,7 +147,7 @@ export const CustomEditor = {
       const link = {
          type: "link",
          link: true,
-         href,
+         href: (!href.startsWith(`http`) ? `https://` : ``) + href,
          children: [{ text: title || href }],
       };
 
@@ -161,21 +177,29 @@ export const CodeElement = (props) => {
 export const Leaf = (props) => {
    console.log({ props });
    if (props.leaf.link) {
+      const properHref = (!props.leaf.href.startsWith(`http`) ? `https://` : ``) + props.leaf.href;
       return (
          <Link
+            tabIndex={0}
+            role={`link`} onClick={_ => window.open(properHref, `_blank`)}
+            className={`text-primary-500 tap-highlight-transparent cursor-pointer hover:underline`}
             underline={"hover"}
             color={"primary"}
-            className={`cursor-pointer select-auto`}
             target={`_blank`}
             isExternal
             size={"sm"}
-            href={(!props.leaf.href.startsWith(`http`) ? `https://` : ``) + props.leaf.href}
+            href={properHref}
             /*{...props.attributes}*/
          >
             {props.children}
          </Link>
       );
    }
+
+   if (props.leaf.userMention) {
+      return <Chip variant={`shadow`} size={`sm`} color={`primary`}>{props.children}</Chip>;
+   }
+
    if (props.leaf.code) {
       return (
          <code {...props.attributes}>{props.children}</code>

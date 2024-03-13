@@ -39,7 +39,8 @@ const editUserDetails = async (model: EditUserDetailsModel) => {
 export const useEditUserDetailsMutation = () => {
    const client = useQueryClient();
 
-   return useMutation<any, Error, EditUserDetailsModel, any>(editUserDetails, {
+   return useMutation<any, Error, EditUserDetailsModel, any>({
+      mutationFn: editUserDetails,
       onError: console.error,
       onSuccess: (data) => {
          console.log("User details edited successfully: " + data);
@@ -49,7 +50,7 @@ export const useEditUserDetailsMutation = () => {
          await client.refetchQueries({
             queryKey: [`me`, `claims`],
             exact: true,
-            type: "all"
+            type: "all",
          });
       },
    });

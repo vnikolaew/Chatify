@@ -1,5 +1,9 @@
 import { messagesClient } from "../client";
-import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import {
+   InfiniteData,
+   useInfiniteQuery,
+   useQueryClient,
+} from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import {
    ChatGroupDetailsEntry,
@@ -7,10 +11,12 @@ import {
    ChatMessageReply,
    ChatMessageReplyCursorPagedApiResponse,
    CursorPaged,
-   MessageSenderInfoEntry, User,
+   MessageSenderInfoEntry,
+   User,
    // @ts-ignore
 } from "@openapi";
 import { GET_PAGINATED_GROUP_MESSAGES_KEY } from "./useGetPaginatedGroupMessagesQuery";
+import { DEFAULT_CACHE_TIME } from "../../constants";
 
 export interface GetPaginatedMessageRepliesModel {
    messageId: string;
@@ -19,7 +25,7 @@ export interface GetPaginatedMessageRepliesModel {
 }
 
 const getPaginatedMessageReplies = async (
-   model: GetPaginatedMessageRepliesModel,
+   model: GetPaginatedMessageRepliesModel
 ): Promise<ChatMessageReply[]> => {
    const { messageId, pageSize, pagingCursor } = model;
    const params = new URLSearchParams({
@@ -33,7 +39,7 @@ const getPaginatedMessageReplies = async (
          {
             headers: {},
             params,
-         },
+         }
       );
 
    if (status === HttpStatusCode.BadRequest) {
@@ -50,55 +56,60 @@ export const GET_PAGINATED_GROUP_MESSAGE_REPLIES_KEY = (messageId: string) => [
 ];
 
 export const useGetPaginatedMessageRepliesQuery = (
-   model: GetPaginatedMessageRepliesModel,
+   model: GetPaginatedMessageRepliesModel
 ) => {
    const client = useQueryClient();
 
-   return useInfiniteQuery<CursorPaged<ChatMessageReply>, Error, CursorPaged<ChatMessageReply>, any>({
+   return useInfiniteQuery<
+      CursorPaged<ChatMessageReply>,
+      Error,
+      CursorPaged<ChatMessageReply>,
+      any
+   >({
       queryKey: GET_PAGINATED_GROUP_MESSAGE_REPLIES_KEY(model.messageId),
       queryFn: () => getPaginatedMessageReplies(model),
       getNextPageParam: (lastPage) => {
          return lastPage.pagingCursor;
       },
       getPreviousPageParam: (_, allPages) => allPages.at(-1)?.pagingCursor,
-      cacheTime: 60 * 60 * 1000,
-      onSuccess: (data) => {
-         data.pages.flatMap(_ => _).forEach((reply) => {
-            const x = client.getQueryData<
-               InfiniteData<CursorPaged<ChatGroupMessageEntry>>
-            >(GET_PAGINATED_GROUP_MESSAGES_KEY(reply.chatGroupId), {
-               exact: false,
-            });
+      gcTime: DEFAULT_CACHE_TIME,
+      onSuccess: (data: InfiniteData<CursorPaged<ChatMessageReply>>) => {
+         data.pages
+            .flatMap((_) => _)
+            .forEach((reply) => {
+               const x = client.getQueryData<
+                  InfiniteData<CursorPaged<ChatGroupMessageEntry>>
+               >(GET_PAGINATED_GROUP_MESSAGES_KEY(reply.chatGroupId));
 
-            const user = x?.pages
-               .flatMap((p) => p.items)
-               .find((m) => m.message?.userId === reply.userId)
-               ?.senderInfo as MessageSenderInfoEntry;
+               const user = x?.pages
+                  .flatMap((p) => p.items)
+                  .find((m) => m.message?.userId === reply.userId)
+                  ?.senderInfo as MessageSenderInfoEntry;
 
-            if (user) {
-               reply.user = {
-                  id: user?.userId,
-                  username: user?.username,
-                  profilePicture: {
-                     mediaUrl: user?.profilePictureUrl,
-                  },
-               };
-            } else {
-               const chatGroupUser = client
-                  .getQueryData<ChatGroupDetailsEntry>(
-                     [`chat-group`, reply.chatGroupId],
-                     { exact: true },
-                  )
-                  ?.members.find((m: User) => m.id === reply.userId);
-               if (chatGroupUser) {
+               if (user) {
                   reply.user = {
-                     id: chatGroupUser.id,
-                     username: chatGroupUser.username,
-                     profilePicture: chatGroupUser.profilePicture,
+                     id: user?.userId,
+                     username: user?.username,
+                     profilePicture: {
+                        mediaUrl: user?.profilePictureUrl,
+                     },
                   };
+               } else {
+                  const chatGroupUser = client
+                     .getQueryData<ChatGroupDetailsEntry>([
+                        `chat-group`,
+                        reply.chatGroupId,
+                     ])
+                     ?.members.find((m: User) => m.id === reply.userId);
+                  if (chatGroupUser) {
+                     reply.user = {
+                        id: chatGroupUser.id,
+                        username: chatGroupUser.username,
+                        profilePicture: chatGroupUser.profilePicture,
+                     };
+                  }
                }
-            }
-         });
+            });
       },
    });
 };

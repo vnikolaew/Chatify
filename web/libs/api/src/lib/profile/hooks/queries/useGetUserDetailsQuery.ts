@@ -7,6 +7,7 @@ import { HttpStatusCode } from "axios";
 import { profileClient } from "../../client";
 import { UserDetailsEntry, UserDetailsEntryApiResponse } from "@openapi";
 import { sleep } from "../../../utils";
+import { DEFAULT_CACHE_TIME, DEFAULT_STALE_TIME } from "../../../constants";
 
 // @ts-ignore
 
@@ -48,8 +49,8 @@ export const useGetUserDetailsQuery = (
    return useQuery<UserDetailsEntry, Error, UserDetailsEntry, string[]>({
       queryKey: [USER_DETAILS_KEY, userId],
       queryFn: ({ queryKey: [_, userId] }) => getUserDetails({ userId }),
-      cacheTime: 60 * 60 * 1000,
-      staleTime: 60 * 60 * 1000, // 1 HOUR
+      gcTime: DEFAULT_CACHE_TIME,
+      staleTime: DEFAULT_STALE_TIME,
       ...options,
    });
 };

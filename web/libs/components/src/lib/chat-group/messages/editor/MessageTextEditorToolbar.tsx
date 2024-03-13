@@ -68,7 +68,7 @@ const MessageTextEditorToolbar = ({}: MessageTextEditorToolbarProps) => {
             />
             <AddLinkToolbarButton onAdd={(text, href) => {
                CustomEditor.toggleLink(editor, href);
-               editor.insertText(text)
+               editor.insertText(text);
                CustomEditor.toggleLink(editor, href);
                console.log(editor.children);
             }} />
@@ -102,6 +102,11 @@ const AddLinkToolbarButton = ({ onAdd }: AddLinkToolbarButtonProps) => {
       onAdd(text, href);
    }
 
+   function clearFields() {
+      setText(``)
+      setHref(``)
+   }
+
    return (
       <Fragment>
          <ToolbarButton
@@ -117,6 +122,7 @@ const AddLinkToolbarButton = ({ onAdd }: AddLinkToolbarButtonProps) => {
                      <ModalHeader>Add Link</ModalHeader>
                      <ModalBody className={`!mt-2`}>
                         <Input
+                           autoFocus
                            value={text}
                            onValueChange={setText}
                            isClearable
@@ -149,11 +155,15 @@ const AddLinkToolbarButton = ({ onAdd }: AddLinkToolbarButtonProps) => {
                            size={`sm`}
                            color={`default`}
                            className={`px-4`}
-                           onPress={onClose}
+                           onPress={_ => {
+                              clearFields()
+                              onClose();
+                           }}
                         >
                            Cancel
                         </Button>
                         <Button
+                           isDisabled={!text?.length || !href?.length}
                            spinner={<Spinner className={`self-center`} classNames={{
                               circle1: `h-4 w-4`,
                               circle2: `h-4 w-4`,
@@ -162,6 +172,7 @@ const AddLinkToolbarButton = ({ onAdd }: AddLinkToolbarButtonProps) => {
                            variant={`shadow`}
                            onPress={() => {
                               handleAddLink();
+                              clearFields()
                               onClose();
                            }}
                            color={`primary`}

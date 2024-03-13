@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useGetChatGroupAttachmentsQuery } from "@web/api";
 import { Link, Skeleton } from "@nextui-org/react";
 import { MediaAttachment } from "./MediaAttachment";
@@ -8,8 +8,8 @@ export interface ChatGroupAttachmentsTabProps {
 }
 
 const ChatGroupAttachmentsTab = ({
-                                    chatGroupId,
-                                 }: ChatGroupAttachmentsTabProps) => {
+   chatGroupId,
+}: ChatGroupAttachmentsTabProps) => {
    const {
       data: attachments,
       isLoading,
@@ -20,39 +20,49 @@ const ChatGroupAttachmentsTab = ({
       pageSize: 10,
       pagingCursor: null!,
    });
+   const noGroupAttachments = useMemo(
+      () => attachments?.pages?.[0]?.total === 0,
+      [attachments?.pages]
+   );
+   console.log(noGroupAttachments);
 
    return (
       <div>
-         <div className={`my-2  mx-auto grid gap-2 max-w-fit grid-cols-2`}>
+         <div className={`mx-auto  my-2 grid max-w-fit grid-cols-2 gap-2`}>
             {isLoading && isFetching
                ? Array.from({ length: 10 }).map((_, i) => (
-                  <div
-                     className={`flex flex-col items-start m-2 gap-2`}
-                     key={i}
-                  >
-                     <Skeleton
-                        className={`w-28 h-36 rounded-medium`}
-                        key={i}
-                     />
-                     <div className={`w-full`}>
-                        <Skeleton className={`w-3/5 h-3 rounded-full`} />
-                        <Skeleton className={`w-4/5 mt-1 h-2 rounded-full`} />
-                     </div>
-                  </div>
-               ))
+                    <div
+                       className={`m-2 flex flex-col items-start gap-2`}
+                       key={i}
+                    >
+                       <Skeleton
+                          className={`rounded-medium h-36 w-28`}
+                          key={i}
+                       />
+                       <div className={`w-full`}>
+                          <Skeleton className={`h-3 w-3/5 rounded-full`} />
+                          <Skeleton className={`mt-1 h-2 w-4/5 rounded-full`} />
+                       </div>
+                    </div>
+                 ))
                : attachments?.pages
-                  ?.flatMap((p) => p.items)
-                  .map((attachment, i) => (
-                     <MediaAttachment
-                        key={attachment.attachmentId}
-                        attachment={attachment}
-                     />
-                  ))}
+                    ?.flatMap((p) => p.items)
+                    .map((attachment, i) => (
+                       <MediaAttachment
+                          key={attachment.attachmentId}
+                          attachment={attachment}
+                       />
+                    ))}
+            {noGroupAttachments && (
+               <div className={`text-md col-span-2 mt-4 text-gray-300`}>
+                  No attachments sent yet.
+               </div>
+            )}
          </div>
          {attachments?.pages?.at(-1)?.hasMore && (
-            <div className={`w-full mt-4 text-center`}>
+            <div className={`mt-4 w-full text-center`}>
                <Link
-                  className={`cursor-pointer text-small mx-auto`}
+                  className={`text-small mx-auto cursor-pointer`}
                   underline={`hover`}
                   color={`primary`}
                >

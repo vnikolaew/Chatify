@@ -43,12 +43,7 @@ export const useGetChatGroupAttachmentsQuery = (
 ) => {
    const client = useQueryClient();
 
-   return useInfiniteQuery<
-      CursorPaged<ChatGroupAttachment>,
-      Error,
-      CursorPaged<ChatGroupAttachment>,
-      any
-   >({
+   return useInfiniteQuery<CursorPaged<ChatGroupAttachment>>({
       queryKey: [`chat-groups`, model.groupId, `attachments`],
       queryFn: () => getChatGroupAttachments(model),
       initialPageParam: null!,

@@ -36,7 +36,6 @@ export const useGetUnreadNotificationsQuery = (
    }
 ) => {
    const client = useQueryClient();
-
    return useQuery({
       queryKey: [NOTIFICATIONS_KEY, `unread`],
       queryFn: () => getUnreadNotifications(),

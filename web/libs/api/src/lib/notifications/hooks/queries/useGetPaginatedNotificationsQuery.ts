@@ -1,14 +1,14 @@
 import {
-   UseQueryOptions,
    useQueryClient,
    useInfiniteQuery,
+   UndefinedInitialDataInfiniteOptions,
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
 import { notificationsClient } from "../../client";
 import {
    UserNotification,
    UserNotificationCursorPagedApiResponse,
-   CursorPaged
+   CursorPaged,
 } from "@openapi";
 
 export interface GetPaginatedNotificationsModel {
@@ -43,17 +43,12 @@ export const NOTIFICATIONS_KEY = `notifications`;
 
 export const useGetPaginatedNotificationsQuery = (
    model: GetPaginatedNotificationsModel,
-   options?: Omit<
-      UseQueryOptions<
-         UserNotification[],
-         Error,
-         UserNotification[],
-         (string | number)[]
-      >,
-      "initialData"
-   > & {
-      initialData?: (() => undefined) | undefined;
-   }
+   options?: UndefinedInitialDataInfiniteOptions<
+      UserNotification[],
+      Error,
+      UserNotification[],
+      (string | number)[]
+   >
 ) => {
    const client = useQueryClient();
    return useInfiniteQuery<
@@ -63,6 +58,7 @@ export const useGetPaginatedNotificationsQuery = (
       any
    >({
       queryKey: [NOTIFICATIONS_KEY],
+      initialPageParam: null!,
       queryFn: () => getPaginatedNotifications(model),
       getNextPageParam: (lastPage: CursorPaged<UserNotification>) => {
          return lastPage.pagingCursor;

@@ -1,10 +1,12 @@
 "use client";
 import React, {
    createContext,
-   PropsWithChildren, SetStateAction,
+   PropsWithChildren,
+   SetStateAction,
    Suspense,
    UIEventHandler,
-   useCallback, useContext,
+   useCallback,
+   useContext,
    useEffect,
    useMemo,
    useRef,
@@ -30,17 +32,22 @@ export interface ChatMessagesSectionProps {
    groupId: string;
 }
 
-const ReplyToMessageContext = createContext<[string, React.Dispatch<SetStateAction<string>>]>(null!);
+const ReplyToMessageContext = createContext<
+   [string, React.Dispatch<SetStateAction<string>>]
+>(null!);
 
 export const useReplyToMessageContext = () => useContext(ReplyToMessageContext);
 
 const ReplyToMessageContextProvider = ({ children }: PropsWithChildren) => {
    const [replyToMessageId, setReplyToMessageId] = useState<string>(null!);
 
-   return <ReplyToMessageContext.Provider value={[replyToMessageId, setReplyToMessageId]}>
-      {children}
-   </ReplyToMessageContext.Provider>;
-
+   return (
+      <ReplyToMessageContext.Provider
+         value={[replyToMessageId, setReplyToMessageId]}
+      >
+         {children}
+      </ReplyToMessageContext.Provider>
+   );
 };
 export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
    const messagesSectionRef = useRef<HTMLDivElement>(null!);
@@ -63,13 +70,15 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
          pageSize: 5,
          pagingCursor: null!,
       },
-      { enabled: !!groupId },
+      { enabled: !!groupId }
    );
-   const groupHasNoMessages = useMemo(() =>
-         messages?.pages?.length === 1
-         && messages?.pages[0].items.length === 0
-         && !messages?.pages[0].hasMore,
-      [messages?.pages, messages?.pages[0].items.length]);
+   const groupHasNoMessages = useMemo(
+      () =>
+         messages?.pages?.length === 1 &&
+         messages?.pages[0].items.length === 0 &&
+         !messages?.pages[0].hasMore,
+      [messages?.pages, messages?.pages[0].items.length]
+   );
 
    const showConversationBeginningMessage = useMemo(
       () =>
@@ -77,7 +86,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
          !isLoading &&
          !isFetchingNextPage &&
          !error,
-      [messages?.pages, isLoading, isFetchingNextPage, error],
+      [messages?.pages, isLoading, isFetchingNextPage, error]
    );
    const t = useTranslations(`MainArea.ChatMessages`);
 
@@ -89,10 +98,10 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                messages?.pages?.at(-1)?.hasMore
             ) {
                // Fetch next page of messages:
-               sleep(200).then(async _ => await fetchNextPage());
+               sleep(200).then(async (_) => await fetchNextPage());
             }
          },
-         [messages?.pages, fetchNextPage],
+         [messages?.pages, fetchNextPage]
       );
 
    const handleScrollDown = useCallback(() => {
@@ -116,11 +125,13 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
       }
    }, [messages]);
 
+   const editorRef = useRef<HTMLDivElement>();
+
    return (
-      <section className={`w-full flex flex-col items-start overflow-hidden`}>
+      <section className={`flex w-full flex-col items-start overflow-hidden`}>
          {groupId && (
             <ReplyToMessageContextProvider>
-               <div className={`w-full relative min-h-[60vh]`}>
+               <div className={`relative min-h-[60vh] w-full`}>
                   {isScrollDownButtonVisible && !isLoading && (
                      <Tooltip
                         showArrow
@@ -139,7 +150,7 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                            radius={"full"}
                            onPress={handleScrollDown}
                            isIconOnly
-                           className={`absolute opacity-80 z-10 cursor-pointer bottom-20 right-10`}
+                           className={`absolute bottom-20 right-10 z-10 cursor-pointer opacity-80`}
                            startContent={
                               <DownArrow
                                  className={`fill-transparent`}
@@ -156,39 +167,36 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                      id={`scroll-shadow`}
                      size={20}
                      ref={messagesSectionRef}
-                     className={`w-full relative`}
+                     className={`relative w-full`}
                      orientation={"vertical"}
                   >
-                     {!groupHasNoMessages && showConversationBeginningMessage && (
-                        <div
-                           className={`w-full flex justify-center gap-2 text-center items-center my-8`}
-                        >
-                           <StartupRocketIcon
-                              className={`fill-default-400`}
-                              size={24}
-                           />
-                           <span className={`text-medium text-default-400`}>
-                              {t(`ConversationBeginningMessage`)}
-                           </span>
-                        </div>
-                     )}
+                     {!groupHasNoMessages &&
+                        showConversationBeginningMessage && (
+                           <div
+                              className={`my-8 flex w-full items-center justify-center gap-2 text-center`}
+                           >
+                              <StartupRocketIcon
+                                 className={`fill-default-400`}
+                                 size={24}
+                              />
+                              <span className={`text-medium text-default-400`}>
+                                 {t(`ConversationBeginningMessage`)}
+                              </span>
+                           </div>
+                        )}
                      {!isLoading && groupHasNoMessages && (
                         <div
-                           className={`w-full flex justify-center gap-2 text-center items-center my-8`}
+                           className={`my-8 flex w-full items-center justify-center gap-2 text-center`}
                         >
-                           <Meh
-                              className={`text-default-400`}
-                              size={24}
-                           />
-                           <span
-                              className={`text-medium text-default-400`}
-                           >
-                              Group has no messages yet. Be the first one to text.
+                           <Meh className={`text-default-400`} size={24} />
+                           <span className={`text-medium text-default-400`}>
+                              Group has no messages yet. Be the first one to
+                              text.
                            </span>
                         </div>
                      )}
                      <div
-                        className={`flex relative px-2 mt-12 w-full max-h-[60vh] flex-col gap-4`}
+                        className={`relative mt-12 flex max-h-[60vh] w-full flex-col gap-4 px-2`}
                      >
                         {!isLoading &&
                            isFetchingNextPage &&
@@ -205,7 +213,10 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                                  key={i}
                               />
                            ))}
-                        <ChatMessageEntries messages={messages} ref={firstMessageRef} />
+                        <ChatMessageEntries
+                           messages={messages}
+                           ref={firstMessageRef}
+                        />
                         <div className={`mb-4`}>
                            <MembersTypingSection />
                         </div>
@@ -213,18 +224,18 @@ export const ChatMessagesSection = ({ groupId }: ChatMessagesSectionProps) => {
                   </ScrollShadow>
                </div>
                <div
-                  className={`mt-4 w-full flex flex-col items-start gap-8 mx-4`}
+                  className={`mx-4 mt-4 flex w-full flex-col items-start gap-8`}
                >
                   <Suspense
                      fallback={
-                        <Skeleton className={`w-full h-16 rounded-small`} />
+                        <Skeleton className={`rounded-small h-16 w-full`} />
                      }
                   >
-                     <MessageTextEditor chatGroup={groupDetails} />
+                     <MessageTextEditor
+                        ref={editorRef}
+                        chatGroup={groupDetails}
+                     />
                   </Suspense>
-                  <div className={`w-2/3`}>
-                     <PlateMessageEditor />
-                  </div>
                </div>
             </ReplyToMessageContextProvider>
          )}
