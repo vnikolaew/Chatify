@@ -121,7 +121,6 @@ public static class DependencyInjection
         IConfiguration configuration)
         => services
             .AddCassandra(configuration)
-            .AddHostedService<RedisIndicesCreationService>()
             .AddHostedService<DatabaseInitializationService>();
 
     public static IServiceCollection AddCassandraIdentity(

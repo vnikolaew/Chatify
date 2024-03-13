@@ -27,7 +27,7 @@ public sealed class JwtTokenGenerator(
             Audience = settings.Audience,
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(settings.KeyBytes),
-                SecurityAlgorithms.HmacSha512Signature)
+                SecurityAlgorithms.HmacSha256Signature)
         };
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);

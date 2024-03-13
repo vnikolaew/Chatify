@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Text.Json.Serialization.Metadata;
 using AutoMapper.Extensions.ExpressionMapping;
 using AutoMapper.Internal;
 using Chatify.Application.Authentication.Contracts;
@@ -72,7 +73,7 @@ public static class DependencyInjection
             .AddRepositories()
             .AddBackgroundJobs()
             .AddApplicationTelemetry()
-            .AddGrpcClients(configuration)
+            .AddExternalServices(configuration)
             .AddServices(configuration)
             .AddCaching(configuration)
             .AddContexts();
@@ -224,6 +225,7 @@ public static class DependencyInjection
         return services
             .AddSingleton<IConnectionMultiplexer>(multiplexer)
             .AddSingleton(multiplexer)
+            .AddHostedService<RedisIndicesCreationService>()
             .AddScoped<ICacheService, RedisCacheService>()
             .AddSingleton<IDatabase>(sp =>
                 sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase())

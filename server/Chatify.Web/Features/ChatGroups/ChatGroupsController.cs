@@ -10,7 +10,8 @@ using Chatify.Web.Common.Attributes;
 using Chatify.Web.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Guid = System.Guid;
-using CreateChatGroupResult = OneOf.OneOf<Chatify.Application.User.Commands.FileUploadError, System.Guid>;
+using CreateChatGroupResult =
+    OneOf.OneOf<Chatify.Application.User.Commands.FileUploadError, LanguageExt.Common.Error, System.Guid>;
 using SearchChatGroupsByNameResult =
     OneOf.OneOf<Chatify.Application.Common.Models.BaseError,
         System.Collections.Generic.List<Chatify.Domain.Entities.ChatGroup>>;
@@ -74,29 +75,29 @@ namespace Chatify.Web.Features.ChatGroups;
 public class ChatGroupsController : ApiController
 {
     private const string GroupDetailsRoute = "{groupId:guid}";
-    
+
     private const string FeedRoute = "feed";
     private const string StarredFeedRoute = "starred/feed";
-    
+
     private const string SearchMembersRoute = "{groupId:guid}/members/search";
     private const string SearchRoute = "search";
-        
+
     private const string AttachmentsRoute = "{groupId:guid}/attachments";
     private const string PinnedRoute = "{groupId:guid}/pins";
-        
+
     private const string EditGroupRoute = "{groupId:guid}";
     private const string MembersRoute = "members";
-        
+
     private const string MembershipDetailsRoute = "members/{groupId:guid}/{memberId:guid}";
     private const string DeleteMemberRoute = "members";
-    
+
     private const string LeaveChatGroupRoute = "leave";
     private const string AddAminRoute = "admins";
-        
+
     private const string RemoveAdminRoute = "{chatGroupId:guid}/admins/{adminId:guid}";
     private const string StarChatGroupRoute = "starred/{chatGroupId:guid}";
     private const string StarredRoute = "starred";
-    
+
     [HttpPost]
     [ProducesBadRequestApiResponse]
     [ProducesCreatedAtApiResponse]
@@ -107,6 +108,7 @@ public class ChatGroupsController : ApiController
         var result = await SendAsync<CreateChatGroup, CreateChatGroupResult>(
             request.ToCommand(), cancellationToken);
         return result.Match(
+            err => err.ToBadRequest(),
             err => err.ToBadRequest(),
             id => CreatedAtAction(nameof(Details), "ChatGroups",
                 new { groupId = id },
@@ -339,11 +341,11 @@ public class ChatGroupsController : ApiController
             removeChatGroupAdmin,
             cancellationToken);
         return result.Match(
-                _ => NotFound(),
-                _ => _.ToBadRequest(),
-                _ => _.ToBadRequest(),
-                _ => Accepted()
-            );
+            _ => NotFound(),
+            _ => _.ToBadRequest(),
+            _ => _.ToBadRequest(),
+            _ => Accepted()
+        );
     }
 
     [HttpPost]

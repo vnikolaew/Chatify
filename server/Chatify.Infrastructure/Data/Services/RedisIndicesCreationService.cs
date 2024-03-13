@@ -52,10 +52,6 @@ internal sealed class RedisIndicesCreationService(
         var connectionProvider = scope.ServiceProvider
             .GetRequiredService<RedisConnectionProvider>();
 
-        var db = scope.ServiceProvider
-            .GetRequiredService<IConnectionMultiplexer>()
-            .GetDatabase();
-        
         foreach ( var indexType in IndexTypes )
         {
             await connectionProvider.Connection.CreateIndexAsync(indexType);

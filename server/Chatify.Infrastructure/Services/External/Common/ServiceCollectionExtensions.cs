@@ -1,8 +1,10 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Chatify.ChatGroupsService.Extensions;
+namespace Chatify.Infrastructure.Services.External.Common;
 
 public static class ServiceCollectionExtensions
 {

@@ -1,5 +1,8 @@
-﻿using Chatify.Infrastructure.Services.External.ChatGroupsService;
+﻿using Chatify.Application.ChatGroups.Contracts;
+using Chatify.Application.User.Contracts;
+using Chatify.Infrastructure.Services.External.ChatGroupsService;
 using Chatify.Infrastructure.Services.External.Common;
+using Chatify.Infrastructure.Services.External.UsersService;
 using Grpc.Core;
 using Grpc.Net.ClientFactory;
 using Microsoft.Extensions.Configuration;
@@ -13,12 +16,29 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddGrpcClient<ChatGroupsServicer.ChatGroupsServicerClient>(opts =>
+        services
+            .AddTransient<TokenAuthInterceptor>()
+            .AddGrpcClient<ChatGroupsServicer.ChatGroupsServicerClient>(opts =>
             {
                 opts.Address = new Uri(configuration["Services:ChatGroups"]!);
             }).AddInterceptor<TokenAuthInterceptor>(InterceptorScope.Client)
             .ConfigureChannel(opts => { opts.Credentials = ChannelCredentials.SecureSsl; });
 
+        services
+            .AddTransient<TokenAuthInterceptor>()
+            .AddGrpcClient<UsersServicer.UsersServicerClient>(opts =>
+            {
+                opts.Address = new Uri(configuration["Services:Users"]!);
+            }).AddInterceptor<TokenAuthInterceptor>(InterceptorScope.Client)
+            .ConfigureChannel(opts => { opts.Credentials = ChannelCredentials.SecureSsl; });
+
         return services;
     }
+
+    public static IServiceCollection AddServices(this IServiceCollection services)
+        => services.AddScoped<IChatGroupsService, ChatGroups.ChatGroupsService>()
+            .AddScoped<IUsersService, Users.UsersService>();
+
+    public static IServiceCollection AddExternalServices(this IServiceCollection services, IConfiguration configuration)
+        => services.AddServices().AddGrpcClients(configuration);
 }

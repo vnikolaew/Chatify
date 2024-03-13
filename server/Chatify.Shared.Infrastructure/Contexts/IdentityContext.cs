@@ -57,7 +57,7 @@ public class IdentityContext : IIdentityContext
 
         IsAuthenticated = principal.Identity?.IsAuthenticated is true;
         Id = IsAuthenticated
-             && Guid.TryParse(principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value,
+             && Guid.TryParse(principal.Claims.FirstOrDefault(c => c.Type is ClaimTypes.NameIdentifier or "Id")?.Value,
                  out var id)
             ? id
             : Guid.Empty;

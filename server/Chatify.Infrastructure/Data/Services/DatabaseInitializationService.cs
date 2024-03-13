@@ -60,7 +60,6 @@ public class DatabaseInitializationService(
             {
                 logger.LogInformation("Configuring table {TableName}", mapping.GetType().Name.Replace("Mapping", string.Empty));
                 MappingConfiguration.Global.Define(mapping);
-                
             }
 
             await DefineUdts(session);

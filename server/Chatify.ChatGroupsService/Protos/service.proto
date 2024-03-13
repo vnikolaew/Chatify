@@ -1,10 +1,40 @@
 ﻿syntax = "proto3";
 
-option csharp_namespace = "Chatify.ChatGroupsService.Messages";
+option csharp_namespace = "Chatify.ChatGroupsService";
 
 
 service ChatGroupsServicer {
     rpc CreateChatGroup(CreateChatGroupRequest) returns (CreateChatGroupResponse);
+    rpc AddChatGroupMembers(AddChatGroupMembersRequest) returns (AddChatGroupMembersResponse);
+}
+
+message AddChatGroupMembersRequest {
+    string chat_group_id = 1;
+    repeated AddChatGroupMember  members = 2;
+}
+
+message AddChatGroupMember {
+    string user_id = 1;
+    string username = 2;
+    MembershipType  membership_type = 3;
+}
+
+enum MembershipType {
+    UNKNOWN = 0;
+    REGULAR = 1;
+    ADMIN = 2;
+}
+
+message AddChatGroupMemberResponse {
+    string user_id = 1;
+    string member_id = 2;
+    bool success = 3;
+    optional ErrorDetails error_details = 4;
+}
+
+message AddChatGroupMembersResponse {
+    string chat_group_id = 1;
+    repeated AddChatGroupMemberResponse results = 2;
 }
 
 message CreateChatGroupRequest {

@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+option csharp_namespace = "Chatify.UsersService";
+
+
+service UsersServicer {
+    rpc GetUsersByIds(GetUsersByIdsRequest) returns (GetUsersByIdsResponse);
+
+}
+
+message  GetUsersByIdsRequest {
+    repeated string user_ids = 1;
+}
+
+message  GetUsersByIdsResponse {
+    int32 count = 1;
+    repeated UserModelResponse users = 2;
+}
+
+message UserModelResponse {
+    string  id = 1;
+    string  username = 2;
+    string  display_name = 3;
+    string  email = 4;
+    repeated string  phone_numbers = 5;
+    string  user_handle = 6;
+    UserStatus  status = 7;
+    Media profile_picture = 8; 
+}
+
+enum UserStatus {
+    UNKNOWN = 0;
+    Online = 1;
+    Away = 2 ;
+    Offline = 3;
+}
+
+
+message Media {
+    string id = 1;
+    string media_url = 2;
+    string file_name = 3;
+    string type = 4;
+}
+
+message ErrorDetails {
+    repeated ErrorDetail errors = 1;
+}
+
+message ErrorDetail {
+    // Error code
+    string errorCode = 1;
+
+    //Error message
+    string message = 2;
+
+    // Additional metadata associated with the Error
+    map<string, string> metadata = 3;
+}

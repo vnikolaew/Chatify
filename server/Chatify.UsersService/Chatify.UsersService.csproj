@@ -5,30 +5,27 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <InvariantGlobalization>true</InvariantGlobalization>
-        <PublishAot>true</PublishAot>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Protobuf Include="Protos\service.proto" GrpcServices="Server" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Grpc.AspNetCore" Version="2.57.0"/>
         <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.62.0-pre1" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.3" />
     </ItemGroup>
-    
+
     <ItemGroup>
-        <Protobuf Include="Protos\service.proto" GrpcServices="Server"/>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
-    
+
     <ItemGroup>
-        <Content Include="..\.dockerignore">
-            <Link>.dockerignore</Link>
-        </Content>
-    </ItemGroup>
-    
-    <ItemGroup>
-      <ProjectReference Include="..\Chatify.Domain\Chatify.Domain.csproj" />
       <ProjectReference Include="..\Chatify.Infrastructure\Chatify.Infrastructure.csproj" />
+      <ProjectReference Include="..\Chatify.Shared.Infrastructure\Chatify.Shared.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

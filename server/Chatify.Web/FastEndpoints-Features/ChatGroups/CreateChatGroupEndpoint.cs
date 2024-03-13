@@ -4,7 +4,7 @@ using Chatify.Web.Common;
 using Chatify.Web.Extensions;
 using Chatify.Web.Features.ChatGroups.Models;
 using FastEndpoints;
-using CreateChatGroupResult = OneOf.OneOf<Chatify.Application.User.Commands.FileUploadError, System.Guid>;
+using CreateChatGroupResult = OneOf.OneOf<Chatify.Application.User.Commands.FileUploadError, LanguageExt.Common.Error, System.Guid>;
 
 namespace Chatify.Web.FastEndpoints_Features.ChatGroups;
 
@@ -17,7 +17,8 @@ public sealed class CreateChatGroupEndpoint : BaseChatGroupsEndpoint<Models.Crea
         => SendAsync<CreateChatGroup, CreateChatGroupResult>(req.ToCommand(), ct)
             .MatchAsync(
                 err => err.ToBadRequestResult(),
-                id => ( IResult )TypedResults.CreatedAtRoute(
+                err => err.ToBadRequestResult(),
+                id => TypedResults.CreatedAtRoute(
                     ApiResponse<object>.Success(new { groupId = id },
                         "Chat group successfully created."),
                     "ChatGroups/Details",

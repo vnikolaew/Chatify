@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.ChatGroups.Contracts;
 using Chatify.Application.Common;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Application.User.Commands;
-using Chatify.Domain.Common;
+using Chatify.Application.User.Contracts;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Groups;
 using Chatify.Domain.Repositories;
@@ -12,14 +13,13 @@ using Chatify.Shared.Abstractions.Common;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
-using Chatify.Shared.Infrastructure.Common.Extensions;
 using LanguageExt.Common;
 using OneOf;
 using Guid = System.Guid;
 
 namespace Chatify.Application.ChatGroups.Commands;
 
-using CreateChatGroupResult = OneOf<FileUploadError, Guid>;
+using CreateChatGroupResult = OneOf<FileUploadError, Error, Guid>;
 
 public record CreateChatGroup(
     [MinLength(0), MaxLength(500)] string? About,
@@ -29,8 +29,8 @@ public record CreateChatGroup(
     InputFile? InputFile) : ICommand<CreateChatGroupResult>;
 
 internal sealed class CreateChatGroupHandler(
-    IDomainRepository<ChatGroup, Guid> groups,
-    IUserRepository users,
+    IChatGroupsService chatGroupsService,
+    IUsersService usersService,
     IIdentityContext identityContext,
     IEventDispatcher eventDispatcher,
     IFileUploadService fileUploadService,
@@ -74,60 +74,39 @@ internal sealed class CreateChatGroupHandler(
             groupPicture = result.AsT0;
         }
 
-        var groupId = guidGenerator.New();
-        var chatGroup = new ChatGroup
-        {
-            Id = groupId,
-            About = command.About ?? string.Empty,
-            Name = command.Name,
-            AdminIds = new HashSet<Guid> { identityContext.Id },
-            CreatorId = identityContext.Id,
-            Picture = groupPicture,
-            CreatedAt = clock.Now,
-        };
-
-        await groups.SaveAsync(chatGroup, cancellationToken);
+        var response = await chatGroupsService.CreateChatGroupAsync(new CreateChatGroupRequest(
+            command.About,
+            command.Name,
+            command.MemberIds,
+            groupPicture), cancellationToken);
+        if ( response.Value is Error error2 ) return error2;
+        var chatGroupId = response.AsT1;
 
         // Create new memberships:
-        var membershipId = guidGenerator.New();
-        var groupMember = new ChatGroupMember
-        {
-            Id = membershipId,
-            CreatedAt = clock.Now,
-            ChatGroupId = chatGroup.Id,
-            UserId = identityContext.Id,
-            Username = identityContext.Username,
-            MembershipType = 0
-        };
-
-        var groupUsers = ( await users.GetByIds(command.MemberIds ?? new List<Guid>(), cancellationToken) )!
-            .Select(user => new ChatGroupMember
-            {
-                Id = guidGenerator.New(),
-                CreatedAt = clock.Now,
-                ChatGroupId = chatGroup.Id,
-                UserId = user.Id,
-                Username = user.Username,
-                MembershipType = 0
-            });
-
-        var groupMembers = await groupUsers
+        var groupMember = new AddChatGroupMemberRequest(identityContext.Id, identityContext.Username, 0);
+        
+        var groupUsers = ( await usersService.GetByIds(command.MemberIds ?? new List<Guid>(), cancellationToken) )
+            .Select(user => new AddChatGroupMemberRequest(user.Id, user.Username, 0))
             .Append(groupMember)
-            .Select(member => members.SaveAsync(member, cancellationToken))
             .ToList();
 
-        var events = groupMembers
-            .Select(m => new ChatGroupMemberAddedEvent
+        var membersResponse = await chatGroupsService.AddChatGroupMembersAsync(
+            new AddChatGroupMembersRequest(chatGroupId, groupUsers), cancellationToken);
+
+        var events = membersResponse
+            .Where(r => r.IsT1)
+            .Select(r => r.AsT1)
+            .Select((m, i) => new ChatGroupMemberAddedEvent
             {
-                GroupId = groupId,
+                GroupId = chatGroupId,
                 Timestamp = clock.Now,
-                MembershipType = m.MembershipType,
-                MemberId = m.UserId,
-                AddedById = chatGroup.CreatorId,
+                MembershipType = groupUsers[i].MembershipType,
+                MemberId = m,
+                AddedById = identityContext.Id,
                 AddedByUsername = identityContext.Username
             });
 
         await eventDispatcher.PublishAsync(events, cancellationToken);
-        return chatGroup.Id;
+        return chatGroupId;
     }
 }
