@@ -17,10 +17,6 @@
     </ItemGroup>
     
     <ItemGroup>
-        <Protobuf Include="Protos\service.proto" GrpcServices="Server"/>
-    </ItemGroup>
-    
-    <ItemGroup>
         <Content Include="..\.dockerignore">
             <Link>.dockerignore</Link>
         </Content>
@@ -29,6 +25,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Chatify.Domain\Chatify.Domain.csproj" />
       <ProjectReference Include="..\Chatify.Infrastructure\Chatify.Infrastructure.csproj" />
+      <ProjectReference Include="..\Chatify.Services.Shared.Protos\Chatify.Services.Shared.Protos.csproj" />
     </ItemGroup>
 
 </Project>

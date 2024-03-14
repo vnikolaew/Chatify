@@ -1,7 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "Chatify.Infrastructure.Services.External.UsersService";
-
+option csharp_namespace = "Chatify.Services.Shared.Users";
 
 service UsersServicer {
     rpc GetUsersByIds(GetUsersByIdsRequest) returns (GetUsersByIdsResponse);

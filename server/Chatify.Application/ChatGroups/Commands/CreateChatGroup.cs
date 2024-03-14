@@ -13,6 +13,7 @@ using Chatify.Shared.Abstractions.Common;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using LanguageExt.Common;
 using OneOf;
 using Guid = System.Guid;
@@ -34,8 +35,6 @@ internal sealed class CreateChatGroupHandler(
     IIdentityContext identityContext,
     IEventDispatcher eventDispatcher,
     IFileUploadService fileUploadService,
-    IGuidGenerator guidGenerator,
-    IChatGroupMemberRepository members,
     IClock clock)
     : BaseCommandHandler<CreateChatGroup, CreateChatGroupResult>(eventDispatcher, identityContext, clock)
 {
@@ -46,7 +45,7 @@ internal sealed class CreateChatGroupHandler(
         var fileUploadRequest = new SingleFileUploadRequest
         {
             File = inputFile,
-            UserId = identityContext.Id,
+            UserId = identityContext.Id
         };
 
         var result = await fileUploadService.UploadChatGroupMediaAsync(fileUploadRequest, cancellationToken);
@@ -57,7 +56,7 @@ internal sealed class CreateChatGroupHandler(
         {
             Id = newMedia!.FileId,
             FileName = newMedia.FileName,
-            MediaUrl = newMedia.FileUrl,
+            MediaUrl = newMedia.FileUrl.Replace(Path.DirectorySeparatorChar, '/'),
             Type = newMedia.FileType
         };
     }
@@ -84,7 +83,7 @@ internal sealed class CreateChatGroupHandler(
 
         // Create new memberships:
         var groupMember = new AddChatGroupMemberRequest(identityContext.Id, identityContext.Username, 0);
-        
+
         var groupUsers = ( await usersService.GetByIds(command.MemberIds ?? new List<Guid>(), cancellationToken) )
             .Select(user => new AddChatGroupMemberRequest(user.Id, user.Username, 0))
             .Append(groupMember)
@@ -94,8 +93,7 @@ internal sealed class CreateChatGroupHandler(
             new AddChatGroupMembersRequest(chatGroupId, groupUsers), cancellationToken);
 
         var events = membersResponse
-            .Where(r => r.IsT1)
-            .Select(r => r.AsT1)
+            .OfType2()
             .Select((m, i) => new ChatGroupMemberAddedEvent
             {
                 GroupId = chatGroupId,

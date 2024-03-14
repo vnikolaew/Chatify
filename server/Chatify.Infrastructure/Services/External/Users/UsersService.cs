@@ -1,7 +1,8 @@
 ﻿using Chatify.Application.User.Contracts;
 using Chatify.Domain.ValueObjects;
-using Chatify.Infrastructure.Services.External.UsersService;
+using GetUsersByIdsRequest = Chatify.Services.Shared.Users.GetUsersByIdsRequest;
 using Media = Chatify.Domain.Entities.Media;
+using UsersServicer = Chatify.Services.Shared.Users.UsersServicer;
 using UserStatus = Chatify.Domain.Entities.UserStatus;
 
 namespace Chatify.Infrastructure.Services.External.Users;
@@ -10,7 +11,7 @@ public sealed class UsersService(UsersServicer.UsersServicerClient client) : IUs
 {
     public async Task<List<Domain.Entities.User>> GetByIds(IEnumerable<Guid> userIds, CancellationToken cancellationToken)
     {
-        var request = new GetUsersByIdsRequest()
+        var request = new GetUsersByIdsRequest
         {
             UserIds = { userIds.Select(_ => _.ToString()) }
         };

@@ -5,7 +5,7 @@ namespace Chatify.Shared.Infrastructure.Serialization;
 
 public class SystemTextJsonSerializer : ISerializer
 {
-    private static readonly JsonSerializerOptions Options = new JsonSerializerOptions()
+    private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
     {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase

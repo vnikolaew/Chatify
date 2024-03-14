@@ -7,14 +7,12 @@ public static class OneOfExtensions
     public static IEnumerable<T2> OfType2<T1, T2>(this IEnumerable<OneOf<T1, T2>> value)
         => value
             .Where(x => x.IsT1)
-            .Select(x => x.AsT1)
-            .ToList();
+            .Select(x => x.AsT1);
 
     public static IEnumerable<T1> OfType1<T1, T2>(this IEnumerable<OneOf<T1, T2>> value)
         => value
             .Where(x => x.IsT0)
-            .Select(x => x.AsT0)
-            .ToList();
+            .Select(x => x.AsT0);
 
     public static async Task<TResult> MatchAsync<T1, T2, TResult>(
         this Task<OneOf<T1, T2>> task,

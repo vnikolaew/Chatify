@@ -5,17 +5,17 @@
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=253f305f_002D7268_002D4100_002Da9c2_002Dc259db3b0d91/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Test1" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;xUnit::33682A3E-2F6D-4701-B414-ABD56A8E172E::net8.0::Chatify.IntegrationTesting.BasicTest.Test1&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;net8.0::xUnit::33682A3E-2F6D-4701-B414-ABD56A8E172E::Chatify.IntegrationTesting.BasicTest.Test1&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=9a91f8ba_002D4a60_002D4344_002D9935_002Dfb6646d7f76b/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="BasicTest" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;xUnit::33682A3E-2F6D-4701-B414-ABD56A8E172E::net8.0::Chatify.IntegrationTesting.BasicTest&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;net8.0::xUnit::33682A3E-2F6D-4701-B414-ABD56A8E172E::Chatify.IntegrationTesting.BasicTest&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=9f31400b_002D7f55_002D46ff_002D8679_002De14973e797b0/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Test1 #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;xUnit::33682A3E-2F6D-4701-B414-ABD56A8E172E::net8.0::Chatify.IntegrationTesting.BasicTest.Test1&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;net8.0::xUnit::33682A3E-2F6D-4701-B414-ABD56A8E172E::Chatify.IntegrationTesting.BasicTest.Test1&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	

@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Reflection;
-using System.Text.Json.Serialization.Metadata;
 using AutoMapper.Extensions.ExpressionMapping;
 using AutoMapper.Internal;
 using Chatify.Application.Authentication.Contracts;
@@ -68,7 +67,6 @@ public static class DependencyInjection
         IConfiguration configuration)
         => services
             .AddData(configuration)
-            .AddCassandraIdentity(configuration)
             .AddSeeding()
             .AddRepositories()
             .AddBackgroundJobs()
@@ -76,7 +74,8 @@ public static class DependencyInjection
             .AddExternalServices(configuration)
             .AddServices(configuration)
             .AddCaching(configuration)
-            .AddContexts();
+            .AddContexts()
+            .AddCassandraIdentity(configuration);
 
     public static IServiceCollection AddBackgroundJobs(this IServiceCollection services)
         => services

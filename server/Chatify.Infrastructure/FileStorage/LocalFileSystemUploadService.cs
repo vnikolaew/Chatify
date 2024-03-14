@@ -1,5 +1,6 @@
 ﻿using Chatify.Application.Common.Contracts;
 using Chatify.Shared.Abstractions.Common;
+using Chatify.Shared.Infrastructure.Common.Extensions;
 using LanguageExt;
 using LanguageExt.Common;
 using Microsoft.AspNetCore.Hosting;
@@ -14,7 +15,7 @@ public class LocalFileSystemUploadService(
     IGuidGenerator guidGenerator) : IFileUploadService
 {
     private readonly string _fileStorageBaseFolder = Path.Combine(environment.ContentRootPath, "Files");
-    private const long MaxFileUploadSizeLimit = 50 * 1024 * 1024;
+    private const long MaxFileUploadSizeLimit = 50 * ( 1 << 10 ) * ( 1 << 10 ); // 50 MB
 
     private static readonly System.Collections.Generic.HashSet<string> AllowedFileTypes = new()
     {
@@ -36,6 +37,7 @@ public class LocalFileSystemUploadService(
         {
             return Error.New($"Files with extension `{fileExtension}` are not allowed.");
         }
+
         var newFileId = guidGenerator.New();
         var newFileName = singleFileUploadRequest.UserId.HasValue
             ? $"{singleFileUploadRequest.UserId}_{newFileId}_{fileNameWithoutExtension}.{fileExtension}"
@@ -58,9 +60,11 @@ public class LocalFileSystemUploadService(
         {
             FileId = newFileId,
             FileUrl = Path.Combine(
-                singleFileUploadRequest.Location?.Trim() ?? string.Empty,
-                newFileName),
-            FileName = newFileName,
+                    singleFileUploadRequest.Location?.Trim() ?? string.Empty,
+                    newFileName)
+                .Replace(Path.DirectorySeparatorChar, '/'),
+            FileName = newFileName
+                .Replace(Path.DirectorySeparatorChar, '/'),
             FileType = fileExtension
         };
     }
@@ -82,16 +86,16 @@ public class LocalFileSystemUploadService(
         MultipleFileUploadRequest multipleFileUploadRequest,
         CancellationToken cancellationToken = default)
     {
-        var uploadTasks = multipleFileUploadRequest
+        var uploadTasks = await multipleFileUploadRequest
             .Files
             .Select(f => UploadAsync(new SingleFileUploadRequest
             {
                 File = f,
                 UserId = multipleFileUploadRequest.UserId,
                 Location = multipleFileUploadRequest.Location
-            }, cancellationToken)).ToList();
+            }, cancellationToken))
+            .ToList();
 
-        var uploadResults = await Task.WhenAll(uploadTasks);
-        return uploadResults.ToList();
+        return uploadTasks.ToList();
     }
 }

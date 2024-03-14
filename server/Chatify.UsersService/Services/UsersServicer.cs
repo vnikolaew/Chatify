@@ -1,17 +1,18 @@
 ﻿using Chatify.Domain.Repositories;
+using Chatify.Services.Shared.Users;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Chatify.UsersService.Services;
 
 [Authorize]
-internal sealed class UsersServicer : UsersService.UsersServicer.UsersServicerBase
+internal class UsersServicer : Chatify.Services.Shared.Users.UsersServicer
 {
     private readonly IUserRepository _users;
 
     public UsersServicer(IUserRepository users) => _users = users;
 
-    public override async Task<GetUsersByIdsResponse> GetUsersByIds(
+    public async Task<GetUsersByIdsResponse> GetUsersByIds(
         GetUsersByIdsRequest request, ServerCallContext context)
     {
         var userIds = request.UserIds

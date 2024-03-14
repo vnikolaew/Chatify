@@ -1,15 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.ChatGroups.Contracts;
 using Chatify.Application.Common;
 using Chatify.Application.Common.Models;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Groups;
-using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
 using LanguageExt;
+using LanguageExt.Common;
 using OneOf;
 
 namespace Chatify.Application.ChatGroups.Commands;
@@ -30,42 +31,28 @@ public record AddChatGroupAdmin(
 ) : ICommand<AddChatGroupAdminResult>;
 
 internal sealed class AddChatGroupAdminHandler(
-    IDomainRepository<ChatGroup, Guid> groups,
+    IChatGroupsService chatGroupsService,
     IEventDispatcher eventDispatcher,
     IIdentityContext identityContext,
-    IClock clock,
-    IChatGroupMemberRepository members)
+    IClock clock)
     : BaseCommandHandler<AddChatGroupAdmin, AddChatGroupAdminResult>(eventDispatcher, identityContext, clock)
 {
     public override async Task<AddChatGroupAdminResult> HandleAsync(
         AddChatGroupAdmin command,
         CancellationToken cancellationToken = default)
     {
-        var chatGroup = await groups.GetAsync(command.ChatGroupId, cancellationToken);
-        if ( chatGroup is null ) return new ChatGroupNotFoundError();
-
-        var isMember = await members.Exists(chatGroup.Id, identityContext.Id, cancellationToken);
-        if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, command.ChatGroupId);
-
-        if ( !chatGroup.HasAdmin(identityContext.Id) )
-            return new UserIsNotGroupAdminError(identityContext.Id, command.ChatGroupId);
-
-        if ( chatGroup.HasAdmin(command.NewAdminId) )
-            return new UserIsNotGroupAdminError(identityContext.Id, command.ChatGroupId);
-
-        await groups.UpdateAsync(chatGroup, group =>
-        {
-            group.AddAdmin(command.NewAdminId);
-            group.UpdatedAt = clock.Now;
-        }, cancellationToken);
+        var response = await chatGroupsService.AddChatGroupAdminAsync(
+            new AddChatGroupAdminRequest(command.ChatGroupId, command.NewAdminId),
+            cancellationToken);
+        if ( response.Value is Error error ) return Unit.Default;
 
         await eventDispatcher.PublishAsync(new ChatGroupAdminAdded
         {
-            GroupId = chatGroup.Id,
+            GroupId = command.ChatGroupId,
             AdminId = command.NewAdminId,
             Timestamp = clock.Now
         }, cancellationToken);
-
+        
         return Unit.Default;
     }
 }

@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.ChatGroups.Contracts;
 using Chatify.Application.Common;
 using Chatify.Application.Common.Contracts;
 using Chatify.Application.Common.Models;
 using Chatify.Application.User.Commands;
 using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
-using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
@@ -27,8 +27,8 @@ public record EditChatGroupDetails(
 ) : ICommand<EditChatGroupDetailsResult>;
 
 internal sealed class EditChatGroupDetailsHandler(
+    IChatGroupsService chatGroupsService,
     IDomainRepository<ChatGroup, Guid> groups,
-    IChatGroupMemberRepository members,
     IIdentityContext identityContext,
     IClock clock,
     IFileUploadService fileUploadService,
@@ -61,13 +61,13 @@ internal sealed class EditChatGroupDetailsHandler(
             }, cancellationToken);
         if ( result.Value is Error uploadError ) return new FileUploadError(uploadError.Message);
 
-            return new Media
-            {
-                Id = result.AsT1.FileId,
-                FileName = newMedia.FileName,
-                MediaUrl = result.AsT1.FileUrl,
-                Type = result.AsT1.FileType
-            };
+        return new Media
+        {
+            Id = result.AsT1.FileId,
+            FileName = newMedia.FileName,
+            MediaUrl = result.AsT1.FileUrl,
+            Type = result.AsT1.FileType
+        };
     }
 
     public override async Task<EditChatGroupDetailsResult> HandleAsync(
@@ -77,13 +77,7 @@ internal sealed class EditChatGroupDetailsHandler(
         var group = await groups.GetAsync(command.ChatGroupId, cancellationToken);
         if ( group is null ) return new ChatGroupNotFoundError();
 
-        var isMember = await members.Exists(group.Id, identityContext.Id, cancellationToken);
-        if ( !isMember ) return new UserIsNotMemberError(identityContext.Id, group.Id);
-
-        if ( !group.HasAdmin(identityContext.Id) )
-            return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
-
-        Media? groupPicture = default;
+        Media? groupPicture = group.Picture;
         if ( command.Picture is not null )
         {
             var result = await UploadNewMediaAsync(
@@ -91,17 +85,17 @@ internal sealed class EditChatGroupDetailsHandler(
                 command.Picture,
                 cancellationToken);
             if ( result.Value is Error uploadError ) return new FileUploadError(uploadError.Message);
-            
+
             groupPicture = result.AsT0;
         }
 
-        await groups.UpdateAsync(group, g =>
-        {
-            g.Name = command.Name ?? g.Name;
-            g.About = command.About ?? g.About;
-            g.Picture = groupPicture;
-            g.UpdatedAt = clock.Now;
-        }, cancellationToken);
+        _ = await chatGroupsService.UpdateChatGroupDetailsAsync(
+            new UpdateChatGroupDetailsRequest(
+                command.ChatGroupId,
+                command.Name,
+                command.About, groupPicture),
+            cancellationToken);
+
         return Unit.Default;
     }
 }

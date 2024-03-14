@@ -1,15 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Chatify.Application.ChatGroups.Contracts;
 using Chatify.Application.Common;
 using Chatify.Application.Common.Models;
 using Chatify.Application.User.Common;
-using Chatify.Domain.Common;
+using Chatify.Application.User.Contracts;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Groups;
-using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
+using LanguageExt;
+using LanguageExt.Common;
+using Microsoft.Extensions.Hosting;
 using OneOf;
 
 namespace Chatify.Application.ChatGroups.Commands;
@@ -28,53 +31,46 @@ public record AddChatGroupMember(
 ) : ICommand<AddChatGroupMemberResult>;
 
 internal sealed class AddChatGroupMemberHandler(
+    IChatGroupsService chatGroupsService,
+    IUsersService usersService,
     IIdentityContext identityContext,
-    IChatGroupMemberRepository members,
-    IDomainRepository<ChatGroup, Guid> groups,
     IEventDispatcher eventDispatcher,
-    IClock clock,
-    IDomainRepository<Domain.Entities.User, Guid> users)
+    IClock clock)
     : BaseCommandHandler<AddChatGroupMember, AddChatGroupMemberResult>(eventDispatcher, identityContext, clock)
 {
     public override async Task<AddChatGroupMemberResult> HandleAsync(
         AddChatGroupMember command,
         CancellationToken cancellationToken = default)
     {
-        var group = await groups.GetAsync(command.GroupId, cancellationToken);
+        var newMember = ( await usersService
+                .GetByIds([command.NewMemberId], cancellationToken) )
+            .FirstOrDefault();
+        if ( newMember is null ) return new UserNotFound();
 
-        if ( group is null ) return new ChatGroupNotFoundError();
-        if ( !group.AdminIds.Contains(identityContext.Id) )
-        {
-            return new UserIsNotGroupAdminError(identityContext.Id, group.Id);
-        }
+        var response = ( await chatGroupsService.AddChatGroupMembersAsync(
+                new AddChatGroupMembersRequest(command.GroupId,
+                [
+                    new AddChatGroupMemberRequest(
+                        newMember.Id,
+                        newMember.Username,
+                        command.MembershipType)
+                ]),
+                cancellationToken) )
+            .FirstOrDefault();
 
-        var memberUser = await users.GetAsync(command.NewMemberId, cancellationToken);
-        if ( memberUser is null ) return new UserNotFound();
+        if ( response.Value is Error error ) return Guid.Empty;
+        var newMemberId = response.AsT1;
 
-        var isMember = await members.Exists(group.Id, memberUser.Id, cancellationToken);
-        if ( isMember ) return new UserIsAlreadyGroupMemberError(memberUser.Id, group.Id);
-
-        var member = new ChatGroupMember
-        {
-            Id = Guid.NewGuid(),
-            Username = memberUser.Username,
-            UserId = memberUser.Id,
-            User = memberUser,
-            ChatGroup = group,
-            MembershipType = command.MembershipType
-        };
-
-        await members.SaveAsync(member, cancellationToken);
         await eventDispatcher.PublishAsync(new ChatGroupMemberAddedEvent
         {
-            GroupId = group.Id,
+            GroupId = command.GroupId,
             AddedById = identityContext.Id,
             AddedByUsername = identityContext.Username,
-            MemberId = member.Id,
+            MemberId = newMemberId,
             MembershipType = command.MembershipType,
             Timestamp = clock.Now
         }, cancellationToken);
 
-        return member.Id;
+        return newMemberId;
     }
 }
