@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Chatify.Application.Common.Contracts;
 using Chatify.Application.User.Common;
-using Chatify.Domain.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Friendships;
 using Chatify.Domain.Repositories;

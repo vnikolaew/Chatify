@@ -1,7 +1,5 @@
-﻿using Cassandra.Mapping;
-using Chatify.Infrastructure.Data.Extensions;
+﻿using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;
-using FastDeepCloner;
 using Humanizer;
 
 namespace Chatify.Infrastructure.Data.Mappings;

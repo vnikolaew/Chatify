@@ -1,5 +1,4 @@
-﻿using Chatify.Application.Common.Contracts;
-using Chatify.Shared.Abstractions.Common;
+﻿using Chatify.Shared.Abstractions.Common;
 using shortid;
 using shortid.Configuration;
 using SkbKontur.Cassandra.TimeBasedUuid;

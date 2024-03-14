@@ -1,108 +1,216 @@
-﻿syntax = "proto3";
+syntax = "proto3";
+
+package chat_groups;
+
+import "Shared/models.proto";
+import "google/protobuf/timestamp.proto";
 
 option csharp_namespace = "Chatify.Services.Shared.ChatGroups";
 
 
 service ChatGroupsServicer {
-    rpc CreateChatGroup(CreateChatGroupRequest) returns (CreateChatGroupResponse);
-    rpc AddChatGroupMembers(AddChatGroupMembersRequest) returns (AddChatGroupMembersResponse);
-    rpc AddChatGroupAdmin(AddChatGroupAdminRequest) returns (AddChatGroupAdminResponse);
-    rpc UpdateChatGroupDetails (UpdateChatGroupDetailsRequest) returns (UpdateChatGroupDetailsResponse);
-    rpc LeaveChatGroup (LeaveChatGroupRequest) returns (LeaveChatGroupResponse);
+  rpc CreateChatGroup(CreateChatGroupRequest) returns (CreateChatGroupResponse);
+  rpc AddChatGroupMembers(AddChatGroupMembersRequest) returns (AddChatGroupMembersResponse);
+  rpc AddChatGroupAdmin(AddChatGroupAdminRequest) returns (AddChatGroupAdminResponse);
+  rpc UpdateChatGroupDetails (UpdateChatGroupDetailsRequest) returns (UpdateChatGroupDetailsResponse);
+  rpc LeaveChatGroup (LeaveChatGroupRequest) returns (LeaveChatGroupResponse);
+  rpc RemoveChatGroupAdmin (RemoveChatGroupAdminRequest) returns (RemoveChatGroupAdminResponse);
+  rpc RemoveChatGroupMember (RemoveChatGroupMemberRequest) returns (RemoveChatGroupMemberResponse);
+  rpc GetChatGroupDetails (GetChatGroupDetailsRequest) returns (GetChatGroupDetailsResponse);
+  rpc GetChatGroupMembershipDetails (GetChatGroupMembershipDetailsRequest) returns (GetChatGroupMembershipDetailsResponse);
+  rpc GetChatGroupMemberIds (GetChatGroupMemberIdsRequest) returns (GetChatGroupMemberIdsResponse);
+  rpc GetChatGroupSharedAttachments (GetChatGroupSharedAttachmentsRequest) returns (GetChatGroupSharedAttachmentsResponse);
 }
 
+message GetChatGroupSharedAttachmentsResponse {
+  bool success = 1;
+  ErrorDetails error_details = 2;
+  ChatGroupAttachmentsModel attachments = 3;
+}
+
+message ChatGroupAttachmentsModel {
+  string paging_cursor = 1;
+  int32 page_size = 2;
+  int64 total = 3;
+  bool  has_more = 4;
+  repeated ChatGroupAttachmentModel items = 5;
+}
+
+message ChatGroupAttachmentModel {
+  string chat_group_id = 1;
+  string attachment_id = 2;
+  string user_id = 3;
+  string username = 4;
+  models.Media media = 5;
+  google.protobuf.Timestamp created_at = 6;
+  optional google.protobuf.Timestamp updated_at = 7;
+}
+
+message GetChatGroupSharedAttachmentsRequest  {
+  string chat_group_id = 1;
+  int32 page_size = 2;
+  optional string paging_cursor = 3;
+}
+
+message GetChatGroupMemberIdsRequest {
+  string chat_group_id = 1;
+}
+
+message  GetChatGroupMemberIdsResponse {
+  bool success = 1;
+  ErrorDetails error_details = 2;
+  repeated string member_ids = 3;
+}
+
+message GetChatGroupMembershipDetailsRequest {
+  string chat_group_id = 1;
+  string user_id = 2;
+}
+
+message GetChatGroupMembershipDetailsResponse {
+  bool success = 1;
+  ErrorDetails error_details = 2;
+  ChatGroupMembershipModel chat_group_membership = 3;
+}
+
+message ChatGroupMembershipModel {
+  models.ChatGroupMemberModel member = 1;
+}
+
+message GetChatGroupDetailsRequest {
+  string chat_group_id = 1;
+}
+
+message GetChatGroupDetailsResponse {
+  bool success = 1;
+  ErrorDetails error_details = 2;
+  ChatGroupDetailsModel chat_group_details = 3;
+}
+
+message ChatGroupDetailsModel {
+  models.ChatGroupModel chat_group = 1;
+}
+
+//-------------------
+
+message RemoveChatGroupMemberResponse   {
+  bool success = 1;
+  ErrorDetails error_details = 2;
+}
+
+message RemoveChatGroupMemberRequest  {
+  string chat_group_id = 1;
+  string member_id = 2;
+}
+
+//-------------------
+
+message RemoveChatGroupAdminResponse {
+  bool success = 1;
+  ErrorDetails error_details = 2;
+}
+
+message RemoveChatGroupAdminRequest {
+  string chat_group_id = 1;
+  string admin_id = 2;
+}
+
+//-------------------
+
 message LeaveChatGroupRequest {
-    string chat_group_id = 1;
-    optional string reason = 2;
+  string chat_group_id = 1;
+  optional string reason = 2;
 }
 
 message  LeaveChatGroupResponse {
-    bool success = 1;
-    ErrorDetails error_details = 2;
+  bool success = 1;
+  ErrorDetails error_details = 2;
 }
 
+//-------------------
+
 message UpdateChatGroupDetailsRequest {
-    string chat_group_id = 1;
-    optional string name = 2;
-    optional string about = 3;
-    optional Media group_picture = 4;
+  string chat_group_id = 1;
+  optional string name = 2;
+  optional string about = 3;
+  optional Media group_picture = 4;
 }
 
 message UpdateChatGroupDetailsResponse {
-    bool success = 1;
-    ErrorDetails error_details = 2;
+  bool success = 1;
+  ErrorDetails error_details = 2;
 }
 
+//-------------------
+
 message AddChatGroupAdminRequest {
-    string chat_group_id = 1;
-    string admin_id = 2;
+  string chat_group_id = 1;
+  string admin_id = 2;
 }
 
 message AddChatGroupAdminResponse {
-    bool success = 1;
-    ErrorDetails error_details = 2;
+  bool success = 1;
+  ErrorDetails error_details = 2;
 }
 
+//-------------------
+
 message AddChatGroupMembersRequest {
-    string chat_group_id = 1;
-    repeated AddChatGroupMember  members = 2;
+  string chat_group_id = 1;
+  repeated AddChatGroupMember  members = 2;
 }
 
 message AddChatGroupMember {
-    string user_id = 1;
-    string username = 2;
-    MembershipType  membership_type = 3;
-}
-
-enum MembershipType {
-    UNKNOWN = 0;
-    REGULAR = 1;
-    ADMIN = 2;
+  string user_id = 1;
+  string username = 2;
+  models.MembershipType  membership_type = 3;
 }
 
 message AddChatGroupMemberResponse {
-    string user_id = 1;
-    string member_id = 2;
-    bool success = 3;
-    optional ErrorDetails error_details = 4;
+  string user_id = 1;
+  string member_id = 2;
+  bool success = 3;
+  optional ErrorDetails error_details = 4;
 }
 
 message AddChatGroupMembersResponse {
-    string chat_group_id = 1;
-    repeated AddChatGroupMemberResponse results = 2;
+  string chat_group_id = 1;
+  repeated AddChatGroupMemberResponse results = 2;
 }
 
+//-------------------
+
 message CreateChatGroupRequest {
-    string about = 1;
-    string name = 2;
-    repeated string member_ids = 3;
-    optional Media group_picture = 4;
+  string about = 1;
+  string name = 2;
+  repeated string member_ids = 3;
+  optional Media group_picture = 4;
 }
 
 message Media {
-    string id = 1;
-    string media_url = 2;
-    string file_name = 3;
-    string type = 4;
+  string id = 1;
+  string media_url = 2;
+  string file_name = 3;
+  string type = 4;
 }
 
 message CreateChatGroupResponse {
-    bool success = 1;
-    optional ErrorDetails error_details = 2;
-    optional string chat_group_id = 3;
+  bool success = 1;
+  optional ErrorDetails error_details = 2;
+  optional string chat_group_id = 3;
 }
 
 message ErrorDetails {
-    repeated ErrorDetail errors = 1;
+  repeated ErrorDetail errors = 1;
 }
 
 message ErrorDetail {
-    // Error code
-    string errorCode = 1;
+  // Error code
+  string errorCode = 1;
 
-    //Error message
-    string message = 2;
+  //Error message
+  string message = 2;
 
-    // Additional metadata associated with the Error
-    map<string, string> metadata = 3;
+  // Additional metadata associated with the Error
+  map<string, string> metadata = 3;
 }

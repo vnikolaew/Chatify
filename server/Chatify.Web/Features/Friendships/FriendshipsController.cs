@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Chatify.Application.Common.Models;
+﻿using Chatify.Application.Common.Models;
 using Chatify.Application.Friendships.Commands;
 using Chatify.Application.Friendships.Queries;
 using Chatify.Application.User.Common;
@@ -12,7 +11,6 @@ using LanguageExt;
 using LanguageExt.Common;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
-using OneOfExtensions = Chatify.Shared.Infrastructure.Common.Extensions.OneOfExtensions;
 
 namespace Chatify.Web.Features.Friendships;
 

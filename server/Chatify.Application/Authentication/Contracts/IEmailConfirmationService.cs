@@ -1,5 +1,4 @@
 ﻿using Chatify.Application.Authentication.Commands;
-using Chatify.Application.User.Commands;
 using Chatify.Application.User.Common;
 using LanguageExt;
 using OneOf;

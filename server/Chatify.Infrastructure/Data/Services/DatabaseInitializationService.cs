@@ -4,7 +4,6 @@ using Cassandra;
 using Cassandra.Mapping;
 using Chatify.Infrastructure.Data.Mappings.Serialization;
 using Chatify.Infrastructure.Data.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
 

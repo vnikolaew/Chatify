@@ -1,6 +1,5 @@
 ﻿using Bogus;
 using Cassandra.Mapping;
-using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Caching.Extensions;
 using Chatify.Infrastructure.Data.Extensions;
 using Chatify.Infrastructure.Data.Models;

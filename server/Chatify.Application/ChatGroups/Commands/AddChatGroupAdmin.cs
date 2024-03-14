@@ -2,8 +2,6 @@
 using Chatify.Application.ChatGroups.Contracts;
 using Chatify.Application.Common;
 using Chatify.Application.Common.Models;
-using Chatify.Domain.Common;
-using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Groups;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;

@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Messages.Common;
-using Chatify.Domain.Common;
-using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Messages;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Commands;

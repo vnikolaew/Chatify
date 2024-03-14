@@ -4,7 +4,6 @@ using Chatify.Application.ChatGroups.Queries.Models;
 using Chatify.Application.Common;
 using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Application.Common.Contracts;
-using Chatify.Application.Messages.Commands;
 using Chatify.Application.Messages.Common;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;

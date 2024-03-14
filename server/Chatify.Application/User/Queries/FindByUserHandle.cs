@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Chatify.Application.Common.Behaviours.Caching;
 using Chatify.Application.Common.Behaviours.Timing;
-using Chatify.Application.Friendships.Commands;
-using Chatify.Application.Messages.Reactions.Commands;
 using Chatify.Application.User.Common;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;

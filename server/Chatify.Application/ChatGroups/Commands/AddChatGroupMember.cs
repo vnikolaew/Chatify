@@ -4,15 +4,12 @@ using Chatify.Application.Common;
 using Chatify.Application.Common.Models;
 using Chatify.Application.User.Common;
 using Chatify.Application.User.Contracts;
-using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Groups;
 using Chatify.Shared.Abstractions.Commands;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Events;
 using Chatify.Shared.Abstractions.Time;
-using LanguageExt;
 using LanguageExt.Common;
-using Microsoft.Extensions.Hosting;
 using OneOf;
 
 namespace Chatify.Application.ChatGroups.Commands;
@@ -42,9 +39,7 @@ internal sealed class AddChatGroupMemberHandler(
         AddChatGroupMember command,
         CancellationToken cancellationToken = default)
     {
-        var newMember = ( await usersService
-                .GetByIds([command.NewMemberId], cancellationToken) )
-            .FirstOrDefault();
+        var newMember = await usersService.GetById(command.NewMemberId, cancellationToken);
         if ( newMember is null ) return new UserNotFound();
 
         var response = ( await chatGroupsService.AddChatGroupMembersAsync(

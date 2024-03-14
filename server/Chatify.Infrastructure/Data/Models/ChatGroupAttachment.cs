@@ -3,8 +3,6 @@ using Chatify.Application.Common.Mappings;
 
 namespace Chatify.Infrastructure.Data.Models;
 
-using Metadata = IDictionary<string, string>;
-
 public class ChatGroupAttachment : IMapFrom<Domain.Entities.ChatGroupAttachment>
 {
     public Guid ChatGroupId { get; set; }

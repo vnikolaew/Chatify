@@ -1,6 +1,5 @@
 ﻿using Chatify.Application.Friendships.Commands;
 using Chatify.Shared.Infrastructure.Common.Extensions;
-using Chatify.Web.Common;
 using Chatify.Web.Extensions;
 using FastEndpoints;
 using DeclineFriendInvitationResult =

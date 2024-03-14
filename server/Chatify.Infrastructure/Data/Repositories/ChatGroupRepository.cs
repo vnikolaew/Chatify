@@ -2,7 +2,6 @@
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Extensions;
-using Chatify.Infrastructure.Data.Models;
 using Chatify.Infrastructure.Data.Services;
 using Redis.OM;
 using Redis.OM.Contracts;

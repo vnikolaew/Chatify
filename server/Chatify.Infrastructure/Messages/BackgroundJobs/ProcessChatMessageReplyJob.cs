@@ -1,5 +1,4 @@
-﻿using Cassandra.Mapping;
-using Chatify.Domain.Entities;
+﻿using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Events;
 using Quartz;

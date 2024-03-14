@@ -8,7 +8,6 @@ using Chatify.Infrastructure.Messages.Hubs.Models.Server;
 using Chatify.Shared.Abstractions.Events;
 using Microsoft.AspNetCore.SignalR;
 using Quartz;
-using Quartz.Impl;
 
 namespace Chatify.Infrastructure.Messages.EventHandlers;
 

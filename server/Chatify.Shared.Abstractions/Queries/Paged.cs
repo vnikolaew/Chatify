@@ -50,6 +50,7 @@ public sealed class CursorPaged<T> : List<T>
     
     public IReadOnlyCollection<T> Items => AsReadOnly();
 
+
     public CursorPaged(IEnumerable<T> items, string pagingCursor)
     {
         AddRange(items);

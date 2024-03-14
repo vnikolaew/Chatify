@@ -1,5 +1,4 @@
-﻿using Chatify.Application.Common.Contracts;
-using Chatify.Shared.Abstractions.Common;
+﻿using Chatify.Shared.Abstractions.Common;
 using IdGen;
 
 namespace Chatify.Infrastructure.Common;

@@ -6,7 +6,6 @@ using Chatify.Application.Common.Behaviours.Timing;
 using Chatify.Domain.Repositories;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Queries;
-using LanguageExt.Common;
 using OneOf;
 
 namespace Chatify.Application.ChatGroups.Queries;

@@ -1,4 +1,5 @@
 ﻿using Chatify.Domain.Repositories;
+using Chatify.Services.Shared.Models;
 using Chatify.Services.Shared.Users;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
@@ -6,13 +7,13 @@ using Microsoft.AspNetCore.Authorization;
 namespace Chatify.UsersService.Services;
 
 [Authorize]
-internal class UsersServicer : Chatify.Services.Shared.Users.UsersServicer
+internal class UsersServicer : Chatify.Services.Shared.Users.UsersServicer.UsersServicerBase
 {
     private readonly IUserRepository _users;
 
     public UsersServicer(IUserRepository users) => _users = users;
 
-    public async Task<GetUsersByIdsResponse> GetUsersByIds(
+    public override async Task<GetUsersByIdsResponse> GetUsersByIds(
         GetUsersByIdsRequest request, ServerCallContext context)
     {
         var userIds = request.UserIds
@@ -26,7 +27,7 @@ internal class UsersServicer : Chatify.Services.Shared.Users.UsersServicer
             Count = users!.Count,
             Users =
             {
-                users.Select(user => new UserModelResponse
+                users.Select(user => new UserModel
                 {
                     Id = user.Id.ToString(),
                     Email = user.Email,

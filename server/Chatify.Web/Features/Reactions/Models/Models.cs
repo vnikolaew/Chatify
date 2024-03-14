@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using Chatify.Application.Messages.Reactions.Commands;
 
 namespace Chatify.Web.Features.Reactions.Models;

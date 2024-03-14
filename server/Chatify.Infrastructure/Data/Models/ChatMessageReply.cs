@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
 using Chatify.Application.Common.Mappings;
-using Metadata = System.Collections.Generic.IDictionary<string, string>;
-using ReactionCounts = System.Collections.Generic.IDictionary<int, long>;
 
 namespace Chatify.Infrastructure.Data.Models;
 

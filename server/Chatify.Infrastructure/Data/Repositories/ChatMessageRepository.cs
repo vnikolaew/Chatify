@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Cassandra.Mapping;
+﻿using Cassandra.Mapping;
 using Chatify.Application.Common.Contracts;
 using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;

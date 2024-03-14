@@ -1,4 +1,6 @@
-﻿using Chatify.Domain.Entities;
+﻿using Chatify.Application.ChatGroups.Queries;
+using Chatify.Domain.Entities;
+using Chatify.Shared.Abstractions.Queries;
 using LanguageExt;
 using LanguageExt.Common;
 using OneOf;
@@ -18,7 +20,51 @@ public interface IChatGroupsService
     Task<OneOf<Error, Unit>> UpdateChatGroupDetailsAsync(
         UpdateChatGroupDetailsRequest request,
         CancellationToken cancellationToken);
+
+    Task<OneOf<Error, Unit>> LeaveChatGroupAsync(
+        LeaveChatGroupRequest request,
+        CancellationToken cancellationToken);
+
+    Task<OneOf<Error, Unit>> RemoveChatGroupAdminAsync(
+        RemoveChatGroupAdminRequest request,
+        CancellationToken cancellationToken);
+
+    Task<OneOf<Error, Unit>> RemoveChatGroupMemberAsync(
+        RemoveChatGroupMemberRequest request, CancellationToken cancellationToken);
+
+    Task<OneOf<Error, ChatGroup>> GetChatGroupDetails(Guid chatGroupId,
+        CancellationToken cancellationToken);
+
+    Task<OneOf<Error, ChatGroupMember>> GetChatGroupMembershipDetailsAsync(
+        GetChatGroupMembershipDetailsRequest request, CancellationToken cancellationToken);
+
+    Task<OneOf<Error, List<Guid>>> GetChatGroupMemberIdsAsync(
+        Guid chatGroupId,
+        CancellationToken cancellationToken);
+
+    Task<CursorPaged<ChatGroupAttachment>> GetChatGroupSharedAttachments(
+        GetChatGroupSharedAttachments request, CancellationToken cancellationToken);
 }
+
+public record GetChatGroupMembershipDetailsRequest(
+    Guid ChatGroupId,
+    Guid UserId
+);
+
+public record RemoveChatGroupMemberRequest(
+    Guid ChatGroupId,
+    Guid MemberId
+);
+
+public record RemoveChatGroupAdminRequest(
+    Guid ChatGroupId,
+    Guid AdminId
+);
+
+public record LeaveChatGroupRequest(
+    Guid ChatGroupId,
+    string? Reason
+);
 
 public record UpdateChatGroupDetailsRequest(
     Guid ChatGroupId,

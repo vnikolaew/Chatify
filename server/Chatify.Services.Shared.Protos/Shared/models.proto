@@ -1,0 +1,81 @@
+﻿syntax = "proto3";
+
+package models;
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Chatify.Services.Shared.Models";
+
+message UserModel {
+  string  id = 1;
+  string  username = 2;
+  string  display_name = 3;
+  string  email = 4;
+  repeated string  phone_numbers = 5;
+  string  user_handle = 6;
+  UserStatus  status = 7;
+  Media profile_picture = 8;
+}
+
+message ChatGroupModel {
+  string  id = 1;
+  string  creator_id = 2;
+  string  name = 3;
+  string about = 4;
+  repeated string  admin_ids = 5;
+  Media profile_picture = 6;
+  map<string, string> metadata = 7;
+  google.protobuf.Timestamp created_at = 8;
+  optional google.protobuf.Timestamp updated_at = 9;
+  repeated PinnedMessage pinned_messages = 10;
+}
+
+message ChatGroupMemberModel {
+  string  id = 1;
+  string  user_id = 2;
+  string  chat_group_id = 3;
+  string  username = 4;
+  google.protobuf.Timestamp created_at = 5;
+  MembershipType  membership_type = 6;
+}
+
+message PinnedMessage {
+  string  id = 1;
+  google.protobuf.Timestamp created_at = 2;
+  string  pinner_id = 3;
+}
+
+enum UserStatus {
+  UNKNOWN = 0;
+  Online = 1;
+  Away = 2 ;
+  Offline = 3;
+}
+
+
+enum MembershipType {
+  UNKNOWN_1 = 0;
+  REGULAR = 1;
+  ADMIN = 2;
+}
+
+message Media {
+  string id = 1;
+  string media_url = 2;
+  string file_name = 3;
+  string type = 4;
+}
+
+message ErrorDetails {
+  repeated ErrorDetail errors = 1;
+}
+
+message ErrorDetail {
+  // Error code
+  string errorCode = 1;
+
+  //Error message
+  string message = 2;
+
+  // Additional metadata associated with the Error
+  map<string, string> metadata = 3;
+}

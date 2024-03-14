@@ -1,12 +1,18 @@
 ﻿using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Services.Shared.ChatGroups;
+using Chatify.Services.Shared.Models;
 using Chatify.Shared.Abstractions.Common;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Time;
 using Chatify.Shared.Infrastructure.Common.Extensions;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
+using ErrorDetail = Chatify.Services.Shared.ChatGroups.ErrorDetail;
+using ErrorDetails = Chatify.Services.Shared.ChatGroups.ErrorDetails;
+using Media = Chatify.Services.Shared.Models.Media;
+using PinnedMessage = Chatify.Services.Shared.Models.PinnedMessage;
 
 namespace Chatify.ChatGroupsService.Services;
 
@@ -15,22 +21,25 @@ internal sealed class ChatGroupsServicer
     : Chatify.Services.Shared.ChatGroups.ChatGroupsServicer.ChatGroupsServicerBase
 {
     private readonly IChatGroupRepository _groups;
+    private readonly IChatGroupAttachmentRepository _attachments;
     private readonly IChatGroupMemberRepository _members;
     private readonly IIdentityContext _identityContext;
     private readonly IGuidGenerator _guidGenerator;
     private readonly IClock _clock;
 
     public ChatGroupsServicer(IChatGroupRepository groups, IIdentityContext identityContext,
-        IGuidGenerator guidGenerator, IClock clock, IChatGroupMemberRepository members)
+        IGuidGenerator guidGenerator, IClock clock, IChatGroupMemberRepository members,
+        IChatGroupAttachmentRepository attachments)
     {
         _groups = groups;
         _identityContext = identityContext;
         _guidGenerator = guidGenerator;
         _clock = clock;
         _members = members;
+        _attachments = attachments;
     }
 
-    public new async Task<AddChatGroupMembersResponse> AddChatGroupMembers(
+    public override async Task<AddChatGroupMembersResponse> AddChatGroupMembers(
         AddChatGroupMembersRequest request,
         ServerCallContext context)
     {
@@ -112,7 +121,7 @@ internal sealed class ChatGroupsServicer
         };
     }
 
-    public new async Task<CreateChatGroupResponse> CreateChatGroup(
+    public override async Task<CreateChatGroupResponse> CreateChatGroup(
         CreateChatGroupRequest request,
         ServerCallContext context)
     {
@@ -143,7 +152,7 @@ internal sealed class ChatGroupsServicer
         };
     }
 
-    public new async Task<AddChatGroupAdminResponse> AddChatGroupAdmin(
+    public override async Task<AddChatGroupAdminResponse> AddChatGroupAdmin(
         AddChatGroupAdminRequest request,
         ServerCallContext context)
     {
@@ -208,7 +217,7 @@ internal sealed class ChatGroupsServicer
         return new AddChatGroupAdminResponse { Success = true };
     }
 
-    public new async Task<UpdateChatGroupDetailsResponse> UpdateChatGroupDetails(
+    public override async Task<UpdateChatGroupDetailsResponse> UpdateChatGroupDetails(
         UpdateChatGroupDetailsRequest request,
         ServerCallContext context)
     {
@@ -260,7 +269,7 @@ internal sealed class ChatGroupsServicer
         return new UpdateChatGroupDetailsResponse { Success = true };
     }
 
-    public new async Task<LeaveChatGroupResponse> LeaveChatGroup(
+    public override async Task<LeaveChatGroupResponse> LeaveChatGroup(
         LeaveChatGroupRequest request,
         ServerCallContext context)
     {
@@ -287,5 +296,187 @@ internal sealed class ChatGroupsServicer
 
         var success = await _members.DeleteAsync(member.Id, context.CancellationToken);
         return success ? new LeaveChatGroupResponse { Success = true } : new LeaveChatGroupResponse();
+    }
+
+    public override async Task<RemoveChatGroupAdminResponse> RemoveChatGroupAdmin(
+        RemoveChatGroupAdminRequest request,
+        ServerCallContext context)
+    {
+        var chatGroup = await _groups.GetAsync(Guid.Parse(request.ChatGroupId), context.CancellationToken);
+        if ( chatGroup is null ) return new RemoveChatGroupAdminResponse { Success = false };
+
+        var isMember = await _members.Exists(chatGroup.Id, _identityContext.Id, context.CancellationToken);
+        if ( !isMember ) return new RemoveChatGroupAdminResponse { Success = false };
+
+        if ( chatGroup.CreatorId != _identityContext.Id )
+            return new RemoveChatGroupAdminResponse { Success = false };
+
+        if ( !chatGroup.HasAdmin(Guid.Parse(request.AdminId)) )
+            return new RemoveChatGroupAdminResponse { Success = false };
+
+        await _groups.UpdateAsync(chatGroup, group =>
+        {
+            group.RemoveAdmin(Guid.Parse(request.AdminId));
+            group.UpdatedAt = _clock.Now;
+        }, context.CancellationToken);
+        return new RemoveChatGroupAdminResponse { Success = true };
+    }
+
+    public override async Task<RemoveChatGroupMemberResponse> RemoveChatGroupMember(
+        RemoveChatGroupMemberRequest request, ServerCallContext context)
+    {
+        var chatGroup = await _groups.GetAsync(Guid.Parse(request.ChatGroupId), context.CancellationToken);
+        if ( chatGroup is null ) return new RemoveChatGroupMemberResponse { Success = false };
+
+        if ( chatGroup.AdminIds.All(id => id != _identityContext.Id) )
+        {
+            return new RemoveChatGroupMemberResponse { Success = false };
+        }
+
+        var memberExists = await _members.Exists(
+            Guid.Parse(request.ChatGroupId), Guid.Parse(request.MemberId),
+            context.CancellationToken);
+        if ( !memberExists ) return new RemoveChatGroupMemberResponse { Success = false };
+
+        await _members.DeleteAsync(_identityContext.Id, context.CancellationToken);
+        return new RemoveChatGroupMemberResponse { Success = true };
+    }
+
+    public override async Task<GetChatGroupDetailsResponse> GetChatGroupDetails(GetChatGroupDetailsRequest request,
+        ServerCallContext context)
+    {
+        var group = await _groups.GetAsync(Guid.Parse(request.ChatGroupId), context.CancellationToken);
+        if ( group is null ) return new GetChatGroupDetailsResponse { Success = false };
+
+        var isMember = await _members.Exists(Guid.Parse(request.ChatGroupId), _identityContext.Id,
+            context.CancellationToken);
+        if ( !isMember ) return new GetChatGroupDetailsResponse { Success = false };
+
+        return new GetChatGroupDetailsResponse
+        {
+            Success = true, ChatGroupDetails = new ChatGroupDetailsModel
+            {
+                ChatGroup = new ChatGroupModel
+                {
+                    Id = group.Id.ToString(),
+                    About = group.About,
+                    Name = group.Name,
+                    CreatedAt = Timestamp.FromDateTimeOffset(group.CreatedAt),
+                    AdminIds = { group.AdminIds.Select(id => id.ToString()) },
+                    CreatorId = group.CreatorId.ToString(),
+                    Metadata = { group.Metadata },
+                    ProfilePicture = group.Picture is { }
+                        ? new Media
+                        {
+                            Id = group.Picture.Id.ToString(),
+                            FileName = group.Picture.FileName,
+                            MediaUrl = group.Picture.MediaUrl,
+                            Type = group.Picture.Type
+                        }
+                        : default,
+                    UpdatedAt =
+                        group.UpdatedAt.HasValue ? Timestamp.FromDateTimeOffset(group.UpdatedAt.Value) : default,
+                    PinnedMessages =
+                    {
+                        group.PinnedMessages.Select(m => new PinnedMessage
+                        {
+                            Id = m.MessageId.ToString(), CreatedAt = Timestamp.FromDateTimeOffset(m.CreatedAt),
+                            PinnerId = m.PinnerId.ToString()
+                        })
+                    }
+                }
+            }
+        };
+    }
+
+    public override async Task<GetChatGroupMembershipDetailsResponse> GetChatGroupMembershipDetails(
+        GetChatGroupMembershipDetailsRequest request, ServerCallContext context)
+    {
+        var isMember = await _members.Exists(Guid.Parse(request.ChatGroupId), _identityContext.Id,
+            context.CancellationToken);
+        if ( !isMember ) return new GetChatGroupMembershipDetailsResponse { Success = false };
+
+        var membership = await _members
+            .ByGroupAndUser(Guid.Parse(request.ChatGroupId), Guid.Parse(request.UserId), context.CancellationToken);
+
+        return membership is not null
+            ? new GetChatGroupMembershipDetailsResponse
+            {
+                Success = true,
+                ChatGroupMembership = new ChatGroupMembershipModel
+                {
+                    Member = new ChatGroupMemberModel
+                    {
+                        Id = membership.Id.ToString(),
+                        UserId = membership.UserId.ToString(),
+                        CreatedAt = Timestamp.FromDateTimeOffset(membership.CreatedAt),
+                        MembershipType = ( MembershipType )membership.MembershipType + 1,
+                        ChatGroupId = membership.ChatGroupId.ToString(),
+                        Username = membership.Username
+                    }
+                }
+            }
+            : new GetChatGroupMembershipDetailsResponse { Success = false };
+    }
+
+    public override async Task<GetChatGroupMemberIdsResponse> GetChatGroupMemberIds(
+        GetChatGroupMemberIdsRequest request,
+        ServerCallContext context)
+    {
+        var group = await _groups.GetAsync(
+            Guid.Parse(request.ChatGroupId),
+            context.CancellationToken);
+        if ( group is null ) return new GetChatGroupMemberIdsResponse { Success = false };
+
+        var isMember = await _members.Exists(
+            group.Id, group.CreatorId, context.CancellationToken);
+        if ( !isMember ) return new GetChatGroupMemberIdsResponse { Success = false };
+
+        var memberIds = await _members
+            .UserIdsByGroup(group.Id, context.CancellationToken);
+
+        return memberIds is { }
+            ? new GetChatGroupMemberIdsResponse
+                { Success = true, MemberIds = { memberIds.Select(id => id.ToString()) } }
+            : new GetChatGroupMemberIdsResponse { Success = false };
+    }
+
+    public override async Task<GetChatGroupSharedAttachmentsResponse> GetChatGroupSharedAttachments(
+        GetChatGroupSharedAttachmentsRequest request, ServerCallContext context)
+    {
+        var isGroupMember = await _members.Exists(
+            Guid.Parse(request.ChatGroupId),
+            _identityContext.Id, context.CancellationToken);
+        if ( !isGroupMember ) return new GetChatGroupSharedAttachmentsResponse { Success = false };
+
+        var attachments = await _attachments.GetPaginatedAttachmentsByGroupAsync(
+            Guid.Parse(request.ChatGroupId),
+            request.PageSize,
+            request.PagingCursor, context.CancellationToken);
+
+        return new GetChatGroupSharedAttachmentsResponse
+        {
+            Success = true,
+            Attachments = new ChatGroupAttachmentsModel
+            {
+                PageSize = attachments.PageSize,
+                PagingCursor = attachments.PagingCursor,
+                Total = attachments.Total,
+                HasMore = attachments.HasMore,
+                Items =
+                {
+                    attachments.Select(a => new ChatGroupAttachmentModel
+                    {
+                        AttachmentId = a.AttachmentId.ToString(),
+                        ChatGroupId = a.ChatGroupId.ToString(),
+                        CreatedAt = Timestamp.FromDateTime(a.CreatedAt),
+                        Username = a.Username,
+                        UserId = a.UserId.ToString(),
+                        Media = new Media(),
+                        UpdatedAt = a.UpdatedAt.HasValue ? Timestamp.FromDateTime(a.UpdatedAt.Value) : default
+                    })
+                }
+            }
+        };
     }
 }

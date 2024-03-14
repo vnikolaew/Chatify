@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using Cassandra;
 using Chatify.Application.Common.Mappings;
-using Chatify.Infrastructure.Common.Mappings;
 using Chatify.Infrastructure.Data.Extensions;
 using Humanizer;
 using Redis.OM.Modeling;
-using Metadata = System.Collections.Generic.IDictionary<string, string>;
 
 namespace Chatify.Infrastructure.Data.Models;
 

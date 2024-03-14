@@ -1,5 +1,4 @@
-﻿using Chatify.Application.Common.Contracts;
-using Chatify.Domain.Entities;
+﻿using Chatify.Domain.Entities;
 using Chatify.Domain.Events.Friendships;
 using Chatify.Domain.Repositories;
 using Chatify.Infrastructure.Common.Caching.Extensions;
