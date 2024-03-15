@@ -20,7 +20,7 @@ message ChatGroupModel {
   string  id = 1;
   string  creator_id = 2;
   string  name = 3;
-  string about = 4;
+  optional string about = 4;
   repeated string  admin_ids = 5;
   Media profile_picture = 6;
   map<string, string> metadata = 7;

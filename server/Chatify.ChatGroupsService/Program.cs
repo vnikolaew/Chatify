@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using Chatify.Application.Common.Contracts;
+using Chatify.ChatGroupsService.Extensions;
 using Chatify.Infrastructure;
 using Chatify.Infrastructure.Common;
 using Chatify.Infrastructure.Data;
@@ -19,15 +20,14 @@ var builder = WebApplication.CreateBuilder(args);
         opts.ResponseCompressionLevel = CompressionLevel.Optimal;
         opts.Interceptors.Add<LoggingInterceptor>();
     });
-    builder.Services.AddGrpcReflection();
+    
     builder.Services
+        .AddGrpcReflection()
+        .AddMappings()
         .AddContexts()
         .AddCassandraIdentity(builder.Configuration)
-        .AddJwtBearer(builder.Configuration);
-
-    builder.Services
+        .AddJwtBearer(builder.Configuration)
         .AddCassandra(builder.Configuration)
-        .AddMappers()
         .AddRepositories()
         .AddCaching(builder.Configuration)
         .AddHostedService<DatabaseInitializationService>()

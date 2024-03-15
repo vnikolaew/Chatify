@@ -16,8 +16,8 @@ public class User : IDomainEntity
         get => _username;
         set
         {
-            UserHandle = UserHandle?.Replace(_username, value) ?? string.Empty;
             _username = value;
+            UserHandle = UserHandle?.Replace(_username, value) ?? string.Empty;
         }
     }
 

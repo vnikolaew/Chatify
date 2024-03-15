@@ -168,14 +168,14 @@ public sealed class ChatGroupsService(ChatGroupsServicer.ChatGroupsServicerClien
                 About = responseChatGroup.About,
                 AdminIds = responseChatGroup.AdminIds.Select(Guid.Parse).ToHashSet(),
                 CreatedAt = responseChatGroup.CreatedAt.ToDateTimeOffset(),
-                UpdatedAt = responseChatGroup.UpdatedAt.ToDateTimeOffset(),
-                Picture = new Domain.Entities.Media
+                UpdatedAt = responseChatGroup.UpdatedAt?.ToDateTimeOffset(),
+                Picture = responseChatGroup.ProfilePicture is {} ?  new Domain.Entities.Media
                 {
                     Id = Guid.Parse(responseChatGroup.ProfilePicture.Id),
                     FileName = responseChatGroup.ProfilePicture.FileName,
                     MediaUrl = responseChatGroup.ProfilePicture.MediaUrl,
                     Type = responseChatGroup.ProfilePicture.Type
-                },
+                } : default,
                 CreatorId = Guid.Parse(responseChatGroup.CreatorId),
                 Metadata = responseChatGroup.Metadata.ToDictionary(),
                 PinnedMessages = responseChatGroup.PinnedMessages.Select(m =>

@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Reflection;
+using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
 using AutoMapper.Internal;
 using Chatify.Application.Authentication.Contracts;
@@ -90,7 +91,9 @@ public static class DependencyInjection
             .AddQuartzHostedService(opts =>
                 opts.WaitForJobsToComplete = true);
 
-    public static IServiceCollection AddMappers(this IServiceCollection services)
+    public static IServiceCollection AddMappers(
+        this IServiceCollection services,
+        Action<IMapperConfigurationExpression>? configure = default)
         => services.AddAutoMapper(config =>
         {
             config
@@ -100,6 +103,7 @@ public static class DependencyInjection
                     typeof(Application.IAssemblyMarker));
 
             config.AllowNullDestinationValues = true;
+            configure?.Invoke(config);
         });
 
     public static IServiceCollection AddServices(

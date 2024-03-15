@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Globalization;
 using System.Net;
+using System.Reflection;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -8,8 +9,8 @@ using System.Threading.RateLimiting;
 using Chatify.Application.ChatGroups.Queries.Models;
 using Chatify.Domain.Entities;
 using Chatify.Infrastructure;
-using Chatify.Infrastructure.Data.Conversions;
 using Chatify.Web.Common;
+using Chatify.Web.Infrastructure;
 using Chatify.Web.Middleware;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.OpenApi.Models;
+using Octokit;
 
 namespace Chatify.Web.Extensions;
 
@@ -61,8 +63,20 @@ public static class ServiceCollectionExtensions
         opts.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
         opts.JsonSerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
 
+        var converters = new[]
+            {
+                typeof(IAssemblyMarker).Assembly, Assembly.GetExecutingAssembly()
+            }
+            .SelectMany(a => a.GetExportedTypes())
+            .Where(t => !t.IsGenericType
+                        && ( t.BaseType?.IsGenericType ?? false )
+                        && t.BaseType?.GetGenericTypeDefinition() == typeof(JsonConverter<>))
+            .Select(Activator.CreateInstance)
+            .Cast<JsonConverter>()
+            .ToList();
+        converters.ForEach(c => opts.JsonSerializerOptions.Converters.Add(c));
+
         opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        opts.JsonSerializerOptions.Converters.Add(new IPAddressConverter());
         opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<ChatGroupMessageEntry>());
         opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<UserNotification>());
         opts.JsonSerializerOptions.Converters.Add(new CursorPagedConverter<ChatGroupAttachment>());

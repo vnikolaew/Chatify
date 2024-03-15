@@ -1,4 +1,6 @@
-﻿using Chatify.Domain.Entities;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Chatify.Domain.Entities;
 using Chatify.Domain.Repositories;
 using Chatify.Services.Shared.ChatGroups;
 using Chatify.Services.Shared.Models;
@@ -6,13 +8,10 @@ using Chatify.Shared.Abstractions.Common;
 using Chatify.Shared.Abstractions.Contexts;
 using Chatify.Shared.Abstractions.Time;
 using Chatify.Shared.Infrastructure.Common.Extensions;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using ErrorDetail = Chatify.Services.Shared.ChatGroups.ErrorDetail;
 using ErrorDetails = Chatify.Services.Shared.ChatGroups.ErrorDetails;
-using Media = Chatify.Services.Shared.Models.Media;
-using PinnedMessage = Chatify.Services.Shared.Models.PinnedMessage;
 
 namespace Chatify.ChatGroupsService.Services;
 
@@ -25,11 +24,16 @@ internal sealed class ChatGroupsServicer
     private readonly IChatGroupMemberRepository _members;
     private readonly IIdentityContext _identityContext;
     private readonly IGuidGenerator _guidGenerator;
+    private readonly IMapper _mapper;
     private readonly IClock _clock;
 
-    public ChatGroupsServicer(IChatGroupRepository groups, IIdentityContext identityContext,
-        IGuidGenerator guidGenerator, IClock clock, IChatGroupMemberRepository members,
-        IChatGroupAttachmentRepository attachments)
+    public ChatGroupsServicer(
+        IChatGroupRepository groups,
+        IIdentityContext identityContext,
+        IGuidGenerator guidGenerator,
+        IClock clock,
+        IChatGroupMemberRepository members,
+        IChatGroupAttachmentRepository attachments, IMapper mapper)
     {
         _groups = groups;
         _identityContext = identityContext;
@@ -37,6 +41,7 @@ internal sealed class ChatGroupsServicer
         _clock = clock;
         _members = members;
         _attachments = attachments;
+        _mapper = mapper;
     }
 
     public override async Task<AddChatGroupMembersResponse> AddChatGroupMembers(
@@ -92,15 +97,8 @@ internal sealed class ChatGroupsServicer
 
         var members = request
             .Members
-            .Select(m => new ChatGroupMember
-            {
-                Id = _guidGenerator.New(),
-                CreatedAt = _clock.Now,
-                ChatGroupId = Guid.Parse(request.ChatGroupId),
-                UserId = Guid.Parse(m.UserId),
-                Username = m.Username,
-                MembershipType = ( sbyte )( m.MembershipType - 1 )
-            });
+            .AsQueryable()
+            .ProjectTo<ChatGroupMember>(_mapper.ConfigurationProvider);
 
         var groupMembers = await members
             .Select(member => _members.SaveAsync(member, context.CancellationToken))
@@ -354,37 +352,39 @@ internal sealed class ChatGroupsServicer
 
         return new GetChatGroupDetailsResponse
         {
-            Success = true, ChatGroupDetails = new ChatGroupDetailsModel
+            Success = true,
+            ChatGroupDetails = new ChatGroupDetailsModel
             {
-                ChatGroup = new ChatGroupModel
-                {
-                    Id = group.Id.ToString(),
-                    About = group.About,
-                    Name = group.Name,
-                    CreatedAt = Timestamp.FromDateTimeOffset(group.CreatedAt),
-                    AdminIds = { group.AdminIds.Select(id => id.ToString()) },
-                    CreatorId = group.CreatorId.ToString(),
-                    Metadata = { group.Metadata },
-                    ProfilePicture = group.Picture is { }
-                        ? new Media
-                        {
-                            Id = group.Picture.Id.ToString(),
-                            FileName = group.Picture.FileName,
-                            MediaUrl = group.Picture.MediaUrl,
-                            Type = group.Picture.Type
-                        }
-                        : default,
-                    UpdatedAt =
-                        group.UpdatedAt.HasValue ? Timestamp.FromDateTimeOffset(group.UpdatedAt.Value) : default,
-                    PinnedMessages =
-                    {
-                        group.PinnedMessages.Select(m => new PinnedMessage
-                        {
-                            Id = m.MessageId.ToString(), CreatedAt = Timestamp.FromDateTimeOffset(m.CreatedAt),
-                            PinnerId = m.PinnerId.ToString()
-                        })
-                    }
-                }
+                ChatGroup = _mapper.Map<ChatGroupModel>(group)
+                // ChatGroup = new ChatGroupModel
+                // {
+                //     Id = group.Id.ToString(),
+                //     About = group.About,
+                //     Name = group.Name,
+                //     CreatedAt = Timestamp.FromDateTimeOffset(group.CreatedAt),
+                //     AdminIds = { group.AdminIds.Select(id => id.ToString()) },
+                //     CreatorId = group.CreatorId.ToString(),
+                //     Metadata = { group.Metadata },
+                //     ProfilePicture = group.Picture is { }
+                //         ? new Media
+                //         {
+                //             Id = group.Picture.Id.ToString(),
+                //             FileName = group.Picture.FileName,
+                //             MediaUrl = group.Picture.MediaUrl,
+                //             Type = group.Picture.Type
+                //         }
+                //         : default,
+                //     UpdatedAt =
+                //         group.UpdatedAt.HasValue ? Timestamp.FromDateTimeOffset(group.UpdatedAt.Value) : default,
+                //     PinnedMessages =
+                //     {
+                //         group.PinnedMessages.Select(m => new PinnedMessage
+                //         {
+                //             Id = m.MessageId.ToString(), CreatedAt = Timestamp.FromDateTimeOffset(m.CreatedAt),
+                //             PinnerId = m.PinnerId.ToString()
+                //         })
+                //     }
+                // }
             }
         };
     }
@@ -405,15 +405,7 @@ internal sealed class ChatGroupsServicer
                 Success = true,
                 ChatGroupMembership = new ChatGroupMembershipModel
                 {
-                    Member = new ChatGroupMemberModel
-                    {
-                        Id = membership.Id.ToString(),
-                        UserId = membership.UserId.ToString(),
-                        CreatedAt = Timestamp.FromDateTimeOffset(membership.CreatedAt),
-                        MembershipType = ( MembershipType )membership.MembershipType + 1,
-                        ChatGroupId = membership.ChatGroupId.ToString(),
-                        Username = membership.Username
-                    }
+                    Member = _mapper.Map<ChatGroupMemberModel>(membership)
                 }
             }
             : new GetChatGroupMembershipDetailsResponse { Success = false };
@@ -465,17 +457,20 @@ internal sealed class ChatGroupsServicer
                 HasMore = attachments.HasMore,
                 Items =
                 {
-                    attachments.Select(a => new ChatGroupAttachmentModel
-                    {
-                        AttachmentId = a.AttachmentId.ToString(),
-                        ChatGroupId = a.ChatGroupId.ToString(),
-                        CreatedAt = Timestamp.FromDateTime(a.CreatedAt),
-                        Username = a.Username,
-                        UserId = a.UserId.ToString(),
-                        Media = new Media(),
-                        UpdatedAt = a.UpdatedAt.HasValue ? Timestamp.FromDateTime(a.UpdatedAt.Value) : default
-                    })
+                    attachments.AsQueryable().ProjectTo<ChatGroupAttachmentModel>(_mapper.ConfigurationProvider)
                 }
+                // {
+                //     attachments.Select(a => new ChatGroupAttachmentModel
+                //     {
+                //         AttachmentId = a.AttachmentId.ToString(),
+                //         ChatGroupId = a.ChatGroupId.ToString(),
+                //         CreatedAt = Timestamp.FromDateTime(a.CreatedAt),
+                //         Username = a.Username,
+                //         UserId = a.UserId.ToString(),
+                //         Media = new Media(),
+                //         UpdatedAt = a.UpdatedAt.HasValue ? Timestamp.FromDateTime(a.UpdatedAt.Value) : default
+                //     })
+                // }
             }
         };
     }

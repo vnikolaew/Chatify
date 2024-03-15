@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using Chatify.Shared.Abstractions.Queries;
 using Humanizer;
 
-namespace Chatify.Web.Middleware;
+namespace Chatify.Web.Infrastructure;
 
 public sealed class CursorPagedConverter<T>
     : JsonConverter<CursorPaged<T>>
