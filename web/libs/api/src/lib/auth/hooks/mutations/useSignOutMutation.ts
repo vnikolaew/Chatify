@@ -5,6 +5,8 @@ import {
    useQueryClient,
 } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
+import { IS_MOBILE } from "../../../common/createClient";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const signOut = async () => {
    const { status, data } = await authClient.post(`/signout`);
@@ -28,8 +30,10 @@ export const useSignOutMutation = (
    return useMutation({
       mutationFn: signOut,
       onError: console.error,
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
          console.log("Sign out success: " + data);
+         if (IS_MOBILE) await AsyncStorage.removeItem(`auth_cookie`);
+
          client.clear();
       },
       onSettled: (res) => console.log(res),

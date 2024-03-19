@@ -1,0 +1,46 @@
+{
+  "315815899121492294": {
+    "e2e": {
+      "command": "cypress run",
+      "options": {
+        "cwd": "apps/app-e2e"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "externalDependencies": [
+            "cypress"
+          ]
+        }
+      ],
+      "outputs": [
+        "{workspaceRoot}\\dist\\cypress\\apps\\app-e2e\\videos",
+        "{workspaceRoot}\\dist\\cypress\\apps\\app-e2e\\screenshots"
+      ]
+    }
+  },
+  "13930293075406110139": {
+    "e2e": {
+      "command": "cypress run",
+      "options": {
+        "cwd": "apps/mobile-e2e"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "externalDependencies": [
+            "cypress"
+          ]
+        }
+      ],
+      "outputs": [
+        "{workspaceRoot}\\dist\\cypress\\apps\\mobile-e2e\\videos",
+        "{workspaceRoot}\\dist\\cypress\\apps\\mobile-e2e\\screenshots"
+      ]
+    }
+  }
+}

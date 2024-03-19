@@ -8,7 +8,7 @@ export function useGoogleSignIn(
    const {
       error,
       data,
-      isLoading,
+      // isLoading,
       mutateAsync: googleSignUp,
    } = useGoogleSignUpMutation();
 
@@ -34,5 +34,5 @@ export function useGoogleSignIn(
       onError: console.error,
    });
 
-   return { login, isLoading, error, data };
+   return { login, error, data };
 }

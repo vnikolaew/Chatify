@@ -1,6 +1,8 @@
 import { authClient } from "../../client";
 import { useMutation } from "@tanstack/react-query";
-import { HttpStatusCode } from "axios";
+import { HttpStatusCode, RawAxiosResponseHeaders } from "axios";
+import { IS_MOBILE } from "../../../common/createClient";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface RegularSignInModel {
    email: string;
@@ -9,12 +11,19 @@ export interface RegularSignInModel {
    returnUrl?: string;
 }
 
-const regularSignIn = async (model: RegularSignInModel) => {
+export interface RegularSignInResponse {
+   data: any;
+   headers: RawAxiosResponseHeaders;
+}
+
+const regularSignIn = async (
+   model: RegularSignInModel
+): Promise<RegularSignInResponse> => {
    const params = new URLSearchParams(
       model.returnUrl ? { returnUrl: model.returnUrl } : {}
    )!;
 
-   const { status, data } = await authClient.post(`/signin`, model, {
+   const { status, data, headers } = await authClient.post(`/signin`, model, {
       params,
    });
 
@@ -22,14 +31,20 @@ const regularSignIn = async (model: RegularSignInModel) => {
       throw new Error("error");
    }
 
-   return data;
+   return { data, headers };
 };
 
 export const useRegularSignInMutation = () => {
-   return useMutation<any, Error, RegularSignInModel, any>({
+   return useMutation<RegularSignInResponse, Error, RegularSignInModel, any>({
       mutationFn: regularSignIn,
       onError: console.error,
-      onSuccess: (data) => console.log("Sign in success: " + data),
-      onSettled: (res) => console.log(res),
+      onSuccess: async ({ headers }) => {
+         const authCookieValue = headers["x-auth-token"] as string;
+
+         if (authCookieValue?.length && IS_MOBILE) {
+            await AsyncStorage.setItem(`auth_cookie`, authCookieValue);
+         }
+      },
+      onSettled: () => {},
    });
 };

@@ -18,6 +18,9 @@ const nextConfig = {
    typescript: {
       ignoreBuildErrors: true,
    },
+   webpack: (config, context) => {
+      return config;
+   },
    images: {
       formats: ["image/webp"],
       remotePatterns: [

@@ -1,0 +1,71 @@
+{
+  "10899677265238497776": {
+    "start": {
+      "command": "expo start",
+      "options": {
+        "cwd": "apps/mobile"
+      }
+    },
+    "serve": {
+      "command": "expo start --web",
+      "options": {
+        "cwd": "apps/mobile"
+      }
+    },
+    "run-ios": {
+      "command": "expo run:ios",
+      "options": {
+        "cwd": "apps/mobile"
+      }
+    },
+    "run-android": {
+      "command": "expo run:android",
+      "options": {
+        "cwd": "apps/mobile"
+      }
+    },
+    "export": {
+      "command": "expo export",
+      "options": {
+        "cwd": "apps/mobile"
+      },
+      "cache": true,
+      "dependsOn": [
+        "^export"
+      ],
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "externalDependencies": [
+            "expo"
+          ]
+        }
+      ],
+      "outputs": [
+        "{workspaceRoot}/apps/mobile/dist"
+      ]
+    },
+    "install": {
+      "command": "expo install",
+      "options": {
+        "cwd": "C:\\Users\\Victorio\\RiderProjects\\Chatify\\web"
+      }
+    },
+    "prebuild": {
+      "executor": "@nx/expo:prebuild"
+    },
+    "build": {
+      "command": "eas build",
+      "options": {
+        "cwd": "apps/mobile"
+      }
+    },
+    "submit": {
+      "command": "eas submit",
+      "options": {
+        "cwd": "apps/mobile"
+      }
+    }
+  }
+}

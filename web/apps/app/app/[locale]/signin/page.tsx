@@ -54,7 +54,6 @@ const SignInPage: NextPage = () => {
    const {
       error: googleError,
       data: googleData,
-      isLoading,
       login: googleLogin,
    } = useGoogleSignIn((res) =>
       router.push(`/`, { forceOptimisticNavigation: false })

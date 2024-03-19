@@ -38,12 +38,14 @@ export const USER_DETAILS_KEY = "user-details";
 
 export const useGetUserDetailsQuery = (
    userId: string,
-   options?: Omit<
-      UseQueryOptions<UserDetailsEntry, Error, UserDetailsEntry, string[]>,
-      "initialData"
-   > & {
-      initialData?: (() => undefined) | undefined;
-   }
+   options?: Partial<
+      Omit<
+         UseQueryOptions<UserDetailsEntry, Error, UserDetailsEntry, string[]>,
+         "initialData"
+      > & {
+         initialData?: (() => undefined) | undefined;
+      }
+   >
 ) => {
    const client = useQueryClient();
    return useQuery<UserDetailsEntry, Error, UserDetailsEntry, string[]>({

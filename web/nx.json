@@ -1,78 +1,87 @@
 {
-  "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "npmScope": "web",
-  "tasksRunnerOptions": {
-    "default": {
-      "runner": "nx/tasks-runners/default",
-      "options": {
-        "cacheableOperations": [
-          "build",
-          "lint",
-          "test",
-          "e2e",
-          "build-custom-server"
-        ]
+   "$schema": "./node_modules/nx/schemas/nx-schema.json",
+   "npmScope": "web",
+   "tasksRunnerOptions": {
+      "default": {
+         "runner": "nx/tasks-runners/default",
+         "options": {
+            "cacheableOperations": [
+               "build",
+               "lint",
+               "test",
+               "e2e",
+               "build-custom-server"
+            ]
+         }
       }
-    }
-  },
-  "targetDefaults": {
-    "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "production",
-        "^production"
-      ]
-    },
-    "test": {
-      "inputs": [
-        "default",
-        "^production",
-        "{workspaceRoot}/jest.preset.js"
-      ]
-    },
-    "e2e": {
-      "inputs": [
-        "default",
-        "^production"
-      ]
-    },
-    "lint": {
-      "inputs": [
-        "default",
-        "{workspaceRoot}/.eslintrc.json"
-      ]
-    }
-  },
-  "namedInputs": {
-    "default": [
-      "{projectRoot}/**/*",
-      "sharedGlobals"
-    ],
-    "production": [
-      "default",
-      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-      "!{projectRoot}/tsconfig.spec.json",
-      "!{projectRoot}/jest.config.[jt]s",
-      "!{projectRoot}/.eslintrc.json"
-    ],
-    "sharedGlobals": [
-      "{workspaceRoot}/babel.config.json"
-    ]
-  },
-  "generators": {
-    "@nx/react": {
-      "application": {
-        "babel": true
+   },
+   "targetDefaults": {
+      "build": {
+         "dependsOn": ["^build"],
+         "inputs": ["production", "^production"]
       },
-      "library": {}
-    },
-    "@nx/next": {
-      "application": {
-        "style": "css",
-        "linter": "eslint"
+      "test": {
+         "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"]
+      },
+      "e2e": {
+         "inputs": ["default", "^production"]
+      },
+      "lint": {
+         "inputs": ["default", "{workspaceRoot}/.eslintrc.json"]
       }
-    }
-  }
+   },
+   "namedInputs": {
+      "default": ["{projectRoot}/**/*", "sharedGlobals"],
+      "production": [
+         "default",
+         "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+         "!{projectRoot}/tsconfig.spec.json",
+         "!{projectRoot}/jest.config.[jt]s",
+         "!{projectRoot}/.eslintrc.json"
+      ],
+      "sharedGlobals": ["{workspaceRoot}/babel.config.json"]
+   },
+   "generators": {
+      "@nx/react": {
+         "application": {
+            "babel": true
+         },
+         "library": {}
+      },
+      "@nx/next": {
+         "application": {
+            "style": "css",
+            "linter": "eslint"
+         }
+      }
+   },
+   "plugins": [
+      {
+         "plugin": "@nx/expo/plugin",
+         "options": {
+            "startTargetName": "start",
+            "serveTargetName": "serve",
+            "runIosTargetName": "run-ios",
+            "runAndroidTargetName": "run-android",
+            "exportTargetName": "export",
+            "prebuildTargetName": "prebuild",
+            "installTargetName": "install",
+            "buildTargetName": "build",
+            "submitTargetName": "submit"
+         }
+      },
+//      {
+//         "plugin": "@nx/eslint/plugin",
+//         "options": {
+//            "targetName": "lint"
+//         }
+//      },
+      {
+         "plugin": "@nx/cypress/plugin",
+         "options": {
+            "targetName": "e2e",
+            "componentTestingTargetName": "component-test"
+         }
+      }
+   ]
 }

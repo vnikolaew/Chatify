@@ -1,14 +1,28 @@
 import axios, { AxiosRequestConfig, HttpStatusCode } from "axios";
 import { __IS_SERVER__, sleep } from "../utils";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
 
 export const USER_LOCATION_LOCAL_STORAGE_KEY = "user-geolocation";
+
+export const apiBaseUrl =
+   // @ts-ignore
+   process.env.NEXT_PUBLIC_BACKEND_API_URL ??
+   // @ts-ignore
+   process.env.EXPO_PUBLIC_BACKEND_API_URL;
+
+export const IS_MOBILE =
+   // @ts-ignore
+   process.env.EXPO_PUBLIC_BACKEND_PLATFORM === `mobile`;
+
+export const IS_WEB = !IS_MOBILE;
 
 export const createClient = (
    endpoint: string = "",
    config?: AxiosRequestConfig
 ) => {
    const client = axios.create({
-      baseURL: `/api/${endpoint}`,
+      baseURL: `${apiBaseUrl}/api/${endpoint}`,
       headers: {
          "Content-Type": "application/json; charset=utf-8",
          "Accept": "*/*",
@@ -21,6 +35,21 @@ export const createClient = (
       cancelToken: axios.CancelToken.source().token,
       ...config,
    });
+
+   if (IS_MOBILE) {
+      client.interceptors.request.use(async (config) => {
+         config.headers["User-Agent"] = Platform.OS;
+
+         const cookieValue = (await AsyncStorage.getItem(`auth_cookie`)) ?? ``;
+         config.headers["Cookie"] = `${
+            // @ts-ignore
+            process.env.EXPO_PUBLIC_APPLICATION_COOKIE_NAME as string
+         }=${cookieValue}`;
+
+         return config;
+      });
+      return client;
+   }
 
    client.interceptors.request.use((config) => {
       if (__IS_SERVER__) return config;
