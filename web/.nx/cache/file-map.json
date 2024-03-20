@@ -1,9 +1,11 @@
 {
   "version": "6.0",
-  "nxVersion": "17.2.8",
+  "nxVersion": "18.1.1",
   "deps": {
     "@emoji-mart/data": "^1.1.2",
     "@emoji-mart/react": "^1.1.1",
+    "@expo/metro-config": "~0.17.3",
+    "@expo/metro-runtime": "~3.1.1",
     "@microsoft/kiota-abstractions": "^1.0.0-preview.36",
     "@microsoft/kiota-http-fetchlibrary": "^1.0.0-preview.35",
     "@microsoft/kiota-serialization-form": "^1.0.0-preview.25",
@@ -13,8 +15,15 @@
     "@microsoft/signalr": "^8.0.0",
     "@microsoft/signalr-protocol-msgpack": "^8.0.0",
     "@nextui-org/react": "^2.2.9",
-    "@nx/next": "17.2.8",
+    "@nx/next": "18.1.1",
     "@radix-ui/themes": "^2.0.3",
+    "@react-native-async-storage/async-storage": "1.21.0",
+    "@react-native-community/google-signin": "^5.0.0",
+    "@react-native-google-signin/google-signin": "^11.0.0",
+    "@react-native-masked-view/masked-view": "0.3.1",
+    "@react-navigation/native": "^6.1.17",
+    "@react-navigation/native-stack": "^6.9.26",
+    "@react-navigation/stack": "^6.3.29",
     "@react-oauth/google": "^0.12.1",
     "@swc/helpers": "^0.5.3",
     "@tanstack/react-query": "^5.17.1",
@@ -59,11 +68,21 @@
     "@udecode/plate-table": "^29.0.1",
     "@udecode/plate-trailing-block": "^29.0.1",
     "@uidotdev/usehooks": "^2.4.1",
-    "axios": "^1.6.4",
+    "axios": "^1.6.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "emoji-mart": "^5.5.2",
     "emoji-picker-react": "^4.6.2",
+    "expo": "~50.0.3",
+    "expo-auth-session": "~5.4.0",
+    "expo-checkbox": "~2.7.0",
+    "expo-constants": "~15.4.5",
+    "expo-crypto": "~12.8.1",
+    "expo-dev-client": "~3.3.10",
+    "expo-linking": "~6.2.2",
+    "expo-router": "~3.4.8",
+    "expo-splash-screen": "~0.26.1",
+    "expo-status-bar": "~1.11.1",
     "formik": "^2.4.5",
     "framer-motion": "^10.17.7",
     "immer": "^10.0.3",
@@ -73,13 +92,23 @@
     "lodash.topairs": "^4.3.0",
     "lucide-react": "^0.304.0",
     "moment": "^2.30.1",
-    "next": "^14.0.4",
+    "next": "14.0.2",
     "next-intl": "^3.4.1",
     "next-themes": "^0.2.1",
     "react": "^18.2.0",
     "react-cookie-consent": "^9.0.0",
     "react-dom": "^18.2.0",
     "react-github-login": "^1.0.3",
+    "react-native": "0.73.5",
+    "react-native-gesture-handler": "~2.15.0",
+    "react-native-reanimated": "~3.6.2",
+    "react-native-safe-area-context": "4.9.0",
+    "react-native-screens": "~3.29.0",
+    "react-native-svg": "14.1.0",
+    "react-native-svg-transformer": "1.2.0",
+    "react-native-web": "~0.19.9",
+    "react-navigation": "^5.0.0",
+    "react-navigation-stack": "^2.10.4",
     "react-quill": "^2.0.0",
     "react-resizable": "^3.0.5",
     "react-resizable-panels": "^1.0.7",
@@ -105,29 +134,36 @@
     "uuid": "^9.0.1",
     "yup": "^1.3.3",
     "@babel/preset-react": "^7.23.3",
-    "@nx/cypress": "17.2.8",
-    "@nx/eslint-plugin": "17.2.8",
-    "@nx/jest": "17.2.8",
-    "@nx/js": "^17.2.8",
-    "@nx/linter": "17.2.8",
-    "@nx/react": "17.2.8",
-    "@nx/workspace": "17.2.8",
+    "@expo/cli": "~0.16.5",
+    "@nx/cypress": "18.1.1",
+    "@nx/eslint": "^18.1.1",
+    "@nx/eslint-plugin": "^18.1.1",
+    "@nx/expo": "18.1.1",
+    "@nx/jest": "18.1.1",
+    "@nx/js": "18.1.1",
+    "@nx/linter": "18.1.1",
+    "@nx/react": "18.1.1",
+    "@nx/workspace": "18.1.1",
+    "@swc-node/register": "~1.8.0",
     "@swc/cli": "~0.1.63",
     "@swc/core": "~1.3.102",
     "@swc/jest": "0.2.29",
+    "@testing-library/jest-native": "~5.4.3",
     "@testing-library/react": "14.1.2",
+    "@testing-library/react-native": "~12.4.2",
     "@types/jest": "^29.5.11",
     "@types/lodash.groupby": "^4.6.9",
     "@types/lodash.topairs": "^4.3.9",
-    "@types/node": "20.10.6",
+    "@types/node": "^18.16.9",
     "@types/react": "^18.2.46",
     "@types/react-dom": "^18.2.18",
     "@types/react-draft-wysiwyg": "^1.13.8",
     "@types/slate-html-serializer": "^0.6.8",
-    "@typescript-eslint/eslint-plugin": "^6.17.0",
-    "@typescript-eslint/parser": "^6.17.0",
+    "@typescript-eslint/eslint-plugin": "6.13.2",
+    "@typescript-eslint/parser": "6.13.2",
     "autoprefixer": "^10.4.16",
     "babel-jest": "^29.7.0",
+    "babel-preset-expo": "~10.0.0",
     "cypress": "^13.6.2",
     "eslint": "~8.56.0",
     "eslint-config-next": "^14.0.4",
@@ -139,12 +175,14 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "nx": "17.2.8",
+    "jest-expo": "~50.0.1",
+    "nx": "18.1.1",
     "openapi-typescript": "^6.7.3",
     "openapi-typescript-codegen": "^0.25.0",
     "postcss": "^8.4.33",
     "prettier": "^3.1.1",
     "prettier-plugin-tailwindcss": "^0.5.10",
+    "react-test-renderer": "18.2.0",
     "tailwindcss": "^3.4.0",
     "ts-jest": "^29.1.1",
     "ts-node": "10.9.2",
@@ -154,11 +192,11 @@
     "@components/*": [
       "apps/app/components/*"
     ],
-    "@hub/*": [
-      "apps/app/hub/*"
-    ],
     "@hooks": [
       "apps/app/hooks/index.ts"
+    ],
+    "@hub/*": [
+      "apps/app/hub/*"
     ],
     "@icons": [
       "apps/app/components/icons/index.ts"
@@ -188,2029 +226,700 @@
       "libs/utils/src/server.ts"
     ]
   },
-  "nxJsonPlugins": [],
-  "fileMap": {
-    "nonProjectFiles": [
-      {
-        "file": "tools/generators/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": "caddy/cert.p12",
-        "hash": "15813438458215955662"
-      },
-      {
-        "file": "dist/apps/app/.nx-helpers/with-nx.js",
-        "hash": "12208353514721781474"
-      },
-      {
-        "file": ".idea/shelf/Uncommitted_changes_before_Update_at_12_23_2023_9_04_AM__Changes_.xml",
-        "hash": "10470299750588362553"
-      },
-      {
-        "file": "jest.config.ts",
-        "hash": "2950215254536237782"
-      },
-      {
-        "file": ".prettierignore",
-        "hash": "11845082378094941174"
-      },
-      {
-        "file": ".idea/compiler.xml",
-        "hash": "8442734741533086377"
-      },
-      {
-        "file": "tsconfig.json",
-        "hash": "8169592089260456204"
-      },
-      {
-        "file": ".eslintrc.json",
-        "hash": "15097946867664475648"
-      },
-      {
-        "file": "caddy/Caddyfile",
-        "hash": "18013454562331681374"
-      },
-      {
-        "file": "nx.json",
-        "hash": "2406896464398624403"
-      },
-      {
-        "file": ".idea/prettier.xml",
-        "hash": "5242372806056283450"
-      },
-      {
-        "file": ".editorconfig",
-        "hash": "2119145682588723816"
-      },
-      {
-        "file": "dist/apps/app/server/main.js.map",
-        "hash": "58205239644894438"
-      },
-      {
-        "file": "package-lock.json",
-        "hash": "5632973575840485258"
-      },
-      {
-        "file": "dist/apps/app/public/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": "README.md",
-        "hash": "3348664749010775979"
-      },
-      {
-        "file": "jest.preset.js",
-        "hash": "2772139696069860212"
-      },
-      {
-        "file": "babel.config.json",
-        "hash": "5546405625092116747"
-      },
-      {
-        "file": ".idea/kubernetes-settings.xml",
-        "hash": "11718823321442981435"
-      },
-      {
-        "file": ".idea/web.iml",
-        "hash": "17628044544001142833"
-      },
-      {
-        "file": "tools/tsconfig.tools.json",
-        "hash": "16088922570277978783"
-      },
-      {
-        "file": "caddy/custom.crt",
-        "hash": "10056124036886396268"
-      },
-      {
-        "file": ".idea/codeStyles/codeStyleConfig.xml",
-        "hash": "10911911431176787330"
-      },
-      {
-        "file": ".idea/codeStyles/Project.xml",
-        "hash": "12311506452589277232"
-      },
-      {
-        "file": "caddy/localhost.crt",
-        "hash": "17088398614891048762"
-      },
-      {
-        "file": ".prettierrc",
-        "hash": "15029930472711824204"
-      },
-      {
-        "file": ".vscode/settings.json",
-        "hash": "900610927200176056"
-      },
-      {
-        "file": ".idea/.gitignore",
-        "hash": "16259663310133185705"
-      },
-      {
-        "file": ".idea/modules.xml",
-        "hash": "1460730712079823922"
-      },
-      {
-        "file": ".idea/vcs.xml",
-        "hash": "7774614687133718341"
-      },
-      {
-        "file": "dist/apps/app/package.json",
-        "hash": "2854112909965857862"
-      },
-      {
-        "file": "libs/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": "dist/apps/app/next.config.js",
-        "hash": "1056018015358198547"
-      },
-      {
-        "file": ".idea/jsLibraryMappings.xml",
-        "hash": "10776891174152802849"
-      },
-      {
-        "file": "caddy/Dockerfile",
-        "hash": "10083757332168021576"
-      },
-      {
-        "file": "package.json",
-        "hash": "11014483448817158181"
-      },
-      {
-        "file": ".vscode/extensions.json",
-        "hash": "235626400633494639"
-      },
-      {
-        "file": "dist/apps/app/server/main.js",
-        "hash": "11247959668556912466"
-      },
-      {
-        "file": "apps/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": "tsconfig.base.json",
-        "hash": "13751864353622264324"
-      },
-      {
-        "file": ".idea/misc.xml",
-        "hash": "17758531366595143891"
-      },
-      {
-        "file": "Dockerfile",
-        "hash": "10414519105003260841"
-      },
-      {
-        "file": "components.json",
-        "hash": "7696207467146752491"
-      },
-      {
-        "file": ".nx/cache/file-map.json",
-        "hash": "5332182724678516373"
-      },
-      {
-        "file": "dist/apps/app/.nx-helpers/compiled.js",
-        "hash": "10475717735555826831"
-      },
-      {
-        "file": "dist/apps/app/.nx-helpers/compose-plugins.js",
-        "hash": "1666527541648429869"
-      },
-      {
-        "file": "tmp/buildcache/apps/app/server",
-        "hash": "3774315687506382682"
-      },
-      {
-        "file": "caddy/custom.key",
-        "hash": "4819883236051756493"
-      },
-      {
-        "file": ".nx/cache/project-graph.json",
-        "hash": "16936978531886874377"
+  "nxJsonPlugins": [
+    {
+      "name": "@nx/expo/plugin",
+      "options": {
+        "startTargetName": "start",
+        "serveTargetName": "serve",
+        "runIosTargetName": "run-ios",
+        "runAndroidTargetName": "run-android",
+        "exportTargetName": "export",
+        "prebuildTargetName": "prebuild",
+        "installTargetName": "install",
+        "buildTargetName": "build",
+        "submitTargetName": "submit"
       }
-    ],
+    },
+    {
+      "name": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
+      }
+    },
+    {
+      "name": "@nx/cypress/plugin",
+      "options": {
+        "targetName": "e2e",
+        "componentTestingTargetName": "component-test"
+      }
+    }
+  ],
+  "fileMap": {
     "projectFileMap": {
-      "utils": [
+      "mobile": [
         {
-          "file": "libs/utils/.eslintrc.json",
-          "hash": "17864232912055483713"
+          "file": "apps/mobile/%ProgramData%/Microsoft/Windows/UUS/State/_active.uusver",
+          "hash": "170841311064195406"
         },
         {
-          "file": "libs/utils/README.md",
-          "hash": "12540549419807370810"
+          "file": "apps/mobile/.babelrc.js",
+          "hash": "3996460180654314536"
         },
         {
-          "file": "libs/utils/project.json",
-          "hash": "11367770165654684182"
+          "file": "apps/mobile/.eslintrc.json",
+          "hash": "10565574648117633172"
         },
         {
-          "file": "libs/utils/src/index.ts",
-          "hash": "2639589150305055170"
+          "file": "apps/mobile/.expo/README.md",
+          "hash": "209595534597831580"
         },
         {
-          "file": "libs/utils/src/lib/index.ts",
-          "hash": "3262052513925263926",
-          "deps": [
-            "npm:unified",
-            "npm:remark-parse",
-            "npm:remark-rehype",
-            "npm:rehype-stringify",
-            "npm:process"
-          ]
-        },
-        {
-          "file": "libs/utils/tsconfig.json",
-          "hash": "13979398437825372391"
-        },
-        {
-          "file": "libs/utils/tsconfig.lib.json",
-          "hash": "8500476649507256573"
-        }
-      ],
-      "api": [
-        {
-          "file": "libs/api/.eslintrc.json",
-          "hash": "7044562409277009441"
-        },
-        {
-          "file": "libs/api/.swcrc",
-          "hash": "3549918118218740171"
-        },
-        {
-          "file": "libs/api/README.md",
-          "hash": "16780990778792093623"
-        },
-        {
-          "file": "libs/api/jest.config.ts",
-          "hash": "18006943341348122280",
-          "deps": [
-            "npm:fs"
-          ]
-        },
-        {
-          "file": "libs/api/openapi/common/CursorPaged.ts",
-          "hash": "3070117423296498923"
-        },
-        {
-          "file": "libs/api/openapi/index.d.ts",
-          "hash": "4473560030825131118"
-        },
-        {
-          "file": "libs/api/openapi/index.ts",
-          "hash": "17199649967407579461"
-        },
-        {
-          "file": "libs/api/openapi/models/AddChatGroupAdmin.ts",
-          "hash": "18106762061957255749"
-        },
-        {
-          "file": "libs/api/openapi/models/AddChatGroupMember.ts",
-          "hash": "3962491424550016358"
-        },
-        {
-          "file": "libs/api/openapi/models/AddressFamily.ts",
-          "hash": "9166276090372985144"
-        },
-        {
-          "file": "libs/api/openapi/models/ApiResponseStatus.ts",
-          "hash": "6260949134953776912"
-        },
-        {
-          "file": "libs/api/openapi/models/ChangeUserPassword.ts",
-          "hash": "5808112224904860703"
-        },
-        {
-          "file": "libs/api/openapi/models/ChangeUserStatus.ts",
-          "hash": "13950243142506976076"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatGroup.ts",
-          "hash": "16762530126908066010"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatGroupAttachment.ts",
-          "hash": "13689906369799271983"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatGroupAttachmentCursorPagedApiResponse.ts",
-          "hash": "9998059342255180878"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatGroupDetailsEntry.ts",
-          "hash": "15195160712049540033"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatGroupDetailsEntryApiResponse.ts",
-          "hash": "15720401065169677982"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatGroupFeedEntry.ts",
-          "hash": "9047366493287207506"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatGroupFeedEntryListApiResponse.ts",
-          "hash": "4532509172313559296"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatGroupJoinRequest.ts",
-          "hash": "4051797476779316493"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatGroupListApiResponse.ts",
-          "hash": "17503276985062786136"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatGroupMember.ts",
-          "hash": "9007796750151094677"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatGroupMemberApiResponse.ts",
-          "hash": "817793633389923812"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatGroupMessageEntry.ts",
-          "hash": "8403802464056058682"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatGroupMessageEntryCursorPagedApiResponse.ts",
-          "hash": "4929576930567764881"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatMessage.ts",
-          "hash": "10350437931759799748"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatMessageDraft.ts",
-          "hash": "4221410952836484750"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatMessageDraftListApiResponse.ts",
-          "hash": "5930967754525931323"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatMessageListApiResponse.ts",
-          "hash": "11837396948401098310"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatMessageReaction.ts",
-          "hash": "9137401236816402358"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatMessageReactionListApiResponse.ts",
-          "hash": "1658582355419934560"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatMessageReply.ts",
-          "hash": "1813086058864671708"
-        },
-        {
-          "file": "libs/api/openapi/models/ChatMessageReplyCursorPagedApiResponse.ts",
-          "hash": "15440939792548225519"
-        },
-        {
-          "file": "libs/api/openapi/models/DeleteGroupChatMessageRequest.ts",
-          "hash": "16967217754553879341"
-        },
-        {
-          "file": "libs/api/openapi/models/EditGroupChatMessageRequest.ts",
-          "hash": "14851278740945287605"
-        },
-        {
-          "file": "libs/api/openapi/models/Email.ts",
-          "hash": "551512460106948406"
-        },
-        {
-          "file": "libs/api/openapi/models/FacebookSignUp.ts",
-          "hash": "7337039414647835370"
-        },
-        {
-          "file": "libs/api/openapi/models/ForwardMessage.ts",
-          "hash": "6085489507562516231"
-        },
-        {
-          "file": "libs/api/openapi/models/FriendInvitation.ts",
-          "hash": "1457218956990967591"
-        },
-        {
-          "file": "libs/api/openapi/models/FriendInvitationListApiResponse.ts",
-          "hash": "8409127719650545487"
-        },
-        {
-          "file": "libs/api/openapi/models/FriendInvitationStatus.ts",
-          "hash": "2848100113021939068"
-        },
-        {
-          "file": "libs/api/openapi/models/FriendsRelation.ts",
-          "hash": "1947729311910716720"
-        },
-        {
-          "file": "libs/api/openapi/models/GoogleSignUp.ts",
-          "hash": "5766875335106700960"
-        },
-        {
-          "file": "libs/api/openapi/models/GroupJoinRequestEntry.ts",
-          "hash": "3414000233417805748"
-        },
-        {
-          "file": "libs/api/openapi/models/GroupJoinRequestEntryListApiResponse.ts",
-          "hash": "627530547978801604"
-        },
-        {
-          "file": "libs/api/openapi/models/IPAddress.ts",
-          "hash": "6590682864745437905"
-        },
-        {
-          "file": "libs/api/openapi/models/InputFile.ts",
-          "hash": "8086464194580569968"
-        },
-        {
-          "file": "libs/api/openapi/models/LeaveChatGroup.ts",
-          "hash": "4231903650836530588"
-        },
-        {
-          "file": "libs/api/openapi/models/Media.ts",
-          "hash": "13985374921296227379"
-        },
-        {
-          "file": "libs/api/openapi/models/MessageReplierInfoEntry.ts",
-          "hash": "16472046156447145628"
-        },
-        {
-          "file": "libs/api/openapi/models/MessageRepliersInfoEntry.ts",
-          "hash": "6928281140038025517"
-        },
-        {
-          "file": "libs/api/openapi/models/MessageSenderInfoEntry.ts",
-          "hash": "783147757647274405"
-        },
-        {
-          "file": "libs/api/openapi/models/ObjectApiResponse.ts",
-          "hash": "3565802388099046573"
-        },
-        {
-          "file": "libs/api/openapi/models/PhoneNumber.ts",
-          "hash": "4934868082356337803"
-        },
-        {
-          "file": "libs/api/openapi/models/PinnedMessage.ts",
-          "hash": "2378762676324093298"
-        },
-        {
-          "file": "libs/api/openapi/models/ProblemDetails.ts",
-          "hash": "1287305537556806610"
-        },
-        {
-          "file": "libs/api/openapi/models/ReactToChatMessageRequest.ts",
-          "hash": "11643200607969803954"
-        },
-        {
-          "file": "libs/api/openapi/models/RegularSignIn.ts",
-          "hash": "9603305199879619185"
-        },
-        {
-          "file": "libs/api/openapi/models/RegularSignUp.ts",
-          "hash": "3861175724596884365"
-        },
-        {
-          "file": "libs/api/openapi/models/RemoveChatGroupMember.ts",
-          "hash": "4799406416303013332"
-        },
-        {
-          "file": "libs/api/openapi/models/SendGroupChatMessageReplyRequest.ts",
-          "hash": "15810440705087778342"
-        },
-        {
-          "file": "libs/api/openapi/models/Stream.ts",
-          "hash": "2301680802270327116"
-        },
-        {
-          "file": "libs/api/openapi/models/Unit.ts",
-          "hash": "400111764075421175"
-        },
-        {
-          "file": "libs/api/openapi/models/UnitApiResponse.ts",
-          "hash": "5385670396160475111"
-        },
-        {
-          "file": "libs/api/openapi/models/UnreactToChatMessageRequest.ts",
-          "hash": "10387363728846928955"
-        },
-        {
-          "file": "libs/api/openapi/models/User.ts",
-          "hash": "8706930244602281994"
-        },
-        {
-          "file": "libs/api/openapi/models/UserDetailsEntry.ts",
-          "hash": "16297314414303034473"
-        },
-        {
-          "file": "libs/api/openapi/models/UserDetailsEntryApiResponse.ts",
-          "hash": "1460927776548642326"
-        },
-        {
-          "file": "libs/api/openapi/models/UserListApiResponse.ts",
-          "hash": "2130918919903172355"
-        },
-        {
-          "file": "libs/api/openapi/models/UserMessageReaction.ts",
-          "hash": "18112425473728464977"
-        },
-        {
-          "file": "libs/api/openapi/models/UserNotification.ts",
-          "hash": "15489687094573740846"
-        },
-        {
-          "file": "libs/api/openapi/models/UserNotificationCursorPagedApiResponse.ts",
-          "hash": "2493912260399183276"
-        },
-        {
-          "file": "libs/api/openapi/models/UserNotificationMetadata.ts",
-          "hash": "4008809166659887508"
-        },
-        {
-          "file": "libs/api/openapi/models/UserNotificationType.ts",
-          "hash": "3271152562044895974"
-        },
-        {
-          "file": "libs/api/openapi/models/UserStatus.ts",
-          "hash": "6576932982726294138"
-        },
-        {
-          "file": "libs/api/openapi/schema.d.ts",
-          "hash": "6285756062998628861"
-        },
-        {
-          "file": "libs/api/openapi/swagger.yaml",
-          "hash": "3686445381699278806"
-        },
-        {
-          "file": "libs/api/package.json",
-          "hash": "442885175248146140",
-          "deps": [
-            "npm:@swc/helpers"
-          ]
-        },
-        {
-          "file": "libs/api/project.json",
-          "hash": "6784951365636581009"
-        },
-        {
-          "file": "libs/api/src/index.ts",
-          "hash": "5929556022314699951"
-        },
-        {
-          "file": "libs/api/src/lib/auth/client.ts",
-          "hash": "7352432349606391545"
-        },
-        {
-          "file": "libs/api/src/lib/auth/hooks/index.ts",
-          "hash": "10741842860718712798"
-        },
-        {
-          "file": "libs/api/src/lib/auth/hooks/mutations/index.ts",
-          "hash": "2038642700265799153"
-        },
-        {
-          "file": "libs/api/src/lib/auth/hooks/mutations/useAcceptCookiePolicyMutation.ts",
-          "hash": "2866053541816889033",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/auth/hooks/mutations/useDeclineCookiePolicyMutation.ts",
-          "hash": "12688274372411855727",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/auth/hooks/mutations/useFacebookSignUpMutation.ts",
-          "hash": "7596191344283207330",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/auth/hooks/mutations/useGithubSignUpMutation.ts",
-          "hash": "3998851834527913010",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/auth/hooks/mutations/useGoogleSignUpMutation.ts",
-          "hash": "16739598455392362291",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/auth/hooks/mutations/useRegularSignInMutation.ts",
-          "hash": "8826356173331947452",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/auth/hooks/mutations/useRegularSignUpMutation.ts",
-          "hash": "12030001243583849229",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/auth/hooks/mutations/useSignOutMutation.ts",
-          "hash": "1837833698947437486",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/auth/hooks/queries/index.ts",
-          "hash": "6513261402545542256"
-        },
-        {
-          "file": "libs/api/src/lib/auth/hooks/queries/useGetMyClaimsQuery.ts",
-          "hash": "1222075993319090596",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:@openapi/index"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/auth/index.ts",
-          "hash": "9016995982939038991"
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/client.ts",
-          "hash": "11123368440314547841"
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/index.ts",
-          "hash": "3505158375490327309"
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/mutations/index.ts",
-          "hash": "4389355675099789254"
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useAddChatGroupAdminMutation.ts",
-          "hash": "6824273252931136149",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useAddChatGroupMemberMutation.ts",
-          "hash": "14159162992293941213",
-          "deps": [
-            "npm:@tanstack/react-query"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useCreateChatGroupMutation.ts",
-          "hash": "13019929110293377720",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useEditChatGroupMutation.ts",
-          "hash": "6557499074030448245",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useLeaveChatGroupMutation.ts",
-          "hash": "5264899314640963702",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useRemoveChatGroupAdmin.ts",
-          "hash": "2912213099875466090",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useRemoveChatGroupMemberMutation.ts",
-          "hash": "2032586952698999101",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useStarChatGroup.ts",
-          "hash": "14745589081155892692",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useUnstarChatGroup.ts",
-          "hash": "4599893135855000432",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/queries/index.ts",
-          "hash": "4723742325633017769"
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/queries/useGetChatGroupAttachmentsQuery.ts",
-          "hash": "15044689526451403170",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/queries/useGetChatGroupDetailsQuery.ts",
-          "hash": "9923611384176618064",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:react"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/queries/useGetChatGroupPinnedMessages.ts",
-          "hash": "3766430890082872647",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/queries/useGetChatGroupsFeedQuery.ts",
-          "hash": "6827890271608785924",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/queries/useGetStarredChatGroups.ts",
-          "hash": "7176512234321523911",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/queries/useGetStarredChatGroupsFeedQuery.ts",
-          "hash": "837324548925273102",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/queries/useGetUserMembershipDetailsQuery.ts",
-          "hash": "3426865760665624977",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/hooks/queries/useSearchChatGroupsByName.ts",
-          "hash": "8695144054210448556",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/chat-groups/index.ts",
-          "hash": "9016995982939038991"
-        },
-        {
-          "file": "libs/api/src/lib/common/createClient.ts",
-          "hash": "12232732433569452096",
-          "deps": [
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/constants.ts",
-          "hash": "10442060338040388909"
-        },
-        {
-          "file": "libs/api/src/lib/env.d.ts",
-          "hash": "7904660323455356136"
-        },
-        {
-          "file": "libs/api/src/lib/friendships/client.ts",
-          "hash": "12680737834439647206"
-        },
-        {
-          "file": "libs/api/src/lib/friendships/hooks/index.ts",
-          "hash": "10741842860718712798"
-        },
-        {
-          "file": "libs/api/src/lib/friendships/hooks/mutations/index.ts",
-          "hash": "9306851460631983634"
-        },
-        {
-          "file": "libs/api/src/lib/friendships/hooks/mutations/useAcceptFriendInvitationMutation.ts",
-          "hash": "14301224191151481341",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/friendships/hooks/mutations/useDeclineFriendInvitationMutation.ts",
-          "hash": "2482623542945973511",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/friendships/hooks/mutations/useSendFriendInvitationMutation.ts",
-          "hash": "2353545915043462417",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/friendships/hooks/mutations/useUnfriendUserMutation.ts",
-          "hash": "7928851959226587646",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/friendships/hooks/queries/index.ts",
-          "hash": "17961288247997671047"
-        },
-        {
-          "file": "libs/api/src/lib/friendships/hooks/queries/useGetFriendSuggestions.ts",
-          "hash": "16870729430022172312",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/friendships/hooks/queries/useGetIncomingInvitationsQuery.ts",
-          "hash": "5693534812421462865",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/friendships/hooks/queries/useGetMyFriendsQuery.ts",
-          "hash": "9442936225745241645",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/friendships/hooks/queries/useGetSentInvitationsQuery.ts",
-          "hash": "15198262080130971173",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/friendships/index.ts",
-          "hash": "9016995982939038991"
-        },
-        {
-          "file": "libs/api/src/lib/hubs/chatifyHubClient.ts",
-          "hash": "8930797243524936131",
-          "deps": [
-            "npm:@microsoft/signalr",
-            "npm:js-cookie"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/hubs/index.ts",
-          "hash": "15027135633178856382"
-        },
-        {
-          "file": "libs/api/src/lib/hubs/messages.d.ts",
-          "hash": "11570171737001278976"
-        },
-        {
-          "file": "libs/api/src/lib/index.ts",
-          "hash": "9152587496004914672"
-        },
-        {
-          "file": "libs/api/src/lib/messages/client.ts",
-          "hash": "3544904399694859068"
-        },
-        {
-          "file": "libs/api/src/lib/messages/index.ts",
-          "hash": "3505158375490327309"
-        },
-        {
-          "file": "libs/api/src/lib/messages/mutations/index.ts",
-          "hash": "12091033320029810987"
-        },
-        {
-          "file": "libs/api/src/lib/messages/mutations/useDeleteGroupChatMessageMutation.ts",
-          "hash": "13821618089592524572",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/messages/mutations/useDeleteGroupChatMessageReplyMutation.ts",
-          "hash": "6451360389874648271",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/messages/mutations/useDraftChatMessage.ts",
-          "hash": "2481886544513993049",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/messages/mutations/useEditGroupChatMessageMutation.ts",
-          "hash": "16422453814824036741",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/messages/mutations/useEditGroupChatMessageReplyMutation.ts",
-          "hash": "14060749703294316081",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/messages/mutations/useForwardChatMessage.ts",
-          "hash": "18006191230894343420",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/messages/mutations/usePinGroupChatMessage.ts",
-          "hash": "3432049472275695378",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/messages/mutations/useSendGroupChatMessageMutation.ts",
-          "hash": "4436453411517373038",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer",
-            "npm:uuid"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/messages/mutations/useSendGroupChatMessageReplyMutation.ts",
-          "hash": "13072783164761037306",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/messages/mutations/useUnpinGroupChatMessage.ts",
-          "hash": "13330553211099762180",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/messages/queries/index.ts",
-          "hash": "16438040232938302518"
-        },
-        {
-          "file": "libs/api/src/lib/messages/queries/useGetDraftedMessageForGroup.ts",
-          "hash": "103860930838821091",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/messages/queries/useGetDraftedMessages.ts",
-          "hash": "11245899861667975124",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/messages/queries/useGetPaginatedGroupMessagesQuery.ts",
-          "hash": "2418941778073543161",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/messages/queries/useGetPaginatedMessageRepliesQuery.ts",
-          "hash": "10416297676377461864",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/notifications/client.ts",
-          "hash": "2729125706787858770"
+          "file": "apps/mobile/.expo/devices.json",
+          "hash": "18372710781914472240"
         },
         {
-          "file": "libs/api/src/lib/notifications/hooks/index.ts",
-          "hash": "10741842860718712798"
+          "file": "apps/mobile/.expo/metro/externals/assert/index.js",
+          "hash": "14648000831632369421"
         },
         {
-          "file": "libs/api/src/lib/notifications/hooks/mutations/index.ts",
-          "hash": "15525473513408429467"
+          "file": "apps/mobile/.expo/metro/externals/async_hooks/index.js",
+          "hash": "11931386446601800343"
         },
         {
-          "file": "libs/api/src/lib/notifications/hooks/mutations/useMarkNotificationsAsReadMutation.ts",
-          "hash": "8841363419499142871",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/notifications/hooks/queries/index.ts",
-          "hash": "14186640937136212050"
-        },
-        {
-          "file": "libs/api/src/lib/notifications/hooks/queries/useGetPaginatedNotificationsQuery.ts",
-          "hash": "14941868203663753845",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/notifications/hooks/queries/useGetUnreadNotificationsQuery.ts",
-          "hash": "6090209931914119725",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/notifications/index.ts",
-          "hash": "9016995982939038991"
-        },
-        {
-          "file": "libs/api/src/lib/profile/client.ts",
-          "hash": "4085300367668467488"
-        },
-        {
-          "file": "libs/api/src/lib/profile/hooks/index.ts",
-          "hash": "3505158375490327309"
-        },
-        {
-          "file": "libs/api/src/lib/profile/hooks/mutations/index.ts",
-          "hash": "15870967170232462277"
-        },
-        {
-          "file": "libs/api/src/lib/profile/hooks/mutations/useChangeUserPasswordMutation.ts",
-          "hash": "13511571617408646400",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/profile/hooks/mutations/useChangeUserStatusMutation.ts",
-          "hash": "14884168662781365623",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/profile/hooks/mutations/useEditUserDetailsMutation.ts",
-          "hash": "5315916006243866227",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/profile/hooks/queries/index.ts",
-          "hash": "1779477411465550824"
-        },
-        {
-          "file": "libs/api/src/lib/profile/hooks/queries/useFindUserByHandleQuery.ts",
-          "hash": "3227807232691630795",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/profile/hooks/queries/useGetUserDetailsQuery.ts",
-          "hash": "7026289163434440117",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/profile/hooks/queries/useSearchUsersByNameQuery.ts",
-          "hash": "13377451515881603567",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/profile/index.ts",
-          "hash": "9016995982939038991"
-        },
-        {
-          "file": "libs/api/src/lib/queryClient.ts",
-          "hash": "16731625216128677006",
-          "deps": [
-            "npm:@tanstack/react-query"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/reactions/client.ts",
-          "hash": "10945667768912494803"
-        },
-        {
-          "file": "libs/api/src/lib/reactions/hooks/index.ts",
-          "hash": "3505158375490327309"
-        },
-        {
-          "file": "libs/api/src/lib/reactions/hooks/mutations/index.ts",
-          "hash": "9483755740133750510"
-        },
-        {
-          "file": "libs/api/src/lib/reactions/hooks/mutations/useReactToGroupMessageMutation.ts",
-          "hash": "4558116085240015940",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/reactions/hooks/mutations/useReactToGroupMessageReplyMutation.ts",
-          "hash": "8590268484084268060",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/reactions/hooks/mutations/useUnreactToGroupMessageMutation.ts",
-          "hash": "8609536368299965118",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios",
-            "npm:immer"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/reactions/hooks/mutations/useUnreactToGroupMessageReplyMutation.ts",
-          "hash": "10114958588149254463",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/reactions/hooks/queries/index.ts",
-          "hash": "1197567191673576478"
-        },
-        {
-          "file": "libs/api/src/lib/reactions/hooks/queries/useGetAllReactionsForMessage.ts",
-          "hash": "15015623892883035209",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "libs/api/src/lib/reactions/index.ts",
-          "hash": "9016995982939038991"
-        },
-        {
-          "file": "libs/api/src/lib/utils/index.ts",
-          "hash": "7665112246143596179",
-          "deps": [
-            "npm:process"
-          ]
-        },
-        {
-          "file": "libs/api/tsconfig.json",
-          "hash": "15696086138336242600"
-        },
-        {
-          "file": "libs/api/tsconfig.lib.json",
-          "hash": "12894235470883416627"
-        },
-        {
-          "file": "libs/api/tsconfig.spec.json",
-          "hash": "8045335206913382466"
-        }
-      ],
-      "app": [
-        {
-          "file": "apps/app/.env.development",
-          "hash": "7078695289422109830"
-        },
-        {
-          "file": "apps/app/.env.production",
-          "hash": "15642718551998815554"
-        },
-        {
-          "file": "apps/app/.eslintrc.json",
-          "hash": "7129830320000132479"
-        },
-        {
-          "file": "apps/app/.vscode/settings.json",
-          "hash": "15569150561147214064"
-        },
-        {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/avatars/page.tsx",
-          "hash": "18248385485001379120",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/badges/page.tsx",
-          "hash": "15974457997655728675",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/buttons/page.tsx",
-          "hash": "16766439887111562393",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/cards/page.tsx",
-          "hash": "15608948033080968505",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/checkboxes/HeartIcon.tsx",
-          "hash": "10858454266507035309",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/checkboxes/page.tsx",
-          "hash": "3140036258052331582",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/chips/page.tsx",
-          "hash": "7227251835076588096",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/code/page.tsx",
-          "hash": "10068586489100958892",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/dropdown/page.tsx",
-          "hash": "17173145395434810133",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:@nextui-org/react"
-          ]
-        },
-        {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/images/page.tsx",
-          "hash": "14568735506405437389",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:@nextui-org/react"
-          ]
-        },
-        {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/inputs/page.tsx",
-          "hash": "868203988204366385",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:@nextui-org/react"
-          ]
-        },
-        {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/modals/page.tsx",
-          "hash": "14916843731045052810",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react"
-          ]
-        },
-        {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/navbar/page.tsx",
-          "hash": "17116727406949455244",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/buffer/index.js",
+          "hash": "1332943433621701465"
         },
         {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/page.tsx",
-          "hash": "16072983239050953385",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "components",
-            "npm:fs",
-            "npm:path"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/child_process/index.js",
+          "hash": "1543525145651789806"
         },
         {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/pagination/page.tsx",
-          "hash": "3352699102369882070",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/cluster/index.js",
+          "hash": "8159140902112976452"
         },
         {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/popover/page.tsx",
-          "hash": "2919670542458182078",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/console/index.js",
+          "hash": "8536696429766832388"
         },
         {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/progress/page.tsx",
-          "hash": "8179059462166068946",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "npm:next"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/constants/index.js",
+          "hash": "8705412566036481584"
         },
         {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/radio/page.tsx",
-          "hash": "11370060500763323999",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:@nextui-org/react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/crypto/index.js",
+          "hash": "5117914016800880204"
         },
         {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/radix-ui-themes/page.tsx",
-          "hash": "15491808364898450565",
-          "deps": [
-            "npm:@radix-ui/themes",
-            "npm:react",
-            "npm:@nextui-org/react",
-            "npm:lucide-react",
-            "components"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/dgram/index.js",
+          "hash": "13064873907357773956"
         },
         {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/skeleton/page.tsx",
-          "hash": "12903937401382699660",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:@nextui-org/react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/diagnostics_channel/index.js",
+          "hash": "5447083263210866058"
         },
         {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/snippets/page.tsx",
-          "hash": "10785327701966554105",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:@nextui-org/react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/dns/index.js",
+          "hash": "6431634077824728070"
         },
         {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/table/page.tsx",
-          "hash": "14940347311218693290",
-          "deps": [
-            "npm:@nextui-org/react",
-            "npm:react",
-            "npm:next",
-            "npm:axios",
-            "api"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/domain/index.js",
+          "hash": "11221600897179572243"
         },
         {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/tabs/page.tsx",
-          "hash": "1381178888105394211",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:@nextui-org/react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/events/index.js",
+          "hash": "2569417156954652408"
         },
         {
-          "file": "apps/app/app/[locale]/%5Fplaygrounds/user/page.tsx",
-          "hash": "7731771292903598453",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:@nextui-org/react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/fs/index.js",
+          "hash": "11456685537047008141"
         },
         {
-          "file": "apps/app/app/[locale]/(c)/MainLayout.tsx",
-          "hash": "1786343858708430748",
-          "deps": [
-            "npm:react",
-            "components"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/fs/promises/index.js",
+          "hash": "3861994079947788014"
         },
         {
-          "file": "apps/app/app/[locale]/(c)/layout.tsx",
-          "hash": "741811904753620458",
-          "deps": [
-            "npm:react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/http/index.js",
+          "hash": "3291638916531618376"
         },
         {
-          "file": "apps/app/app/[locale]/(c)/page.tsx",
-          "hash": "2608636991973913023",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "api",
-            "npm:@nextui-org/react",
-            "components",
-            "hooks"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/http2/index.js",
+          "hash": "2864086213421143247"
         },
         {
-          "file": "apps/app/app/[locale]/about/page.tsx",
-          "hash": "7071686715402180901",
-          "deps": [
-            "npm:react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/https/index.js",
+          "hash": "14423692195270040720"
         },
         {
-          "file": "apps/app/app/[locale]/contact/page.tsx",
-          "hash": "5165630474477841414",
-          "deps": [
-            "npm:react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/inspector/index.js",
+          "hash": "18251107356387792113"
         },
         {
-          "file": "apps/app/app/[locale]/cookie-policy/page.tsx",
-          "hash": "17340180842468595902",
-          "deps": [
-            "npm:react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/module/index.js",
+          "hash": "15996160787225387461"
         },
         {
-          "file": "apps/app/app/[locale]/create/CreateChatGroupForm.tsx",
-          "hash": "10020305938025734252",
-          "deps": [
-            "npm:react",
-            "npm:formik",
-            "api",
-            "npm:@nextui-org/react",
-            "npm:next",
-            "npm:yup",
-            "npm:@tanstack/react-query",
-            "components",
-            "hooks"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/net/index.js",
+          "hash": "9929100121142941850"
         },
         {
-          "file": "apps/app/app/[locale]/create/CreateChatGroupHeading.tsx",
-          "hash": "17749038776152775",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "npm:tailwind-merge"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/os/index.js",
+          "hash": "12504127938619257618"
         },
         {
-          "file": "apps/app/app/[locale]/create/layout.tsx",
-          "hash": "14297925274327605017",
-          "deps": [
-            "npm:react",
-            "npm:next"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/path/index.js",
+          "hash": "4980880248435502264"
         },
         {
-          "file": "apps/app/app/[locale]/create/page.tsx",
-          "hash": "12059809345959126314",
-          "deps": [
-            "npm:react",
-            "npm:next"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/perf_hooks/index.js",
+          "hash": "5454219331511187095"
         },
         {
-          "file": "apps/app/app/[locale]/error.tsx",
-          "hash": "18293303148695741784",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "components"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/process/index.js",
+          "hash": "11094115921288593294"
         },
         {
-          "file": "apps/app/app/[locale]/footer.tsx",
-          "hash": "16009937749063943113",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "npm:next"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/punycode/index.js",
+          "hash": "3507256034188090863"
         },
         {
-          "file": "apps/app/app/[locale]/friends/SuggestedFriendsSection.tsx",
-          "hash": "5220984931981062565",
-          "deps": [
-            "npm:react",
-            "api",
-            "npm:@nextui-org/react",
-            "npm:next-intl",
-            "components"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/querystring/index.js",
+          "hash": "8914865020654877656"
         },
         {
-          "file": "apps/app/app/[locale]/friends/UserNotFound.tsx",
-          "hash": "2104568494763796236",
-          "deps": [
-            "npm:lucide-react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/readline/index.js",
+          "hash": "3235587942313022180"
         },
         {
-          "file": "apps/app/app/[locale]/friends/UserSearchResultSection.tsx",
-          "hash": "2860927392272499983",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "api",
-            "npm:moment",
-            "npm:next-intl"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/repl/index.js",
+          "hash": "2426806009069675994"
         },
         {
-          "file": "apps/app/app/[locale]/friends/layout.tsx",
-          "hash": "16436700810092654162",
-          "deps": [
-            "npm:react",
-            "npm:next"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/stream/index.js",
+          "hash": "3191410493782305048"
         },
         {
-          "file": "apps/app/app/[locale]/friends/page.tsx",
-          "hash": "4512652811561643716",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "npm:lucide-react",
-            "api",
-            "npm:next-intl",
-            "hooks"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/string_decoder/index.js",
+          "hash": "1678940388710866659"
         },
         {
-          "file": "apps/app/app/[locale]/help/page.tsx",
-          "hash": "6946505156224548908",
-          "deps": [
-            "npm:react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/timers/index.js",
+          "hash": "17497950872733721655"
         },
         {
-          "file": "apps/app/app/[locale]/layout.tsx",
-          "hash": "14746769635882120052",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:process",
-            "npm:next-intl",
-            "components"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/tls/index.js",
+          "hash": "5465206380520354851"
         },
         {
-          "file": "apps/app/app/[locale]/not-found.tsx",
-          "hash": "561940973408844739",
-          "deps": [
-            "npm:react"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/trace_events/index.js",
+          "hash": "12964796565681298074"
         },
         {
-          "file": "apps/app/app/[locale]/profile/ChangePasswordModal.tsx",
-          "hash": "6492211839615809077",
-          "deps": [
-            "npm:@nextui-org/react",
-            "npm:react",
-            "hooks",
-            "api",
-            "components"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/tty/index.js",
+          "hash": "13402892553829506293"
         },
         {
-          "file": "apps/app/app/[locale]/profile/layout.tsx",
-          "hash": "14297925274327605017",
-          "deps": [
-            "npm:react",
-            "npm:next"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/url/index.js",
+          "hash": "17323295129206172971"
         },
         {
-          "file": "apps/app/app/[locale]/profile/page.tsx",
-          "hash": "3567937267906711624",
-          "deps": [
-            "npm:react",
-            "api",
-            "npm:@nextui-org/react",
-            "npm:lucide-react",
-            "components",
-            "hooks"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/util/index.js",
+          "hash": "15909456439861800525"
         },
         {
-          "file": "apps/app/app/[locale]/providers.tsx",
-          "hash": "13922700457974753971",
-          "deps": [
-            "npm:react",
-            "npm:@tanstack/react-query",
-            "npm:@tanstack/react-query-devtools",
-            "npm:@nextui-org/react",
-            "npm:@react-oauth/google",
-            "api",
-            "npm:next-themes",
-            "npm:next",
-            "npm:process",
-            "components"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/v8/index.js",
+          "hash": "9206759006585279271"
         },
         {
-          "file": "apps/app/app/[locale]/signin/FacebookSignInButton.tsx",
-          "hash": "5060866886527314472",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "components"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/vm/index.js",
+          "hash": "9305629903403904337"
         },
         {
-          "file": "apps/app/app/[locale]/signin/GithubSignInButton.tsx",
-          "hash": "17299977705052444583",
-          "deps": [
-            "npm:react",
-            "npm:react-github-login",
-            "npm:process",
-            "components"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/wasi/index.js",
+          "hash": "5900102056370155328"
         },
         {
-          "file": "apps/app/app/[locale]/signin/GoogleSignInButton.tsx",
-          "hash": "870671238785270263",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "components"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/worker_threads/index.js",
+          "hash": "12950303277221690437"
         },
         {
-          "file": "apps/app/app/[locale]/signin/PasswordInput.tsx",
-          "hash": "14327335837279647988",
-          "deps": [
-            "npm:react",
-            "npm:@nextui-org/react",
-            "components"
-          ]
+          "file": "apps/mobile/.expo/metro/externals/zlib/index.js",
+          "hash": "18115354948377484691"
         },
         {
-          "file": "apps/app/app/[locale]/signin/layout.tsx",
-          "hash": "13595296926793501626",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:process"
-          ]
+          "file": "apps/mobile/.expo/metro/polyfill.js",
+          "hash": "17237348142447578505"
         },
         {
-          "file": "apps/app/app/[locale]/signin/page.tsx",
-          "hash": "7405050586757855758",
-          "deps": [
-            "npm:react",
-            "npm:react-github-login",
-            "npm:next",
-            "api",
-            "npm:@nextui-org/react",
-            "npm:yup",
-            "npm:formik",
-            "components",
-            "hooks"
-          ]
+          "file": "apps/mobile/.expo/metro/polyfill.native.js",
+          "hash": "11334387849122860599"
         },
         {
-          "file": "apps/app/app/[locale]/signup/layout.tsx",
-          "hash": "2973598023331348905",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:process"
-          ]
+          "file": "apps/mobile/.expo/metro/shims/react-native-web/dist/cjs/exports/AppRegistry/AppContainer.js",
+          "hash": "14602047706550629992"
         },
         {
-          "file": "apps/app/app/[locale]/signup/page.tsx",
-          "hash": "6313860197335827331",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "api",
-            "npm:@nextui-org/react",
-            "npm:yup",
-            "npm:formik",
-            "hooks"
-          ]
+          "file": "apps/mobile/.expo/metro/shims/react-native-web/dist/cjs/exports/BackHandler/index.js",
+          "hash": "14953794890280769202"
         },
         {
-          "file": "apps/app/app/[locale]/signup/types.d.ts",
-          "hash": "4186389217846617725"
+          "file": "apps/mobile/.expo/metro/shims/react-native-web/dist/exports/AppRegistry/AppContainer.js",
+          "hash": "16460578099726011295"
         },
         {
-          "file": "apps/app/app/[locale]/terms-of-service/page.tsx",
-          "hash": "4843654751751656815",
-          "deps": [
-            "npm:react"
-          ]
+          "file": "apps/mobile/.expo/metro/shims/react-native-web/dist/exports/BackHandler/index.js",
+          "hash": "2217117099585599176"
         },
         {
-          "file": "apps/app/app/api/[[...catchAll]]/route.ts",
-          "hash": "9101996695369688300",
+          "file": "apps/mobile/.expo/types/router.d.ts",
+          "hash": "13570958801667549150",
           "deps": [
-            "npm:next"
+            "npm:expo-router/build/link/Link",
+            "npm:expo-router/build/types",
+            "npm:expo-router/build"
           ]
-        },
-        {
-          "file": "apps/app/app/favicon.ico",
-          "hash": "13800478488541147608"
         },
         {
-          "file": "apps/app/app/layout.tsx",
-          "hash": "3703115816002087451",
-          "deps": [
-            "npm:react"
-          ]
+          "file": "apps/mobile/.expo/web/cache/production/images/android-adaptive-foreground/android-adaptive-foreground-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-transparent/icon_108.png",
+          "hash": "666425901372760601"
         },
         {
-          "file": "apps/app/app/not-found.tsx",
-          "hash": "16355057243274774786",
-          "deps": [
-            "npm:next"
-          ]
+          "file": "apps/mobile/.expo/web/cache/production/images/android-adaptive-foreground/android-adaptive-foreground-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-transparent/icon_162.png",
+          "hash": "2962373093440029271"
         },
         {
-          "file": "apps/app/app/styles.css",
-          "hash": "2048989005741957698"
+          "file": "apps/mobile/.expo/web/cache/production/images/android-adaptive-foreground/android-adaptive-foreground-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-transparent/icon_216.png",
+          "hash": "2791302278633112577"
         },
         {
-          "file": "apps/app/hub/ChatHubConnection.tsx",
-          "hash": "3447024601533726492",
-          "deps": [
-            "npm:@microsoft/signalr",
-            "npm:react",
-            "api"
-          ]
+          "file": "apps/mobile/.expo/web/cache/production/images/android-adaptive-foreground/android-adaptive-foreground-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-transparent/icon_324.png",
+          "hash": "18325265845016146799"
         },
         {
-          "file": "apps/app/hub/ChatifyHubInitializer.tsx",
-          "hash": "10057772283046616245",
-          "deps": [
-            "npm:react",
-            "npm:@tanstack/react-query",
-            "api",
-            "npm:immer",
-            "hooks"
-          ]
+          "file": "apps/mobile/.expo/web/cache/production/images/android-adaptive-foreground/android-adaptive-foreground-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-transparent/icon_432.png",
+          "hash": "10235622244998165571"
         },
         {
-          "file": "apps/app/hub/index.ts",
-          "hash": "13807792429947328030"
+          "file": "apps/mobile/.expo/web/cache/production/images/android-standard-circle/android-standard-circle-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-#FFFFFF/icon_108.png",
+          "hash": "4564800408452119722"
         },
         {
-          "file": "apps/app/i18n.ts",
-          "hash": "4845185826295927947",
-          "deps": [
-            "npm:next-intl"
-          ]
+          "file": "apps/mobile/.expo/web/cache/production/images/android-standard-circle/android-standard-circle-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-#FFFFFF/icon_162.png",
+          "hash": "15363665757715502965"
         },
         {
-          "file": "apps/app/index.d.ts",
-          "hash": "15430569851671288975"
+          "file": "apps/mobile/.expo/web/cache/production/images/android-standard-circle/android-standard-circle-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-#FFFFFF/icon_216.png",
+          "hash": "11429151694570925349"
         },
         {
-          "file": "apps/app/jest.config.ts",
-          "hash": "13653397834450830308"
+          "file": "apps/mobile/.expo/web/cache/production/images/android-standard-circle/android-standard-circle-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-#FFFFFF/icon_324.png",
+          "hash": "17067238669057374607"
         },
         {
-          "file": "apps/app/messages/de.json",
-          "hash": "4089856899414916690"
+          "file": "apps/mobile/.expo/web/cache/production/images/android-standard-circle/android-standard-circle-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-#FFFFFF/icon_432.png",
+          "hash": "16835327397062103233"
         },
         {
-          "file": "apps/app/messages/en.json",
-          "hash": "13657833054512780155"
+          "file": "apps/mobile/.expo/web/cache/production/images/android-standard-square/android-standard-square-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-#FFFFFF/icon_108.png",
+          "hash": "6176739436071547343"
         },
         {
-          "file": "apps/app/middleware.ts",
-          "hash": "6360404134032588577",
-          "deps": [
-            "npm:next-intl",
-            "npm:next"
-          ]
+          "file": "apps/mobile/.expo/web/cache/production/images/android-standard-square/android-standard-square-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-#FFFFFF/icon_162.png",
+          "hash": "14043487828760826044"
         },
         {
-          "file": "apps/app/next-env.d.ts",
-          "hash": "5909181270615354023"
+          "file": "apps/mobile/.expo/web/cache/production/images/android-standard-square/android-standard-square-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-#FFFFFF/icon_216.png",
+          "hash": "14587356119714062673"
         },
         {
-          "file": "apps/app/next.config.js",
-          "hash": "5875390183411421480",
-          "deps": [
-            "npm:@nx/next",
-            "npm:next-intl"
-          ]
+          "file": "apps/mobile/.expo/web/cache/production/images/android-standard-square/android-standard-square-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-#FFFFFF/icon_324.png",
+          "hash": "8914150578446246538"
         },
         {
-          "file": "apps/app/postcss.config.js",
-          "hash": "18393954357858272403",
-          "deps": [
-            "npm:path"
-          ]
+          "file": "apps/mobile/.expo/web/cache/production/images/android-standard-square/android-standard-square-5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8-cover-#FFFFFF/icon_432.png",
+          "hash": "18388314719017843227"
         },
         {
-          "file": "apps/app/project.json",
-          "hash": "16809500278670801398"
+          "file": "apps/mobile/.expo/web/cache/production/images/splash-android/splash-android-bc25a616b4e31cf7300cd97b9cbf8894e855e6373aa797d0badd7e211111c5e5-contain/icon_undefined.png",
+          "hash": "15215490320031349748"
         },
         {
-          "file": "apps/app/public/.gitkeep",
+          "file": "apps/mobile/.gitignore",
           "hash": "3244421341483603138"
         },
         {
-          "file": "apps/app/server.js",
-          "hash": "13787164437706141124",
+          "file": "apps/mobile/android/.gitignore",
+          "hash": "10823192150151251682"
+        },
+        {
+          "file": "apps/mobile/android/app/build.gradle",
+          "hash": "18435178498375194944"
+        },
+        {
+          "file": "apps/mobile/android/app/debug.keystore",
+          "hash": "5037686243849261810"
+        },
+        {
+          "file": "apps/mobile/android/app/proguard-rules.pro",
+          "hash": "4481275573118336055"
+        },
+        {
+          "file": "apps/mobile/android/app/src/debug/AndroidManifest.xml",
+          "hash": "1585159791921382059"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/AndroidManifest.xml",
+          "hash": "11500815532398059291"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/java/com/yourcompany/yourappname/MainActivity.kt",
+          "hash": "1299575223775433196"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/java/com/yourcompany/yourappname/MainApplication.kt",
+          "hash": "2789947964123649183"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/drawable-hdpi/splashscreen_image.png",
+          "hash": "15215490320031349748"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/drawable-mdpi/splashscreen_image.png",
+          "hash": "15215490320031349748"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/drawable-xhdpi/splashscreen_image.png",
+          "hash": "15215490320031349748"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/drawable-xxhdpi/splashscreen_image.png",
+          "hash": "15215490320031349748"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/drawable-xxxhdpi/splashscreen_image.png",
+          "hash": "15215490320031349748"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/drawable/rn_edit_text_material.xml",
+          "hash": "617140720749664772"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/drawable/splashscreen.xml",
+          "hash": "16858349519738590080"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+          "hash": "4058617789617427507"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+          "hash": "4058617789617427507"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+          "hash": "14043487828760826044"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png",
+          "hash": "2962373093440029271"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png",
+          "hash": "15363665757715502965"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+          "hash": "6176739436071547343"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png",
+          "hash": "666425901372760601"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png",
+          "hash": "4564800408452119722"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+          "hash": "14587356119714062673"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png",
+          "hash": "2791302278633112577"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png",
+          "hash": "11429151694570925349"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+          "hash": "8914150578446246538"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png",
+          "hash": "18325265845016146799"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png",
+          "hash": "17067238669057374607"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+          "hash": "18388314719017843227"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png",
+          "hash": "10235622244998165571"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png",
+          "hash": "16835327397062103233"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/values-night/colors.xml",
+          "hash": "5530507333983355112"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/values/colors.xml",
+          "hash": "17159928719647749656"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/values/strings.xml",
+          "hash": "7503833751840879983"
+        },
+        {
+          "file": "apps/mobile/android/app/src/main/res/values/styles.xml",
+          "hash": "1298814917832303215"
+        },
+        {
+          "file": "apps/mobile/android/build.gradle",
+          "hash": "13801870482320611462"
+        },
+        {
+          "file": "apps/mobile/android/gradle.properties",
+          "hash": "6359183597139552429"
+        },
+        {
+          "file": "apps/mobile/android/gradle/wrapper/gradle-wrapper.jar",
+          "hash": "16035346699462390754"
+        },
+        {
+          "file": "apps/mobile/android/gradle/wrapper/gradle-wrapper.properties",
+          "hash": "11373314242672843943"
+        },
+        {
+          "file": "apps/mobile/android/gradlew",
+          "hash": "6979324130797723579"
+        },
+        {
+          "file": "apps/mobile/android/gradlew.bat",
+          "hash": "14060579739680633850"
+        },
+        {
+          "file": "apps/mobile/android/settings.gradle",
+          "hash": "11536255363219790154"
+        },
+        {
+          "file": "apps/mobile/app.json",
+          "hash": "16839747935297588272"
+        },
+        {
+          "file": "apps/mobile/app/App.spec.tsx",
+          "hash": "13425733296334504368",
           "deps": [
-            "npm:https",
-            "npm:url",
-            "npm:next",
-            "npm:fs",
-            "npm:path"
+            "npm:react",
+            "npm:@testing-library/react-native"
           ]
         },
         {
-          "file": "apps/app/tailwind.config.js",
-          "hash": "8368880380839732784",
+          "file": "apps/mobile/app/App.tsx",
+          "hash": "17905873008409913108",
           "deps": [
-            "npm:@nextui-org/react",
-            "npm:@nx/next",
+            "npm:react",
+            "npm:react-native",
+            "npm:@tanstack/react-query",
+            "npm:@react-navigation/native",
+            "npm:@react-navigation/native-stack",
+            "npm:react-native-gesture-handler"
+          ]
+        },
+        {
+          "file": "apps/mobile/app/_layout.tsx",
+          "hash": "633287322743601679",
+          "deps": [
+            "npm:@expo/vector-icons/FontAwesome",
+            "npm:@react-navigation/native",
+            "npm:expo-font",
+            "npm:expo-router",
+            "npm:expo-splash-screen",
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/mobile/app/signin.tsx",
+          "hash": "3377169275825749637",
+          "deps": [
+            "npm:react",
+            "npm:react-native",
+            "api",
+            "npm:@react-native-async-storage/async-storage",
+            "npm:expo-checkbox",
+            "npm:expo-web-browser",
+            "npm:expo-status-bar"
+          ]
+        },
+        {
+          "file": "apps/mobile/assets/adaptive-icon.png",
+          "hash": "16102135492459408350"
+        },
+        {
+          "file": "apps/mobile/assets/favicon.png",
+          "hash": "10556792184362654649"
+        },
+        {
+          "file": "apps/mobile/assets/fonts/SpaceMono-Regular.ttf",
+          "hash": "8316399838606165836"
+        },
+        {
+          "file": "apps/mobile/assets/icon.png",
+          "hash": "14252482080276080187"
+        },
+        {
+          "file": "apps/mobile/assets/splash.png",
+          "hash": "16493559885079032523"
+        },
+        {
+          "file": "apps/mobile/components/SignInPage.tsx",
+          "hash": "13098934773375993253",
+          "deps": [
+            "npm:react",
+            "npm:react-native",
+            "api",
+            "npm:@react-native-async-storage/async-storage",
+            "npm:expo-checkbox",
+            "npm:expo-web-browser"
+          ]
+        },
+        {
+          "file": "apps/mobile/components/icons/FacebookIcon.tsx",
+          "hash": "11183035948947084231",
+          "deps": [
+            "npm:react",
+            "npm:react-native-svg"
+          ]
+        },
+        {
+          "file": "apps/mobile/components/icons/GithubIcon.tsx",
+          "hash": "10460960935567144986",
+          "deps": [
+            "npm:react",
+            "npm:react-native-svg"
+          ]
+        },
+        {
+          "file": "apps/mobile/components/icons/GoogleIcon.tsx",
+          "hash": "13522329260948184351",
+          "deps": [
+            "npm:react",
+            "npm:react-native-svg"
+          ]
+        },
+        {
+          "file": "apps/mobile/constants/colors.ts",
+          "hash": "5563161271794572387"
+        },
+        {
+          "file": "apps/mobile/eas.json",
+          "hash": "14849760528913703061"
+        },
+        {
+          "file": "apps/mobile/expo-env.d.ts",
+          "hash": "9493664874745477385"
+        },
+        {
+          "file": "apps/mobile/hooks/useGoogleSignIn.ts",
+          "hash": "7962847836632658605",
+          "deps": [
+            "npm:@react-oauth/google",
+            "api"
+          ]
+        },
+        {
+          "file": "apps/mobile/index.js",
+          "hash": "18288157994356303717",
+          "deps": [
+            "npm:expo",
+            "npm:react-native-gesture-handler"
+          ]
+        },
+        {
+          "file": "apps/mobile/jest.config.ts",
+          "hash": "14102893237426012405",
+          "deps": [
+            [
+              "npm:jest-expo",
+              "dynamic"
+            ]
+          ]
+        },
+        {
+          "file": "apps/mobile/metro.config.js",
+          "hash": "4894988172197038931",
+          "deps": [
+            "npm:@nx/expo",
+            "npm:@expo/metro-config",
+            "npm:metro-config",
+            "npm:node:path",
+            "npm:react-native-svg-transformer"
+          ]
+        },
+        {
+          "file": "apps/mobile/package.json",
+          "hash": "16213212189129702841"
+        },
+        {
+          "file": "apps/mobile/project.json",
+          "hash": "2705719701234197106"
+        },
+        {
+          "file": "apps/mobile/test-setup.ts",
+          "hash": "3756633674949762067",
+          "deps": [
+            "npm:@testing-library/jest-native"
+          ]
+        },
+        {
+          "file": "apps/mobile/tsconfig.app.json",
+          "hash": "4485441913730296913"
+        },
+        {
+          "file": "apps/mobile/tsconfig.json",
+          "hash": "12494237416707250717"
+        },
+        {
+          "file": "apps/mobile/tsconfig.spec.json",
+          "hash": "5015174500291997870"
+        },
+        {
+          "file": "apps/mobile/webpack.config.js",
+          "hash": "3201231824876413762",
+          "deps": [
+            "npm:@expo/webpack-config",
+            "npm:tsconfig-paths-webpack-plugin",
             "npm:path",
-            "npm:tailwindcss-animate"
+            [
+              "npm:@nx/webpack",
+              "dynamic"
+            ],
+            [
+              "npm:crypto-browserify",
+              "dynamic"
+            ],
+            [
+              "npm:stream-browserify",
+              "dynamic"
+            ]
           ]
-        },
-        {
-          "file": "apps/app/tsconfig.json",
-          "hash": "11090442878262044111"
-        },
-        {
-          "file": "apps/app/tsconfig.server.json",
-          "hash": "11055176378530974334"
-        },
-        {
-          "file": "apps/app/tsconfig.spec.json",
-          "hash": "6922413205408300107"
-        }
-      ],
-      "app-e2e": [
-        {
-          "file": "apps/app-e2e/.eslintrc.json",
-          "hash": "15523834149352881398"
-        },
-        {
-          "file": "apps/app-e2e/cypress.config.ts",
-          "hash": "212614215478757206",
-          "deps": [
-            "npm:cypress",
-            "npm:@nrwl/cypress"
-          ]
-        },
-        {
-          "file": "apps/app-e2e/project.json",
-          "hash": "9967918518240298002"
-        },
-        {
-          "file": "apps/app-e2e/src/e2e/app.cy.ts",
-          "hash": "6978826255576710318"
-        },
-        {
-          "file": "apps/app-e2e/src/fixtures/example.json",
-          "hash": "11614668686582597233"
-        },
-        {
-          "file": "apps/app-e2e/src/support/app.po.ts",
-          "hash": "11157016311132186162"
-        },
-        {
-          "file": "apps/app-e2e/src/support/commands.ts",
-          "hash": "7314691991044890572"
-        },
-        {
-          "file": "apps/app-e2e/src/support/e2e.ts",
-          "hash": "3666078656922506009"
-        },
-        {
-          "file": "apps/app-e2e/tsconfig.json",
-          "hash": "1788248097864730386"
         }
       ],
       "components": [
@@ -2365,7 +1074,7 @@
         },
         {
           "file": "libs/components/src/lib/chat-group/messages/ChatMessageEntries.tsx",
-          "hash": "15074958029591371334",
+          "hash": "4952105654157492324",
           "deps": [
             "npm:react",
             "npm:@tanstack/react-query",
@@ -2428,7 +1137,7 @@
         },
         {
           "file": "libs/components/src/lib/chat-group/messages/ChatMessagesSection.tsx",
-          "hash": "2204831242504602235",
+          "hash": "3491712930262758930",
           "deps": [
             "npm:react",
             "api",
@@ -2576,12 +1285,13 @@
         },
         {
           "file": "libs/components/src/lib/chat-group/messages/editor/MessageTextEditor.tsx",
-          "hash": "13477866785163533560",
+          "hash": "3797277124551710511",
           "deps": [
             "npm:react",
             "npm:slate-react",
             "npm:slate",
             "npm:@nextui-org/react",
+            "npm:next",
             "api",
             "hooks",
             "npm:html-escaper",
@@ -2591,12 +1301,13 @@
             "npm:unified",
             "npm:remark-parse",
             "npm:remark-slate",
-            "npm:next-intl"
+            "npm:next-intl",
+            "npm:@radix-ui/themes"
           ]
         },
         {
           "file": "libs/components/src/lib/chat-group/messages/editor/MessageTextEditorToolbar.tsx",
-          "hash": "8651502431798785095",
+          "hash": "1057712245080641931",
           "deps": [
             "npm:react",
             "npm:@nextui-org/react",
@@ -2607,10 +1318,11 @@
         },
         {
           "file": "libs/components/src/lib/chat-group/messages/editor/PlateMessageEditor.tsx",
-          "hash": "5801026375373133223",
+          "hash": "16219404424675955687",
           "deps": [
             "npm:react",
-            "npm:@udecode/plate-common"
+            "npm:@udecode/plate-common",
+            "npm:@udecode/plate-comments"
           ]
         },
         {
@@ -2625,7 +1337,7 @@
         },
         {
           "file": "libs/components/src/lib/chat-group/messages/editor/editor.tsx",
-          "hash": "3139620081841568319",
+          "hash": "13284397171332781446",
           "deps": [
             "npm:slate",
             "npm:slate-react",
@@ -2762,7 +1474,7 @@
         },
         {
           "file": "libs/components/src/lib/feed/ChatGroupFeedEntry.tsx",
-          "hash": "16542552699601348268",
+          "hash": "3164939083356410201",
           "deps": [
             "npm:react",
             "api",
@@ -3154,7 +1866,7 @@
         },
         {
           "file": "libs/components/src/lib/sidebar/attachments/ChatGroupAttachmentsTab.tsx",
-          "hash": "5585109751463751928",
+          "hash": "14298608545409998649",
           "deps": [
             "npm:react",
             "api",
@@ -3232,6 +1944,1795 @@
           "hash": "8500476649507256573"
         }
       ],
+      "app-e2e": [
+        {
+          "file": "apps/app-e2e/.eslintrc.json",
+          "hash": "15523834149352881398"
+        },
+        {
+          "file": "apps/app-e2e/cypress.config.ts",
+          "hash": "212614215478757206",
+          "deps": [
+            "npm:cypress",
+            "npm:@nrwl/cypress"
+          ]
+        },
+        {
+          "file": "apps/app-e2e/project.json",
+          "hash": "9967918518240298002"
+        },
+        {
+          "file": "apps/app-e2e/src/e2e/app.cy.ts",
+          "hash": "6978826255576710318"
+        },
+        {
+          "file": "apps/app-e2e/src/fixtures/example.json",
+          "hash": "11614668686582597233"
+        },
+        {
+          "file": "apps/app-e2e/src/support/app.po.ts",
+          "hash": "11157016311132186162"
+        },
+        {
+          "file": "apps/app-e2e/src/support/commands.ts",
+          "hash": "7314691991044890572"
+        },
+        {
+          "file": "apps/app-e2e/src/support/e2e.ts",
+          "hash": "3666078656922506009"
+        },
+        {
+          "file": "apps/app-e2e/tsconfig.json",
+          "hash": "1788248097864730386"
+        }
+      ],
+      "app": [
+        {
+          "file": "apps/app/.env.development",
+          "hash": "7078695289422109830"
+        },
+        {
+          "file": "apps/app/.env.production",
+          "hash": "15642718551998815554"
+        },
+        {
+          "file": "apps/app/.eslintrc.json",
+          "hash": "7129830320000132479"
+        },
+        {
+          "file": "apps/app/.vscode/settings.json",
+          "hash": "15569150561147214064"
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/avatars/page.tsx",
+          "hash": "18248385485001379120",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/badges/page.tsx",
+          "hash": "15974457997655728675",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/buttons/page.tsx",
+          "hash": "16766439887111562393",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/cards/page.tsx",
+          "hash": "15608948033080968505",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/checkboxes/HeartIcon.tsx",
+          "hash": "10858454266507035309",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/checkboxes/page.tsx",
+          "hash": "3140036258052331582",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/chips/page.tsx",
+          "hash": "7227251835076588096",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/code/page.tsx",
+          "hash": "10068586489100958892",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/dropdown/page.tsx",
+          "hash": "17173145395434810133",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:@nextui-org/react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/images/page.tsx",
+          "hash": "14568735506405437389",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:@nextui-org/react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/inputs/page.tsx",
+          "hash": "868203988204366385",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:@nextui-org/react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/modals/page.tsx",
+          "hash": "14916843731045052810",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/navbar/page.tsx",
+          "hash": "17116727406949455244",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/page.tsx",
+          "hash": "16072983239050953385",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "components",
+            "npm:fs",
+            "npm:path"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/pagination/page.tsx",
+          "hash": "3352699102369882070",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/popover/page.tsx",
+          "hash": "2919670542458182078",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/progress/page.tsx",
+          "hash": "8179059462166068946",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/radio/page.tsx",
+          "hash": "11370060500763323999",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:@nextui-org/react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/radix-ui-themes/page.tsx",
+          "hash": "15491808364898450565",
+          "deps": [
+            "npm:@radix-ui/themes",
+            "npm:react",
+            "npm:@nextui-org/react",
+            "npm:lucide-react",
+            "components"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/skeleton/page.tsx",
+          "hash": "12903937401382699660",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:@nextui-org/react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/snippets/page.tsx",
+          "hash": "10785327701966554105",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:@nextui-org/react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/table/page.tsx",
+          "hash": "14940347311218693290",
+          "deps": [
+            "npm:@nextui-org/react",
+            "npm:react",
+            "npm:next",
+            "npm:axios",
+            "api"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/tabs/page.tsx",
+          "hash": "1381178888105394211",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:@nextui-org/react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/%5Fplaygrounds/user/page.tsx",
+          "hash": "7731771292903598453",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:@nextui-org/react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/(c)/MainLayout.tsx",
+          "hash": "1786343858708430748",
+          "deps": [
+            "npm:react",
+            "components"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/(c)/layout.tsx",
+          "hash": "741811904753620458",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/(c)/page.tsx",
+          "hash": "2608636991973913023",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "api",
+            "npm:@nextui-org/react",
+            "components",
+            "hooks"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/about/page.tsx",
+          "hash": "7071686715402180901",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/contact/page.tsx",
+          "hash": "5165630474477841414",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/cookie-policy/page.tsx",
+          "hash": "17340180842468595902",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/create/CreateChatGroupForm.tsx",
+          "hash": "10020305938025734252",
+          "deps": [
+            "npm:react",
+            "npm:formik",
+            "api",
+            "npm:@nextui-org/react",
+            "npm:next",
+            "npm:yup",
+            "npm:@tanstack/react-query",
+            "components",
+            "hooks"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/create/CreateChatGroupHeading.tsx",
+          "hash": "17749038776152775",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "npm:tailwind-merge"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/create/layout.tsx",
+          "hash": "14297925274327605017",
+          "deps": [
+            "npm:react",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/create/page.tsx",
+          "hash": "12059809345959126314",
+          "deps": [
+            "npm:react",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/error.tsx",
+          "hash": "18293303148695741784",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "components"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/footer.tsx",
+          "hash": "16009937749063943113",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/friends/SuggestedFriendsSection.tsx",
+          "hash": "8882831243180385158",
+          "deps": [
+            "npm:react",
+            "api",
+            "npm:@nextui-org/react",
+            "npm:next-intl",
+            "components",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/friends/UserNotFound.tsx",
+          "hash": "2104568494763796236",
+          "deps": [
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/friends/UserSearchResultSection.tsx",
+          "hash": "2860927392272499983",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "api",
+            "npm:moment",
+            "npm:next-intl"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/friends/layout.tsx",
+          "hash": "16436700810092654162",
+          "deps": [
+            "npm:react",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/friends/page.tsx",
+          "hash": "16959062430554888026",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "npm:lucide-react",
+            "api",
+            "npm:next-intl",
+            "hooks"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/help/page.tsx",
+          "hash": "6946505156224548908",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/layout.tsx",
+          "hash": "14746769635882120052",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:process",
+            "npm:next-intl",
+            "components"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/not-found.tsx",
+          "hash": "561940973408844739",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/profile/ChangePasswordModal.tsx",
+          "hash": "6492211839615809077",
+          "deps": [
+            "npm:@nextui-org/react",
+            "npm:react",
+            "hooks",
+            "api",
+            "components"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/profile/layout.tsx",
+          "hash": "14297925274327605017",
+          "deps": [
+            "npm:react",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/profile/page.tsx",
+          "hash": "3567937267906711624",
+          "deps": [
+            "npm:react",
+            "api",
+            "npm:@nextui-org/react",
+            "npm:lucide-react",
+            "components",
+            "hooks"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/providers.tsx",
+          "hash": "13922700457974753971",
+          "deps": [
+            "npm:react",
+            "npm:@tanstack/react-query",
+            "npm:@tanstack/react-query-devtools",
+            "npm:@nextui-org/react",
+            "npm:@react-oauth/google",
+            "api",
+            "npm:next-themes",
+            "npm:next",
+            "npm:process",
+            "components"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/signin/FacebookSignInButton.tsx",
+          "hash": "5060866886527314472",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "components"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/signin/GithubSignInButton.tsx",
+          "hash": "17299977705052444583",
+          "deps": [
+            "npm:react",
+            "npm:react-github-login",
+            "npm:process",
+            "components"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/signin/GoogleSignInButton.tsx",
+          "hash": "870671238785270263",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "components"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/signin/PasswordInput.tsx",
+          "hash": "14327335837279647988",
+          "deps": [
+            "npm:react",
+            "npm:@nextui-org/react",
+            "components"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/signin/layout.tsx",
+          "hash": "13595296926793501626",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:process"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/signin/page.tsx",
+          "hash": "16397099539260010612",
+          "deps": [
+            "npm:react",
+            "npm:react-github-login",
+            "npm:next",
+            "api",
+            "npm:@nextui-org/react",
+            "npm:yup",
+            "npm:formik",
+            "components",
+            "hooks"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/signup/layout.tsx",
+          "hash": "2973598023331348905",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:process"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/signup/page.tsx",
+          "hash": "6313860197335827331",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "api",
+            "npm:@nextui-org/react",
+            "npm:yup",
+            "npm:formik",
+            "hooks"
+          ]
+        },
+        {
+          "file": "apps/app/app/[locale]/signup/types.d.ts",
+          "hash": "4186389217846617725"
+        },
+        {
+          "file": "apps/app/app/[locale]/terms-of-service/page.tsx",
+          "hash": "4843654751751656815",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/app/app/api/[[...catchAll]]/route.ts",
+          "hash": "9101996695369688300",
+          "deps": [
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/favicon.ico",
+          "hash": "13800478488541147608"
+        },
+        {
+          "file": "apps/app/app/layout.tsx",
+          "hash": "16280052835760701786",
+          "deps": [
+            "npm:react",
+            "npm:@radix-ui/themes"
+          ]
+        },
+        {
+          "file": "apps/app/app/not-found.tsx",
+          "hash": "16355057243274774786",
+          "deps": [
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/app/styles.css",
+          "hash": "16673916359702220341"
+        },
+        {
+          "file": "apps/app/hub/ChatHubConnection.tsx",
+          "hash": "3447024601533726492",
+          "deps": [
+            "npm:@microsoft/signalr",
+            "npm:react",
+            "api"
+          ]
+        },
+        {
+          "file": "apps/app/hub/ChatifyHubInitializer.tsx",
+          "hash": "10057772283046616245",
+          "deps": [
+            "npm:react",
+            "npm:@tanstack/react-query",
+            "api",
+            "npm:immer",
+            "hooks"
+          ]
+        },
+        {
+          "file": "apps/app/hub/index.ts",
+          "hash": "13807792429947328030"
+        },
+        {
+          "file": "apps/app/i18n.ts",
+          "hash": "4845185826295927947",
+          "deps": [
+            "npm:next-intl"
+          ]
+        },
+        {
+          "file": "apps/app/index.d.ts",
+          "hash": "15430569851671288975"
+        },
+        {
+          "file": "apps/app/jest.config.ts",
+          "hash": "13653397834450830308"
+        },
+        {
+          "file": "apps/app/messages/de.json",
+          "hash": "4089856899414916690"
+        },
+        {
+          "file": "apps/app/messages/en.json",
+          "hash": "13657833054512780155"
+        },
+        {
+          "file": "apps/app/middleware.ts",
+          "hash": "6360404134032588577",
+          "deps": [
+            "npm:next-intl",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/app/next-env.d.ts",
+          "hash": "5909181270615354023"
+        },
+        {
+          "file": "apps/app/next.config.js",
+          "hash": "18299209729673521397",
+          "deps": [
+            "npm:@nx/next",
+            "npm:next-intl"
+          ]
+        },
+        {
+          "file": "apps/app/postcss.config.js",
+          "hash": "18393954357858272403",
+          "deps": [
+            "npm:path"
+          ]
+        },
+        {
+          "file": "apps/app/project.json",
+          "hash": "16809500278670801398"
+        },
+        {
+          "file": "apps/app/public/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "apps/app/server.js",
+          "hash": "13787164437706141124",
+          "deps": [
+            "npm:https",
+            "npm:url",
+            "npm:next",
+            "npm:fs",
+            "npm:path"
+          ]
+        },
+        {
+          "file": "apps/app/tailwind.config.js",
+          "hash": "8368880380839732784",
+          "deps": [
+            "npm:@nextui-org/react",
+            "npm:@nx/next",
+            "npm:path",
+            "npm:tailwindcss-animate"
+          ]
+        },
+        {
+          "file": "apps/app/tsconfig.json",
+          "hash": "11090442878262044111"
+        },
+        {
+          "file": "apps/app/tsconfig.server.json",
+          "hash": "11055176378530974334"
+        },
+        {
+          "file": "apps/app/tsconfig.spec.json",
+          "hash": "6922413205408300107"
+        }
+      ],
+      "api": [
+        {
+          "file": "libs/api/.eslintrc.json",
+          "hash": "7044562409277009441"
+        },
+        {
+          "file": "libs/api/.swcrc",
+          "hash": "3549918118218740171"
+        },
+        {
+          "file": "libs/api/README.md",
+          "hash": "16780990778792093623"
+        },
+        {
+          "file": "libs/api/jest.config.ts",
+          "hash": "18006943341348122280",
+          "deps": [
+            "npm:fs"
+          ]
+        },
+        {
+          "file": "libs/api/openapi/common/CursorPaged.ts",
+          "hash": "3070117423296498923"
+        },
+        {
+          "file": "libs/api/openapi/index.d.ts",
+          "hash": "4473560030825131118"
+        },
+        {
+          "file": "libs/api/openapi/index.ts",
+          "hash": "17199649967407579461"
+        },
+        {
+          "file": "libs/api/openapi/models/AddChatGroupAdmin.ts",
+          "hash": "18106762061957255749"
+        },
+        {
+          "file": "libs/api/openapi/models/AddChatGroupMember.ts",
+          "hash": "3962491424550016358"
+        },
+        {
+          "file": "libs/api/openapi/models/AddressFamily.ts",
+          "hash": "9166276090372985144"
+        },
+        {
+          "file": "libs/api/openapi/models/ApiResponseStatus.ts",
+          "hash": "6260949134953776912"
+        },
+        {
+          "file": "libs/api/openapi/models/ChangeUserPassword.ts",
+          "hash": "5808112224904860703"
+        },
+        {
+          "file": "libs/api/openapi/models/ChangeUserStatus.ts",
+          "hash": "13950243142506976076"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatGroup.ts",
+          "hash": "16762530126908066010"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatGroupAttachment.ts",
+          "hash": "13689906369799271983"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatGroupAttachmentCursorPagedApiResponse.ts",
+          "hash": "9998059342255180878"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatGroupDetailsEntry.ts",
+          "hash": "15195160712049540033"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatGroupDetailsEntryApiResponse.ts",
+          "hash": "15720401065169677982"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatGroupFeedEntry.ts",
+          "hash": "9047366493287207506"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatGroupFeedEntryListApiResponse.ts",
+          "hash": "4532509172313559296"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatGroupJoinRequest.ts",
+          "hash": "4051797476779316493"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatGroupListApiResponse.ts",
+          "hash": "17503276985062786136"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatGroupMember.ts",
+          "hash": "9007796750151094677"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatGroupMemberApiResponse.ts",
+          "hash": "817793633389923812"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatGroupMessageEntry.ts",
+          "hash": "8403802464056058682"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatGroupMessageEntryCursorPagedApiResponse.ts",
+          "hash": "4929576930567764881"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatMessage.ts",
+          "hash": "10350437931759799748"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatMessageDraft.ts",
+          "hash": "4221410952836484750"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatMessageDraftListApiResponse.ts",
+          "hash": "5930967754525931323"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatMessageListApiResponse.ts",
+          "hash": "11837396948401098310"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatMessageReaction.ts",
+          "hash": "9137401236816402358"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatMessageReactionListApiResponse.ts",
+          "hash": "1658582355419934560"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatMessageReply.ts",
+          "hash": "1813086058864671708"
+        },
+        {
+          "file": "libs/api/openapi/models/ChatMessageReplyCursorPagedApiResponse.ts",
+          "hash": "15440939792548225519"
+        },
+        {
+          "file": "libs/api/openapi/models/DeleteGroupChatMessageRequest.ts",
+          "hash": "16967217754553879341"
+        },
+        {
+          "file": "libs/api/openapi/models/EditGroupChatMessageRequest.ts",
+          "hash": "14851278740945287605"
+        },
+        {
+          "file": "libs/api/openapi/models/Email.ts",
+          "hash": "551512460106948406"
+        },
+        {
+          "file": "libs/api/openapi/models/FacebookSignUp.ts",
+          "hash": "7337039414647835370"
+        },
+        {
+          "file": "libs/api/openapi/models/ForwardMessage.ts",
+          "hash": "6085489507562516231"
+        },
+        {
+          "file": "libs/api/openapi/models/FriendInvitation.ts",
+          "hash": "1457218956990967591"
+        },
+        {
+          "file": "libs/api/openapi/models/FriendInvitationListApiResponse.ts",
+          "hash": "8409127719650545487"
+        },
+        {
+          "file": "libs/api/openapi/models/FriendInvitationStatus.ts",
+          "hash": "2848100113021939068"
+        },
+        {
+          "file": "libs/api/openapi/models/FriendsRelation.ts",
+          "hash": "1947729311910716720"
+        },
+        {
+          "file": "libs/api/openapi/models/GoogleSignUp.ts",
+          "hash": "5766875335106700960"
+        },
+        {
+          "file": "libs/api/openapi/models/GroupJoinRequestEntry.ts",
+          "hash": "3414000233417805748"
+        },
+        {
+          "file": "libs/api/openapi/models/GroupJoinRequestEntryListApiResponse.ts",
+          "hash": "627530547978801604"
+        },
+        {
+          "file": "libs/api/openapi/models/IPAddress.ts",
+          "hash": "6590682864745437905"
+        },
+        {
+          "file": "libs/api/openapi/models/InputFile.ts",
+          "hash": "8086464194580569968"
+        },
+        {
+          "file": "libs/api/openapi/models/LeaveChatGroup.ts",
+          "hash": "4231903650836530588"
+        },
+        {
+          "file": "libs/api/openapi/models/Media.ts",
+          "hash": "13985374921296227379"
+        },
+        {
+          "file": "libs/api/openapi/models/MessageReplierInfoEntry.ts",
+          "hash": "16472046156447145628"
+        },
+        {
+          "file": "libs/api/openapi/models/MessageRepliersInfoEntry.ts",
+          "hash": "6928281140038025517"
+        },
+        {
+          "file": "libs/api/openapi/models/MessageSenderInfoEntry.ts",
+          "hash": "783147757647274405"
+        },
+        {
+          "file": "libs/api/openapi/models/ObjectApiResponse.ts",
+          "hash": "3565802388099046573"
+        },
+        {
+          "file": "libs/api/openapi/models/PhoneNumber.ts",
+          "hash": "4934868082356337803"
+        },
+        {
+          "file": "libs/api/openapi/models/PinnedMessage.ts",
+          "hash": "2378762676324093298"
+        },
+        {
+          "file": "libs/api/openapi/models/ProblemDetails.ts",
+          "hash": "1287305537556806610"
+        },
+        {
+          "file": "libs/api/openapi/models/ReactToChatMessageRequest.ts",
+          "hash": "11643200607969803954"
+        },
+        {
+          "file": "libs/api/openapi/models/RegularSignIn.ts",
+          "hash": "9603305199879619185"
+        },
+        {
+          "file": "libs/api/openapi/models/RegularSignUp.ts",
+          "hash": "3861175724596884365"
+        },
+        {
+          "file": "libs/api/openapi/models/RemoveChatGroupMember.ts",
+          "hash": "4799406416303013332"
+        },
+        {
+          "file": "libs/api/openapi/models/SendGroupChatMessageReplyRequest.ts",
+          "hash": "15810440705087778342"
+        },
+        {
+          "file": "libs/api/openapi/models/Stream.ts",
+          "hash": "2301680802270327116"
+        },
+        {
+          "file": "libs/api/openapi/models/Unit.ts",
+          "hash": "400111764075421175"
+        },
+        {
+          "file": "libs/api/openapi/models/UnitApiResponse.ts",
+          "hash": "5385670396160475111"
+        },
+        {
+          "file": "libs/api/openapi/models/UnreactToChatMessageRequest.ts",
+          "hash": "10387363728846928955"
+        },
+        {
+          "file": "libs/api/openapi/models/User.ts",
+          "hash": "8706930244602281994"
+        },
+        {
+          "file": "libs/api/openapi/models/UserDetailsEntry.ts",
+          "hash": "16297314414303034473"
+        },
+        {
+          "file": "libs/api/openapi/models/UserDetailsEntryApiResponse.ts",
+          "hash": "1460927776548642326"
+        },
+        {
+          "file": "libs/api/openapi/models/UserListApiResponse.ts",
+          "hash": "2130918919903172355"
+        },
+        {
+          "file": "libs/api/openapi/models/UserMessageReaction.ts",
+          "hash": "18112425473728464977"
+        },
+        {
+          "file": "libs/api/openapi/models/UserNotification.ts",
+          "hash": "15489687094573740846"
+        },
+        {
+          "file": "libs/api/openapi/models/UserNotificationCursorPagedApiResponse.ts",
+          "hash": "2493912260399183276"
+        },
+        {
+          "file": "libs/api/openapi/models/UserNotificationMetadata.ts",
+          "hash": "4008809166659887508"
+        },
+        {
+          "file": "libs/api/openapi/models/UserNotificationType.ts",
+          "hash": "3271152562044895974"
+        },
+        {
+          "file": "libs/api/openapi/models/UserStatus.ts",
+          "hash": "6576932982726294138"
+        },
+        {
+          "file": "libs/api/openapi/schema.d.ts",
+          "hash": "6285756062998628861"
+        },
+        {
+          "file": "libs/api/openapi/swagger.yaml",
+          "hash": "3686445381699278806"
+        },
+        {
+          "file": "libs/api/package.json",
+          "hash": "442885175248146140",
+          "deps": [
+            "npm:@swc/helpers"
+          ]
+        },
+        {
+          "file": "libs/api/project.json",
+          "hash": "6784951365636581009"
+        },
+        {
+          "file": "libs/api/src/index.ts",
+          "hash": "5929556022314699951"
+        },
+        {
+          "file": "libs/api/src/lib/auth/client.ts",
+          "hash": "7352432349606391545"
+        },
+        {
+          "file": "libs/api/src/lib/auth/hooks/index.ts",
+          "hash": "10741842860718712798"
+        },
+        {
+          "file": "libs/api/src/lib/auth/hooks/mutations/index.ts",
+          "hash": "2038642700265799153"
+        },
+        {
+          "file": "libs/api/src/lib/auth/hooks/mutations/useAcceptCookiePolicyMutation.ts",
+          "hash": "2866053541816889033",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/auth/hooks/mutations/useDeclineCookiePolicyMutation.ts",
+          "hash": "12688274372411855727",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/auth/hooks/mutations/useFacebookSignUpMutation.ts",
+          "hash": "7596191344283207330",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/auth/hooks/mutations/useGithubSignUpMutation.ts",
+          "hash": "3998851834527913010",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/auth/hooks/mutations/useGoogleSignUpMutation.ts",
+          "hash": "16739598455392362291",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/auth/hooks/mutations/useRegularSignInMutation.ts",
+          "hash": "1607903996721235174",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:@react-native-async-storage/async-storage"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/auth/hooks/mutations/useRegularSignUpMutation.ts",
+          "hash": "12030001243583849229",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/auth/hooks/mutations/useSignOutMutation.ts",
+          "hash": "16243089598731853737",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:@react-native-async-storage/async-storage"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/auth/hooks/queries/index.ts",
+          "hash": "6513261402545542256"
+        },
+        {
+          "file": "libs/api/src/lib/auth/hooks/queries/useGetMyClaimsQuery.ts",
+          "hash": "4019307171385210789",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:@openapi/index"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/auth/index.ts",
+          "hash": "9016995982939038991"
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/client.ts",
+          "hash": "11123368440314547841"
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/index.ts",
+          "hash": "3505158375490327309"
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/mutations/index.ts",
+          "hash": "4389355675099789254"
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useAddChatGroupAdminMutation.ts",
+          "hash": "6824273252931136149",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useAddChatGroupMemberMutation.ts",
+          "hash": "14159162992293941213",
+          "deps": [
+            "npm:@tanstack/react-query"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useCreateChatGroupMutation.ts",
+          "hash": "13019929110293377720",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useEditChatGroupMutation.ts",
+          "hash": "6557499074030448245",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useLeaveChatGroupMutation.ts",
+          "hash": "5264899314640963702",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useRemoveChatGroupAdmin.ts",
+          "hash": "2912213099875466090",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useRemoveChatGroupMemberMutation.ts",
+          "hash": "2032586952698999101",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useStarChatGroup.ts",
+          "hash": "14745589081155892692",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/mutations/useUnstarChatGroup.ts",
+          "hash": "4599893135855000432",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/queries/index.ts",
+          "hash": "4723742325633017769"
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/queries/useGetChatGroupAttachmentsQuery.ts",
+          "hash": "18210719521570833392",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/queries/useGetChatGroupDetailsQuery.ts",
+          "hash": "9923611384176618064",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:react"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/queries/useGetChatGroupPinnedMessages.ts",
+          "hash": "3766430890082872647",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/queries/useGetChatGroupsFeedQuery.ts",
+          "hash": "6827890271608785924",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/queries/useGetStarredChatGroups.ts",
+          "hash": "7176512234321523911",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/queries/useGetStarredChatGroupsFeedQuery.ts",
+          "hash": "837324548925273102",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/queries/useGetUserMembershipDetailsQuery.ts",
+          "hash": "3426865760665624977",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/hooks/queries/useSearchChatGroupsByName.ts",
+          "hash": "8695144054210448556",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/chat-groups/index.ts",
+          "hash": "9016995982939038991"
+        },
+        {
+          "file": "libs/api/src/lib/common/createClient.ts",
+          "hash": "16983836026187096262",
+          "deps": [
+            "npm:axios",
+            "npm:@react-native-async-storage/async-storage",
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/constants.ts",
+          "hash": "10442060338040388909"
+        },
+        {
+          "file": "libs/api/src/lib/env.d.ts",
+          "hash": "8863671375028011050"
+        },
+        {
+          "file": "libs/api/src/lib/friendships/client.ts",
+          "hash": "12680737834439647206"
+        },
+        {
+          "file": "libs/api/src/lib/friendships/hooks/index.ts",
+          "hash": "10741842860718712798"
+        },
+        {
+          "file": "libs/api/src/lib/friendships/hooks/mutations/index.ts",
+          "hash": "9306851460631983634"
+        },
+        {
+          "file": "libs/api/src/lib/friendships/hooks/mutations/useAcceptFriendInvitationMutation.ts",
+          "hash": "14301224191151481341",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/friendships/hooks/mutations/useDeclineFriendInvitationMutation.ts",
+          "hash": "2482623542945973511",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/friendships/hooks/mutations/useSendFriendInvitationMutation.ts",
+          "hash": "2353545915043462417",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/friendships/hooks/mutations/useUnfriendUserMutation.ts",
+          "hash": "7928851959226587646",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/friendships/hooks/queries/index.ts",
+          "hash": "17961288247997671047"
+        },
+        {
+          "file": "libs/api/src/lib/friendships/hooks/queries/useGetFriendSuggestions.ts",
+          "hash": "16870729430022172312",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/friendships/hooks/queries/useGetIncomingInvitationsQuery.ts",
+          "hash": "5693534812421462865",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/friendships/hooks/queries/useGetMyFriendsQuery.ts",
+          "hash": "9442936225745241645",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/friendships/hooks/queries/useGetSentInvitationsQuery.ts",
+          "hash": "15198262080130971173",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/friendships/index.ts",
+          "hash": "9016995982939038991"
+        },
+        {
+          "file": "libs/api/src/lib/hubs/chatifyHubClient.ts",
+          "hash": "8930797243524936131",
+          "deps": [
+            "npm:@microsoft/signalr",
+            "npm:js-cookie"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/hubs/index.ts",
+          "hash": "15027135633178856382"
+        },
+        {
+          "file": "libs/api/src/lib/hubs/messages.d.ts",
+          "hash": "11570171737001278976"
+        },
+        {
+          "file": "libs/api/src/lib/index.ts",
+          "hash": "9152587496004914672"
+        },
+        {
+          "file": "libs/api/src/lib/messages/client.ts",
+          "hash": "3544904399694859068"
+        },
+        {
+          "file": "libs/api/src/lib/messages/index.ts",
+          "hash": "3505158375490327309"
+        },
+        {
+          "file": "libs/api/src/lib/messages/mutations/index.ts",
+          "hash": "12091033320029810987"
+        },
+        {
+          "file": "libs/api/src/lib/messages/mutations/useDeleteGroupChatMessageMutation.ts",
+          "hash": "13821618089592524572",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/messages/mutations/useDeleteGroupChatMessageReplyMutation.ts",
+          "hash": "6451360389874648271",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/messages/mutations/useDraftChatMessage.ts",
+          "hash": "2481886544513993049",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/messages/mutations/useEditGroupChatMessageMutation.ts",
+          "hash": "16422453814824036741",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/messages/mutations/useEditGroupChatMessageReplyMutation.ts",
+          "hash": "14060749703294316081",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/messages/mutations/useForwardChatMessage.ts",
+          "hash": "18006191230894343420",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/messages/mutations/usePinGroupChatMessage.ts",
+          "hash": "3432049472275695378",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/messages/mutations/useSendGroupChatMessageMutation.ts",
+          "hash": "4436453411517373038",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer",
+            "npm:uuid"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/messages/mutations/useSendGroupChatMessageReplyMutation.ts",
+          "hash": "13072783164761037306",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/messages/mutations/useUnpinGroupChatMessage.ts",
+          "hash": "13330553211099762180",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/messages/queries/index.ts",
+          "hash": "16438040232938302518"
+        },
+        {
+          "file": "libs/api/src/lib/messages/queries/useGetDraftedMessageForGroup.ts",
+          "hash": "103860930838821091",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/messages/queries/useGetDraftedMessages.ts",
+          "hash": "11245899861667975124",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/messages/queries/useGetPaginatedGroupMessagesQuery.ts",
+          "hash": "8562996501132405872",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/messages/queries/useGetPaginatedMessageRepliesQuery.ts",
+          "hash": "5244776455763913577",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/notifications/client.ts",
+          "hash": "2729125706787858770"
+        },
+        {
+          "file": "libs/api/src/lib/notifications/hooks/index.ts",
+          "hash": "10741842860718712798"
+        },
+        {
+          "file": "libs/api/src/lib/notifications/hooks/mutations/index.ts",
+          "hash": "15525473513408429467"
+        },
+        {
+          "file": "libs/api/src/lib/notifications/hooks/mutations/useMarkNotificationsAsReadMutation.ts",
+          "hash": "8841363419499142871",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/notifications/hooks/queries/index.ts",
+          "hash": "14186640937136212050"
+        },
+        {
+          "file": "libs/api/src/lib/notifications/hooks/queries/useGetPaginatedNotificationsQuery.ts",
+          "hash": "10794133233672298674",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/notifications/hooks/queries/useGetUnreadNotificationsQuery.ts",
+          "hash": "17625433429028353083",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/notifications/index.ts",
+          "hash": "9016995982939038991"
+        },
+        {
+          "file": "libs/api/src/lib/profile/client.ts",
+          "hash": "4085300367668467488"
+        },
+        {
+          "file": "libs/api/src/lib/profile/hooks/index.ts",
+          "hash": "3505158375490327309"
+        },
+        {
+          "file": "libs/api/src/lib/profile/hooks/mutations/index.ts",
+          "hash": "15870967170232462277"
+        },
+        {
+          "file": "libs/api/src/lib/profile/hooks/mutations/useChangeUserPasswordMutation.ts",
+          "hash": "8293697582301863320",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/profile/hooks/mutations/useChangeUserStatusMutation.ts",
+          "hash": "14884168662781365623",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/profile/hooks/mutations/useEditUserDetailsMutation.ts",
+          "hash": "4951698905462243827",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/profile/hooks/queries/index.ts",
+          "hash": "1779477411465550824"
+        },
+        {
+          "file": "libs/api/src/lib/profile/hooks/queries/useFindUserByHandleQuery.ts",
+          "hash": "3227807232691630795",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/profile/hooks/queries/useGetUserDetailsQuery.ts",
+          "hash": "15463811147932930383",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/profile/hooks/queries/useSearchUsersByNameQuery.ts",
+          "hash": "10854904805883432601",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/profile/index.ts",
+          "hash": "9016995982939038991"
+        },
+        {
+          "file": "libs/api/src/lib/queryClient.ts",
+          "hash": "14379031114475126655",
+          "deps": [
+            "npm:@tanstack/react-query"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/reactions/client.ts",
+          "hash": "10945667768912494803"
+        },
+        {
+          "file": "libs/api/src/lib/reactions/hooks/index.ts",
+          "hash": "3505158375490327309"
+        },
+        {
+          "file": "libs/api/src/lib/reactions/hooks/mutations/index.ts",
+          "hash": "9483755740133750510"
+        },
+        {
+          "file": "libs/api/src/lib/reactions/hooks/mutations/useReactToGroupMessageMutation.ts",
+          "hash": "4558116085240015940",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/reactions/hooks/mutations/useReactToGroupMessageReplyMutation.ts",
+          "hash": "8590268484084268060",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/reactions/hooks/mutations/useUnreactToGroupMessageMutation.ts",
+          "hash": "8609536368299965118",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios",
+            "npm:immer"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/reactions/hooks/mutations/useUnreactToGroupMessageReplyMutation.ts",
+          "hash": "10114958588149254463",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/reactions/hooks/queries/index.ts",
+          "hash": "1197567191673576478"
+        },
+        {
+          "file": "libs/api/src/lib/reactions/hooks/queries/useGetAllReactionsForMessage.ts",
+          "hash": "15015623892883035209",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "libs/api/src/lib/reactions/index.ts",
+          "hash": "9016995982939038991"
+        },
+        {
+          "file": "libs/api/src/lib/utils/index.ts",
+          "hash": "7665112246143596179",
+          "deps": [
+            "npm:process"
+          ]
+        },
+        {
+          "file": "libs/api/tsconfig.json",
+          "hash": "15696086138336242600"
+        },
+        {
+          "file": "libs/api/tsconfig.lib.json",
+          "hash": "12894235470883416627"
+        },
+        {
+          "file": "libs/api/tsconfig.spec.json",
+          "hash": "8045335206913382466"
+        }
+      ],
       "hooks": [
         {
           "file": "libs/hooks/.eslintrc.json",
@@ -3262,7 +3763,7 @@
         },
         {
           "file": "libs/hooks/src/lib/auth/useGoogleSignIn.tsx",
-          "hash": "5751761551296319912",
+          "hash": "11938638369473079473",
           "deps": [
             "npm:@react-oauth/google",
             "api"
@@ -3439,7 +3940,452 @@
           "file": "libs/hooks/tsconfig.lib.json",
           "hash": "8500476649507256573"
         }
+      ],
+      "mobile-e2e": [
+        {
+          "file": "apps/mobile-e2e/.eslintrc.json",
+          "hash": "2042063275590772337"
+        },
+        {
+          "file": "apps/mobile-e2e/cypress.config.ts",
+          "hash": "13056113192694797556",
+          "deps": [
+            "npm:@nx/cypress",
+            "npm:cypress"
+          ]
+        },
+        {
+          "file": "apps/mobile-e2e/project.json",
+          "hash": "4744149452226274897"
+        },
+        {
+          "file": "apps/mobile-e2e/src/e2e/app.cy.ts",
+          "hash": "5304887110058344690"
+        },
+        {
+          "file": "apps/mobile-e2e/src/fixtures/example.json",
+          "hash": "3533792103780667968"
+        },
+        {
+          "file": "apps/mobile-e2e/src/support/app.po.ts",
+          "hash": "17694327376926672400"
+        },
+        {
+          "file": "apps/mobile-e2e/src/support/commands.ts",
+          "hash": "10184968413948324923"
+        },
+        {
+          "file": "apps/mobile-e2e/src/support/e2e.ts",
+          "hash": "15796308326757401712"
+        },
+        {
+          "file": "apps/mobile-e2e/tsconfig.json",
+          "hash": "11874131058560487026"
+        }
+      ],
+      "utils": [
+        {
+          "file": "libs/utils/.eslintrc.json",
+          "hash": "17864232912055483713"
+        },
+        {
+          "file": "libs/utils/README.md",
+          "hash": "12540549419807370810"
+        },
+        {
+          "file": "libs/utils/project.json",
+          "hash": "11367770165654684182"
+        },
+        {
+          "file": "libs/utils/src/index.ts",
+          "hash": "2639589150305055170"
+        },
+        {
+          "file": "libs/utils/src/lib/index.ts",
+          "hash": "3262052513925263926",
+          "deps": [
+            "npm:unified",
+            "npm:remark-parse",
+            "npm:remark-rehype",
+            "npm:rehype-stringify",
+            "npm:process"
+          ]
+        },
+        {
+          "file": "libs/utils/tsconfig.json",
+          "hash": "13979398437825372391"
+        },
+        {
+          "file": "libs/utils/tsconfig.lib.json",
+          "hash": "8500476649507256573"
+        }
       ]
-    }
+    },
+    "nonProjectFiles": [
+      {
+        "file": ".editorconfig",
+        "hash": "2119145682588723816"
+      },
+      {
+        "file": ".eslintrc.json",
+        "hash": "15097946867664475648"
+      },
+      {
+        "file": ".expo/README.md",
+        "hash": "209595534597831580"
+      },
+      {
+        "file": ".expo/devices.json",
+        "hash": "18372710781914472240"
+      },
+      {
+        "file": ".expo/metro/externals/assert/index.js",
+        "hash": "14648000831632369421"
+      },
+      {
+        "file": ".expo/metro/externals/async_hooks/index.js",
+        "hash": "11931386446601800343"
+      },
+      {
+        "file": ".expo/metro/externals/buffer/index.js",
+        "hash": "1332943433621701465"
+      },
+      {
+        "file": ".expo/metro/externals/child_process/index.js",
+        "hash": "1543525145651789806"
+      },
+      {
+        "file": ".expo/metro/externals/cluster/index.js",
+        "hash": "8159140902112976452"
+      },
+      {
+        "file": ".expo/metro/externals/console/index.js",
+        "hash": "8536696429766832388"
+      },
+      {
+        "file": ".expo/metro/externals/constants/index.js",
+        "hash": "8705412566036481584"
+      },
+      {
+        "file": ".expo/metro/externals/crypto/index.js",
+        "hash": "5117914016800880204"
+      },
+      {
+        "file": ".expo/metro/externals/dgram/index.js",
+        "hash": "13064873907357773956"
+      },
+      {
+        "file": ".expo/metro/externals/diagnostics_channel/index.js",
+        "hash": "5447083263210866058"
+      },
+      {
+        "file": ".expo/metro/externals/dns/index.js",
+        "hash": "6431634077824728070"
+      },
+      {
+        "file": ".expo/metro/externals/domain/index.js",
+        "hash": "11221600897179572243"
+      },
+      {
+        "file": ".expo/metro/externals/events/index.js",
+        "hash": "2569417156954652408"
+      },
+      {
+        "file": ".expo/metro/externals/fs/index.js",
+        "hash": "11456685537047008141"
+      },
+      {
+        "file": ".expo/metro/externals/fs/promises/index.js",
+        "hash": "3861994079947788014"
+      },
+      {
+        "file": ".expo/metro/externals/http/index.js",
+        "hash": "3291638916531618376"
+      },
+      {
+        "file": ".expo/metro/externals/http2/index.js",
+        "hash": "2864086213421143247"
+      },
+      {
+        "file": ".expo/metro/externals/https/index.js",
+        "hash": "14423692195270040720"
+      },
+      {
+        "file": ".expo/metro/externals/inspector/index.js",
+        "hash": "18251107356387792113"
+      },
+      {
+        "file": ".expo/metro/externals/module/index.js",
+        "hash": "15996160787225387461"
+      },
+      {
+        "file": ".expo/metro/externals/net/index.js",
+        "hash": "9929100121142941850"
+      },
+      {
+        "file": ".expo/metro/externals/os/index.js",
+        "hash": "12504127938619257618"
+      },
+      {
+        "file": ".expo/metro/externals/path/index.js",
+        "hash": "4980880248435502264"
+      },
+      {
+        "file": ".expo/metro/externals/perf_hooks/index.js",
+        "hash": "5454219331511187095"
+      },
+      {
+        "file": ".expo/metro/externals/process/index.js",
+        "hash": "11094115921288593294"
+      },
+      {
+        "file": ".expo/metro/externals/punycode/index.js",
+        "hash": "3507256034188090863"
+      },
+      {
+        "file": ".expo/metro/externals/querystring/index.js",
+        "hash": "8914865020654877656"
+      },
+      {
+        "file": ".expo/metro/externals/readline/index.js",
+        "hash": "3235587942313022180"
+      },
+      {
+        "file": ".expo/metro/externals/repl/index.js",
+        "hash": "2426806009069675994"
+      },
+      {
+        "file": ".expo/metro/externals/stream/index.js",
+        "hash": "3191410493782305048"
+      },
+      {
+        "file": ".expo/metro/externals/string_decoder/index.js",
+        "hash": "1678940388710866659"
+      },
+      {
+        "file": ".expo/metro/externals/timers/index.js",
+        "hash": "17497950872733721655"
+      },
+      {
+        "file": ".expo/metro/externals/tls/index.js",
+        "hash": "5465206380520354851"
+      },
+      {
+        "file": ".expo/metro/externals/trace_events/index.js",
+        "hash": "12964796565681298074"
+      },
+      {
+        "file": ".expo/metro/externals/tty/index.js",
+        "hash": "13402892553829506293"
+      },
+      {
+        "file": ".expo/metro/externals/url/index.js",
+        "hash": "17323295129206172971"
+      },
+      {
+        "file": ".expo/metro/externals/util/index.js",
+        "hash": "15909456439861800525"
+      },
+      {
+        "file": ".expo/metro/externals/v8/index.js",
+        "hash": "9206759006585279271"
+      },
+      {
+        "file": ".expo/metro/externals/vm/index.js",
+        "hash": "9305629903403904337"
+      },
+      {
+        "file": ".expo/metro/externals/wasi/index.js",
+        "hash": "5900102056370155328"
+      },
+      {
+        "file": ".expo/metro/externals/worker_threads/index.js",
+        "hash": "12950303277221690437"
+      },
+      {
+        "file": ".expo/metro/externals/zlib/index.js",
+        "hash": "18115354948377484691"
+      },
+      {
+        "file": ".expo/metro/polyfill.js",
+        "hash": "17237348142447578505"
+      },
+      {
+        "file": ".expo/metro/polyfill.native.js",
+        "hash": "11334387849122860599"
+      },
+      {
+        "file": ".expo/metro/shims/react-native-web/dist/cjs/exports/AppRegistry/AppContainer.js",
+        "hash": "14602047706550629992"
+      },
+      {
+        "file": ".expo/metro/shims/react-native-web/dist/cjs/exports/BackHandler/index.js",
+        "hash": "14953794890280769202"
+      },
+      {
+        "file": ".expo/metro/shims/react-native-web/dist/exports/AppRegistry/AppContainer.js",
+        "hash": "16460578099726011295"
+      },
+      {
+        "file": ".expo/metro/shims/react-native-web/dist/exports/BackHandler/index.js",
+        "hash": "2217117099585599176"
+      },
+      {
+        "file": ".idea/.gitignore",
+        "hash": "16259663310133185705"
+      },
+      {
+        "file": ".idea/codeStyles/Project.xml",
+        "hash": "12311506452589277232"
+      },
+      {
+        "file": ".idea/codeStyles/codeStyleConfig.xml",
+        "hash": "10911911431176787330"
+      },
+      {
+        "file": ".idea/compiler.xml",
+        "hash": "8442734741533086377"
+      },
+      {
+        "file": ".idea/jsLibraryMappings.xml",
+        "hash": "10776891174152802849"
+      },
+      {
+        "file": ".idea/misc.xml",
+        "hash": "17758531366595143891"
+      },
+      {
+        "file": ".idea/modules.xml",
+        "hash": "1460730712079823922"
+      },
+      {
+        "file": ".idea/prettier.xml",
+        "hash": "5242372806056283450"
+      },
+      {
+        "file": ".idea/vcs.xml",
+        "hash": "7774614687133718341"
+      },
+      {
+        "file": ".idea/web.iml",
+        "hash": "17628044544001142833"
+      },
+      {
+        "file": ".prettierignore",
+        "hash": "11845082378094941174"
+      },
+      {
+        "file": ".prettierrc",
+        "hash": "15029930472711824204"
+      },
+      {
+        "file": ".vscode/extensions.json",
+        "hash": "235626400633494639"
+      },
+      {
+        "file": ".vscode/settings.json",
+        "hash": "900610927200176056"
+      },
+      {
+        "file": "Dockerfile",
+        "hash": "10414519105003260841"
+      },
+      {
+        "file": "README.md",
+        "hash": "3348664749010775979"
+      },
+      {
+        "file": "apps/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "babel.config.json",
+        "hash": "5546405625092116747"
+      },
+      {
+        "file": "caddy/Caddyfile",
+        "hash": "18013454562331681374"
+      },
+      {
+        "file": "caddy/Dockerfile",
+        "hash": "10083757332168021576"
+      },
+      {
+        "file": "caddy/cert.p12",
+        "hash": "15813438458215955662"
+      },
+      {
+        "file": "caddy/custom.crt",
+        "hash": "10056124036886396268"
+      },
+      {
+        "file": "caddy/custom.key",
+        "hash": "4819883236051756493"
+      },
+      {
+        "file": "caddy/localhost.crt",
+        "hash": "17088398614891048762"
+      },
+      {
+        "file": "components.json",
+        "hash": "7696207467146752491"
+      },
+      {
+        "file": "jest.config.ts",
+        "hash": "2950215254536237782"
+      },
+      {
+        "file": "jest.preset.js",
+        "hash": "2772139696069860212"
+      },
+      {
+        "file": "libs/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "migrations.json",
+        "hash": "460722760356743786"
+      },
+      {
+        "file": "nx.json",
+        "hash": "9841763464373049051"
+      },
+      {
+        "file": "package-lock.json",
+        "hash": "1063307608568945023"
+      },
+      {
+        "file": "package.json",
+        "hash": "15524882821863109917"
+      },
+      {
+        "file": "tmp/buildcache/apps/app/server",
+        "hash": "3774315687506382682"
+      },
+      {
+        "file": "tools/generators/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "tools/scripts/eas-build-post-install.mjs",
+        "hash": "10189669427564269516"
+      },
+      {
+        "file": "tools/scripts/eas-build-pre-install.mjs",
+        "hash": "6326023225863715769"
+      },
+      {
+        "file": "tools/tsconfig.tools.json",
+        "hash": "16088922570277978783"
+      },
+      {
+        "file": "tsconfig.base.json",
+        "hash": "14160487692684930855"
+      },
+      {
+        "file": "tsconfig.json",
+        "hash": "4587641708705395285"
+      }
+    ]
   }
 }

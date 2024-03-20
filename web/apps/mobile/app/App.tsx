@@ -1,19 +1,17 @@
-/* eslint-disable jsx-a11y/accessible-emoji */
-import React, { useRef, useState } from "react";
-import {
-   NativeModules,
-   Platform,
-   SafeAreaView,
-   StyleSheet,
-} from "react-native";
+import React from "react";
+import { StyleSheet } from "react-native";
 import {
    QueryCache,
    QueryClient,
    QueryClientProvider,
 } from "@tanstack/react-query";
 import SignInPage from "../components/SignInPage";
-import { StatusBar } from "expo-status-bar";
-import { GoogleOAuthProvider } from "@react-oauth/google";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import "react-native-gesture-handler";
+
+const Stack = createNativeStackNavigator();
 
 export const App = () => {
    return (
@@ -29,23 +27,13 @@ export const App = () => {
             })
          }
       >
-         <GoogleOAuthProvider
-            clientId={process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID as string}
-         >
-            <StatusBar
-               translucent
-               networkActivityIndicatorVisible
-               style={"dark"}
-               animated
-            />
-            <SafeAreaView
-               style={{
-                  flex: 1,
-               }}
-            >
-               <SignInPage />
-            </SafeAreaView>
-         </GoogleOAuthProvider>
+         <GestureHandlerRootView style={{ flex: 1 }}>
+            <NavigationContainer>
+               <Stack.Navigator>
+                  <Stack.Screen component={SignInPage} name={`SignIn`} />
+               </Stack.Navigator>
+            </NavigationContainer>
+         </GestureHandlerRootView>
       </QueryClientProvider>
    );
 };

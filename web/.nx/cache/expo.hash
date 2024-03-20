@@ -1,5 +1,5 @@
 {
-  "10899677265238497776": {
+  "833982681101982705": {
     "start": {
       "command": "expo start",
       "options": {
@@ -49,7 +49,7 @@
     "install": {
       "command": "expo install",
       "options": {
-        "cwd": "C:\\Users\\Victorio\\RiderProjects\\Chatify\\web"
+        "cwd": "C:\\Users\\Victorio\\Desktop\\Coding\\DotNet\\Chatify\\web"
       }
     },
     "prebuild": {

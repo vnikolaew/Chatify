@@ -13,9 +13,19 @@
       },
       "start": {
          "executor": "@nx/expo:start",
+         "inputs": [{
+            "env": "EXPO_USE_METRO_WORKSPACE_ROOT"
+         }],
          "options": {
             "dev": true,
-            "devClient": true
+            "devClient": false,
+            "clear": true
+         }
+      },
+      "run": {
+         "executor": "@nx/expo:run",
+         "options": {
+            "platform": "android"
          }
       },
       "test": {

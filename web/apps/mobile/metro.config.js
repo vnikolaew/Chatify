@@ -26,6 +26,7 @@ const customConfig = {
       assetExts: assetExts.filter((ext) => ext !== "svg"),
       sourceExts: [...sourceExts, "cjs", "mjs", "svg"],
       unstable_enableSymlinks: true,
+      resolverMainFields: [`native`, `module`, `browser`, `main`],
       nodeModulesPaths: [
          path.resolve(__dirname, "node_modules"),
          path.resolve(monorepoRoot, "node_modules"),

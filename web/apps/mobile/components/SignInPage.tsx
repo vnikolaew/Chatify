@@ -23,19 +23,11 @@ import { Colors } from "../constants/colors";
 import GoogleIcon from "./icons/GoogleIcon";
 import GithubIcon from "./icons/GithubIcon";
 import FacebookIcon from "./icons/FacebookIcon";
-import {
-   GoogleSignin,
-   statusCodes,
-} from "@react-native-community/google-signin";
+import * as WebBrowser from "expo-web-browser";
 
 export interface TestProps {}
 
-GoogleSignin.configure({
-   webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-   iosClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-   scopes: ["https://www.googleapis.com/auth/userinfo.profile"],
-   forceCodeForRefreshToken: true,
-});
+WebBrowser.maybeCompleteAuthSession();
 
 const SignInPage = ({}: TestProps) => {
    const [signInValues, setSignInValues] = useState<RegularSignInModel>({
@@ -104,14 +96,14 @@ const SignInPage = ({}: TestProps) => {
             <Text
                style={{
                   color: `#fff`,
-                  fontSize: 24,
+                  fontSize: 20,
                   alignSelf: `flex-start`,
                   marginLeft: 32,
                }}
             >
                Sign in with your account
             </Text>
-            <View style={{ width: `80%`, gap: 4 }}>
+            <View style={styles.inputContainer}>
                <Text style={styles.label}>Email</Text>
                <TextInput
                   textContentType={`emailAddress`}
@@ -126,7 +118,7 @@ const SignInPage = ({}: TestProps) => {
                   nativeID={`e-mail`}
                />
             </View>
-            <View style={{ width: `80%`, gap: 4 }}>
+            <View style={styles.inputContainer}>
                <Text style={styles.label}>Password</Text>
                <TextInput
                   secureTextEntry
@@ -145,13 +137,13 @@ const SignInPage = ({}: TestProps) => {
             <View
                style={{
                   width: `80%`,
-                  gap: 8,
+                  gap: 6,
                   flexDirection: `row`,
                   alignItems: `center`,
                }}
             >
                <Checkbox
-                  style={{ width: 20, height: 20, borderRadius: 6 }}
+                  style={styles.checkbox}
                   value={signInValues.rememberMe}
                   onValueChange={(value) =>
                      setSignInValues((x) => ({ ...x, rememberMe: value }))
@@ -219,25 +211,9 @@ const SignInPage = ({}: TestProps) => {
                      },
                   ]}
                >
-                  <View
-                     style={{
-                        borderRadius: 8,
-                        height: 0.5,
-                        backgroundColor: Colors.gray2,
-                        flex: 1,
-                     }}
-                  />
-                  <Text style={[styles.textWhite, { fontWeight: `bold` }]}>
-                     OR
-                  </Text>
-                  <View
-                     style={{
-                        height: 0.5,
-                        borderRadius: 8,
-                        backgroundColor: Colors.gray2,
-                        flex: 1,
-                     }}
-                  />
+                  <View style={styles.separator} />
+                  <Text style={[styles.textWhite, styles.textBold]}>OR</Text>
+                  <View style={styles.separator} />
                </View>
             </View>
             <View
@@ -252,10 +228,7 @@ const SignInPage = ({}: TestProps) => {
             >
                <TouchableOpacity
                   activeOpacity={0.9}
-                  onPress={async () => {
-                     const result = await GoogleSignin.signIn();
-                     console.log(result);
-                  }}
+                  onPress={async () => {}}
                   style={{
                      backgroundColor: Colors.white,
                      padding: 8,
@@ -314,37 +287,6 @@ const SignInPage = ({}: TestProps) => {
                )}
             </View>
          </View>
-         <View
-            style={{
-               marginBottom: 36,
-               alignSelf: `center`,
-               width: `40%`,
-               alignItems: `center`,
-            }}
-         >
-            <TouchableOpacity
-               onPress={handleSignOut}
-               style={{
-                  backgroundColor: `red`,
-                  width: `100%`,
-                  alignItems: `center`,
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-               }}
-            >
-               {signOutLoading ? (
-                  <ActivityIndicator
-                     animating={signOutLoading}
-                     style={{ marginVertical: 0 }}
-                     color={`#fff`}
-                     size={17}
-                  />
-               ) : (
-                  <Text style={{ color: `#fff` }}> Sign out </Text>
-               )}
-            </TouchableOpacity>
-         </View>
       </SafeAreaView>
    );
 };
@@ -359,6 +301,9 @@ const styles = StyleSheet.create({
    },
    textWhite: {
       color: Colors.white,
+   },
+   textBold: {
+      fontWeight: "bold",
    },
    textGray: {
       color: Colors.gray2,
@@ -379,14 +324,30 @@ const styles = StyleSheet.create({
       backgroundColor: Colors.blue,
       color: Colors.white,
    },
+   checkbox: {
+      width: 16,
+      height: 16,
+      borderRadius: 6,
+   },
+
+   inputContainer: {
+      width: `80%`,
+      gap: 2,
+   },
    input: {
       width: `100%`,
       // marginTop: 4,
       backgroundColor: Colors.white,
       borderRadius: 6,
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      fontSize: 16,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      fontSize: 12,
+   },
+   separator: {
+      borderRadius: 8,
+      height: 1,
+      backgroundColor: Colors.gray2,
+      flex: 1,
    },
 });
 

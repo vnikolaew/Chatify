@@ -1,8 +1,8 @@
 {
   "run": {
-    "command": "nx run mobile:start",
-    "startTime": "2024-03-19T16:08:18.777Z",
-    "endTime": "2024-03-19T16:10:55.095Z",
+    "command": "nx start mobile",
+    "startTime": "2024-03-20T08:49:25.638Z",
+    "endTime": "2024-03-20T08:52:28.232Z",
     "inner": false
   },
   "tasks": [
@@ -10,12 +10,12 @@
       "taskId": "mobile:start",
       "target": "start",
       "projectName": "mobile",
-      "hash": "4265887761187031788",
-      "startTime": "2024-03-19T16:08:18.793Z",
-      "endTime": "2024-03-19T16:10:55.094Z",
+      "hash": "3609463273080398928",
+      "startTime": "2024-03-20T08:49:25.664Z",
+      "endTime": "2024-03-20T08:52:28.231Z",
       "params": "",
       "cacheStatus": "cache-miss",
-      "status": 1
+      "status": 0
     }
   ]
 }
